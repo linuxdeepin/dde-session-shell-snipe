@@ -43,8 +43,9 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     });
 
     m_content = new LockContent(model);
-    setContent(m_content);
     m_content->hide();
+    setContent(m_content);
+
     connect(m_content, &LockContent::requestSwitchToUser, this, &LockFrame::requestSwitchToUser);
     connect(m_content, &LockContent::requestAuthUser, this, &LockFrame::requestAuthUser);
     connect(m_content, &LockContent::requestSetLayout, this, &LockFrame::requestSetLayout);
