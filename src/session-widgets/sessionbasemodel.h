@@ -91,6 +91,9 @@ public:
     inline bool isLockNoPassword() const { return m_isLockNoPassword; }
     void setIsLockNoPassword(bool LockNoPassword);
 
+    inline bool isBlackMode() const { return m_isBlackMode; }
+    void setIsBlackModel(bool is_black);
+
 signals:
     void onUserAdded(std::shared_ptr<User> user);
     void onUserRemoved(const uint uid);
@@ -113,6 +116,7 @@ signals:
     void lockChanged(bool lock);
     void userListLoginedChanged(QList<std::shared_ptr<User>> list);
     void activeAuthChanged(bool active);
+    void blackModeChanged(bool is_black);
 
 private:
     com::deepin::SessionManager *m_sessionManagerInter;
@@ -126,6 +130,7 @@ private:
     bool m_alwaysShowUserSwitchButton;
     bool m_abortConfirm;
     bool m_isLockNoPassword;
+    bool m_isBlackMode;
     AuthType m_currentType;
     QList<std::shared_ptr<User>> m_userList;
     std::shared_ptr<User> m_currentUser;

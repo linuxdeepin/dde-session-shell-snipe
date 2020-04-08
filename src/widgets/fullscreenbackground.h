@@ -59,6 +59,7 @@ public slots:
     void updateBackground(const QString &file);
     void setScreen(QScreen *screen);
     void setContentVisible(bool contentVisible);
+    void setIsBlackMode(bool is_black);
 
 signals:
     void contentVisibleChanged(bool contentVisible);
@@ -96,6 +97,7 @@ private:
     ImageEffectInter *m_imageEffectInter = nullptr;
     DisplayInter *m_displayInter = nullptr;
     bool m_primaryShowFinished = false;
+    bool m_isBlackMode = false;
     int m_dataBindIndex;
 };
 

@@ -60,6 +60,7 @@ public Q_SLOTS:// METHODS
     void Show();
     void ShowUserList();
     void ShowAuth(bool active);
+    void ShowBlack();
 };
 
 #endif // DBUSLOCKFRONTSERVICE_H

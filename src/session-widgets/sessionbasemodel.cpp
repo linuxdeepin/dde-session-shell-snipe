@@ -222,3 +222,11 @@ void SessionBaseModel::setIsLockNoPassword(bool LockNoPassword)
 
     m_isLockNoPassword = LockNoPassword;
 }
+
+void SessionBaseModel::setIsBlackModel(bool is_black)
+{
+    if(m_isBlackMode == is_black) return;
+
+    m_isBlackMode = is_black;
+    emit blackModeChanged(is_black);
+}

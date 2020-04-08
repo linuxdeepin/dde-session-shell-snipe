@@ -139,11 +139,13 @@ void FullscreenBackground::setScreen(QScreen *screen)
         if(m_displayInter->primary() == screen->name()) {
             m_content->show();
             emit contentVisibleChanged(true);
-            QTimer::singleShot(100, this, []{FrameDataBind::Instance()->updateValue("PrimaryShowFinished", true); });
+            QTimer::singleShot(100, this, []{ FrameDataBind::Instance()->updateValue("PrimaryShowFinished", true); });
         }
     } else if(m_displayInter->displayMode() == FullscreenBackground::CopyMode) {
         m_content->show();
         emit contentVisibleChanged(true);
+    } else {
+        FrameDataBind::Instance()->updateValue("PrimaryShowFinished", true);
     }
 
     updateScreen(screen);
@@ -175,6 +177,18 @@ void FullscreenBackground::setContent(QWidget *const w)
     m_content->move(0, 0);
 }
 
+void FullscreenBackground::setIsBlackMode(bool is_black)
+{
+    if(m_isBlackMode == is_black) return;
+
+    m_isBlackMode = is_black;
+    FrameDataBind::Instance()->updateValue("PrimaryShowFinished", !is_black);
+    m_content->setVisible(!is_black);
+    emit contentVisibleChanged(!is_black);
+
+    update();
+}
+
 void FullscreenBackground::paintEvent(QPaintEvent *e)
 {
     QWidget::paintEvent(e);
@@ -185,20 +199,27 @@ void FullscreenBackground::paintEvent(QPaintEvent *e)
 
     const QRect trueRect(QPoint(0, 0), QSize(size() * devicePixelRatioF()));
 
-    if (!m_background.isNull()) {
-        // tr is need redraw rect, sourceRect need correct upper left corner
-        painter.drawPixmap(trueRect,
-                           m_backgroundCache,
-                           QRect(trueRect.topLeft(), trueRect.size() * m_backgroundCache.devicePixelRatioF()));
-    }
+    if(!m_isBlackMode) {
+        if (!m_background.isNull()) {
+            // tr is need redraw rect, sourceRect need correct upper left corner
+            painter.drawPixmap(trueRect,
+                               m_backgroundCache,
+                               QRect(trueRect.topLeft(), trueRect.size() * m_backgroundCache.devicePixelRatioF()));
+        }
 
-    if (!m_fakeBackground.isNull()) {
-        // draw background
-        painter.setOpacity(current_ani_value);
-        painter.drawPixmap(trueRect,
-                           m_fakeBackgroundCache,
-                           QRect(trueRect.topLeft(), trueRect.size() * m_fakeBackgroundCache.devicePixelRatioF()));
-        painter.setOpacity(1);
+        if (!m_fakeBackground.isNull()) {
+            // draw background
+            painter.setOpacity(current_ani_value);
+            painter.drawPixmap(trueRect,
+                               m_fakeBackgroundCache,
+                               QRect(trueRect.topLeft(), trueRect.size() * m_fakeBackgroundCache.devicePixelRatioF()));
+            painter.setOpacity(1);
+        }
+    } else {
+        painter.save();
+        painter.setBrush(Qt::black);
+        painter.drawRect(trueRect);
+        painter.restore();
     }
 }
 

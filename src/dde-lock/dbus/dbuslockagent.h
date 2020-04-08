@@ -14,6 +14,10 @@ public:
     void Show();
     void ShowUserList();
     void ShowAuth(bool active);
+    void ShowBlack();
+
+private:
+    void showFrame();
 
 private:
     SessionBaseModel *m_model;

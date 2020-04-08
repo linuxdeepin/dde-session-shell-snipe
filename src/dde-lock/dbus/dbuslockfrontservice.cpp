@@ -53,3 +53,8 @@ void DBusLockFrontService::ShowAuth(bool active)
 {
     parent()->ShowAuth(active);
 }
+
+void DBusLockFrontService::ShowBlack()
+{
+    parent()->ShowBlack();
+}
