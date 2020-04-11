@@ -56,6 +56,8 @@ void LogoWidget::initUI() {
     m_logoLabel->setPixmap(systemLogo());
     m_logoLabel->setObjectName("Logo");
     m_logoLabel->setFixedSize(128, 48);
+    //修复社区版deepin的显示不全的问题 2020/04/11
+    m_logoLabel->setScaledContents(true);
 
     m_logoVersionLabel = new QLabel;
     m_logoVersionLabel->setObjectName("LogoVersion");
