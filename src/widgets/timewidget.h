@@ -39,7 +39,7 @@ class TimeWidget : public QWidget
     Q_OBJECT
 public:
     explicit TimeWidget(QWidget *parent = nullptr);
-    void set24HourFormat(bool use24HourFormat);
+    void setDateTimeFormat(bool use24HourFormat, int weekDayFormat, int shortDateFormat, int shortTimeFormat);
     void updateLocale(const QLocale &locale);
 
 private:
@@ -48,10 +48,12 @@ private:
 private:
     QLabel *m_timeLabel;
     QLabel *m_dateLabel;
-
     QTimer *m_refreshTimer;
-    bool m_use24HourFormat;
     QLocale m_locale;
+    bool m_use24HourFormat;
+    int m_shortDateFormat = 0;
+    int m_shortTimeFormat = 0;
+    int m_weekDayFormat = 0;
 };
 
 #endif // TIMEWIDGET_H

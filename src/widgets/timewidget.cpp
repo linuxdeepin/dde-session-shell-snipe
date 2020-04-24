@@ -24,6 +24,7 @@
  */
 
 #include "timewidget.h"
+#include "../global_util/datetimehelper.h"
 
 #include <QVBoxLayout>
 #include <QDateTime>
@@ -70,9 +71,12 @@ TimeWidget::TimeWidget(QWidget *parent)
     connect(m_refreshTimer, &QTimer::timeout, this, &TimeWidget::refreshTime);
 }
 
-void TimeWidget::set24HourFormat(bool use24HourFormat)
+void TimeWidget::setDateTimeFormat(bool use24HourFormat, int weekDayFormat, int shortDateFormat, int shortTimeFormat)
 {
     m_use24HourFormat = use24HourFormat;
+    m_weekDayFormat = weekDayFormat;
+    m_shortDateFormat = shortDateFormat;
+    m_shortTimeFormat = shortTimeFormat;
     refreshTime();
 }
 
@@ -84,11 +88,20 @@ void TimeWidget::updateLocale(const QLocale &locale)
 
 void TimeWidget::refreshTime()
 {
-    if (m_use24HourFormat) {
-        m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "hh:mm"));
-    } else {
-        m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "hh:mm ap"));
-    }
+//    if (m_use24HourFormat) {
+//        m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "hh:mm"));
+//    } else {
+//        m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "hh:mm ap"));
+//    }
 
-    m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "yyyy-MM-dd dddd"));
+//    m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), "yyyy-MM-dd dddd"));
+    QDateTime dateTime = QDateTime::currentDateTime();
+
+    QString timeFormat = DateTimeHelper::ShortTimeFormatString(m_shortTimeFormat);
+    if (!m_use24HourFormat)
+        timeFormat += " ap";
+    QString dateFormat = DateTimeHelper::ShortDateFormatString(m_shortDateFormat) + " " + DateTimeHelper::WeekDayFormatString(m_weekDayFormat);
+
+    m_timeLabel->setText(dateTime.toString(timeFormat));
+    m_dateLabel->setText(dateTime.toString(dateFormat));
 }

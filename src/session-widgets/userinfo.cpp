@@ -5,6 +5,7 @@
 #include <grp.h>
 
 #define LOCK_AUTH_NUM 5
+#define LOCK_INTERVAL 5
 
 static bool checkUserIsNoPWGrp(User const *user)
 {
@@ -64,6 +65,7 @@ User::User(QObject *parent)
     , m_isLock(false)
     , m_lockNum(4)
     , m_tryNum(5)
+    , m_lockMinutes(0)
     , m_locale(getenv("LANG"))
     , m_lockTimer(new QTimer)
 {
@@ -79,6 +81,7 @@ User::User(const User &user)
     , m_uid(user.m_uid)
     , m_lockNum(user.m_lockNum)
     , m_tryNum(user.m_tryNum)
+    , m_lockMinutes(user.m_lockMinutes)
     , m_userName(user.m_userName)
     , m_locale(user.m_locale)
     , m_lockTimer(user.m_lockTimer)
@@ -142,35 +145,47 @@ void User::startLock()
 
     m_isLock = true;
 
+    m_lockMinutes += LOCK_INTERVAL;
+
     onLockTimeOut();
 }
 
 void User::resetLock()
 {
     m_tryNum = 5;
+    m_lockMinutes = 0;
 }
 
 void User::onLockTimeOut()
 {
     time_t stopTime = time(nullptr);
     int min = (stopTime - m_startTime) / 60;
-    if (min >= 3) {
+    if (min >= m_lockMinutes) {
         m_lockTimer->stop();
-        m_tryNum = 5;
-        m_lockNum = 4;
         m_isLock = false;
         m_startTime = 0;
-    } else if (min >= 2) {
-        m_lockNum = 1;
-        m_lockTimer->start();
-    } else if (min >= 1) {
-        m_lockNum = 2;
-        m_lockTimer->start();
+        m_tryNum = 5;
     } else {
-        m_lockNum = 3;
-
+        m_lockNum = m_lockMinutes - min;
         m_lockTimer->start();
     }
+
+//    if (min >= 3) {
+//        m_lockTimer->stop();
+//        m_tryNum = 5;
+//        m_lockNum = 4;
+//        m_isLock = false;
+//        m_startTime = 0;
+//    } else if (min >= 2) {
+//        m_lockNum = 1;
+//        m_lockTimer->start();
+//    } else if (min >= 1) {
+//        m_lockNum = 2;
+//        m_lockTimer->start();
+//    } else {
+//        m_lockNum = 3;
+//        m_lockTimer->start();
+//    }
 
     emit lockChanged(m_tryNum == 0);
 }

@@ -15,6 +15,11 @@
 #include <QMouseEvent>
 #include <DDBusSender>
 
+#define USE_24_HOUR_FORMAT "Use24HourFormat"
+#define SHORT_DATE_FORMAT  "ShortDateFormat"
+#define SHORT_TIME_FORMAT  "ShortTimeFormat"
+#define WEEKDAY_FORMAT     "WeekdayFormat"
+
 LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     : SessionBaseWindow(parent)
     , m_model(model)
@@ -225,7 +230,11 @@ void LockContent::showEvent(QShowEvent *event)
 {
     onStatusChanged(m_model->currentModeState());
 
-    m_timeWidget->set24HourFormat(m_user->isDoMainUser() ? true : m_24HourFormatInter->property("Use24HourFormat").toBool());
+    bool use24HourFormat = m_user->isDoMainUser() ? true : m_24HourFormatInter->property(USE_24_HOUR_FORMAT).toBool();
+    int shortDateFormat = m_24HourFormatInter->property(SHORT_DATE_FORMAT).toInt();
+    int shortTimeFormat = m_24HourFormatInter->property(SHORT_TIME_FORMAT).toInt();
+    int weekdayFormat = m_24HourFormatInter->property(WEEKDAY_FORMAT).toInt();
+    m_timeWidget->setDateTimeFormat(use24HourFormat, weekdayFormat, shortDateFormat, shortTimeFormat);
 
     tryGrabKeyboard();
 

@@ -79,6 +79,7 @@ protected:
     uint m_uid;
     uint m_lockNum; // minute basis
     uint m_tryNum; // try number
+    uint m_lockMinutes;
     QString m_userName;
     QString m_fullName;
     QString m_locale;
