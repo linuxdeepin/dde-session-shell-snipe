@@ -30,7 +30,7 @@
 #ifndef DDE_POLKIT_AGENT_ERRORTOOLTIP_H
 #define DDE_POLKIT_AGENT_ERRORTOOLTIP_H
 
-#include "darrowrectangle.h"
+#include <darrowrectangle.h>
 
 DWIDGET_USE_NAMESPACE
 
