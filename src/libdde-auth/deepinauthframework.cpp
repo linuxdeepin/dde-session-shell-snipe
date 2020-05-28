@@ -35,11 +35,13 @@ void DeepinAuthFramework::SetUser(std::shared_ptr<User> user)
 void DeepinAuthFramework::keyBoardAuth()
 {
     if (USER->isLock() || USER->uid() != m_currentUserUid) return;
+    qDebug()<<QString("The KeyBoard Auth process is running ! The User id is : %1").arg(m_currentUserUid);
 
     if (m_keyboard == nullptr) {
         m_keyboard = new AuthAgent(AuthAgent::Keyboard, this);
         m_keyboard->SetUser(USER->name());
 
+        qDebug()<<QString("User is NoPasswdGrp: %1 and Password is Empty: %2").arg(USER->isNoPasswdGrp()).arg(PASSWORD.isEmpty());
         if (USER->isNoPasswdGrp() || (!USER->isNoPasswdGrp() && !PASSWORD.isEmpty())) {
             qDebug() << Q_FUNC_INFO << "keyboard auth start";
             QTimer::singleShot(100, m_keyboard, &AuthAgent::Authenticate);
