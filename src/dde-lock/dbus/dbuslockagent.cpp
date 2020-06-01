@@ -48,13 +48,8 @@ void DBusLockAgent::Suspend(bool enable)
 
 void DBusLockAgent::Hibernate(bool enable)
 {
-    if (enable) {
-        m_model->setIsHibernateModel(true);
-        showFrame();
-    } else {
-        m_model->setIsHibernateModel(false);
-        showFrame();
-    }
+    m_model->setIsHibernateModel(enable);
+    showFrame();
 }
 
 void DBusLockAgent::ShowUserList()
