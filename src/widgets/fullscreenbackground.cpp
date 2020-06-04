@@ -39,6 +39,7 @@
 #include <DGuiApplicationHelper>
 
 DGUI_USE_NAMESPACE
+#define  DEFAULT_BACKGROUND "/usr/share/backgrounds/default_background.jpg"
 
 FullscreenBackground::FullscreenBackground(QWidget *parent)
     : QWidget(parent)
@@ -78,28 +79,39 @@ void FullscreenBackground::updateBackground(const QPixmap &background)
     m_fadeOutAni->start();
 }
 
-void FullscreenBackground::updateBackground(const QString &file)
+void FullscreenBackground::updateBackground (const QString &file) 
 {
-    qDebug() << "input background: " << file;
 
-    auto isPicture = [](const QString &filePath){
-        return QFile::exists(filePath) && QFile(filePath).size() && !QPixmap(filePath).isNull() ;
+    const QUrl url (file);
+    if (url.isLocalFile())
+        return updateBackground (url.path());
+
+    if (file.isEmpty()) {
+        if (m_bgPath.isEmpty()) {
+            updateIfIsPicture (DEFAULT_BACKGROUND);
+        } else {
+            qWarning() << "update image path is empty, m_bgPath is not empty.";
+        }
+    } else {
+        if (m_bgPath != file) {
+            updateIfIsPicture (file);
+        }
+    }
+}
+
+void FullscreenBackground::updateIfIsPicture (const QString& file) 
+{
+    auto isPicture = [] (const QString & filePath) {
+        return QFile::exists (filePath) && QFile (filePath).size() && !QPixmap (filePath).isNull() ;
     };
 
-    const QUrl url(file);
-    if (url.isLocalFile())
-        return updateBackground(url.path());
-
-    if (m_bgPath == file)
-        return;
-
-    if (isPicture(file)) {
+    if (isPicture (file)) {
         m_bgPath = file;
-
     } else {
-        QDir dir("/usr/share/wallpapers/deepin");
+        qWarning() << "input background: " << file << " is invalid image file.";
+        QDir dir ("/usr/share/wallpapers/deepin");
         if (dir.exists()) {
-            dir.setFilter(QDir::Files);
+            dir.setFilter (QDir::Files);
             QFileInfoList list = dir.entryInfoList();
             foreach (QFileInfo f, list) {
                 if (f.baseName() == "desktop") {
@@ -109,19 +121,20 @@ void FullscreenBackground::updateBackground(const QString &file)
             }
         }
 
-        if (!QFile::exists(m_bgPath)) {
-            m_bgPath = "/usr/share/backgrounds/default_background.jpg";
+        if (!QFile::exists (m_bgPath)) {
+            m_bgPath = DEFAULT_BACKGROUND;
         }
     }
 
-    QString imageEffect = m_imageEffectInter->Get("", m_bgPath);
+    QString imageEffect = m_imageEffectInter->Get ("", m_bgPath);
 
-    if (!isPicture(imageEffect)) imageEffect = m_bgPath;
+    if (!isPicture (imageEffect)) imageEffect = m_bgPath;
 
-    updateBackground(QPixmap(imageEffect));
+    updateBackground (QPixmap (imageEffect));
 
-    Q_ASSERT(QFileInfo(m_bgPath).isFile());
+    Q_ASSERT (QFileInfo (m_bgPath).isFile());
 }
+
 
 void FullscreenBackground::setScreen(QScreen *screen)
 {
