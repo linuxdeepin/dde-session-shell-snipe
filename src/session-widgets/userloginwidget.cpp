@@ -308,6 +308,7 @@ void UserLoginWidget::toggleKBLayoutWidget()
         refreshKBLayoutWidgetPosition();
     }
     FrameDataBind::Instance()->updateValue("UserLoginKBLayout", m_kbLayoutBorder->isVisible());
+    updateClipPath();
 }
 
 void UserLoginWidget::refreshKBLayoutWidgetPosition()
@@ -316,6 +317,7 @@ void UserLoginWidget::refreshKBLayoutWidgetPosition()
                                                                          m_passwordEdit->geometry().bottomLeft().y()));
     m_kbLayoutBorder->move(point.x(), point.y());
     m_kbLayoutBorder->setArrowX(15);
+    updateClipPath();
 }
 
 //设置密码输入框不可用
@@ -460,6 +462,9 @@ void UserLoginWidget::initUI()
     m_kbLayoutBorder->setContent(m_kbLayoutWidget);
     m_kbLayoutBorder->setFixedWidth(DDESESSIONCC::PASSWDLINEEIDT_WIDTH);
     m_kbLayoutWidget->setFixedWidth(DDESESSIONCC::PASSWDLINEEIDT_WIDTH);
+
+    m_kbLayoutClip=new Dtk::Widget::DClipEffectWidget(m_kbLayoutBorder);
+    updateClipPath();
 
     m_lockPasswordWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_lockPasswordWidget->setLockIconVisible(false);
@@ -653,6 +658,7 @@ void UserLoginWidget::updateKBLayout(const QStringList &list)
 {
     m_kbLayoutWidget->updateButtonList(list);
     m_kbLayoutBorder->setContent(m_kbLayoutWidget);
+    updateClipPath();
 }
 
 void UserLoginWidget::hideKBLayout()
@@ -667,6 +673,7 @@ void UserLoginWidget::setKBLayoutList(QStringList kbLayoutList)
     m_KBLayoutList = kbLayoutList;
     updateKBLayout(m_KBLayoutList);
     m_passwordEdit->setKBLayoutList(kbLayoutList);
+    updateClipPath();
 }
 
 void UserLoginWidget::setDefaultKBLayout(const QString &layout)
@@ -674,6 +681,7 @@ void UserLoginWidget::setDefaultKBLayout(const QString &layout)
     qDebug() << "keyboardlayout---UserLoginWidget---setDefaultKBLayout:" << layout;
 
     m_kbLayoutWidget->setDefault(layout);
+    updateClipPath();
 }
 
 void UserLoginWidget::clearPassWord()
@@ -700,6 +708,26 @@ void UserLoginWidget::setSelected(bool isSelected)
 {
     m_isSelected = isSelected;
     update();
+}
+
+void UserLoginWidget::updateClipPath() 
+{
+    if (!m_kbLayoutClip)
+        return;
+    QRectF rc (0, 0, DDESESSIONCC::PASSWDLINEEIDT_WIDTH, m_kbLayoutBorder->height());
+    qInfo() << "m_kbLayoutBorder->arrowHeight()-->" << rc.height();
+    int iRadius = 20;
+    QPainterPath path;
+    path.lineTo (0, 0);
+    path.lineTo (rc.width(), 0);
+    path.lineTo (rc.width(), rc.height() - iRadius);
+    path.arcTo (rc.width() - iRadius, rc.height() - iRadius, iRadius, iRadius, 0, -90);
+    path.lineTo (rc.width() - iRadius, rc.height());
+    path.lineTo (iRadius, rc.height());
+    path.arcTo (0, rc.height() - iRadius, iRadius, iRadius, -90, -90);
+    path.lineTo (0, rc.height() - iRadius);
+    path.lineTo (0, 0);
+    m_kbLayoutClip->setClipPath (path);
 }
 
 void UserLoginWidget::hidePasswordEditMessage()

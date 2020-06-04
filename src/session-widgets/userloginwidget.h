@@ -26,10 +26,12 @@
 
 #include <darrowrectangle.h>
 #include <DBlurEffectWidget>
+#include <DClipEffectWidget>
 #include <DFloatingButton>
 
 #include <com_deepin_daemon_appearance.h>
 using Appearance = com::deepin::daemon::Appearance;
+using DClipEffectWidget = Dtk::Widget::DClipEffectWidget;
 
 DWIDGET_USE_NAMESPACE
 
@@ -126,6 +128,7 @@ private:
     void refreshKBLayoutWidgetPosition();
     void receiveUserKBLayoutChanged(const QString &layout);
     void updateNameLabel();
+    void updateClipPath();
 
 private:
     DBlurEffectWidget *m_blurEffectWidget;         //阴影窗体
@@ -137,6 +140,7 @@ private:
     DLineEditEx *m_accountEdit;
     DFloatingButton *m_lockButton;                 //解锁按钮
     DArrowRectangle *m_kbLayoutBorder;             //键盘布局异性框类
+    DClipEffectWidget* m_kbLayoutClip=nullptr;     //键盘布局裁减类
     KbLayoutWidget *m_kbLayoutWidget;              //键盘布局窗体
     WidgetShowType m_showType;                     //窗体显示模式,分为无密码登录模式\正常模式\ID和密码登录模式
     QVBoxLayout *m_userLayout;                     //用户输入框布局
