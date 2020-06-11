@@ -31,6 +31,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QPainter>
+#include <QPainterPath>
 #include <QDebug>
 #include <QPropertyAnimation>
 
