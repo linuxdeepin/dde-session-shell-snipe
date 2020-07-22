@@ -47,7 +47,7 @@ Q_SIGNALS:
 
 public slots:
     bool powerAction(const Actions action);
-    void setConfirm(const bool confrim);
+    void setConfirm(const bool confirm);
 
 protected:
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;

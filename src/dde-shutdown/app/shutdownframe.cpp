@@ -60,9 +60,9 @@ bool ShutdownFrame::powerAction(const Actions action)
     return m_shutdownFrame->powerAction(action);
 }
 
-void ShutdownFrame::setConfirm(const bool confrim)
+void ShutdownFrame::setConfirm(const bool confirm)
 {
-    m_shutdownFrame->setConfirm(confrim);
+    m_shutdownFrame->setConfirm(confirm);
 }
 
 void ShutdownFrame::showEvent(QShowEvent *event)
