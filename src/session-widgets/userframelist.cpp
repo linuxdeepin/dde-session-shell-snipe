@@ -82,6 +82,7 @@ void UserFrameList::addUser(std::shared_ptr<User> user)
     widget->setFixedSize(QSize(UserFrameWidth, UserFrameHeight));
     connect(widget, &UserLoginWidget::clicked, this, &UserFrameList::onUserClicked);
     widget->setUserAvatarSize(UserLoginWidget::AvatarSmallSize);
+    widget->setAvatar(user->avatarPath());
     widget->setName(user->displayName());
     widget->setIsLogin(user->isLogin());
     widget->setIsServer(user->isDoMainUser());
@@ -89,7 +90,6 @@ void UserFrameList::addUser(std::shared_ptr<User> user)
     connect(user.get(), &User::displayNameChanged, widget, &UserLoginWidget::setName);
     connect(user.get(), &User::avatarChanged, widget, &UserLoginWidget::setAvatar);
     connect(user.get(), &User::logindChanged, widget, &UserLoginWidget::setIsLogin);
-    user->avatarPath();
 
     widget->setSelected(m_model->currentUser()->uid() == user->uid());
 

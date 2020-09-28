@@ -49,7 +49,7 @@ void AuthAgent::Authenticate(const QString& username)
 
     int rc = pam_authenticate(m_pamHandle, 0);
     if (rc != PAM_SUCCESS) {
-        qDebug() << "pam_authenticate() failed: " << pam_strerror(m_pamHandle, rc);
+        qDebug() << "pam_authenticate() failed: " << pam_strerror(m_pamHandle, rc) << "####" << rc;
     }
 
     int re = pam_end(m_pamHandle, rc);

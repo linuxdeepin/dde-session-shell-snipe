@@ -59,7 +59,7 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
 
     m_userLoginWidget->setIsServerMode(m_model->isServerModel());
     m_userLoginWidget->setName(user->displayName());
-    user->avatarPath();
+    m_userLoginWidget->setAvatar(user->avatarPath());
     m_userLoginWidget->setUserAvatarSize(UserLoginWidget::AvatarLargeSize);
     m_userLoginWidget->updateAuthType(m_model->currentType());
     m_userLoginWidget->updateIsLockNoPassword(m_model->isLockNoPassword());
