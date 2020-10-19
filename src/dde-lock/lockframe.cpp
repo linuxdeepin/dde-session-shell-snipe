@@ -37,9 +37,6 @@
 LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     : FullscreenBackground(parent)
     , m_model(model)
-    , m_login1Inter(new DBusLogin1Manager("org.freedesktop.login1", "/org/freedesktop/login1", QDBusConnection::systemBus(), this))
-    , m_preparingSleep(false)
-    , m_prePreparingSleep(false)
 {
     qDebug() << "LockFrame geometry:" << geometry();
 
@@ -77,10 +74,6 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::authFinished, this, [ = ](bool success){
         qDebug() << "SessionBaseModel::authFinished -- success status : " << success;
         m_content->beforeUnlockAction(success);
-    });
-    connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [this](bool isSleep){
-        m_prePreparingSleep = m_preparingSleep;
-        m_preparingSleep = isSleep;
     });
 }
 
@@ -148,17 +141,9 @@ bool LockFrame::handlePoweroffKey()
 {
     QDBusInterface powerInter("com.deepin.daemon.Power","/com/deepin/daemon/Power","com.deepin.daemon.Power");
     if (!powerInter.isValid()) {
-        qDebug() << "powerInter is not valid";
         return false;
     }
-    bool isBattery = powerInter.property("OnBattery").toBool();
-    int action = 0;
-    if (isBattery) {
-        action = powerInter.property("BatteryPressPowerBtnAction").toInt();
-    } else {
-        action = powerInter.property("LinePowerPressPowerBtnAction").toInt();
-    }
-    qDebug() << "battery is: " << isBattery << "," << action;
+    int action = powerInter.property("LinePowerPressPowerBtnAction").toInt();
     // 需要特殊处理：关机(0)和无任何操作(4)
     if (action == 0) {
         m_model->setPowerAction(SessionBaseModel::PowerAction::RequireShutdown);
@@ -166,10 +151,7 @@ bool LockFrame::handlePoweroffKey()
         m_content->pushConfirmFrame();
         return true;
     } else if (action == 4) {
-        // 需要同时检测两个值
-        if (!m_prePreparingSleep && !m_preparingSleep) {
-            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
-        }
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
         return true;
     }
     return false;
@@ -177,8 +159,8 @@ bool LockFrame::handlePoweroffKey()
 
 void LockFrame::showUserList()
 {
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
     show();
+    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
 }
 
 void LockFrame::keyPressEvent(QKeyEvent *e)

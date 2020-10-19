@@ -51,7 +51,6 @@ public:
 
 signals:
     void requestAuthUser(const QString &password);
-    void switchToCurrentUser();
     void requestSwitchUser(std::shared_ptr<User> user);
     void hideUserFrameList();
     void requestSetLayout(std::shared_ptr<User> user, const QString &value);

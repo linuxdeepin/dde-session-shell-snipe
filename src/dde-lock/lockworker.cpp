@@ -188,7 +188,6 @@ void LockWorker::onDisplayErrorMsg(const QString &msg)
 
 void LockWorker::onDisplayTextInfo(const QString &msg)
 {
-    m_authenticating = false;
     emit m_model->authFaildMessage(msg);
 }
 
@@ -318,10 +317,12 @@ void LockWorker::onCurrentUserChanged(const QString &user)
     if (user_cur == m_currentUserUid) {
         for (std::shared_ptr<User> user_ptr : m_model->userList()) {
             if (user_ptr->uid() == m_currentUserUid) {
+                emit m_model->switchUserFinished();
                 m_authFramework->Authenticate(user_ptr);
-                break;
+                return;
             }
         }
+    } else {
+        return;
     }
-    emit m_model->switchUserFinished();
 }

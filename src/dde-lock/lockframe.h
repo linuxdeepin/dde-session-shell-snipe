@@ -28,7 +28,6 @@
 
 #include "src/widgets/fullscreenbackground.h"
 #include "src/session-widgets/hibernatewidget.h"
-#include "src/global_util/dbus/dbuslogin1manager.h"
 
 #include <QKeyEvent>
 #include <QDBusConnection>
@@ -72,9 +71,6 @@ private:
     LockContent *m_content;
     SessionBaseModel *m_model;
     HibernateWidget *Hibernate;
-    DBusLogin1Manager *m_login1Inter;
-    bool m_preparingSleep;
-    bool m_prePreparingSleep;
 };
 
 #endif // LOCKFRAME

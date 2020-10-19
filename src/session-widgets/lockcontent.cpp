@@ -31,7 +31,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     m_mediaWidget = nullptr;
 
     m_shutdownFrame->setModel(model);
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    restoreCenterContent();
 
     setCenterTopWidget(m_timeWidget);
     setLeftBottomWidget(m_logoWidget);
@@ -64,9 +64,8 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     //lixin
     //connect(m_userLoginInfo, &UserLoginInfo::requestAuthUser, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::requestAuthUser, this, &LockContent::requestAuthUser);
-    connect(m_userLoginInfo, &UserLoginInfo::hideUserFrameList, this, &LockContent::restoreMode);
+    connect(m_userLoginInfo, &UserLoginInfo::hideUserFrameList, this, &LockContent::restoreCenterContent);
     connect(m_userLoginInfo, &UserLoginInfo::requestSwitchUser, this, &LockContent::requestSwitchToUser);
-    connect(m_userLoginInfo, &UserLoginInfo::switchToCurrentUser, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::requestSetLayout, this, &LockContent::requestSetLayout);
     connect(m_userLoginInfo, &UserLoginInfo::changePasswordFinished, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::unlockActionFinish, this, [&]{
@@ -87,7 +86,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
     connect(model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
 
-    //在锁屏显示时，启动onborad进程，锁屏结束时结束onboard进程
     auto initVirtualKB = [&](bool hasvirtualkb) {
         if (hasvirtualkb && !m_virtualKB) {
             connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {
@@ -95,10 +93,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
                 m_controlWidget->setVirtualKBVisible(true);
             }, Qt::QueuedConnection);
             VirtualKBInstance::Instance().init();
-        } else {
-            VirtualKBInstance::Instance().stopVirtualKBProcess();
-            m_virtualKB = nullptr;
-            m_controlWidget->setVirtualKBVisible(false);
         }
     };
 
@@ -106,11 +100,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::onUserListChanged, this, &LockContent::onUserListChanged);
     connect(model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
     connect(model, &SessionBaseModel::authFinished, this, &LockContent::restoreMode);
-    connect(model, &SessionBaseModel::switchUserFinished, this, [ = ] {
-        QTimer::singleShot(100, this, [ = ] {
-            emit LockContent::restoreMode();
-        });
-    });
     connect(m_imageBlurInter, &ImageBlur::BlurDone, this, &LockContent::onBlurDone);
 
     QTimer::singleShot(0, this, [ = ] {

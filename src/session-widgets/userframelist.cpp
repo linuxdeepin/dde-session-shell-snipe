@@ -128,6 +128,12 @@ void UserFrameList::onUserClicked()
     UserLoginWidget *widget = static_cast<UserLoginWidget *>(sender());
     if (!widget) return;
 
+    // 触屏用户窗口被点击时，响应点击处理，同mouseReleaseEvent
+    if (isVisible()) {
+        emit clicked();
+        hide();
+    }
+
     currentSelectedUser = widget;
     emit requestSwitchUser(m_model->findUserByUid(widget->uid()));
 }
