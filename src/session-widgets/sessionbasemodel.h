@@ -130,7 +130,7 @@ signals:
 private:
     com::deepin::SessionManager *m_sessionManagerInter;
 
-    bool m_hasVirtualKB;
+    bool m_hasVirtualKB = false;
     bool m_hasSwap;
     bool m_isShow;
     bool m_isServerModel;

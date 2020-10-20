@@ -24,6 +24,7 @@ VirtualKBInstance::~VirtualKBInstance()
 
 void VirtualKBInstance::init()
 {
+    qInfo() << "VirtualKBInstance::init";
     if (m_virtualKBWidget) {
         emit initFinished();
         return;
@@ -31,9 +32,13 @@ void VirtualKBInstance::init()
 
     //初始化启动onborad进程
     if (!m_virtualKBProcess) {
+        qInfo() << "create QProcess";
         m_virtualKBProcess = new QProcess(this);
 
         connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, [ = ]{
+
+            qInfo() << "read All Standard Output";
+
             //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
             QByteArray output = m_virtualKBProcess->readAllStandardOutput();
 
@@ -52,6 +57,7 @@ void VirtualKBInstance::init()
         });
         connect(m_virtualKBProcess, SIGNAL(finished(int)), this, SLOT(onVirtualKBProcessFinished(int)));
 
+        qInfo() << "start onboard";
         m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small");
     }
 }
