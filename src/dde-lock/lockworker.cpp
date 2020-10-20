@@ -188,6 +188,7 @@ void LockWorker::onDisplayErrorMsg(const QString &msg)
 
 void LockWorker::onDisplayTextInfo(const QString &msg)
 {
+    m_authenticating = false;
     emit m_model->authFaildMessage(msg);
 }
 

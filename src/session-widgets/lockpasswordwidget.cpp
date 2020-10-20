@@ -36,7 +36,7 @@ void LockPasswordWidget::paintEvent(QPaintEvent *event)
     painter.setRenderHint(QPainter::HighQualityAntialiasing);
 
     QFont font;
-    font.setWordSpacing(-2);
+    font.setWordSpacing(0);
     painter.setFont(font);
     painter.setBrush(Qt::white);
     painter.setPen(Qt::NoPen);

@@ -41,8 +41,9 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
 
 void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
-    LockContent::onCurrentUserChanged(user);
+    if (user.get() == nullptr) return;
 
+    LockContent::onCurrentUserChanged(user);
     m_sessionFrame->switchToUser(user->name());
 }
 

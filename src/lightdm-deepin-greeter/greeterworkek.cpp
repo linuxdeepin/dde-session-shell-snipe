@@ -38,7 +38,6 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     , m_AuthenticateInter(new Authenticate(AuthenticateService,
                                          "/com/deepin/daemon/Authenticate",
                                          QDBusConnection::systemBus(), this))
-    , m_isThumbAuth(false)
     , m_authenticating(false)
     , m_password(QString())
 {
@@ -173,6 +172,7 @@ void GreeterWorkek::authUser(const QString &password)
     else {
         if (m_greeter->inAuthentication()) {
             m_greeter->respond(password);
+            m_password.clear();
         }
         else {
             m_greeter->authenticate(user->name());
@@ -255,13 +255,17 @@ void GreeterWorkek::prompt(QString text, QLightDM::Greeter::PromptType type)
 {
     // Don't show password prompt from standard pam modules since
     // we'll provide our own prompt or just not.
+    qDebug() << "pam prompt: " << text << type;
+
     const QString msg = text.simplified() == "Password:" ? "" : text;
 
     switch (type) {
     case QLightDM::Greeter::PromptTypeSecret:
-        if (m_isThumbAuth || m_password.isEmpty()) break;
+        m_authenticating = false;
 
-        if (msg.isEmpty()) {
+        if (msg.isEmpty()) break;
+
+        if (!m_password.isEmpty()) {
             m_greeter->respond(m_password);
         } else {
             emit m_model->authFaildMessage(msg);
@@ -278,23 +282,9 @@ void GreeterWorkek::message(QString text, QLightDM::Greeter::MessageType type)
 {
     qDebug() << "pam message: " << text << type;
 
-    if (text == "Verification timed out") {
-        m_isThumbAuth = true;
-
-        //V20版本新需求：若用户输入了密码，当指纹解锁超时，自动校验一次密码登录
-        if (!m_password.isEmpty()) {
-            QTimer::singleShot(300, this, [ = ] {
-                m_greeter->respond(m_password);
-            });
-        }
-
-        return;
-    }
-
     switch (type) {
     case QLightDM::Greeter::MessageTypeInfo:
-        if (m_isThumbAuth) break;
-
+        qDebug() << Q_FUNC_INFO << "lightdm greeter message type info: " << text.toUtf8() << QString(dgettext("fprintd", text.toUtf8()));
         emit m_model->authFaildMessage(QString(dgettext("fprintd", text.toUtf8())));
         break;
 
@@ -382,6 +372,8 @@ void GreeterWorkek::recoveryUserKBState(std::shared_ptr<User> user)
     //    PowerInter powerInter("com.deepin.system.Power", "/com/deepin/system/Power", QDBusConnection::systemBus(), this);
     //    const BatteryPresentInfo info = powerInter.batteryIsPresent();
     //    const bool defaultValue = !info.values().first();
+    if (user.get() == nullptr) return;
+
     const bool enabled = UserNumlockSettings(user->name()).get(false);
 
     qDebug() << "restore numlock status to " << enabled;

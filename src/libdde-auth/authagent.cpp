@@ -96,6 +96,7 @@ int AuthAgent::pamConversation(int num_msg, const struct pam_message **msg,
 
         case PAM_PROMPT_ECHO_OFF: {
             while(app_ptr->m_isCondition) sleep(1);
+            app_ptr->m_isCondition = true;
 
             if (!QPointer<DeepinAuthFramework>(app_ptr->deepinAuth())) {
                 qDebug() << "pam: deepin auth framework is null";
