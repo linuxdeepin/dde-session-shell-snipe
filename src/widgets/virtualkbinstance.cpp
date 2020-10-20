@@ -17,6 +17,11 @@ QWidget *VirtualKBInstance::virtualKBWidget() {
     return m_virtualKBWidget;
 }
 
+VirtualKBInstance::~VirtualKBInstance()
+{
+    stopVirtualKBProcess();
+}
+
 void VirtualKBInstance::init()
 {
     if (m_virtualKBWidget) {
@@ -24,26 +29,40 @@ void VirtualKBInstance::init()
         return;
     }
 
-    QProcess * p = new QProcess(this);
+    //初始化启动onborad进程
+    if (!m_virtualKBProcess) {
+        m_virtualKBProcess = new QProcess(this);
 
-    connect(p, &QProcess::readyReadStandardOutput, [this, p] {
-        QByteArray output = p->readAllStandardOutput();
+        connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, [ = ]{
+            //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
+            QByteArray output = m_virtualKBProcess->readAllStandardOutput();
 
-        if (output.isEmpty()) return;
+            if (output.isEmpty()) return;
 
-        int xid = atoi(output.trimmed().toStdString().c_str());
+            int xid = atoi(output.trimmed().toStdString().c_str());
 
-        QWindow * w = QWindow::fromWinId(xid);
-        m_virtualKBWidget = QWidget::createWindowContainer(w);
-        m_virtualKBWidget->setFixedSize(600, 200);
-        m_virtualKBWidget->hide();
+            QWindow * w = QWindow::fromWinId(xid);
+            m_virtualKBWidget = QWidget::createWindowContainer(w);
+            m_virtualKBWidget->setFixedSize(600, 200);
+            m_virtualKBWidget->hide();
 
-        QTimer::singleShot(300, [=] {
-            emit initFinished();
+            QTimer::singleShot(300, [=] {
+                emit initFinished();
+            });
         });
-    });
+        connect(m_virtualKBProcess, SIGNAL(finished(int)), this, SLOT(onVirtualKBProcessFinished(int)));
 
-    p->start("onboard", QStringList() << "-e" << "--layout" << "Small");
+        m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small");
+    }
+}
+
+void VirtualKBInstance::stopVirtualKBProcess()
+{
+    //结束onborad进程
+    if (m_virtualKBProcess) {
+        m_virtualKBProcess->close();
+        m_virtualKBWidget = nullptr;
+    }
 }
 
 bool VirtualKBInstance::eventFilter(QObject *watched, QEvent *event)
@@ -60,4 +79,10 @@ VirtualKBInstance::VirtualKBInstance(QObject *parent)
     : QObject(parent)
     , m_virtualKBWidget(nullptr)
 {
+}
+
+void VirtualKBInstance::onVirtualKBProcessFinished(int exitCode)
+{
+    Q_UNUSED(exitCode);
+    m_virtualKBProcess = nullptr;
 }

@@ -148,9 +148,17 @@ bool LockFrame::handlePoweroffKey()
 {
     QDBusInterface powerInter("com.deepin.daemon.Power","/com/deepin/daemon/Power","com.deepin.daemon.Power");
     if (!powerInter.isValid()) {
+        qDebug() << "powerInter is not valid";
         return false;
     }
-    int action = powerInter.property("LinePowerPressPowerBtnAction").toInt();
+    bool isBattery = powerInter.property("OnBattery").toBool();
+    int action = 0;
+    if (isBattery) {
+        action = powerInter.property("BatteryPressPowerBtnAction").toInt();
+    } else {
+        action = powerInter.property("LinePowerPressPowerBtnAction").toInt();
+    }
+    qDebug() << "battery is: " << isBattery << "," << action;
     // 需要特殊处理：关机(0)和无任何操作(4)
     if (action == 0) {
         m_model->setPowerAction(SessionBaseModel::PowerAction::RequireShutdown);

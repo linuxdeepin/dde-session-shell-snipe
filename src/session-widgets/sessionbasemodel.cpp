@@ -194,6 +194,13 @@ void SessionBaseModel::setIsShow(bool isShow)
 #endif
 
     emit visibleChanged(m_isShow);
+
+    //锁屏显示时，加载初始化屏幕键盘onboard进程，锁屏完成后结束onboard进程
+    if (m_isShow) {
+        setHasVirtualKB(QProcess::execute("which", QStringList() << "onboard") == 0);
+    } else {
+        setHasVirtualKB(false);
+    }
 }
 
 void SessionBaseModel::setCanSleep(bool canSleep)
