@@ -37,6 +37,9 @@
 LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     : FullscreenBackground(parent)
     , m_model(model)
+    , m_login1Inter(new DBusLogin1Manager("org.freedesktop.login1", "/org/freedesktop/login1", QDBusConnection::systemBus(), this))
+    , m_preparingSleep(false)
+    , m_prePreparingSleep(false)
 {
     qDebug() << "LockFrame geometry:" << geometry();
 
@@ -74,6 +77,10 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::authFinished, this, [ = ](bool success){
         qDebug() << "SessionBaseModel::authFinished -- success status : " << success;
         m_content->beforeUnlockAction(success);
+    });
+    connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [this](bool isSleep){
+        m_prePreparingSleep = m_preparingSleep;
+        m_preparingSleep = isSleep;
     });
 }
 
@@ -151,7 +158,10 @@ bool LockFrame::handlePoweroffKey()
         m_content->pushConfirmFrame();
         return true;
     } else if (action == 4) {
-        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
+        // 需要同时检测两个值
+        if (!m_prePreparingSleep && !m_preparingSleep) {
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
+        }
         return true;
     }
     return false;

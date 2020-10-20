@@ -93,12 +93,24 @@ void ContentWidget::showEvent(QShowEvent *event)
 {
     QFrame::showEvent(event);
 
-    DDBusSender()
-    .service("com.deepin.dde.Launcher")
-    .interface("com.deepin.dde.Launcher")
-    .path("/com/deepin/dde/Launcher")
-    .method("Hide")
-    .call();
+    QProcess process;
+    process.start("/usr/bin/bash", QStringList() << "-c" << "ps -ef|grep dde-launcher");
+    process.waitForFinished();
+
+    QByteArray outbyte = process.readAllStandardOutput();
+    QByteArray outerror = process.readAllStandardError();
+
+    QString outstr(outbyte);
+
+    //  当启动器有进程时调用Hide方法隐藏启动器
+    if (outerror.isEmpty() && outstr.contains("/usr/bin/dde-launcher")) {
+        DDBusSender()
+        .service("com.deepin.dde.Launcher")
+        .interface("com.deepin.dde.Launcher")
+        .path("/com/deepin/dde/Launcher")
+        .method("Hide")
+        .call();
+    }
 
     // hide dde-control-center
     if (m_controlCenterInter->isValid())

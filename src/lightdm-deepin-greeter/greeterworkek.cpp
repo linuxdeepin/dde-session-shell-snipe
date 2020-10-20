@@ -189,6 +189,9 @@ void GreeterWorkek::onUserAdded(const QString &user)
     if (m_model->currentUser().get() == nullptr) {
         if (m_model->userList().isEmpty() || m_model->userList().first()->type() == User::ADDomain) {
             m_model->setCurrentUser(user_ptr);
+
+            if (m_model->currentType() == SessionBaseModel::AuthType::LightdmType)
+                userAuthForLightdm(user_ptr);
         }
     }
 
