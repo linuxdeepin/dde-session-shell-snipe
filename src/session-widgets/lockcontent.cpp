@@ -87,7 +87,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
     connect(model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
 
-    //在锁屏显示时，启动onborad进程，锁屏结束时结束onboard进程
     auto initVirtualKB = [&](bool hasvirtualkb) {
         if (hasvirtualkb && !m_virtualKB) {
             connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {
@@ -95,10 +94,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
                 m_controlWidget->setVirtualKBVisible(true);
             }, Qt::QueuedConnection);
             VirtualKBInstance::Instance().init();
-        } else {
-            VirtualKBInstance::Instance().stopVirtualKBProcess();
-            m_virtualKB = nullptr;
-            m_controlWidget->setVirtualKBVisible(false);
         }
     };
 
