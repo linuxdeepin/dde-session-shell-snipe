@@ -51,7 +51,6 @@ protected:
     bool isLogined(uint uid);
     void checkConfig();
     void checkPowerInfo();
-    void checkVirtualKB();
     void checkSwap();
     bool isDeepin();
     QVariant getGSettings(const QString& node, const QString& key);

@@ -116,7 +116,6 @@ void AuthInterface::initData()
     onLastLogoutUserChanged(m_loginedInter->lastLogoutUser());
     checkConfig();
     checkPowerInfo();
-    checkVirtualKB();
 }
 
 void AuthInterface::initDBus()
@@ -274,11 +273,6 @@ void AuthInterface::checkPowerInfo()
     } else {
         m_model->setHasSwap(false);
     }
-}
-
-void AuthInterface::checkVirtualKB()
-{
-    m_model->setHasVirtualKB(QProcess::execute("which", QStringList() << "onboard") == 0);
 }
 
 void AuthInterface::checkSwap()

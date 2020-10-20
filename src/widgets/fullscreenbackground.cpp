@@ -263,9 +263,6 @@ void FullscreenBackground::keyPressEvent(QKeyEvent *e)
 
 void FullscreenBackground::showEvent(QShowEvent *event)
 {
-    m_pixmapLoaded = true;
-    loadPixmap();
-
     if (QWindow *w = windowHandle()) {
         if (m_screen) {
             if (w->screen() != m_screen) {
@@ -375,6 +372,7 @@ void FullscreenBackground::loadPixmap()
         m_fakeBackground = getPixmapByPath(m_fakePath);
         m_fakeBackgroundCache = pixmapHandle(m_fakeBackground);
     }
+    m_pixmapLoaded = true;
 }
 
 void FullscreenBackground::releasePixmap()
