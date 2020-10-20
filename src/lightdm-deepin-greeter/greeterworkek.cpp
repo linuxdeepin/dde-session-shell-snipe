@@ -238,12 +238,12 @@ void GreeterWorkek::onCurrentUserChanged(const QString &user)
 
     for (std::shared_ptr<User> user_ptr : m_model->userList()) {
         if (!user_ptr->isLogin() && user_ptr->uid() == m_currentUserUid) {
-            emit m_model->switchUserFinished();
             m_model->setCurrentUser(user_ptr);
             userAuthForLightdm(user_ptr);
             break;
         }
     }
+    emit m_model->switchUserFinished();
 }
 
 void GreeterWorkek::userAuthForLightdm(std::shared_ptr<User> user)

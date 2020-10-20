@@ -190,6 +190,8 @@ void UserLoginInfo::receiveSwitchUser(std::shared_ptr<User> user)
         m_userLoginWidget->clearPassWord();
 
         abortConfirm(false);
+    } else {
+        emit switchToCurrentUser();
     }
 
     emit requestSwitchUser(user);
