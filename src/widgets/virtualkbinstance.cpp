@@ -31,12 +31,21 @@ void VirtualKBInstance::init()
     }
 
     //初始化启动onborad进程
-    if (!m_virtualKBProcess) {
-        qInfo() << "create QProcess";
+    if (!m_virtualKBWidget) {
+
         m_virtualKBProcess = new QProcess(this);
+
+        qInfo() << "create QProcess" << m_virtualKBProcess->processId();
 
         connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, this, &VirtualKBInstance::onReadyReadStandardOutput);
         connect(m_virtualKBProcess, SIGNAL(finished(int)), this, SLOT(onVirtualKBProcessFinished(int)));
+
+        connect(m_virtualKBProcess, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
+            qInfo() << "create QProcess error:" << error;
+            m_virtualKBProcess->kill();
+            delete m_virtualKBProcess;
+            m_virtualKBProcess = nullptr;
+        });
 
         qInfo() << "start onboard";
         m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small");
@@ -102,7 +111,7 @@ void VirtualKBInstance::onReadyReadStandardOutput()
 
     qInfo() << "read All Standard Output initFinished" << w;
 
-    QTimer::singleShot(300, [=] {
+    QTimer::singleShot(600, [=] {
         emit initFinished();
     });
 }
