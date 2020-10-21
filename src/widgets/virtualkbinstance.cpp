@@ -35,37 +35,7 @@ void VirtualKBInstance::init()
         qInfo() << "create QProcess";
         m_virtualKBProcess = new QProcess(this);
 
-        connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, [ = ]{
-
-            qInfo() << "read All Standard Output 111111";
-
-            //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
-            QByteArray output = m_virtualKBProcess->readAllStandardOutput();
-
-            if (output.isEmpty()) return;
-
-            int xid = atoi(output.trimmed().toStdString().c_str());
-
-            qInfo() << "read All Standard Output 2222" << xid;
-
-            QWindow * w = QWindow::fromWinId(xid);
-
-            qInfo() << "read All Standard Output 3333" << w;
-
-            m_virtualKBWidget = QWidget::createWindowContainer(w);
-            if (!m_virtualKBWidget) {
-                return;
-            }
-
-            m_virtualKBWidget->setFixedSize(600, 200);
-            m_virtualKBWidget->hide();
-
-            qInfo() << "read All Standard Output initFinished" << w;
-
-            QTimer::singleShot(300, [=] {
-                emit initFinished();
-            });
-        });
+        connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, this, &VirtualKBInstance::onReadyReadStandardOutput);
         connect(m_virtualKBProcess, SIGNAL(finished(int)), this, SLOT(onVirtualKBProcessFinished(int)));
 
         qInfo() << "start onboard";
@@ -102,4 +72,36 @@ void VirtualKBInstance::onVirtualKBProcessFinished(int exitCode)
 {
     Q_UNUSED(exitCode);
     m_virtualKBProcess = nullptr;
+}
+
+void VirtualKBInstance::onReadyReadStandardOutput()
+{
+    qInfo() << "read All Standard Output 111111";
+
+    //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
+    QByteArray output = m_virtualKBProcess->readAllStandardOutput();
+
+    if (output.isEmpty()) return;
+
+    int xid = atoi(output.trimmed().toStdString().c_str());
+
+    qInfo() << "read All Standard Output 2222" << xid;
+
+    QWindow * w = QWindow::fromWinId(xid);
+
+    qInfo() << "read All Standard Output 3333" << w;
+
+    m_virtualKBWidget = QWidget::createWindowContainer(w);
+    if (!m_virtualKBWidget) {
+        return;
+    }
+
+    m_virtualKBWidget->setFixedSize(600, 200);
+    m_virtualKBWidget->hide();
+
+    qInfo() << "read All Standard Output initFinished" << w;
+
+    QTimer::singleShot(300, [=] {
+        emit initFinished();
+    });
 }

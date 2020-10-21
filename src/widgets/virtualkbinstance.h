@@ -17,6 +17,7 @@ public:
 
 public slots:
     void onVirtualKBProcessFinished(int exitCode);
+    void onReadyReadStandardOutput();
 
 signals:
     void initFinished();
