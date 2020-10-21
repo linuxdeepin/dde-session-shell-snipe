@@ -366,7 +366,7 @@ void GreeterWorkek::authenticationComplete()
 
 void GreeterWorkek::saveNumlockStatus(std::shared_ptr<User> user, const bool &on)
 {
-    UserNumlockSettings(user->name()).set(on);
+    if (user != nullptr) {UserNumlockSettings(user->name()).set(on);}
 }
 
 void GreeterWorkek::recoveryUserKBState(std::shared_ptr<User> user)
