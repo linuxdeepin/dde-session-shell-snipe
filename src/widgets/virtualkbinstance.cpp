@@ -47,7 +47,7 @@ void VirtualKBInstance::stopVirtualKBProcess()
 {
     //结束onborad进程
     if (m_virtualKBProcess) {
-        m_virtualKBProcess->close();
+        m_virtualKBProcess->terminate();
         m_virtualKBWidget = nullptr;
     }
 }
@@ -71,6 +71,7 @@ VirtualKBInstance::VirtualKBInstance(QObject *parent)
 void VirtualKBInstance::onVirtualKBProcessFinished(int exitCode)
 {
     Q_UNUSED(exitCode);
+    delete m_virtualKBProcess;
     m_virtualKBProcess = nullptr;
 }
 
