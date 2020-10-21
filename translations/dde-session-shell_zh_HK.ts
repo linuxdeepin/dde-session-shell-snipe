@@ -41,7 +41,7 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="445"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="593"/>
         <source>Shut down</source>
-        <translation>关机</translation>
+        <translation>關機</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="385"/>
@@ -68,7 +68,7 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="451"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="608"/>
         <source>Log out</source>
-        <translation>注销</translation>
+        <translation>註銷</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="446"/>
@@ -176,7 +176,7 @@
     <message>
         <location filename="../src/widgets/shutdownwidget.cpp" line="29"/>
         <source>Shut down</source>
-        <translation>关机</translation>
+        <translation>關機</translation>
     </message>
     <message>
         <location filename="../src/widgets/shutdownwidget.cpp" line="30"/>
@@ -220,7 +220,7 @@
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="163"/>
         <source>Repeat password</source>
-        <translation>重复密码</translation>
+        <translation>重複輸入密碼</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="322"/>
@@ -253,7 +253,7 @@
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="195"/>
         <source>Password</source>
-        <translation>密码</translation>
+        <translation>密碼</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="199"/>

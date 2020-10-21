@@ -4,7 +4,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="348"/>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation>Některé ze spuštěných aplikací brání vypnutí. Jeho vynucení může způsobit ztrátu dat.</translation>
+        <translation>Některé ze spuštěných programů brání vypnutí počítače. Jeho vynucení může způsobit ztrátu dat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="349"/>
@@ -13,27 +13,27 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="362"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="366"/>
         <source>To close the program, click Cancel, and then close the program.</source>
-        <translation>Pro zavření programu klikněte na Storno a potom program zavřete.</translation>
+        <translation>Pro zavření programu klepněte na Zrušit a potom program zavřete.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="353"/>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
-        <translation>Některé ze spuštěných aplikací brání v restartu. Jeho vynucení může způsobit ztrátu dat.</translation>
+        <translation>Některé ze spuštěných programů brání v restartování počítače. Jeho vynucení může způsobit ztrátu dat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="357"/>
         <source>The programs are preventing the computer from suspend, and forcing suspend may cause data loss.</source>
-        <translation>Některé ze spuštěných aplikací brání uspání do paměti. Jeho vynucení může způsobit ztrátu dat.</translation>
+        <translation>Některé ze spuštěných programů brání uspání do paměti. Jeho vynucení může způsobit ztrátu dat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="361"/>
         <source>The programs are preventing the computer from hibernate, and forcing hibernate may cause data loss.</source>
-        <translation>Některé ze spuštěných aplikací brání uspání na disk. Jeho vynucení může způsobit ztrátu dat.</translation>
+        <translation>Některé ze spuštěných programů brání uspání na disk. Jeho vynucení může způsobit ztrátu dat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="365"/>
         <source>The programs are preventing the computer from log out, and forcing log out may cause data loss.</source>
-        <translation>Některé ze spuštěných aplikací brání odhlášení. Jeho vynucení může způsobit ztrátu dat.</translation>
+        <translation>Některé ze spuštěných programů brání odhlášení. Jeho vynucení může způsobit ztrátu dat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="382"/>
@@ -119,7 +119,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/inhibitwarnview.cpp" line="90"/>
         <source>Cancel</source>
-        <translation>Storno</translation>
+        <translation>Zrušit</translation>
     </message>
 </context>
 <context>
@@ -158,7 +158,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/multiuserswarningview.cpp" line="45"/>
         <source>Cancel</source>
-        <translation>Storno</translation>
+        <translation>Zrušit</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/multiuserswarningview.cpp" line="129"/>
@@ -268,12 +268,12 @@
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="248"/>
         <source>Please enter the password</source>
-        <translation>Zadejte heslo prosím</translation>
+        <translation>Prosím, zadejte heslo</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/session-widgets/userloginwidget.cpp" line="328"/>
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Prosím zkuste znovu za %n minutu</numerusform><numerusform>Prosím zkuste znovu za %n minuty</numerusform><numerusform>Prosím zkuste znovu za %n minut</numerusform><numerusform>Prosím zkuste znovu za %n minuty</numerusform></translation>
+        <translation><numerusform>Prosím, zkuste znovu za %n minutu</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform><numerusform>Prosím, zkuste znovu za %n minut</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform></translation>
     </message>
 </context>
 </TS>

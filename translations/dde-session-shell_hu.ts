@@ -4,7 +4,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="348"/>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation>A futó programok megakadályozzák a számítógép leállítását, a kényszerített leállítás pedig adatvesztést okozhat.</translation>
+        <translation>A futó programok megakadályozzák a számítógép leállítását, és a kikapcsolás kényszerítése adatvesztést okozhat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="349"/>
@@ -13,27 +13,27 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="362"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="366"/>
         <source>To close the program, click Cancel, and then close the program.</source>
-        <translation>A program bezárásához kattintson a Törlés/Mégsem gombra és zárja be a programot.</translation>
+        <translation>A program bezárásához kattintson a Mégsem gombra, majd zárja be a programot.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="353"/>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
-        <translation>A futó programok megakadályozzák a számítógép újraindítását, a kényszerített újraindítás pedig adatvesztést okozhat.</translation>
+        <translation>A futó programok megakadályozzák a számítógép újraindítását, és az újraindítás kényszerítése adatvesztést okozhat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="357"/>
         <source>The programs are preventing the computer from suspend, and forcing suspend may cause data loss.</source>
-        <translation>A futó programok megakadályozzák a számítógép elaltatását, a kényszerített elaltatás pedig adatvesztést okozhat.</translation>
+        <translation>A futó programok megakadályozzák a számítógép felfüggesztését, és a felfüggesztés kényszerítése adatvesztést okozhat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="361"/>
         <source>The programs are preventing the computer from hibernate, and forcing hibernate may cause data loss.</source>
-        <translation>A futó programok megakadályozzák a számítógép hibernálását, a kényszerített hibernálás pedig adatvesztést okozhat.</translation>
+        <translation>A futó programok megakadályozzák a számítógép hibernálását, és a hibernálás kényszerítése adatvesztést okozhat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="365"/>
         <source>The programs are preventing the computer from log out, and forcing log out may cause data loss.</source>
-        <translation>A futó programok megakadályozzák a kijelentkezést, a kényszerített kijelentkezés pedig adatvesztést okozhat.</translation>
+        <translation>A futó programok megakadályozzák a számítógép kijelentkezését, és a kijelentkezés kényszerítése adatvesztést okozhat.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="382"/>
@@ -73,17 +73,17 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="446"/>
         <source>Are you sure you want to shut down?</source>
-        <translation>Biztosan le akarod állítani?</translation>
+        <translation>Biztosan le akarja állítani?</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="449"/>
         <source>Are you sure you want to reboot?</source>
-        <translation>Biztosan újra akarod indítani?</translation>
+        <translation>Biztosan újra akarja indítani?</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="452"/>
         <source>Are you sure you want to log out?</source>
-        <translation>Biztosan ki akarsz jelentkezni?</translation>
+        <translation>Biztosan ki akar jelentkezni?</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="605"/>
@@ -111,7 +111,7 @@
     <message>
         <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="331"/>
         <source>The account or password is not correct. Please enter again.</source>
-        <translation>A fióknév vagy a jelszó helytelen. Kérem, próbálja újra.</translation>
+        <translation>A fióknév vagy a jelszó helytelen. Kérjük próbálja újra.</translation>
     </message>
 </context>
 <context>
@@ -132,7 +132,7 @@
     <message>
         <location filename="../src/session-widgets/lockcontent.cpp" line="357"/>
         <source>Failed to lock screen</source>
-        <translation>Képernyő lezárása sikertelen</translation>
+        <translation>Képernyő zárolása sikertelen</translation>
     </message>
 </context>
 <context>
@@ -140,12 +140,12 @@
     <message>
         <location filename="../src/dde-lock/lockworker.cpp" line="229"/>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Ujjlenyomat azonosítás időtúllépése! Kérem, adja meg a jelszót</translation>
+        <translation>Ujjlenyomat azonosítás időtúllépése, kérjük adja meg a jelszót kézzel</translation>
     </message>
     <message>
         <location filename="../src/dde-lock/lockworker.cpp" line="247"/>
         <source>Failed to match fingerprint</source>
-        <translation>Ujjlenyomat nem egyezik</translation>
+        <translation>Ujjlenyomatok nem egyeznek</translation>
     </message>
     <message>
         <location filename="../src/dde-lock/lockworker.cpp" line="278"/>
@@ -163,12 +163,12 @@
     <message>
         <location filename="../src/dde-shutdown/view/multiuserswarningview.cpp" line="129"/>
         <source>The above users are still logged in and data will be lost due to shutdown, are you sure you want to shut down?</source>
-        <translation>A fenti felhasználók be vannak jelentkezve, ami leállításkor az  adatok elvesztéséhez vezethet. Biztosan le akarod állítani?</translation>
+        <translation>A fenti felhasználók be vannak jelentkezve, ami leállításkor az  adatok elvesztéséhez vezethet. Biztosan le akarja állítani?</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/multiuserswarningview.cpp" line="133"/>
         <source>The above users are still logged in and data will be lost due to reboot, are you sure you want to reboot?</source>
-        <translation>A fenti felhasználók be vannak jelentkezve, ami újraindításkor az adatok elvesztéséhez vezethet. Biztosan újra akarod indítani?</translation>
+        <translation>A fenti felhasználók be vannak jelentkezve, ami újraindításkor az adatok elvesztéséhez vezethet. Biztosan újra akarja indítani?</translation>
     </message>
 </context>
 <context>
@@ -202,7 +202,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/systemmonitor.cpp" line="45"/>
         <source>Start system monitor</source>
-        <translation>Rendszer monitor indítása</translation>
+        <translation>Rendszermonitor indítása</translation>
     </message>
 </context>
 <context>
@@ -210,7 +210,7 @@
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="149"/>
         <source>Password expired, please change</source>
-        <translation>Lejárt a jelszava, kérem változtassa meg</translation>
+        <translation>Jelszava lejárt, kérjük változtassa meg</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="153"/>
@@ -225,22 +225,22 @@
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="322"/>
         <source>Failed to change your password</source>
-        <translation>Nem sikerült megváltoztatni a jelszót</translation>
+        <translation>Nem sikerült megváltoztatni a jelszavát</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="336"/>
         <source>Password too weak</source>
-        <translation>Jelszó túl gyenge</translation>
+        <translation>A jelszó túl gyenge</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="344"/>
         <source>Please enter the new password</source>
-        <translation>Adj meg egy új jelszót</translation>
+        <translation>Adjon meg egy új jelszót</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="350"/>
         <source>Please repeat the new password</source>
-        <translation>Kérem ismételje meg az új jelszót</translation>
+        <translation>Kérjük ismételje meg az új jelszót</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="356"/>
@@ -258,17 +258,17 @@
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="199"/>
         <source>Account</source>
-        <translation>Fiók</translation>
+        <translation>Felhasználói fiók</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="241"/>
         <source>Please enter the account</source>
-        <translation>Kérem, írja be a fióknevet</translation>
+        <translation>Kérjük írja be a fióknevet</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="248"/>
         <source>Please enter the password</source>
-        <translation>Kérem, adja meg a jelszót</translation>
+        <translation>Kérjük adja meg a jelszót</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/session-widgets/userloginwidget.cpp" line="328"/>

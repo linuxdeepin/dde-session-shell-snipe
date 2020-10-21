@@ -273,7 +273,7 @@
     <message numerus="yes">
         <location filename="../src/session-widgets/userloginwidget.cpp" line="328"/>
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Torneu-ho a intentar d&apos;aquí a %n minut.</numerusform><numerusform>Torneu-ho a intentar d&apos;aquí a %n minuts.</numerusform></translation>
     </message>
 </context>
 </TS>

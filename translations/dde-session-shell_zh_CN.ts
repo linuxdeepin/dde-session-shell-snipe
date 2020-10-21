@@ -253,7 +253,7 @@
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="195"/>
         <source>Password</source>
-        <translation>请输入密码</translation>
+        <translation>密码</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userloginwidget.cpp" line="199"/>

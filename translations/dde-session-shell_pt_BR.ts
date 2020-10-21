@@ -220,7 +220,7 @@
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="163"/>
         <source>Repeat password</source>
-        <translation>Repita a senha</translation>
+        <translation>Repetir senha</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="322"/>
@@ -240,7 +240,7 @@
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="350"/>
         <source>Please repeat the new password</source>
-        <translation>Repita a nova senha</translation>
+        <translation>Confirmar a nova senha</translation>
     </message>
     <message>
         <location filename="../src/session-widgets/userexpiredwidget.cpp" line="356"/>

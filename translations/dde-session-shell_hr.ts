@@ -4,7 +4,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="348"/>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation type="unfinished"/>
+        <translation>Ovi programi sprečavaju isključivanje računala, a prisilno isključivanje može uzrokovati gubitak podataka. </translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="349"/>
@@ -18,7 +18,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="353"/>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
-        <translation type="unfinished"/>
+        <translation>Ovi programi sprečavaju ponovno pokretanje računala, a prisilno ponovno pokretanje može uzrokovati gubitak podataka.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="357"/>
@@ -33,7 +33,7 @@
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="365"/>
         <source>The programs are preventing the computer from log out, and forcing log out may cause data loss.</source>
-        <translation type="unfinished"/>
+        <translation>Ovi programi sprečavaju odjavu računala, a prisilno odjavljivanje može uzrokovati gubitak podataka.</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="382"/>

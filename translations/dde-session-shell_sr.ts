@@ -41,7 +41,7 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="445"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="593"/>
         <source>Shut down</source>
-        <translation>Искључивање</translation>
+        <translation>Искључи</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="385"/>
@@ -68,7 +68,7 @@
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="451"/>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="608"/>
         <source>Log out</source>
-        <translation>Одјављивање</translation>
+        <translation>Одјави се</translation>
     </message>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="446"/>
@@ -176,7 +176,7 @@
     <message>
         <location filename="../src/widgets/shutdownwidget.cpp" line="29"/>
         <source>Shut down</source>
-        <translation>Искључивање</translation>
+        <translation>Искључи</translation>
     </message>
     <message>
         <location filename="../src/widgets/shutdownwidget.cpp" line="30"/>
@@ -273,7 +273,7 @@
     <message numerus="yes">
         <location filename="../src/session-widgets/userloginwidget.cpp" line="328"/>
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Покушајте поново за %n минут</numerusform><numerusform>Покушајте поново за %n минута</numerusform><numerusform>Покушајте поново за %n минут(а)</numerusform></translation>
     </message>
 </context>
 </TS>
