@@ -45,8 +45,13 @@ signals:
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetLayout(std::shared_ptr<User> user, const QString &layout);
 
+protected:
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
+
 private:
     LoginContent *m_loginContent;
+    SessionBaseModel *m_model;
 };
 
 #endif // LOGINWINDOW_H

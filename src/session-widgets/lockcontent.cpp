@@ -102,7 +102,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
                 }
                 qInfo() << "VirtualKBInstance::initFinished , setVirtualKBVisible" << m_virtualKB;
             }, Qt::QueuedConnection);
-            VirtualKBInstance::Instance().init(this);
+            VirtualKBInstance::Instance().init();
         } else {
             VirtualKBInstance::Instance().stopVirtualKBProcess();
             m_virtualKB = nullptr;
@@ -110,7 +110,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
         }
     };
 
-    connect(model, &SessionBaseModel::hasVirtualKBChanged, this, initVirtualKB, Qt::QueuedConnection);
+    connect(model, &SessionBaseModel::hasVirtualKBChanged, this, initVirtualKB);
     connect(model, &SessionBaseModel::onUserListChanged, this, &LockContent::onUserListChanged);
     connect(model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
     connect(model, &SessionBaseModel::authFinished, this, &LockContent::restoreMode);

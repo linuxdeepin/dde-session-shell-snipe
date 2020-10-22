@@ -22,7 +22,7 @@ VirtualKBInstance::~VirtualKBInstance()
     stopVirtualKBProcess();
 }
 
-void VirtualKBInstance::init(QWidget *parent)
+void VirtualKBInstance::init()
 {
     qInfo() << "VirtualKBInstance::init";
     if (m_virtualKBWidget) {
@@ -34,54 +34,26 @@ void VirtualKBInstance::init(QWidget *parent)
     if (!m_virtualKBProcess) {
         m_virtualKBProcess = new QProcess(this);
 
-        qInfo() << "create QProcess" << m_virtualKBProcess->processId();
-
-        connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, [=] {
-            qInfo() << "read All Standard Output 111111";
+        connect(m_virtualKBProcess, &QProcess::readyReadStandardOutput, [ = ]{
+            //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
             QByteArray output = m_virtualKBProcess->readAllStandardOutput();
+
             if (output.isEmpty()) return;
 
             int xid = atoi(output.trimmed().toStdString().c_str());
-
-            qInfo() << "read All Standard Output 2222" << xid;
-
             QWindow * w = QWindow::fromWinId(xid);
-
-            qInfo() << "read All Standard Output 3333" << w;
-
-            //启动完成onborad进程后，获取onborad主界面，将主界面显示在锁屏界面上
-            m_virtualKBWidget = QWidget::createWindowContainer(w, nullptr, Qt::FramelessWindowHint);
-            if (!m_virtualKBWidget) {
-                return;
-            }
-
-            m_virtualKBWidget->installEventFilter(this);
+            m_virtualKBWidget = QWidget::createWindowContainer(w);
             m_virtualKBWidget->setFixedSize(600, 200);
-            m_virtualKBWidget->setParent(parent);
-            m_virtualKBWidget->raise();
+            m_virtualKBWidget->hide();
 
-            qInfo() << "read All Standard Output initFinished" << w;
-
-            QTimer::singleShot(500, [=] {
+            QTimer::singleShot(300, [=] {
                 emit initFinished();
             });
-        } );
+        });
 
         //进程正常结束时释放进程
         connect(m_virtualKBProcess, SIGNAL(finished(int)), this, SLOT(onVirtualKBProcessFinished(int)));
-
-        //进程异常时,直接杀掉进程
-        connect(m_virtualKBProcess, &QProcess::errorOccurred, [&](QProcess::ProcessError error) {
-            qInfo() << "create QProcess error:" << error;
-            m_virtualKBProcess->kill();
-            delete m_virtualKBProcess;
-            m_virtualKBProcess = nullptr;
-            m_virtualKBWidget = nullptr;
-            emit initFinished();
-        });
-
-        qInfo() << "start onboard";
-        m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small");
+        m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small" << "--size" << "60x5" << "-a");
     }
 }
 

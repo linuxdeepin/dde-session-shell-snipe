@@ -159,6 +159,17 @@ void SessionBaseModel::setCurrentModeState(const ModeStatus &currentModeState)
     emit onStatusChanged(currentModeState);
 }
 
+void SessionBaseModel::setHasVirtualKB(bool hasVirtualKB)
+{
+    //锁屏显示时，加载初始化屏幕键盘onboard进程，锁屏完成后结束onboard进程
+    if (hasVirtualKB){
+        bool b = QProcess::execute("which", QStringList() << "onboard") == 0;
+        emit hasVirtualKBChanged(b);
+    } else {
+        emit hasVirtualKBChanged(false);
+    }
+}
+
 void SessionBaseModel::setHasSwap(bool hasSwap) {
     if (m_hasSwap == hasSwap) return;
 
@@ -184,13 +195,8 @@ void SessionBaseModel::setIsShow(bool isShow)
     }
 #endif
 
-    //锁屏显示时，加载初始化屏幕键盘onboard进程，锁屏完成后结束onboard进程
-    if (isShow){
-        bool hasVirtualKB = QProcess::execute("which", QStringList() << "onboard") == 0;
-        emit hasVirtualKBChanged(hasVirtualKB);
-    } else {
-        emit hasVirtualKBChanged(false);
-    }
+    //根据界面显示还是隐藏设置是否加载虚拟键盘
+    setHasVirtualKB(m_isShow);
 
     emit visibleChanged(m_isShow);
 }

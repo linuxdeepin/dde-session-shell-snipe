@@ -12,7 +12,7 @@ public:
     QWidget *virtualKBWidget();
     ~VirtualKBInstance();
 
-    void init(QWidget *parent);
+    void init();
     void stopVirtualKBProcess();
 
 public slots:
