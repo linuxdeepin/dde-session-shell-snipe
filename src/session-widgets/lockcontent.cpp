@@ -88,9 +88,9 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
 
     //在锁屏显示时，启动onborad进程，锁屏结束时结束onboard进程
-    auto initVirtualKB = [&](bool hasvirtualkb) {
-        qInfo() << "initVirtualKB" << hasvirtualkb;
-        if (hasvirtualkb && !m_virtualKB) {
+    auto initVirtualKB = [&](bool hasVirtualkb) {
+        qInfo() << "initVirtualKB" << hasVirtualkb;
+        if (hasVirtualkb && !m_virtualKB) {
             connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {
                 qInfo() << "VirtualKBInstance::initFinished";
                 m_virtualKB = VirtualKBInstance::Instance().virtualKBWidget();
@@ -123,7 +123,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
     QTimer::singleShot(0, this, [ = ] {
         onCurrentUserChanged(model->currentUser());
-        initVirtualKB(model->hasVirtualKB());
         onUserListChanged(model->isServerModel() ? model->logindUser() : model->userList());
     });
 }

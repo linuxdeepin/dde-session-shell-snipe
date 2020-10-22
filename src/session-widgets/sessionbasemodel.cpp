@@ -159,13 +159,6 @@ void SessionBaseModel::setCurrentModeState(const ModeStatus &currentModeState)
     emit onStatusChanged(currentModeState);
 }
 
-void SessionBaseModel::setHasVirtualKB(bool hasVirtualKB)
-{
-    if (m_hasVirtualKB == hasVirtualKB) return;
-
-    m_hasVirtualKB = hasVirtualKB;
-}
-
 void SessionBaseModel::setHasSwap(bool hasSwap) {
     if (m_hasSwap == hasSwap) return;
 
@@ -190,8 +183,14 @@ void SessionBaseModel::setIsShow(bool isShow)
         m_sessionManagerInter->SetLocked(m_isShow);
     }
 #endif
+
     //锁屏显示时，加载初始化屏幕键盘onboard进程，锁屏完成后结束onboard进程
-    emit hasVirtualKBChanged(isShow & m_hasVirtualKB);
+    if (isShow){
+        bool hasVirtualKB = QProcess::execute("which", QStringList() << "onboard") == 0;
+        emit hasVirtualKBChanged(hasVirtualKB);
+    } else {
+        emit hasVirtualKBChanged(false);
+    }
 
     emit visibleChanged(m_isShow);
 }
