@@ -12,12 +12,11 @@ public:
     QWidget *virtualKBWidget();
     ~VirtualKBInstance();
 
-    void init();
+    void init(QWidget *parent);
     void stopVirtualKBProcess();
 
 public slots:
     void onVirtualKBProcessFinished(int exitCode);
-    void onReadyReadStandardOutput();
 
 signals:
     void initFinished();
