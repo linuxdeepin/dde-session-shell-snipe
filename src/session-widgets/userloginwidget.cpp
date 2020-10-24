@@ -95,7 +95,7 @@ void UserLoginWidget::setFaildMessage(const QString &message, SessionBaseModel::
 {
     qDebug() << "Failed message:" << message;
     //对lightdm发送的message进行部分规避，待后续修改
-    if (message.contains("seconds left to unlock", Qt::CaseSensitivity::CaseInsensitive)) return;
+    if (message.contains("seconds left to unlock") || message.contains("Account temporarily locked due to 3 failed logins")) return;
     if (m_isLock && !message.isEmpty()) {
         m_lockPasswordWidget->setMessage(message);
         m_accountEdit->lineEdit()->setEnabled(false);
@@ -412,11 +412,14 @@ void UserLoginWidget::hideEvent(QHideEvent *event)
 
 bool UserLoginWidget::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *key_event = static_cast<QKeyEvent *>(event);
-        if (key_event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
-            if ((key_event->modifiers() & Qt::ControlModifier) && key_event->key() == Qt::Key_A) return false;
-            return true;
+    if (watched == m_passwordEdit->lineEdit()) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *key_event = static_cast<QKeyEvent *>(event);
+            if (key_event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
+                if ((key_event->modifiers() & Qt::ControlModifier) && (key_event->key() == Qt::Key_A))
+                    return false;
+                return true;
+            }
         }
     }
 
@@ -688,7 +691,7 @@ void UserLoginWidget::setSelected(bool isSelected)
     update();
 }
 
-void UserLoginWidget::updateClipPath() 
+void UserLoginWidget::updateClipPath()
 {
     if (!m_kbLayoutClip)
         return;
