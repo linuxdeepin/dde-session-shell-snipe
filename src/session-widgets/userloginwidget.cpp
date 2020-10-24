@@ -93,6 +93,9 @@ void UserLoginWidget::resetAllState()
 //密码连续输入错误5次，设置提示信息
 void UserLoginWidget::setFaildMessage(const QString &message, SessionBaseModel::AuthFaildType type)
 {
+    qDebug() << "Failed message:" << message;
+    //对lightdm发送的message进行部分规避，待后续修改
+    if (message.contains("seconds left to unlock", Qt::CaseSensitivity::CaseInsensitive)) return;
     if (m_isLock && !message.isEmpty()) {
         m_lockPasswordWidget->setMessage(message);
         m_accountEdit->lineEdit()->setEnabled(false);
@@ -526,6 +529,7 @@ void UserLoginWidget::initConnect()
         FrameDataBind::Instance()->updateValue("UserLoginPassword", value);
     });
     connect(m_passwordEdit, &DPasswordEditEx::returnPressed, this, [ = ] {
+        qDebug() << "Press return to auth accounts and password";
         const QString account = m_accountEdit->text();
         const QString passwd = m_passwordEdit->text();
 
