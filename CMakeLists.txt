@@ -307,7 +307,6 @@ add_executable(
     ${SHUTDOWN_SRCS}
     ./src/app/dde-shutdown.cpp
     ${QRCS}
-    ./src/dde-shutdown/dde-shutdown.pro
     ./src/dde-shutdown/image.qrc
     ./src/dde-shutdown/qss.qrc
 )
