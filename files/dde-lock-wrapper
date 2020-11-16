@@ -1,4 +1,0 @@
-#!/bin/bash
-# this will launch dde-lock
-
-qdbus --literal com.deepin.SessionManager /com/deepin/StartManager com.deepin.StartManager.Launch /usr/share/applications/dde-lock.desktop

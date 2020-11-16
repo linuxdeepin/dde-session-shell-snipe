@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
     cmdParser.addOption(backend);
     QCommandLineOption switchUser(QStringList() << "s" << "switch", "show user switch");
     cmdParser.addOption(switchUser);
+
     QStringList xddd = app->arguments();
     cmdParser.process(*app);
 

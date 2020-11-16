@@ -97,9 +97,11 @@ int main(int argc, char *argv[])
     app->installTranslator(&translator);
 
     QCommandLineOption showOption(QStringList() << "s" << "show", "show dde-shutdown(hide for default).");
+    QCommandLineOption backend(QStringList() << "d" << "daemon", "start to daemon mode");
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addOption(showOption);
+    parser.addOption(backend);
     parser.process(*app);
 
     QDBusConnection session = QDBusConnection::sessionBus();
