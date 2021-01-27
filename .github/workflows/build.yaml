@@ -3,27 +3,20 @@ name: CI Build
 on:
   push:
     branches:
-      - uos
+      - master
 
   pull_request:
     branches:
-      - uos
+      - master
 
 jobs:
   archlinux:
     name: Archlinux Build Check
     runs-on: ubuntu-latest
-    container: docker.io/library/archlinux:latest
     steps:
       - name: Checkout branch
         uses: actions/checkout@v2
-      - name: Refresh pacman repository
-        run: pacman -Syy
-      - name: Install build dependencies
-        run: pacman -S --noconfirm base-devel cmake ninja qt5-tools liblightdm-qt5 libxrandr libxcursor deepin-gettext-tools deepin-qt-dbus-factory dtkwidget
-      - name: CMake & Make
-        run: |
-          mkdir build
-          cd build
-          cmake ../ -G Ninja
-          ninja -j$(nproc)
+      - name: build
+        uses: justforlxz/deepin-git-action@v1
+        with:
+          repo: deepin-session-shell
