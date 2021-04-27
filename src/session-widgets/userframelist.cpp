@@ -98,7 +98,7 @@ void UserFrameList::addUser(std::shared_ptr<User> user)
     connect(user.get(), &User::avatarChanged, widget, &UserLoginWidget::setAvatar);
     connect(user.get(), &User::logindChanged, widget, &UserLoginWidget::setIsLogin);
 
-    widget->setSelected(m_model->currentUser()->uid() == user->uid());
+    widget->setSelected(m_model->currentUser() && m_model->currentUser()->uid() == user->uid());
 
     if (user->isLogin()) {
         widget->setWidgetShowType(UserLoginWidget::UserFrameLoginType);

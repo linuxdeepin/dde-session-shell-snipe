@@ -127,23 +127,19 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     const bool &LockNoPasswordValue { valueByQSettings<bool>("", "lockNoPassword", false) };
     m_model->setIsLockNoPassword(LockNoPasswordValue);
 
-    const QString &switchUserButtonValue { valueByQSettings<QString>("Lock", "showSwitchUserButton", "ondemand") };
-    m_model->setAlwaysShowUserSwitchButton(switchUserButtonValue == "always");
-    m_model->setAllowShowUserSwitchButton(switchUserButtonValue == "ondemand");
+    m_model->setAlwaysShowUserSwitchButton(true);
+    m_model->setAllowShowUserSwitchButton(true);
 
     {
         initDBus();
         initData();
     }
 
-    // init ADDomain User
-    if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false)) {
-        std::shared_ptr<User> user = std::make_shared<ADDomainUser>(INT_MAX);
-        static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
-        static_cast<ADDomainUser *>(user.get())->setIsServerUser(true);
-        m_model->setIsServerModel(true);
-        m_model->userAdd(user);
-    }
+    //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
+    std::shared_ptr<User> user = std::make_shared<ADDomainUser>(999);
+    static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
+    static_cast<ADDomainUser *>(user.get())->setIsServerUser(true);
+    m_model->userAdd(user);
 }
 
 void LockWorker::switchToUser(std::shared_ptr<User> user)
