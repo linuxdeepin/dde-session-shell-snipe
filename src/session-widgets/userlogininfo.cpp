@@ -26,6 +26,8 @@
 #include "userframelist.h"
 #include "src/global_util/constants.h"
 #include <QKeyEvent>
+#include <unistd.h>
+#include <pwd.h>
 
 UserLoginInfo::UserLoginInfo(SessionBaseModel *model, QObject *parent)
     : QObject(parent)
@@ -122,7 +124,9 @@ void UserLoginInfo::initConnect()
             return;
         }
 
-        if (m_model->isServerModel() && m_model->currentUser()->isDoMainUser()) {
+        //远程账号不能用Server模式处理，因为域账号也有后端dbus服务，ADDomainuser类也不适合远程账号
+        //所以把ADDomainUser类做成SessionBaseModel非服务器器模式的切换远程账号的入口
+        if (m_model->isServerModel() || m_model->currentUser()->isDoMainUser()) {
             auto user = dynamic_cast<NativeUser *>(m_model->findUserByName(account).get());
             auto current_user = dynamic_cast<ADDomainUser *>(m_model->currentUser().get());
 
@@ -253,6 +257,7 @@ void UserLoginInfo::receiveSwitchUser(std::shared_ptr<User> user)
     } else {
         emit requestSwitchUser(user);
     }
+    emit requestSwitchUser(user);
 }
 
 void UserLoginInfo::updateLoginContent()

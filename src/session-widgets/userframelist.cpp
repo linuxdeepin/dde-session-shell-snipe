@@ -141,6 +141,13 @@ void UserFrameList::onUserClicked()
     UserLoginWidget *widget = static_cast<UserLoginWidget *>(sender());
     if (!widget) return;
 
+    std::shared_ptr<User> user = m_model->findUserByUid(widget->uid());
+    if (user) {
+        m_model->setCurrentUser(user);
+        if (user->uid() == 999) {
+            widget->setWidgetShowType(UserLoginWidget::IDAndPasswordType);
+        }
+    }
     currentSelectedUser = widget;
     for (int i = 0; i != m_loginWidgets.size(); ++i) {
         if (m_loginWidgets[i]->getSelected()) {

@@ -95,9 +95,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     connect(model, &SessionBaseModel::currentUserChanged, this, &GreeterWorkek::recoveryUserKBState);
     connect(m_lockInter, &DBusLockService::UserChanged, this, &GreeterWorkek::onCurrentUserChanged);
 
-    // const QString &switchUserButtonValue { valueByQSettings<QString>("Lock", "showSwitchUserButton", "ondemand") };
-    // m_model->setAlwaysShowUserSwitchButton(switchUserButtonValue == "always");
-    // m_model->setAllowShowUserSwitchButton(switchUserButtonValue == "ondemand");
+    //等到集成主线时需要判断是否客户机器已经加域
     m_model->setAlwaysShowUserSwitchButton(true);
     m_model->setAllowShowUserSwitchButton(true);
 
