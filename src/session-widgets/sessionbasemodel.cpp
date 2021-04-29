@@ -76,11 +76,8 @@ void SessionBaseModel::userAdd(std::shared_ptr<User> user)
     };
 
     m_userList << user;
-
-    if (user->displayName() != ",,,") { //只有lightdm不需要触发特殊入口的信号
-        emit onUserAdded(user);
-        emit onUserListChanged(m_userList);
-    }
+    emit onUserAdded(user);
+    emit onUserListChanged(m_userList);
 }
 
 void SessionBaseModel::userRemoved(std::shared_ptr<User> user)

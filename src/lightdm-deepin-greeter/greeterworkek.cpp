@@ -113,7 +113,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
 
         //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
         std::shared_ptr<ADDomainUser> user = std::make_shared<ADDomainUser>(999);
-        user->setUserDisplayName(",,,");
+        user->setUserDisplayName("...");
         user->setIsServerUser(true);
         m_model->userAdd(user);
 
@@ -150,7 +150,9 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
     QJsonObject json;
     json["Uid"] = static_cast<int>(user->uid());
     json["Type"] = user->type();
-    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
+    QString jsonStr = QString(QJsonDocument(json).toJson(QJsonDocument::Compact));
+    m_lockInter->SwitchToUser(jsonStr).waitForFinished();
+    onCurrentUserChanged(jsonStr);
 }
 
 void GreeterWorkek::authUser(const QString &password)

@@ -213,7 +213,7 @@ void AuthInterface::onLoginUserListChanged(const QString &list)
                          [=](const uint find_uid) { return find_uid == user->uid(); });
 
         if (find_it == m_loginUserList.end() &&
-            (user->type() == User::ADDomain && user->uid() != 999)) { //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
+            (user->type() == User::ADDomain && !user->isDoMainUser())) { //特殊账号入口不能被删除了
             m_model->userRemoved(user);
             it = uList.erase(it);
         }

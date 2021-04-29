@@ -63,7 +63,11 @@ public:
 
     virtual bool isNoPasswdGrp() const;
     virtual bool isUserIsvalid() const;
-    virtual bool isDoMainUser() const { return m_isServer; }
+    // 两点考虑：
+    // 1、m_isServer指的是本地账号的服务器模式，不是指远程账号，真正的远程账号需要表现得跟本地账号一样才符合用户的需求
+    //  　dde后端账号服务配合参考本地账号一样提供远程账号的dbus服务
+    // 2、INT_MAX被分配为域账号UID，参考lightdm把允许用户自行输入账号密码的的界面入口设置为999
+    virtual bool isDoMainUser() const { return m_uid == 999; } 
     virtual bool is24HourFormat() const { return true; }
 
     void setisLogind(bool isLogind);
