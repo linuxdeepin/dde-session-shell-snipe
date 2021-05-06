@@ -7,6 +7,7 @@
 #include "sessionbasewindow.h"
 #include "sessionbasemodel.h"
 #include "src/widgets/mediawidget.h"
+#include "src/widgets/wirelesswidget.h"
 
 class ControlWidget;
 class UserInputWidget;

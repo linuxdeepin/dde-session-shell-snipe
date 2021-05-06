@@ -38,7 +38,8 @@ public:
         ConfirmPasswordMode,
         UserMode,
         SessionMode,
-        PowerMode
+        PowerMode,
+        WirelessMode,
     };
 
     explicit SessionBaseModel(AuthType type, QObject *parent = nullptr);
@@ -129,6 +130,7 @@ signals:
     void activeAuthChanged(bool active);
     void blackModeChanged(bool is_black);
     void HibernateModeChanged(bool is_hibernate);//休眠信号改变
+    void hideWirelessWidget();
 
 private:
     com::deepin::SessionManager *m_sessionManagerInter;

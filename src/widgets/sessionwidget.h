@@ -41,7 +41,8 @@ class SessionWidget : public QFrame
     Q_OBJECT
 public:
     explicit SessionWidget(QWidget *parent = nullptr);
-    void setModel(SessionBaseModel * const model);
+    static SessionWidget *getInstance(QWidget *parent = nullptr);
+    void setModel(SessionBaseModel *const model);
     ~SessionWidget() override;
 
     void show();

@@ -158,5 +158,15 @@
         <file>img/unlockFalse/unlock_error_14.svg</file>
         <file>img/unlockFalse/unlock_error_15.svg</file>
         <file>img/spinner_white.svg</file>
+        <file>img/wireless/Login-network-wireless-offline-symbolic.svg</file>
+        <file>img/wireless/Login-network-wirelss-no-route-symbolic.svg</file>
+        <file>img/wireless/Login-wireless-disconnect.svg</file>
+        <file>img/wireless/refresh.svg</file>
+        <file>img/wireless/security.svg</file>
+        <file>img/wireless/wireless-0-symbolic.svg</file>
+        <file>img/wireless/wireless-20-symbolic.svg</file>
+        <file>img/wireless/wireless-40-symbolic.svg</file>
+        <file>img/wireless/wireless-60-symbolic.svg</file>
+        <file>img/wireless/wireless-80-symbolic.svg</file>
     </qresource>
 </RCC>

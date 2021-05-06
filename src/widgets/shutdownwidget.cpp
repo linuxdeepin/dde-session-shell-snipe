@@ -25,15 +25,7 @@
 
 #include "shutdownwidget.h"
 
-#if 0 // storage i10n
-QT_TRANSLATE_NOOP("ShutdownWidget", "Shut down"),
-                  QT_TRANSLATE_NOOP("ShutdownWidget", "Reboot"),
-                  QT_TRANSLATE_NOOP("ShutdownWidget", "Suspend"),
-                  QT_TRANSLATE_NOOP("ShutdownWidget", "Hibernate")
-#endif
-
-                  ShutdownWidget::ShutdownWidget(QWidget *parent)
-                      : QFrame(parent)
+ShutdownWidget::ShutdownWidget(QWidget *parent): QFrame(parent)
 {
     m_frameDataBind = FrameDataBind::Instance();
     initUI();

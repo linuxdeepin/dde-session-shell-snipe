@@ -23,6 +23,7 @@
 #define LOGINCONTENT_H
 
 #include "src/session-widgets/lockcontent.h"
+#include "src/widgets/wirelesswidget.h"
 
 class SessionWidget;
 class LoginContent : public LockContent
@@ -34,9 +35,15 @@ public:
     void onCurrentUserChanged(std::shared_ptr<User> user) override;
     void onStatusChanged(SessionBaseModel::ModeStatus status) override;
     void pushSessionFrame();
+    void pushWirelessFrame();
+    void updateWirelessDisplay();
+    void onRequestWirelessPage();
+    void updateWirelessListPosition();
 
 private:
     SessionWidget *m_sessionFrame;
+    WirelessWidget *m_wirelessWigdet;
+    QWidget *m_wirelessConcealWidget;
 };
 
 #endif // LOGINCONTENT_H

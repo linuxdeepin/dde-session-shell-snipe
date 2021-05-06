@@ -36,22 +36,37 @@ DWIDGET_USE_NAMESPACE
 class ControlWidget : public QWidget
 {
     Q_OBJECT
+
+    enum WiFiStrenthLevel {
+        WiFiStrengthNoNE,
+        WiFiStrengthNoLevel,
+        WiFiStrengthLOWLevel,
+        WiFiStrengthMidLevel,
+        WiFiStrengthMidHighLevel,
+        WiFiStrengthHighLevel,
+    };
 public:
     explicit ControlWidget(QWidget *parent = nullptr);
+    inline bool getWirelessDeviceExistFlg() {return m_wifiDeviceExist;}
 
 signals:
     void requestSwitchUser();
     void requestShutdown();
     void requestSwitchSession();
     void requestSwitchVirtualKB();
+    void requestWiFiPage();
+    void updateWirelessDisplay();
 
 public slots:
     void setVirtualKBVisible(bool visible);
     void setUserSwitchEnable(const bool visible);
+    void setWirelessListEnable(const bool visible);
     void setSessionSwitchEnable(const bool visible);
+    void updateWirelessBtnDisplay(const QString &path);
     void chooseToSession(const QString &session);
     void leftKeySwitch();
     void rightKeySwitch();
+    void updateWifiIconDisplay(int wifiLevel);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
@@ -66,8 +81,7 @@ private:
     void hideTips();
 
 private:
-    enum FocusState
-    {
+    enum FocusState {
         FocusNo,
         FocusHasIn,
         FocusReadyOut
@@ -79,11 +93,13 @@ private:
 
     QHBoxLayout *m_mainLayout = nullptr;
     DFloatingButton *m_virtualKBBtn = nullptr;
+    DFloatingButton *m_wirelessBtn = nullptr;
     DFloatingButton *m_switchUserBtn = nullptr;
     DFloatingButton *m_powerBtn = nullptr;
     DFloatingButton *m_sessionBtn = nullptr;
     QLabel *m_sessionTip = nullptr;
     QWidget *m_tipWidget = nullptr;
+    bool m_wifiDeviceExist = false;
 #ifndef SHENWEI_PLATFORM
     QPropertyAnimation *m_tipsAni = nullptr;
 #endif

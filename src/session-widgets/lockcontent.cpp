@@ -69,7 +69,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(m_userLoginInfo, &UserLoginInfo::requestSwitchUser, this, &LockContent::requestSwitchToUser);
     connect(m_userLoginInfo, &UserLoginInfo::switchToCurrentUser, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::requestSetLayout, this, &LockContent::requestSetLayout);
-    connect(m_userLoginInfo, &UserLoginInfo::unlockActionFinish, this, [&]{
+    connect(m_userLoginInfo, &UserLoginInfo::unlockActionFinish, this, [&] {
         emit unlockActionFinish();
     });
     connect(m_shutdownFrame, &ShutdownWidget::abortOperation, this, [ = ] {
@@ -189,7 +189,7 @@ void LockContent::pushPasswordFrame()
 
 void LockContent::pushUserFrame()
 {
-    if(m_model->isServerModel())
+    if (m_model->isServerModel())
         m_controlWidget->setUserSwitchEnable(false);
 
     //设置用户列表大小为中间区域的大小
@@ -229,7 +229,7 @@ void LockContent::beforeUnlockAction(bool is_finish)
 
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
-    if(m_model->isServerModel())
+    if (m_model->isServerModel())
         onUserListChanged(m_model->logindUser());
     switch (status) {
     case SessionBaseModel::ModeStatus::PasswordMode:
@@ -366,19 +366,19 @@ void LockContent::tryGrabKeyboard()
         m_model->setLocked(false);
 
         DDBusSender()
-                .service("org.freedesktop.Notifications")
-                .path("/org/freedesktop/Notifications")
-                .interface("org.freedesktop.Notifications")
-                .method(QString("Notify"))
-                .arg(tr("Lock Screen"))
-                .arg(static_cast<uint>(0))
-                .arg(QString(""))
-                .arg(QString(""))
-                .arg(tr("Failed to lock screen"))
-                .arg(QStringList())
-                .arg(QVariantMap())
-                .arg(5000)
-                .call();
+        .service("org.freedesktop.Notifications")
+        .path("/org/freedesktop/Notifications")
+        .interface("org.freedesktop.Notifications")
+        .method(QString("Notify"))
+        .arg(tr("Lock Screen"))
+        .arg(static_cast<uint>(0))
+        .arg(QString(""))
+        .arg(QString(""))
+        .arg(tr("Failed to lock screen"))
+        .arg(QStringList())
+        .arg(QVariantMap())
+        .arg(5000)
+        .call();
 
         qApp->quit();
         return;

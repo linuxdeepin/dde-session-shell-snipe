@@ -31,6 +31,7 @@ find_package(PAM REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(DtkWidget REQUIRED)
 find_package(DtkCMake REQUIRED)
+find_package(KF5NetworkManagerQt REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
     Widgets
@@ -39,6 +40,7 @@ find_package(Qt5 COMPONENTS
     DBus
     Xml
     Svg
+    Network
 REQUIRED)
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
@@ -54,7 +56,27 @@ set(Qt_LIBS
     Qt5::X11Extras
     Qt5::Xml
     Qt5::Svg
+    Qt5::Network
 )
+
+# KF5 network manager
+get_target_property(KF5_QT_INCLUDE_DIRS KF5::NetworkManagerQt INTERFACE_INCLUDE_DIRECTORIES)
+
+set(TRY_KF5_LIBRARIES
+IMPORTED_LOCATION_DEBIAN
+IMPORTED_LOCATION_NOCONFIG
+)
+
+foreach(LETTER ${TRY_KF5_LIBRARIES})
+    if (NOT KF5_QT_LIBRARIES)
+        get_target_property(KF5_QT_LIBRARIES KF5::NetworkManagerQt ${LETTER})
+    endif()
+endforeach()
+
+if (NOT KF5_QT_LIBRARIES)
+    find_library(KF5_QT_LIBRARIES libKF5NetworkManagerQt.so)
+endif()
+# end KF5 network manager
 
 function(generation_dbus_interface xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -p ${class_file} -c ${class_name} ${xml}
@@ -128,6 +150,12 @@ set(GLOBAL_UTILS_SRCS
     ./src/global_util/keyboardplatform.h
     ./src/global_util/keyboardplantform_x11.h
     ./src/global_util/keyboardplantform_wayland.h
+    ./src/global_util/buttontuple.h
+    ./src/global_util/imageutil.h
+    ./src/global_util/statebutton.h
+    ./src/global_util/wireless/networkworker.h
+    ./src/global_util/wireless/wirelessdevice.h
+    ./src/global_util/wireless/wirelessitemwidget.h
     ./src/global_util/xkbparser.cpp
     ./src/global_util/dbus/dbusdisplaymanager.cpp
     ./src/global_util/dbus/dbuslogin1manager.cpp
@@ -146,6 +174,12 @@ set(GLOBAL_UTILS_SRCS
     ./src/global_util/keyboardmonitor.cpp
     ./src/global_util/keyboardplantform_x11.cpp
     ./src/global_util/keyboardplantform_wayland.cpp
+    ./src/global_util/buttontuple.cpp
+    ./src/global_util/imageutil.cpp
+    ./src/global_util/statebutton.cpp
+    ./src/global_util/wireless/networkworker.cpp
+    ./src/global_util/wireless/wirelessdevice.cpp
+    ./src/global_util/wireless/wirelessitemwidget.cpp
 )
 
 set(WIDGETS_SRCS
@@ -164,6 +198,8 @@ set(WIDGETS_SRCS
     ./src/widgets/timewidget.h
     ./src/widgets/dlineeditex.h
     ./src/widgets/dpasswordeditex.h
+    ./src/widgets/wirelesspage.h
+    ./src/widgets/wirelesswidget.h
     ./src/widgets/fullscreenbackground.cpp
     ./src/widgets/loginbutton.cpp
     ./src/widgets/mediawidget.cpp
@@ -179,6 +215,8 @@ set(WIDGETS_SRCS
     ./src/widgets/timewidget.cpp
     ./src/widgets/dpasswordeditex.cpp
     ./src/widgets/dlineeditex.cpp
+    ./src/widgets/wirelesspage.cpp
+    ./src/widgets/wirelesswidget.cpp
 )
 
 set(SESSION_WIDGETS_SRCS
@@ -285,6 +323,7 @@ target_include_directories(dde-lock PUBLIC
     ${PROJECT_BINARY_DIR}
     ${QGSettings_INCLUDE_DIRS}
     ${Qt5X11Extras_INCLUDE_DIRS}
+    ${KF5_QT_INCLUDE_DIRS}
 )
 target_link_libraries(dde-lock PRIVATE
     ${Qt_LIBS}
@@ -298,6 +337,7 @@ target_link_libraries(dde-lock PRIVATE
     ${Qt5DBus_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
+    ${KF5_QT_LIBRARIES}
 )
 
 add_executable(
@@ -316,6 +356,7 @@ target_include_directories(dde-shutdown PUBLIC
     ${PROJECT_BINARY_DIR}
     ${QGSettings_INCLUDE_DIRS}
     ${Qt5X11Extras_INCLUDE_DIRS}
+    ${KF5_QT_INCLUDE_DIRS}
 )
 target_link_libraries(dde-shutdown PRIVATE
     ${Qt_LIBS}
@@ -328,6 +369,7 @@ target_link_libraries(dde-shutdown PRIVATE
     ${Qt5DBus_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
+    ${KF5_QT_LIBRARIES}
 )
 
 add_executable(
@@ -348,6 +390,7 @@ target_include_directories(lightdm-deepin-greeter PUBLIC
     ${QGSettings_INCLUDE_DIRS}
     ${Qt5X11Extras_INCLUDE_DIRS}
     ${Greeter_INCLUDE_DIRS}
+    ${KF5_QT_INCLUDE_DIRS}
 )
 target_compile_definitions(lightdm-deepin-greeter
     PRIVATE ENABLE_SESSION
@@ -365,6 +408,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
     ${Greeter_LIBRARIES}
+    ${KF5_QT_LIBRARIES}
 )
 
 # Install settings
@@ -393,3 +437,6 @@ install(FILES files/dde-session-shell.conf DESTINATION share/dde-session-shell/)
 # services
 file(GLOB SERVICES files/*.service)
 install(FILES ${SERVICES} DESTINATION share/dbus-1/services)
+
+install(FILES files/10-network-manager.pkla DESTINATION /var/lib/polkit-1/localauthority/10-vendor.d)
+

@@ -39,10 +39,11 @@ class ShutdownWidget: public QFrame
 {
     Q_OBJECT
 public:
-    ShutdownWidget(QWidget* parent = nullptr);
+    static ShutdownWidget *getInstance();
+    ShutdownWidget(QWidget *parent = nullptr);
     ~ShutdownWidget() override;
 
-    void setModel(SessionBaseModel * const model);
+    void setModel(SessionBaseModel *const model);
 
 signals:
     void abortOperation();
@@ -59,19 +60,19 @@ protected:
 private:
     void initUI();
     void initConnect();
-    void updateTr(RoundItemButton * widget, const QString &tr);
+    void updateTr(RoundItemButton *widget, const QString &tr);
     void onOtherPageChanged(const QVariant &value);
 
     SessionBaseModel *m_model;
     int m_index = 0;
-    QHBoxLayout* m_Layout;
+    QHBoxLayout *m_Layout;
     QList<RoundItemButton *> m_btnList;
-    RoundItemButton* m_currentSelectedBtn = NULL;
-    RoundItemButton* m_requireShutdownButton;
-    RoundItemButton* m_requireRestartButton;
-    RoundItemButton* m_requireSuspendButton;
-    RoundItemButton* m_requireHibernateButton;
-    QMap<RoundItemButton*, SessionBaseModel::PowerAction> m_actionMap;
+    RoundItemButton *m_currentSelectedBtn = NULL;
+    RoundItemButton *m_requireShutdownButton;
+    RoundItemButton *m_requireRestartButton;
+    RoundItemButton *m_requireSuspendButton;
+    RoundItemButton *m_requireHibernateButton;
+    QMap<RoundItemButton *, SessionBaseModel::PowerAction> m_actionMap;
     QList<std::pair<std::function<void (QString)>, QString>> m_trList;
     FrameDataBind *m_frameDataBind;
 };
