@@ -36,13 +36,13 @@ using namespace NetworkManager;
 
 NetworkWorker::NetworkWorker(QObject *parent)
     : QObject(parent)
-//      m_systemNetworkInter("com.deepin.system.Network", "/com/deepin/system/Network", QDBusConnection::systemBus(), this)
+    ,m_systemNetworkInter("com.deepin.system.Network", "/com/deepin/system/Network", QDBusConnection::systemBus(), this)
 {
     if (m_devices.isEmpty()) {
         initWirelessDevice();
     }
 
-//    connect(&m_systemNetworkInter, &SystemNetworkInter::DeviceEnabled, this, &NetworkWorker::onDeviceEnableChanged);
+    connect(&m_systemNetworkInter, &SystemNetworkInter::DeviceEnabled, this, &NetworkWorker::onDeviceEnableChanged);
 
     // 处理设备状态改变
     connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceAdded, this, &NetworkWorker::onDeviceChanged);
@@ -66,10 +66,10 @@ void NetworkWorker::updateActiveConnects(const QString &activeConnPath)
     m_activeConnects = activeConns;
 }
 
-//void NetworkWorker::setDeviceEnable(const QString &devPath, const bool enable)
-//{
-//    m_systemNetworkInter.EnableDevice(devPath, enable);
-//}
+void NetworkWorker::setDeviceEnable(const QString &devPath, const bool enable)
+{
+    m_systemNetworkInter.EnableDevice(devPath, enable);
+}
 
 /**
  * @brief 请求WiFi扫描
@@ -92,14 +92,14 @@ void NetworkWorker::requestWirelessScan()
     }
 }
 
-//void NetworkWorker::queryDeviceStatus(const QString &devPath)
-//{
-//    QDBusPendingCallWatcher *w = new QDBusPendingCallWatcher(m_systemNetworkInter.IsDeviceEnabled(devPath), this);
+void NetworkWorker::queryDeviceStatus(const QString &devPath)
+{
+    QDBusPendingCallWatcher *w = new QDBusPendingCallWatcher(m_systemNetworkInter.IsDeviceEnabled(devPath), this);
 
-//    w->setProperty("devPath", devPath);
+    w->setProperty("devPath", devPath);
 
-//    connect(w, &QDBusPendingCallWatcher::finished, this, &NetworkWorker::queryDeviceStatusCB);
-//}
+    connect(w, &QDBusPendingCallWatcher::finished, this, &NetworkWorker::queryDeviceStatusCB);
+}
 
 /**
  * @brief 处理WiFi设备改变
@@ -122,7 +122,7 @@ void NetworkWorker::onDeviceChanged(const QString &uni)
                 m_devices.append(dev);
             }
 
-//            queryDeviceStatus(dev->uni());
+            queryDeviceStatus(dev->uni());
         }
     }
 
@@ -182,7 +182,7 @@ void NetworkWorker::initWirelessDevice()
             m_devices.append(dev);
         }
 
-//        queryDeviceStatus(dev->uni());
+        queryDeviceStatus(dev->uni());
     }
 }
 
