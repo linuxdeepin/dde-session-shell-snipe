@@ -21,7 +21,8 @@ Build-Depends: debhelper (>= 8.0.0), pkg-config,
  libxcursor-dev,
  libxrandr-dev,
  libdtkcore5-bin,
- libx11-xcb-dev
+ libx11-xcb-dev,
+ libkf5networkmanagerqt-dev
 Standards-Version: 3.9.4
 Homepage: http://www.deepin.org/
 
