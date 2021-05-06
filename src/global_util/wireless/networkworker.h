@@ -31,13 +31,13 @@
 
 #include <networkmanagerqt/activeconnection.h>
 
-//#include <com_deepin_system_systemnetwork.h>
+#include <com_deepin_system_systemnetwork.h>
 
 namespace dtk {
 
 namespace wireless {
 
-//using SystemNetworkInter = com::deepin::system::Network;
+using SystemNetworkInter = com::deepin::system::Network;
 
 class NetworkWorker : public QObject
 {
@@ -64,9 +64,9 @@ public Q_SLOTS:
     void activateConnection(const QString &devPath, const QString &uuid);
     void activateAccessPoint(const QString &apPath, const QString &uuid);
     void requestWirelessScan();
-//    void queryDeviceStatus(const QString &devPath);
+    void queryDeviceStatus(const QString &devPath);
     Q_DECL_DEPRECATED void queryAccessPoints(const QString &devPath);
-//    void setDeviceEnable(const QString &devPath, const bool enable);
+    void setDeviceEnable(const QString &devPath, const bool enable);
 
 private Q_SLOTS:
     void onDeviceEnableChanged(const QString &path, const bool enabled);
@@ -76,7 +76,7 @@ private Q_SLOTS:
     void updateActiveConnects(const QString &activeConnPath);
 
 private:
-//    SystemNetworkInter m_systemNetworkInter;
+    SystemNetworkInter m_systemNetworkInter;
     QList<dtk::wireless::WirelessDevice *> m_devices;
     NetworkManager::Connection::List m_connects;
     NetworkManager::ActiveConnection::List m_activeConnects;
