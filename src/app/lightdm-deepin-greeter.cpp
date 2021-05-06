@@ -185,12 +185,13 @@ int main(int argc, char* argv[])
         setenv("XDG_CURRENT_DESKTOP", "Deepin", 1);
     }
 
-    DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
+    DGuiApplicationHelper::setUseInactiveColorGroup(false);
     // load dpi settings
     if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf")) {
         set_auto_QT_SCALE_FACTOR();
     }
 
+    if(DGuiApplicationHelper::isXWindowPlatform()) DApplication::loadDXcbPlugin();
     DApplication a(argc, argv);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     qApp->setOrganizationName("deepin");

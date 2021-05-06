@@ -49,6 +49,7 @@ DWIDGET_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
+    if(DGuiApplicationHelper::isXWindowPlatform()) DApplication::loadDXcbPlugin();
     DApplication *app = nullptr;
 #if (DTK_VERSION < DTK_VERSION_CHECK(5, 4, 0, 0))
     app = new DApplication(argc, argv);
