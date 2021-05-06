@@ -25,9 +25,9 @@ SessionBaseModel::SessionBaseModel(AuthType type, QObject *parent)
         m_sessionManagerInter = new SessionManager(SessionManagerService, SessionManagerPath, QDBusConnection::sessionBus(), this);
     }
 
-    if ( m_currentType == UnknowAuthType ) {
-        connect(m_sessionManagerInter,&SessionManager::LockedChanged,this,[this](bool locked) {
-            if ( !locked )
+    if (m_currentType == UnknowAuthType) {
+        connect(m_sessionManagerInter, &SessionManager::LockedChanged, this, [this](bool locked) {
+            if (!locked)
                 this->setIsShow(false);
         });
     }
@@ -100,8 +100,7 @@ void SessionBaseModel::userRemoved(std::shared_ptr<User> user)
         for (auto it = m_userList.cbegin(); it != m_userList.cend(); ++it) {
             if ((*it)->isLogin()) {
                 logindUserList << (*it);
-            }
-            else {
+            } else {
                 unloginUserList << (*it);
             }
         }
@@ -110,8 +109,7 @@ void SessionBaseModel::userRemoved(std::shared_ptr<User> user)
             if (!logindUserList.isEmpty()) {
                 setCurrentUser(logindUserList.first());
             }
-        }
-        else {
+        } else {
             setCurrentUser(unloginUserList.first());
         }
     }
@@ -151,6 +149,9 @@ void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
 
 void SessionBaseModel::setCurrentModeState(const ModeStatus &currentModeState)
 {
+    if (currentModeState != WirelessMode) {
+        emit hideWirelessWidget();
+    }
     if (m_currentModeState == currentModeState) return;
 
     m_currentModeState = currentModeState;
@@ -167,7 +168,8 @@ void SessionBaseModel::setHasVirtualKB(bool hasVirtualKB)
     emit hasVirtualKBChanged(hasVirtualKB);
 }
 
-void SessionBaseModel::setHasSwap(bool hasSwap) {
+void SessionBaseModel::setHasSwap(bool hasSwap)
+{
     if (m_hasSwap == hasSwap) return;
 
     m_hasSwap = hasSwap;
@@ -183,7 +185,7 @@ void SessionBaseModel::setIsShow(bool isShow)
 
 #ifndef QT_DEBUG
 
-    if ( m_sessionManagerInter && m_currentType == UnknowAuthType ) {
+    if (m_sessionManagerInter && m_currentType == UnknowAuthType) {
         m_isShow = m_sessionManagerInter->locked() ? false : isShow ;
     }
 
@@ -238,7 +240,7 @@ bool SessionBaseModel::isLocked()
 
 void SessionBaseModel::setIsLockNoPassword(bool LockNoPassword)
 {
-   if (m_isLockNoPassword == LockNoPassword) return;
+    if (m_isLockNoPassword == LockNoPassword) return;
 
     m_isLockNoPassword = LockNoPassword;
 }
@@ -247,14 +249,15 @@ void SessionBaseModel::setIsLockNoPassword(bool LockNoPassword)
 
 void SessionBaseModel::setIsBlackModel(bool is_black)
 {
-    if(m_isBlackMode == is_black) return;
+    if (m_isBlackMode == is_black) return;
 
     m_isBlackMode = is_black;
     emit blackModeChanged(is_black);
 }
 
-void SessionBaseModel::setIsHibernateModel(bool is_Hibernate){
-    if(m_isHibernateMode == is_Hibernate) return;
+void SessionBaseModel::setIsHibernateModel(bool is_Hibernate)
+{
+    if (m_isHibernateMode == is_Hibernate) return;
     m_isHibernateMode = is_Hibernate;
     emit HibernateModeChanged(is_Hibernate);
 }

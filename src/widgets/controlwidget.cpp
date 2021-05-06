@@ -33,6 +33,8 @@
 #include <QGraphicsDropShadowEffect>
 #include <QPainter>
 
+#include <networkmanagerqt/manager.h>
+
 #define BUTTON_ICON_SIZE QSize(26,26)
 #define BUTTON_SIZE QSize(52,52)
 
@@ -146,6 +148,58 @@ void ControlWidget::setUserSwitchEnable(const bool visible)
     if (m_btnList.indexOf(m_switchUserBtn) == m_index) {
         m_index = 0;
     }
+}
+
+void ControlWidget::setWirelessListEnable(const bool visible)
+{
+    if (!visible) return;
+
+    if (!m_wirelessBtn) {
+        m_wirelessBtn = new DFloatingButton(this);
+        updateWifiIconDisplay(WiFiStrengthNoNE);
+        m_wirelessBtn->setIconSize(BUTTON_ICON_SIZE);
+        m_wirelessBtn->setFixedSize(BUTTON_SIZE);
+        m_wirelessBtn->setFocusPolicy(Qt::ClickFocus);
+        m_wirelessBtn->setAutoExclusive(true);
+        m_wirelessBtn->setBackgroundRole(DPalette::Button);
+        m_wirelessBtn->installEventFilter(this);
+
+        updateWirelessBtnDisplay(QString(""));
+
+        m_mainLayout->insertWidget(2, m_wirelessBtn);
+        m_mainLayout->setAlignment(m_wirelessBtn, Qt::AlignBottom);
+
+        m_btnList.push_front(m_wirelessBtn);
+
+        connect(m_wirelessBtn, &DFloatingButton::clicked, this, &ControlWidget::requestWiFiPage);
+        connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceAdded, this, &ControlWidget::updateWirelessBtnDisplay);
+        connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceRemoved, this, &ControlWidget::updateWirelessBtnDisplay);
+    }
+}
+
+/**
+ * @brief 当有WiFi设备添加或者移除时,更新登录界面WiFi按钮显示状态
+ *
+ * @param QString path为了匹配相应的槽函数,暂未使用到
+ * @return void
+ */
+void ControlWidget::updateWirelessBtnDisplay(const QString &path)
+{
+    Q_UNUSED(path);
+    for (auto device : NetworkManager::networkInterfaces()) {
+        if (device->type() == NetworkManager::Device::Type::Wifi) {
+            m_wirelessBtn->setVisible(true);
+            m_wifiDeviceExist = true;
+            connect(m_wirelessBtn, &DFloatingButton::clicked, this, &ControlWidget::requestWiFiPage);
+
+            emit updateWirelessDisplay();
+            return;
+        }
+    }
+
+    m_wirelessBtn->setVisible(false);
+    m_wifiDeviceExist = false;
+    emit updateWirelessDisplay();
 }
 
 void ControlWidget::setSessionSwitchEnable(const bool visible)
@@ -283,6 +337,39 @@ void ControlWidget::rightKeySwitch()
     }
 
     m_btnList.at(m_index)->setFocus();
+}
+
+/**
+ * @brief 根据wifi信号等级刷新登录界面的显示
+ *
+ * @param int wifiLevel 对应的WiFi等级
+ * @return void
+ */
+void ControlWidget::updateWifiIconDisplay(int wifiLevel)
+{
+    int wifiSignalStrength = wifiLevel;
+    switch (wifiSignalStrength) {
+    case (WiFiStrengthNoNE):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-wireless-disconnect.svg"));
+        break;
+    case (WiFiStrengthNoLevel):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-0-symbolic.svg"));
+        break;
+    case (WiFiStrengthLOWLevel):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-20-symbolic.svg"));
+        break;
+    case (WiFiStrengthMidLevel):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-40-symbolic.svg"));
+        break;
+    case (WiFiStrengthMidHighLevel):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-60-symbolic.svg"));
+        break;
+    case (WiFiStrengthHighLevel):
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-80-symbolic.svg"));
+        break;
+    default:
+        break;
+    }
 }
 
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)

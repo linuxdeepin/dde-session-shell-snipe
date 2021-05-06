@@ -16,7 +16,7 @@ SessionBaseWindow::SessionBaseWindow(QWidget *parent)
     initUI();
 }
 
-void SessionBaseWindow::setLeftBottomWidget(QWidget * const widget)
+void SessionBaseWindow::setLeftBottomWidget(QWidget *const widget)
 {
     if (m_leftBottomWidget != nullptr) {
         m_leftBottomLayout->removeWidget(m_leftBottomWidget);
@@ -35,7 +35,7 @@ void SessionBaseWindow::setCenterBottomWidget(QWidget *const widget)
     m_centerBottomWidget = widget;
 }
 
-void SessionBaseWindow::setRightBottomWidget(QWidget * const widget)
+void SessionBaseWindow::setRightBottomWidget(QWidget *const widget)
 {
     if (m_rightBottomWidget != nullptr) {
         m_rightBottomLayout->removeWidget(m_rightBottomWidget);
@@ -45,7 +45,7 @@ void SessionBaseWindow::setRightBottomWidget(QWidget * const widget)
     m_rightBottomWidget = widget;
 }
 
-void SessionBaseWindow::setCenterContent(QWidget * const widget)
+void SessionBaseWindow::setCenterContent(QWidget *const widget)
 {
     if (m_centerWidget == widget)
         return;

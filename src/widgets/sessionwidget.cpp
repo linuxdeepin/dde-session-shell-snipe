@@ -59,6 +59,12 @@ const QString session_standard_icon_name(const QString &realName)
     return QStringLiteral("unknown");
 }
 
+SessionWidget *SessionWidget::getInstance(QWidget *parent)
+{
+    static SessionWidget w(parent);
+    return &w;
+}
+
 SessionWidget::SessionWidget(QWidget *parent)
     : QFrame(parent)
     , m_currentSessionIndex(0)
