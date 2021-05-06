@@ -53,6 +53,7 @@ sed -i "s|VERSION 3.13.4|VERSION $cmake_version|g" CMakeLists.txt
 %{_sysconfdir}/deepin/greeters.d/lightdm-deepin-greeter
 %{_datadir}/dde-session-shell/
 
+%{_sysconfdir}/deepin/greeters.d/10-cursor-theme
 %{_datadir}/xgreeters/lightdm-deepin-greeter.desktop
 %{_datadir}/dbus-1/services/com.deepin.dde.lockFront.service
 %{_datadir}/dbus-1/services/com.deepin.dde.shutdownFront.service
