@@ -39,10 +39,15 @@ using namespace NetworkManager;
 
 WirelessEditWidget::WirelessEditWidget(const QString &ItemName, QWidget *parent)
     : QWidget(parent)
+    ,isHiddenNetWork(false)
     , m_itemName(ItemName)
 {
     if (m_itemName.isEmpty()) {
         return;
+    }
+
+    if (m_itemName.contains("hidden")){
+        isHiddenNetWork = true;
     }
 
     intiUI(m_itemName);
@@ -104,7 +109,7 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     QVBoxLayout *inputEditLayout = new QVBoxLayout;
     inputEditLayout->setContentsMargins(10, 0, 5, 0);
 
-    if (m_ssidLable->text().contains("hidden")) {
+    if (isHiddenNetWork) {
         m_ssidLineEdit->setVisible(true);
         m_ssidLineEdit->lineEdit()->setPlaceholderText(tr("Please input SSID"));
         m_ssidLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -128,7 +133,7 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     btnLayout->addWidget(connectBtn);
     btnLayout->addSpacing(20);
 
-    if (m_ssidLable->text().contains("hidden")) {
+    if (isHiddenNetWork) {
         inputEditLayout->addWidget(m_ssidLineEdit);
         inputEditLayout->addSpacing(10);
     }
@@ -189,10 +194,9 @@ bool WirelessEditWidget::getConnectIconStatus()
     return m_stateButton->isVisible();
 }
 
-void WirelessEditWidget::onBtnClickedHandle(bool enable)
+void WirelessEditWidget::onBtnClickedHandle()
 {
-    Q_UNUSED(enable);
-    if (m_clickedItemWidget->m_itemName.contains("hidden")) {
+    if (m_clickedItemWidget->isHiddenNetWork) {
         m_ssidLineEdit->clear();
     }
 
@@ -203,7 +207,7 @@ void WirelessEditWidget::onBtnClickedHandle(bool enable)
 
 void WirelessEditWidget::updateItemDisplay()
 {
-    if (m_clickedItemWidget->m_ssidLable->text().contains("hidden")) {
+    if (m_clickedItemWidget->isHiddenNetWork) {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 160));
     } else {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 100));
@@ -311,7 +315,6 @@ void WirelessEditWidget::setHiddenNetWork(const QString &info)
 void WirelessEditWidget::initConnection()
 {
     connect(m_buttonTuple->rightButton(), &QPushButton::clicked, this, &WirelessEditWidget::onRequestConnect);
-    connect(m_buttonTuple->rightButton(), &QPushButton::clicked, this, &WirelessEditWidget::onBtnClickedHandle);
 
     connect(m_buttonTuple->leftButton(), &QPushButton::clicked, this, &WirelessEditWidget::onBtnClickedHandle);
     connect(this, &WirelessEditWidget::saveSettingsDone, this, &WirelessEditWidget::prepareConnection);
@@ -327,8 +330,8 @@ bool WirelessEditWidget::ssidInputValid()
     // 判断输入的SSID的有效性
     if (!(length > 0 && length < 33)) {
         valid = false;
-        m_ssidLineEdit->clear();
-        m_ssidLineEdit->lineEdit()->setPlaceholderText(tr("Invalid SSID"));
+        updateItemDisplay();
+        m_ssidLineEdit->showAlertMessage(tr("Invalid SSID"));
         qDebug() << "input ssid is invalid!";
     }
 
@@ -342,8 +345,8 @@ bool WirelessEditWidget::passwdInputValid()
     valid = NetworkManager::wpaPskIsValid(m_passwdEdit->text());
     // 判断输入的passwd的有效性
     if (!valid) {
-        m_passwdEdit->lineEdit()->clear();
-        m_passwdEdit->lineEdit()->setPlaceholderText(tr("Invalid password"));
+        updateItemDisplay();
+        m_passwdEdit->showAlertMessage(tr("Invalid password"));
         qDebug() << "input passwd is invalid!";
     }
 
@@ -366,7 +369,7 @@ void WirelessEditWidget::saveConnSettings()
 {
     QDBusPendingReply<> reply;
 
-    if (m_ssidLable->text().contains("hidden")) {
+    if (isHiddenNetWork) {
         if (!ssidInputValid()) {
             return;
         }
@@ -417,6 +420,8 @@ void WirelessEditWidget::saveConnSettings()
     // 设置WIFi连接信息
     m_wsSetting->setInitialized(true);
 
+    onBtnClickedHandle();
+
     Q_EMIT saveSettingsDone();
 }
 
@@ -448,7 +453,7 @@ void WirelessEditWidget::updateConnection()
         return;
     }
 
-    if (m_clickedItemWidget->m_itemName.contains("hidden")) {
+    if (m_clickedItemWidget->isHiddenNetWork) {
         Q_EMIT activateWirelessConnection(m_ssid, m_connectionUuid);
     }
 

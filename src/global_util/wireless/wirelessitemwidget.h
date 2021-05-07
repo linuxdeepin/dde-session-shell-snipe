@@ -50,9 +50,10 @@ class WirelessEditWidget : public QWidget
 {
     Q_OBJECT
 public:
+    bool isHiddenNetWork;
+    int m_signalStrength;
     QString m_ssid;
     QString m_apPath;
-    int m_signalStrength;
     QString m_connectionUuid;
     QString m_itemName;
 
@@ -98,7 +99,7 @@ private Q_SLOTS:
     void prepareConnection();
     void updateConnection();
     void createConnSettings();
-    void onBtnClickedHandle(bool enable);
+    void onBtnClickedHandle();
     void onRequestConnect();
 
 private:
