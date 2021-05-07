@@ -256,7 +256,7 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
     } else if (errorReason == Device::AuthSupplicantTimeoutReason) {
         m_passwdEdit->showAlertMessage(tr("The 802.1X supplicant took too long time to authenticate"));
     }else{
-        m_passwdEdit->showAlertMessage(tr("Connect failed"));
+        m_passwdEdit->showAlertMessage(tr("connect failed"));
     }
 }
 
