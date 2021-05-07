@@ -162,6 +162,7 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     switchLayout->addSpacing(3);
     switchLayout->addWidget(lblTitle);
     switchLayout->addStretch();
+    m_loadingIndicator->setVisible(m_switchBtn->isChecked());
     switchLayout->addWidget(m_loadingIndicator);
     switchLayout->addSpacing(10);
     switchLayout->setContentsMargins(10, 0, 5, 0);
@@ -461,7 +462,7 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 QString ssid =  m_clickedItemWidget->m_ssid;
                 m_apItemsWidget[ssid]->updateIndicatorDisplay(false);
                 for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-                    if (it.value()->m_itemName.contains("hidden")) {
+                    if (it.value()->isHiddenNetWork) {
                         m_clickedItemWidget = it.value();
                         m_apItemsWidget[it.key()]->connectWirelessFailedTips(reason);
                     }
@@ -479,7 +480,7 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
     } else if (WirelessDevice::Preparing <= newstate && newstate < WirelessDevice::Activated) {
         for (auto conn : activeConnections()) {
             for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-                if (!it.value()->m_itemName.contains("hidden") && conn->uuid() == it.value()->m_connectionUuid) {
+                if (!it.value()->isHiddenNetWork && conn->uuid() == it.value()->m_connectionUuid) {
                     it.value()->updateIndicatorDisplay(true);
                 }
             }
@@ -509,6 +510,8 @@ void WirelessPage::sortAPList()
 void WirelessPage::onNetworkAdapterChanged(bool checked)
 {
     Q_EMIT requestDeviceEnabled(m_device->uni(), checked);
+
+    m_loadingIndicator->setVisible(checked);
 
     if (checked)
         Q_EMIT requestWirelessScan();
@@ -543,6 +546,8 @@ void WirelessPage::updateActiveAp()
     if (activeConn) {
         for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
             it.value()->setConnectIconVisible(false);
+            it.value()->setWidgetVisible(false);
+            m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), 50));
             it.value()->updateIndicatorDisplay(false);
             if (it.value()->m_apPath == activeConn->specificObject()) {
                 m_clickedItemWidget = it.value();
