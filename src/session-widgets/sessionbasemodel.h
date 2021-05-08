@@ -146,6 +146,7 @@ signals:
     void tipsShowed();
     void clearServerLoginWidgetContent();
     void updateLockLimit(std::shared_ptr<User> user);
+    void activeGreeterAuthentciate();
 
 
 private:

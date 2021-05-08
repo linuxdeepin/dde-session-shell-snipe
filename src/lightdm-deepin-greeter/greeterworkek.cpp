@@ -46,6 +46,12 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     connect(m_greeter, &QLightDM::Greeter::showMessage, this, &GreeterWorkek::message);
     connect(m_greeter, &QLightDM::Greeter::authenticationComplete, this, &GreeterWorkek::authenticationComplete);
 
+    connect(m_model, &SessionBaseModel::activeGreeterAuthentciate, this, [ this ] {
+       if (!m_greeter->inAuthentication() && !m_model->currentUser()->name().isEmpty() && m_greeter->authenticationUser().isEmpty()) {
+           m_greeter->authenticate(m_model->currentUser()->name());
+       }
+    });
+
     connect(model, &SessionBaseModel::onPowerActionChanged, this, [ = ](SessionBaseModel::PowerAction poweraction) {
         switch (poweraction) {
         case SessionBaseModel::PowerAction::RequireShutdown:
@@ -171,7 +177,6 @@ void GreeterWorkek::authUser(const QString &password)
     // auth interface
     std::shared_ptr<User> user = m_model->currentUser();
     m_password = password;
-
     qWarning() << "greeter authenticate user: " << m_greeter->authenticationUser() << " current user: " << user->name();
     if (m_greeter->authenticationUser() != user->name()) {
         resetLightdmAuth(user, 100, false);

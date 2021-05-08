@@ -50,6 +50,7 @@ void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
     LockContent::onCurrentUserChanged(user);
     m_sessionFrame->switchToUser(user->name());
+    emit m_model->activeGreeterAuthentciate();
 }
 
 void LoginContent::onStatusChanged(SessionBaseModel::ModeStatus status)
