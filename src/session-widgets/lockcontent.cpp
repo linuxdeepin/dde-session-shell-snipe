@@ -49,11 +49,11 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     // init connect
     connect(m_userLoginInfo, &UserLoginInfo::accountLineEditFinished, this, [ = ](const QString &accountName) {
         auto user_ptr = m_model->findUserByName(accountName);
-        auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user_ptr->locale();
-        m_logoWidget->updateLocale(locale);
-        m_timeWidget->updateLocale(locale);
-        m_userLoginInfo->updateUserLoginLocale(locale);
         if (user_ptr != nullptr) {
+            auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user_ptr->locale();
+            m_logoWidget->updateLocale(locale);
+            m_timeWidget->updateLocale(locale);
+            m_userLoginInfo->updateUserLoginLocale(locale);
             Q_EMIT m_model->updateLockLimit(user_ptr);
             m_localeFlag = true;
         } else if (m_localeFlag) {
