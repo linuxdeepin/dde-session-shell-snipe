@@ -51,6 +51,7 @@ class WirelessEditWidget : public QWidget
     Q_OBJECT
 public:
     bool isHiddenNetWork;
+    bool isSecurityNetWork;
     int m_signalStrength;
     QString m_ssid;
     QString m_apPath;
@@ -67,6 +68,7 @@ public:
     void setClickItemWidget(WirelessEditWidget *clickItemWidget);
     void setCurrentActiveConnect(NetworkManager::ActiveConnection::Ptr activeConnect);
     void updateItemDisplay();
+    void setItemDisplay();
     void setConnectIconVisible(bool enabled);
     void setCurrentConnectItemWidget(WirelessEditWidget *connectItemWidget);
     void updateItemWidgetDisplay(const QString &ssid, const int &signalStrength, const bool isSecurity);
@@ -76,6 +78,7 @@ public:
     void setSignalStrength(int strength);
     void connectWirelessFailedTips(const Device::StateChangeReason &reason);
     void setWirelessSettings();
+    void setSecurityWirelessSettings();
 
 private:
     void intiUI(const QString &itemName);

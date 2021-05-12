@@ -39,14 +39,15 @@ using namespace NetworkManager;
 
 WirelessEditWidget::WirelessEditWidget(const QString &ItemName, QWidget *parent)
     : QWidget(parent)
-    ,isHiddenNetWork(false)
+    , isHiddenNetWork(false)
+    , isSecurityNetWork(false)
     , m_itemName(ItemName)
 {
     if (m_itemName.isEmpty()) {
         return;
     }
 
-    if (m_itemName.contains("hidden")){
+    if (m_itemName.contains("hidden")) {
         isHiddenNetWork = true;
     }
 
@@ -115,10 +116,8 @@ void WirelessEditWidget::intiUI(const QString &itemName)
         m_ssidLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     }
 
-    m_passwdEdit->setVisible(true);
     m_passwdEdit->lineEdit()->setPlaceholderText(tr("Please input Wi-Fi password"));
     m_passwdEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
 
     QHBoxLayout *btnLayout = new QHBoxLayout;
     m_buttonTuple = new ButtonTuple(ButtonTuple::Save);
@@ -205,12 +204,28 @@ void WirelessEditWidget::onBtnClickedHandle()
     m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 50));
 }
 
+void WirelessEditWidget::setItemDisplay()
+{
+    if (m_clickedItemWidget->isHiddenNetWork) {
+        m_passwdEdit->setVisible(true);
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
+    } else if (!m_clickedItemWidget->isSecurityNetWork) {
+        m_passwdEdit->setVisible(false);
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 80));
+    } else {
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
+    }
+}
+
 void WirelessEditWidget::updateItemDisplay()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 160));
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
     } else {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 100));
+        if (!m_clickedItemWidget->isHiddenNetWork) {
+            m_passwdEdit->setVisible(true);
+        }
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
     }
 }
 
@@ -266,7 +281,6 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
 
 void WirelessEditWidget::setItemWidgetInfo(const AccessPoint *ap)
 {
-
     m_ssid = ap->ssid();
     m_ssidLineEdit->setText(m_ssid);
     m_apPath = ap->uni();
@@ -278,6 +292,9 @@ void WirelessEditWidget::setItemWidgetInfo(const AccessPoint *ap)
         m_securityLabel->clear();
     } else if (!m_securityLabel->pixmap()) {
         m_securityLabel->setPixmap(m_securityPixmap);
+    } else {
+        isSecurityNetWork = true;
+        m_passwdEdit->setVisible(true);
     }
 }
 
@@ -355,14 +372,26 @@ bool WirelessEditWidget::passwdInputValid()
 
 void WirelessEditWidget::setWirelessSettings()
 {
+    m_wirelessSetting->setSsid(m_ssidLineEdit->text().toUtf8());
+    m_wirelessSetting->setHidden(true);
+    m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaNone);
+    m_wirelessSetting->setMode(WirelessSetting::NetworkMode::Infrastructure);
+
+    m_wirelessSetting->setInitialized(true);
+    m_wsSetting->setInitialized(false);
+    Q_EMIT saveSettingsDone();
+}
+
+void WirelessEditWidget::setSecurityWirelessSettings()
+{
     m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaPsk);
     m_wirelessSetting->setSsid(m_ssidLineEdit->text().toUtf8());
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::AgentOwned);
     m_wsSetting->setWepKeyType(NetworkManager::WirelessSecuritySetting::WepKeyType::NotSpecified);
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::NotRequired);
     m_wsSetting->setAuthAlg(NetworkManager::WirelessSecuritySetting::AuthAlg::None);
-    m_wirelessSetting->setInitialized(true);
     m_wsSetting->setPsk(m_passwdEdit->text());
+    m_wirelessSetting->setInitialized(true);
 }
 
 void WirelessEditWidget::saveConnSettings()
@@ -375,29 +404,26 @@ void WirelessEditWidget::saveConnSettings()
         }
 
         if (m_passwdEdit->text().isEmpty()) {
-            m_wirelessSetting->setSsid(m_ssidLineEdit->text().toUtf8());
-            m_wirelessSetting->setHidden(true);
-            m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaNone);
-            m_wirelessSetting->setMode(WirelessSetting::NetworkMode::Infrastructure);
-
-            m_wirelessSetting->setInitialized(true);
-            m_wsSetting->setInitialized(false);
-            Q_EMIT saveSettingsDone();
+            setWirelessSettings();
             return;
         } else {
             if (!passwdInputValid()) {
                 return;
             }
 
-            setWirelessSettings();
-            m_wirelessSetting->setInitialized(true);
+            setSecurityWirelessSettings();
         }
     } else {
-        if (!passwdInputValid()) {
+        if (!m_clickedItemWidget->isSecurityNetWork) {
+            setWirelessSettings();
             return;
-        }
+        } else {
+            if (!passwdInputValid()) {
+                return;
+            }
 
-        setWirelessSettings();
+            setSecurityWirelessSettings();
+        }
     }
 
     // 在激活一个新的连接前,需要先取消之前的连接
