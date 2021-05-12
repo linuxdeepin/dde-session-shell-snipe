@@ -27,7 +27,7 @@ using namespace dtk::wireless;
 WirelessWidget::WirelessWidget(QWidget *parent)
     : QWidget(parent)
 {
-    this->setFixedSize(300, 320);
+    this->setFixedSize(420, 410);
     setWindowFlags(Qt::Widget | windowFlags());
 
     m_mainLayout = new QVBoxLayout;
