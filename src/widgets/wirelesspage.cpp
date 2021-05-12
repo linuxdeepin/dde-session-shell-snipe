@@ -43,6 +43,8 @@ DWIDGET_USE_NAMESPACE
 using namespace dtk::wireless;
 using namespace NetworkManager;
 
+#define WPAFLAG_KEYMGMT8021X 0x288
+
 APItem::APItem(QStyle *style, DTK_WIDGET_NAMESPACE::DListView *parent)
     : DStandardItem()
     , m_parentView(nullptr)
@@ -292,8 +294,8 @@ void WirelessPage::onAPAdded(const QString &apPath)
     const QString &ssid = nmAp->ssid().toUtf8();
     bool isConnect = false;
 
-    if (ssid.isEmpty()) {
-        qDebug() << "do not show hide network";
+    if (ssid.isEmpty() || nmAp->rsnFlags() == WPAFLAG_KEYMGMT8021X) {
+        qDebug() << "do not show hide network or KeyMgmt8021x network";
         return;
     }
 
@@ -362,7 +364,8 @@ void WirelessPage::onAPChanged(const QString &apPath)
     AccessPoint *nmAp = new AccessPoint(apPath);
     const QString &ssid = nmAp->ssid();
 
-    if (ssid.isEmpty()) {
+    if (ssid.isEmpty() || nmAp->rsnFlags() == WPAFLAG_KEYMGMT8021X) {
+        qDebug() << "do not show hide network or KeyMgmt8021x network";
         return;
     }
 
@@ -384,6 +387,7 @@ void WirelessPage::onAPChanged(const QString &apPath)
             APWdiget->updateItemDisplay();
             m_clickedItemWidget = APWdiget;
         }
+
         if (!APWdiget->m_apPath.isNull()) {
             for (auto conn : activeConnections()) {
                 if (conn->state() == ActiveConnection::State::Activated && conn->specificObject() != QString("/")) {
@@ -404,12 +408,12 @@ void WirelessPage::onAPChanged(const QString &apPath)
 
     m_apItemsWidget[ssid]->updateItemWidgetDisplay(ssid, nmAp->signalStrength(), nmAp->capabilities());
 
-
     auto activeConn = m_device->activeConnection();
 
     if (m_connectItemWidget != nullptr && activeConn != nullptr) {
         isConnect = m_connectItemWidget->m_apPath == activeConn->specificObject();
     }
+
     m_apItems[ssid]->setSortInfo({nmAp->signalStrength(), ssid, isConnect});
 
     m_sortDelayTimer->start();
