@@ -154,7 +154,7 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     m_loadingIndicator->setFrameShape(QFrame::NoFrame);
     m_loadingIndicator->setImageSource(pixmap);
 
-    DFontSizeManager::instance()->bind(lblTitle, DFontSizeManager::T8, QFont::DemiBold);
+    DFontSizeManager::instance()->bind(lblTitle, DFontSizeManager::T6, QFont::DemiBold);
     m_switchBtn = new DSwitchButton;
 
     QHBoxLayout *switchLayout = new QHBoxLayout;
@@ -177,7 +177,7 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     m_mainLayout = new QVBoxLayout;
     QWidget *switchWidget = new QWidget(this);
     switchWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    switchWidget->setFixedSize(300, 60);
+    switchWidget->setFixedSize(420, 60);
     switchWidget->setLayout(switchLayout);
 
     m_mainLayout->addWidget(switchWidget, 0, Qt::AlignTop | Qt::AlignHCenter);
@@ -630,7 +630,7 @@ void WirelessPage::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);  // 反锯齿;
-    painter.setBrush(QBrush(QColor(0, 0, 0, 76)));
+    painter.setBrush(QBrush(QColor(255, 255, 255, 12)));
     painter.setPen(Qt::transparent);
     QRect rect = this->rect();
     rect.setWidth(rect.width() - 1);

@@ -125,12 +125,11 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     QPushButton *connectBtn = m_buttonTuple->rightButton();
 
     cancelBtn->setText(tr("Cancel"));
+    cancelBtn->setPalette(QPalette(Qt::white));
     connectBtn->setText(tr("Connect"));
-    btnLayout->addSpacing(20);
     btnLayout->addWidget(cancelBtn);
     btnLayout->addSpacing(20);
     btnLayout->addWidget(connectBtn);
-    btnLayout->addSpacing(20);
 
     if (isHiddenNetWork) {
         inputEditLayout->addWidget(m_ssidLineEdit);
@@ -144,7 +143,7 @@ void WirelessEditWidget::intiUI(const QString &itemName)
 
     // 主布局
     QVBoxLayout *mainlayout = new QVBoxLayout;
-    mainlayout->setContentsMargins(0, 0, 5, 0);
+    mainlayout->setContentsMargins(0, 0, 5, 10);
     mainlayout->addWidget(m_wirelessInfoWidget);
     mainlayout->addSpacing(0);
     mainlayout->addWidget(m_wirelessEditWidget);
