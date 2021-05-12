@@ -147,7 +147,7 @@ void ControlWidget::setWirelessListEnable(const bool visible)
 
     if (!m_wirelessBtn) {
         m_wirelessBtn = new DFloatingButton(this);
-        updateWifiIconDisplay(WiFiStrengthNoNE);
+        updateWifiIconDisplay(WiFiStrengthNoLevel);
         m_wirelessBtn->setIconSize(BUTTON_ICON_SIZE);
         m_wirelessBtn->setFixedSize(BUTTON_SIZE);
         m_wirelessBtn->setFocusPolicy(Qt::ClickFocus);
@@ -341,7 +341,7 @@ void ControlWidget::updateWifiIconDisplay(int wifiLevel)
     int wifiSignalStrength = wifiLevel;
     switch (wifiSignalStrength) {
     case (WiFiStrengthNoNE):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-wireless-disconnect.svg"));
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-network-wirelss-no-route-symbolic.svg"));
         break;
     case (WiFiStrengthNoLevel):
         m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-0-symbolic.svg"));
