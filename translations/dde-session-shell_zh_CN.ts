@@ -182,6 +182,11 @@
 <context>
     <name>ShutdownWidget</name>
     <message>
+        <location filename="../src/widgets/shutdownwidget.cpp" line="86"/>
+        <source>Shut down</source>
+        <translation>关机</translation>
+    </message>
+    <message>
         <location filename="../src/widgets/shutdownwidget.cpp" line="93"/>
         <source>Reboot</source>
         <translation>重启</translation>
