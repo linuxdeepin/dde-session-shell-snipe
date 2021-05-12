@@ -234,8 +234,6 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     connect(m_device, &WirelessDevice::accessPointAppeared, this, &WirelessPage::onAPAdded); // 新增WIFI热点信号监听
     connect(m_device, &WirelessDevice::activeConnectionChanged, this, &WirelessPage::updateActiveAp);
 
-    onActiveAPChanged();
-
     // init data
     const QStringList mApList = m_device->apList();
     if (!mApList.isEmpty()) {
@@ -432,13 +430,22 @@ void WirelessPage::onActiveAPChanged()
 
 void WirelessPage::updateWiFiStrengthDisplay()
 {
+    auto activeConn = m_device->activeConnection();
+    int signalStrength = 0;
+
+    for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
+        if (activeConn && m_device->state() == Device::State::Activated) {
+            if (it.value()->m_apPath == activeConn->specificObject()) {
+                signalStrength = it.value()->m_signalStrength;
+            }
+        }
+    }
+
     WiFiStrenthLevel wifiSignalStrength = WiFiStrengthNoLevel;
     if (!m_switchBtn->isChecked()) {
         emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoNE);
-    } else if (!m_activeAp) {
-        emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
     } else {
-        wifiSignalStrength = getWiFiSignalStrengthLevel(m_activeAp->signalStrength());
+        wifiSignalStrength = getWiFiSignalStrengthLevel(signalStrength);
         emit requestRefreshWiFiStrengthDisplay(wifiSignalStrength);
     }
 }
@@ -481,6 +488,8 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
         } else {
             connectWirelessErrorHandle(reason);
         }
+
+        emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
     } else if (WirelessDevice::Preparing <= newstate && newstate < WirelessDevice::Activated) {
         for (auto conn : activeConnections()) {
             for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
@@ -501,6 +510,9 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 info.connected = true;
                 m_apItems[it.key()]->setSortInfo(info);
                 m_sortDelayTimer->start();
+
+                WiFiStrenthLevel wifiSignalStrength = getWiFiSignalStrengthLevel(it.value()->m_signalStrength);
+                emit requestRefreshWiFiStrengthDisplay(wifiSignalStrength);
             }
         }
     }
