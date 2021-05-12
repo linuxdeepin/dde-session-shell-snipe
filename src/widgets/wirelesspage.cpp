@@ -202,7 +202,7 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
         item->setCurrentAvailableItemWidgets(m_apItemsWidget);
         item->setCurrentConnectItemWidget(m_connectItemWidget);
         item->setCurrentActiveConnect(m_device->activeConnection());
-        item->updateItemDisplay();
+        item->setItemDisplay();
         item->setDevPath(m_device->uni());
 
         connect(item, &WirelessEditWidget::activateWirelessConnection, this, [this](const QString & ssid, const QString & uuid) {
