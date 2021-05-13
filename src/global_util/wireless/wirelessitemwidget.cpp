@@ -124,7 +124,11 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     QPushButton *connectBtn = m_buttonTuple->rightButton();
 
     cancelBtn->setText(tr("Cancel"));
-    cancelBtn->setPalette(QPalette(Qt::white));
+    QPalette pa = cancelBtn->palette();
+    pa.setColor(DPalette::Light, Qt::black);
+    pa.setColor(DPalette::Dark, Qt::black);
+    pa.setColor(DPalette::ButtonText, Qt::white);
+    cancelBtn->setPalette(pa);
     connectBtn->setText(tr("Connect"));
     btnLayout->addWidget(cancelBtn);
     btnLayout->addSpacing(20);
