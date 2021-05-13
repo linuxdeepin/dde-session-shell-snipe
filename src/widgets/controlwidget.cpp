@@ -181,7 +181,6 @@ void ControlWidget::updateWirelessBtnDisplay(const QString &path)
         if (device->type() == NetworkManager::Device::Type::Wifi) {
             m_wirelessBtn->setVisible(true);
             m_wifiDeviceExist = true;
-            connect(m_wirelessBtn, &DFloatingButton::clicked, this, &ControlWidget::requestWiFiPage);
 
             emit updateWirelessDisplay();
             return;

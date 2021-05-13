@@ -81,7 +81,6 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     m_ssidLineEdit = new DLineEdit;
     m_ssidLineEdit->setVisible(false);
     m_passwdEdit = new DPasswordEdit;
-    m_passwdEdit->setVisible(false);
     m_stateButton->setFixedSize(PLUGIN_ICON_SIZE, PLUGIN_ICON_SIZE);
     m_stateButton->setVisible(false);
     wirelessInfoLayout->addWidget(m_securityLabel);
@@ -149,9 +148,7 @@ void WirelessEditWidget::intiUI(const QString &itemName)
     mainlayout->addWidget(m_wirelessEditWidget);
 
     m_wirelessEditWidget->setVisible(false);
-
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
     setLayout(mainlayout);
 }
 
@@ -206,11 +203,10 @@ void WirelessEditWidget::onBtnClickedHandle()
 void WirelessEditWidget::setItemDisplay()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
-        m_passwdEdit->setVisible(true);
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
     } else if (!m_clickedItemWidget->isSecurityNetWork) {
-        m_passwdEdit->setVisible(false);
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 80));
+        setWidgetVisible(false);
+        onRequestConnect();
     } else {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
     }
@@ -221,9 +217,6 @@ void WirelessEditWidget::updateItemDisplay()
     if (m_clickedItemWidget->isHiddenNetWork) {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
     } else {
-        if (!m_clickedItemWidget->isHiddenNetWork) {
-            m_passwdEdit->setVisible(true);
-        }
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
     }
 }
@@ -266,7 +259,12 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
     m_passwdEdit->clear();
 
     if (errorReason == Device::SsidNotFound) {
-        m_ssidLineEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+        if (m_clickedItemWidget->isHiddenNetWork) {
+            m_ssidLineEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+        } else {
+            m_passwdEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+        }
+
     } else if (errorReason == Device::NoSecretsReason) {
         m_passwdEdit->showAlertMessage(tr("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
     } else if (errorReason == Device::ConfigUnavailableReason) {
@@ -276,6 +274,14 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
     }else{
         m_passwdEdit->showAlertMessage(tr("Connect failed"));
     }
+
+    QTimer::singleShot(2000, this, [ = ] {
+        if (!m_clickedItemWidget->isSecurityNetWork) {
+                setWidgetVisible(false);
+                m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 50));
+        }
+    });
+
 }
 
 void WirelessEditWidget::setItemWidgetInfo(const AccessPoint *ap)
@@ -293,7 +299,6 @@ void WirelessEditWidget::setItemWidgetInfo(const AccessPoint *ap)
         m_securityLabel->setPixmap(m_securityPixmap);
     } else {
         isSecurityNetWork = true;
-        m_passwdEdit->setVisible(true);
     }
 }
 
