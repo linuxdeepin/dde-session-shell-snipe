@@ -127,6 +127,7 @@ public:
     void updateWiFiStrengthDisplay();
     WiFiStrenthLevel getWiFiSignalStrengthLevel(int ss);
     void connectWirelessErrorHandle(const Device::StateChangeReason &reason);
+    void updateWirelessListViewDisplay(bool checked);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -168,9 +169,11 @@ private:
     Dtk::Widget::DSwitchButton *m_switchBtn;
     DListView *m_lvAP;
     QStandardItemModel *m_modelAP;
+    APItem * m_titleItem;
     WirelessDevice *m_device;
     dtk::wireless::NetworkWorker *m_worker;
     WirelessEditWidget *m_clickedItemWidget;
+    WirelessEditWidget *m_activingItemWidget;
     WirelessEditWidget *m_connectItemWidget;
     AccessPoint::Ptr m_activeAp;
     QVBoxLayout *m_mainLayout;

@@ -39,6 +39,7 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
     connect(m_controlWidget, &ControlWidget::requestSwitchSession, this, [ = ] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::SessionMode);
     });
+
     connect(m_controlWidget, &ControlWidget::requestWiFiPage, this, [ = ] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::WirelessMode);
         onRequestWirelessPage();
@@ -62,14 +63,14 @@ void LoginContent::onRequestWirelessPage()
             connect(m_wirelessWigdet, &WirelessWidget::signalStrengthChanged, m_controlWidget, &ControlWidget::updateWifiIconDisplay);
             onRequestWirelessPage();
         });
+
         return;
     }
 
     m_wirelessWigdet->setParent(this);
     m_wirelessWigdet->raise();
-
-    updateWirelessListPosition();
     m_wirelessWigdet->setVisible(true);
+    updateWirelessListPosition();
 }
 
 void LoginContent::updateWirelessListPosition()
