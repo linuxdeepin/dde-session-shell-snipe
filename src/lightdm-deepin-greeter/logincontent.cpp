@@ -73,6 +73,14 @@ void LoginContent::onRequestWirelessPage()
     updateWirelessListPosition();
 }
 
+void LoginContent::mouseReleaseEvent(QMouseEvent *event)
+{
+    Q_UNUSED(event);
+    if (m_model->currentModeState() == SessionBaseModel::ModeStatus::WirelessMode) {
+        restoreMode();
+    }
+}
+
 void LoginContent::updateWirelessListPosition()
 {
     const QPoint point = mapToParent(QPoint((width() - m_wirelessWigdet->width()) / 2, (height() - m_wirelessWigdet->height()) / 2));

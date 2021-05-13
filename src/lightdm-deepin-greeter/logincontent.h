@@ -40,6 +40,9 @@ public:
     void onRequestWirelessPage();
     void updateWirelessListPosition();
 
+protected:
+    void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+
 private:
     SessionWidget *m_sessionFrame;
     WirelessWidget *m_wirelessWigdet;
