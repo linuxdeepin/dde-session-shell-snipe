@@ -1,6 +1,7 @@
 #ifndef LOCKWORKER_H
 #define LOCKWORKER_H
 
+#include "src/global_util/dbus/dbuslockservice.h"
 #include "src/global_util/dbus/dbuslogin1manager.h"
 #include "src/global_util/dbus/dbushotzone.h"
 #include "src/session-widgets/userinfo.h"
@@ -14,12 +15,10 @@
 #include <com_deepin_daemon_logined.h>
 #include <com_deepin_daemon_accounts.h>
 #include <com_deepin_sessionmanager.h>
-#include <com_deepin_dde_lockservice.h>
 
 using LoginedInter = com::deepin::daemon::Logined;
 using AccountsInter = com::deepin::daemon::Accounts;
 using SessionManager = com::deepin::SessionManager;
-using LockService = com::deepin::dde::LockService;
 
 class SessionBaseModel;
 class LockWorker : public Auth::AuthInterface, public DeepinAuthInterface
@@ -31,15 +30,6 @@ public:
         Fingerprint = 1 << 1,
         Face = 1 << 2,
         ActiveDirectory = 1 << 3
-    };
-
-    enum EventType {
-        PromptQuestion = 1,
-        PromptSecret = 2,
-        ErrorMsg = 3,
-        TextInfo = 4,
-        Failure = 5,
-        Success = 6
     };
 
     explicit LockWorker(SessionBaseModel *const model, QObject *parent = nullptr);
@@ -67,7 +57,7 @@ private:
 private:
     bool m_authenticating;
     bool m_isThumbAuth;
-    LockService *m_lockInter;
+    DBusLockService *m_lockInter;
     DBusHotzone *m_hotZoneInter;
     DeepinAuthFramework *m_authFramework;
     QString m_password;

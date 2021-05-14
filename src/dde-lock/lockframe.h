@@ -37,6 +37,7 @@
 const QString DBUS_PATH = "/com/deepin/dde/lockFront";
 const QString DBUS_NAME = "com.deepin.dde.lockFront";
 
+class DBusLockService;
 class SessionBaseModel;
 class LockContent;
 class User;

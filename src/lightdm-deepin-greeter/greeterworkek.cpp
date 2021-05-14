@@ -76,7 +76,7 @@ private:
 GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     : AuthInterface(model, parent)
     , m_greeter(new QLightDM::Greeter(this))
-    , m_lockInter(new LockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
+    , m_lockInter(new DBusLockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
     , m_AuthenticateInter(new Authenticate(AuthenticateService,
                                          "/com/deepin/daemon/Authenticate",
                                          QDBusConnection::systemBus(), this))
@@ -133,8 +133,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     });
 
     connect(model, &SessionBaseModel::currentUserChanged, this, &GreeterWorkek::recoveryUserKBState);
-    connect(m_lockInter, &LockService::UserChanged, this, &GreeterWorkek::onCurrentUserChanged);
-    connect(m_lockInter, &LockService::IsDisablePasswdChanged, model, &SessionBaseModel::setIsDisablePasswordEdit);
+    connect(m_lockInter, &DBusLockService::UserChanged, this, &GreeterWorkek::onCurrentUserChanged);
 
     connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [ = ] {
         const QString& user = m_lockInter->CurrentUser();
@@ -154,8 +153,6 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     const QString &switchUserButtonValue { valueByQSettings<QString>("Lock", "showSwitchUserButton", "ondemand") };
     m_model->setAlwaysShowUserSwitchButton(switchUserButtonValue == "always");
     m_model->setAllowShowUserSwitchButton(switchUserButtonValue == "ondemand");
-
-    m_model->setIsDisablePasswordEdit(m_lockInter->isDisablePasswd());
 
     {
         initDBus();

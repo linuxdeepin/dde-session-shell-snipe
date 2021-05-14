@@ -108,6 +108,7 @@ set(haweiswitchos_DBUS_SCRS
 
 set(GLOBAL_UTILS_SRCS
     ./src/global_util/util_updateui.h
+    ./src/global_util/dbus/dbuslockservice.h
     ./src/global_util/dbus/dbuslockfront.h
     ./src/global_util/dbus/dbuskeyboard.h
     ./src/global_util/dbus/dbusdisplaymanager.h
@@ -141,6 +142,7 @@ set(GLOBAL_UTILS_SRCS
     ./src/global_util/dbus/dbuskeyboard.cpp
     ./src/global_util/dbus/dbusinputdevices.cpp
     ./src/global_util/dbus/dbushotzone.cpp
+    ./src/global_util/dbus/dbuslockservice.cpp
     ./src/global_util/util_updateui.cpp
     ./src/global_util/multiscreenmanager.cpp
     ./src/global_util/public_func.cpp

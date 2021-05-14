@@ -119,7 +119,6 @@ void UserLoginInfo::initConnect()
     });
     connect(m_model, &SessionBaseModel::authFaildMessage, m_userLoginWidget, &UserLoginWidget::setFaildMessage);
     connect(m_model, &SessionBaseModel::authFaildTipsMessage, m_userLoginWidget, &UserLoginWidget::setFaildTipMessage);
-    connect(m_model, &SessionBaseModel::PasswordEditChanged, m_userLoginWidget, &UserLoginWidget::setIsDisablePasswordEdit);
     connect(m_userLoginWidget, &UserLoginWidget::requestUserKBLayoutChanged, this, [ = ](const QString & value) {
         emit requestSetLayout(m_user, value);
     });

@@ -99,9 +99,6 @@ public:
     inline bool isHibernateMode() const {return m_isHibernateMode; }
     void setIsHibernateModel(bool is_Hibernate);
 
-    inline bool isPasswordEdit() const {return m_isDisablePasswordEdit;}
-    void setIsDisablePasswordEdit(bool is_edit);
-
 signals:
     void onUserAdded(std::shared_ptr<User> user);
     void onUserRemoved(const uint uid);
@@ -126,7 +123,6 @@ signals:
     void userListLoginedChanged(QList<std::shared_ptr<User>> list);
     void activeAuthChanged(bool active);
     void blackModeChanged(bool is_black);
-    void PasswordEditChanged(bool is_edit);
     void HibernateModeChanged(bool is_hibernate);//休眠信号改变
 
 private:
@@ -144,8 +140,6 @@ private:
     bool m_isLockNoPassword;
     bool m_isBlackMode;
     bool m_isHibernateMode;
-    bool m_isDisablePasswordEdit; //是否能编辑
-
     AuthType m_currentType;
     QList<std::shared_ptr<User>> m_userList;
     std::shared_ptr<User> m_currentUser;

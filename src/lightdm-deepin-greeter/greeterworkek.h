@@ -5,10 +5,10 @@
 #include <QLightDM/SessionsModel>
 #include <QObject>
 
+#include "src/global_util/dbus/dbuslockservice.h"
 #include "src/session-widgets/authinterface.h"
 #include "src/global_util/dbus/dbuslogin1manager.h"
 #include <com_deepin_daemon_authenticate.h>
-#include <com_deepin_dde_lockservice.h>
 #include <linux/version.h>
 #include <linux/input.h>
 #include <fcntl.h>
@@ -17,7 +17,6 @@
 #include <stdlib.h>
 
 using com::deepin::daemon::Authenticate;
-using LockService = com::deepin::dde::LockService;
 
 class FileIOThread : public QThread {
     Q_OBJECT
@@ -72,7 +71,7 @@ private:
     void callAuthForLightdm(const QString &user) ;
 private:
     QLightDM::Greeter *m_greeter;
-    LockService       *m_lockInter;
+    DBusLockService   *m_lockInter;
     Authenticate      *m_AuthenticateInter;
     bool               m_isThumbAuth;
     bool               m_authSuccess;

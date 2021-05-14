@@ -29,7 +29,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     : AuthInterface(model, parent)
     , m_authenticating(false)
     , m_isThumbAuth(false)
-    , m_lockInter(new LockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
+    , m_lockInter(new DBusLockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
     , m_hotZoneInter(new DBusHotzone("com.deepin.daemon.Zone", "/com/deepin/daemon/Zone", QDBusConnection::sessionBus(), this))
     , m_sessionManager(new SessionManager("com.deepin.SessionManager", "/com/deepin/SessionManager", QDBusConnection::sessionBus(), this))
 {
@@ -46,9 +46,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
         }
     });
     //该信号用来处理初始化切换用户(锁屏+锁屏)或者切换用户(锁屏+登陆)两种种场景的指纹认证
-    connect(m_lockInter, &LockService::UserChanged, this, &LockWorker::onCurrentUserChanged);
-
-    connect(m_lockInter, &LockService::IsDisablePasswdChanged, model, &SessionBaseModel::setIsDisablePasswordEdit);
+    connect(m_lockInter, &DBusLockService::UserChanged, this, &LockWorker::onCurrentUserChanged);
 
     connect(model, &SessionBaseModel::onPowerActionChanged, this, [ = ](SessionBaseModel::PowerAction poweraction) {
         switch (poweraction) {
@@ -93,7 +91,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
         //userAuthForLock(user_ptr);
     });
 
-    connect(m_lockInter, &LockService::Event, this, &LockWorker::lockServiceEvent);
+    connect(m_lockInter, &DBusLockService::Event, this, &LockWorker::lockServiceEvent);
     connect(model, &SessionBaseModel::onStatusChanged, this, [ = ](SessionBaseModel::ModeStatus status) {
         if (status == SessionBaseModel::ModeStatus::PowerMode) {
             checkPowerInfo();
@@ -115,8 +113,6 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     const QString &switchUserButtonValue { valueByQSettings<QString>("Lock", "showSwitchUserButton", "ondemand") };
     m_model->setAlwaysShowUserSwitchButton(switchUserButtonValue == "always");
     m_model->setAllowShowUserSwitchButton(switchUserButtonValue == "ondemand");
-
-    m_model->setIsDisablePasswordEdit(m_lockInter->isDisablePasswd());
 
     {
         initDBus();
@@ -239,19 +235,19 @@ void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString 
     }
 
     switch (eventType) {
-    case EventType::PromptQuestion:
+    case DBusLockService::PromptQuestion:
         qDebug() << "prompt quesiton from pam: " << message;
         emit m_model->authFaildMessage(message);
         onUnlockFinished(false, false);
         break;
-    case EventType::PromptSecret:
+    case DBusLockService::PromptSecret:
         qDebug() << "prompt secret from pam: " << message;
         if (m_isThumbAuth && !msg.isEmpty()) {
             emit m_model->authFaildMessage(msg);
         }
         onUnlockFinished(false, false);
         break;
-    case EventType::ErrorMsg:
+    case DBusLockService::ErrorMsg:
         qWarning() << "error message from pam: " << message;
         if (msg == "Failed to match fingerprint") {
             emit m_model->authFaildTipsMessage(tr("Failed to match fingerprint"));
@@ -259,16 +255,16 @@ void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString 
         }
         onUnlockFinished(false, false);
         break;
-    case EventType::TextInfo:
+    case DBusLockService::TextInfo:
         qDebug() << "DBusLockService::TextInfo";
         emit m_model->authFaildMessage(QString(dgettext("fprintd", message.toLatin1())));
         onUnlockFinished(false, false);
         break;
-    case EventType::Failure:
+    case DBusLockService::Failure:
         qDebug() << "DBusLockService::Failure";
         onUnlockFinished(false, false);
         break;
-    case EventType::Success:
+    case DBusLockService::Success:
         qDebug() << "DBusLockService::Success";
         onUnlockFinished(true, false);
         break;

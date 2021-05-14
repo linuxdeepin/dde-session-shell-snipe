@@ -22,7 +22,6 @@ SessionBaseModel::SessionBaseModel(AuthType type, QObject *parent)
     , m_currentType(type)
     , m_currentUser(nullptr)
     , m_powerAction(PowerAction::RequireNormal)
-    , m_isDisablePasswordEdit(false)
 {
     if (m_currentType == LockType || m_currentType == UnknowAuthType) {
         m_sessionManagerInter = new SessionManager(SessionManagerService, SessionManagerPath, QDBusConnection::sessionBus(), this);
@@ -288,11 +287,4 @@ void SessionBaseModel::setIsHibernateModel(bool is_Hibernate){
     if(m_isHibernateMode == is_Hibernate) return;
     m_isHibernateMode = is_Hibernate;
     emit HibernateModeChanged(is_Hibernate);
-}
-
-void SessionBaseModel::setIsDisablePasswordEdit(bool is_edit)
-{
-    if (m_isDisablePasswordEdit == is_edit) return;
-    m_isDisablePasswordEdit = is_edit;
-    emit PasswordEditChanged(is_edit);
 }

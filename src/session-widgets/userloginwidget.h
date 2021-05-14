@@ -88,7 +88,6 @@ public:
     bool getIsServerMode();
     void updateKBLayout(const QStringList &list);
     void setDefaultKBLayout(const QString &layout);
-    void setIsDisablePasswordEdit(bool isEdit);
     void hideKBLayout();
     void setKBLayoutList(QStringList kbLayoutList);
     void clearPassWord();
@@ -159,7 +158,6 @@ private:
     bool m_isServerMode = false;                   //系统是否为服务器模式
     bool m_isSelected;
     bool m_isLockNoPassword;
-    bool m_isDisableEditPassword;                         //是否能输入密码
     QStringList m_KBLayoutList;
     QLabel *m_loginLabel;
     KeyboardMonitor *m_capslockMonitor;

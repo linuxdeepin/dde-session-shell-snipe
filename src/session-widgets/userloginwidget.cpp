@@ -226,8 +226,6 @@ void UserLoginWidget::updateUI()
 
     if (m_accountEdit->isVisible()) {
         setFocusProxy(m_accountEdit->lineEdit());
-    } else if (m_isDisableEditPassword) {
-         setFocusProxy(nullptr);
     } else if (m_passwordEdit->isVisible())
         setFocusProxy(m_passwordEdit->lineEdit());
 
@@ -683,15 +681,6 @@ void UserLoginWidget::setDefaultKBLayout(const QString &layout)
 {
     m_kbLayoutWidget->setDefault(layout);
     updateClipPath();
-}
-
-void UserLoginWidget::setIsDisablePasswordEdit(bool isEdit)
-{
-    if (m_isDisableEditPassword == isEdit) return;
-
-    m_isDisableEditPassword = isEdit;
-    m_passwordEdit->setEnabled(!m_isDisableEditPassword);
-    updateUI();
 }
 
 void UserLoginWidget::clearPassWord()
