@@ -46,10 +46,12 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
 
 void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
+    qDebug()<<"onCurrentUserChanged  begin";
     if (user.get() == nullptr) return;
 
     LockContent::onCurrentUserChanged(user);
     m_sessionFrame->switchToUser(user->name());
+    qDebug()<<"------user->name()-----"<<user->name();
     emit m_model->activeGreeterAuthentciate();
 }
 
