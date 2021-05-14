@@ -47,10 +47,14 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     connect(m_greeter, &QLightDM::Greeter::authenticationComplete, this, &GreeterWorkek::authenticationComplete);
 
     connect(m_model, &SessionBaseModel::activeGreeterAuthentciate, this, [ this ] {
-        qDebug() <<"m_greeter->inAuthentication() = "<<m_greeter->inAuthentication()<<"----------m_model->currentUser()->name() = "<<m_model->currentUser()->name()<<"-------m_greeter->authenticationUser() = "<<m_greeter->authenticationUser();
        if (!m_greeter->inAuthentication() && !m_model->currentUser()->name().isEmpty() && m_greeter->authenticationUser().isEmpty()) {
-           qDebug()<<"authenticate begin ";
            m_greeter->authenticate(m_model->currentUser()->name());
+       }
+    });
+
+    connect(m_model, &SessionBaseModel::activeGreeterAuthenticateInServer, this, [ this ](const QString &username) {
+       if (!m_greeter->inAuthentication() && m_greeter->authenticationUser().isEmpty()) {
+           m_greeter->authenticate(username);
        }
     });
 

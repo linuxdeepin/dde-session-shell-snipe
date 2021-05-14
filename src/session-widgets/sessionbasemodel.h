@@ -147,6 +147,7 @@ signals:
     void clearServerLoginWidgetContent();
     void updateLockLimit(std::shared_ptr<User> user);
     void activeGreeterAuthentciate();
+    void activeGreeterAuthenticateInServer(const QString &username);
 
 
 private:

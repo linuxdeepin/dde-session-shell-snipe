@@ -50,6 +50,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(m_userLoginInfo, &UserLoginInfo::accountLineEditFinished, this, [ = ](const QString &accountName) {
         auto user_ptr = m_model->findUserByName(accountName);
         if (user_ptr != nullptr) {
+            emit m_model->activeGreeterAuthenticateInServer(user_ptr->name());
             auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user_ptr->locale();
             m_logoWidget->updateLocale(locale);
             m_timeWidget->updateLocale(locale);
