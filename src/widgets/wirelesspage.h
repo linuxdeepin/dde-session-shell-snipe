@@ -118,8 +118,8 @@ public:
     Q_ENUM(WifiStatus)
 
 public:
-    explicit WirelessPage(WirelessDevice *device, QWidget *parent = nullptr);
-    static WirelessPage *getInstance(WirelessDevice *device, QWidget *parent = nullptr);
+    explicit WirelessPage(const QString locale, WirelessDevice *device, QWidget *parent = nullptr);
+    static WirelessPage *getInstance(const QString locale, WirelessDevice *device, QWidget *parent = nullptr);
     ~WirelessPage() override;
 
     void setWorker(dtk::wireless::NetworkWorker *worker);
@@ -164,12 +164,13 @@ private:
     int m_layoutCount;
     WifiStatus m_preWifiStatus;
     QString m_autoConnectHideSsid;
+    QString m_localeName;
     QTimer *m_sortDelayTimer;
     DLoadingIndicator *m_loadingIndicator;
     Dtk::Widget::DSwitchButton *m_switchBtn;
     DListView *m_lvAP;
     QStandardItemModel *m_modelAP;
-    APItem * m_titleItem;
+    APItem *m_titleItem;
     WirelessDevice *m_device;
     dtk::wireless::NetworkWorker *m_worker;
     WirelessEditWidget *m_clickedItemWidget;
@@ -177,9 +178,10 @@ private:
     WirelessEditWidget *m_connectItemWidget;
     AccessPoint::Ptr m_activeAp;
     QVBoxLayout *m_mainLayout;
-    QList<AccessPoint *> m_ApList;
+    QMap<QString, QString> m_ApList;
     QMap<QString, APItem *> m_apItems;
     QMap<QString, WirelessEditWidget *> m_apItemsWidget;
+    QLabel *m_lblTitle;
 };
 
 } //namespace wireless

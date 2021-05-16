@@ -116,12 +116,15 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
     // set user language
     qApp->removeTranslator(m_translator);
-    const QString locale { user->locale().split(".").first() };
+    const QString locale { QLocale::system().name().split(".").first() };
     m_translator->load("/usr/share/dde-session-shell/translations/dde-session-shell_" + QLocale(locale.isEmpty() ? "en_US" : locale).name());
     qApp->installTranslator(m_translator);
 
-    m_logoWidget->updateLocale(user->locale());
-    m_timeWidget->updateLocale(user->locale());
+    //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
+    auto locale2 = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
+    m_logoWidget->updateLocale(locale2);
+    m_timeWidget->updateLocale(locale2);
+    m_shutdownFrame->updateLocale(user);
 
     for (auto connect : m_currentUserConnects) {
         m_user.get()->disconnect(connect);

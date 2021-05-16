@@ -48,8 +48,8 @@ class WirelessWidget: public QWidget
     };
 
 public:
-    explicit WirelessWidget(QWidget *parent = nullptr);
-    static WirelessWidget *getInstance();
+    explicit WirelessWidget(const QString locale, QWidget *parent = nullptr);
+    static WirelessWidget *getInstance(const QString locale);
     ~WirelessWidget() override;
 
     inline QPointer<dtk::wireless::WirelessPage> getWirelessPagePtr() {return m_wirelessPage;}
@@ -61,6 +61,9 @@ signals:
     void signalStrengthChanged(int signalLevel);
     void hideWirelessList();
     void clicked();
+
+public:
+    void updateLocale(std::shared_ptr<User> user);
 
 private Q_SLOTS:
     void onDeviceChanged();
@@ -75,6 +78,7 @@ private:
     dtk::wireless::NetworkWorker *m_networkWorker;
     QPointer<dtk::wireless::WirelessPage> m_wirelessPage;
     QVBoxLayout *m_mainLayout = nullptr;
+    QString m_localeName;
 };
 #endif // WIRELESSWIDGET
 

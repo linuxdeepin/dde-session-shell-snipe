@@ -24,8 +24,9 @@
 
 using namespace dtk::wireless;
 
-WirelessWidget::WirelessWidget(QWidget *parent)
+WirelessWidget::WirelessWidget(const QString locale, QWidget *parent)
     : QWidget(parent)
+    , m_localeName(locale)
 {
     this->setFixedSize(420, 410);
     setWindowFlags(Qt::Widget | windowFlags());
@@ -64,16 +65,18 @@ void WirelessWidget::onDeviceChanged()
         delete m_wirelessPage;
     } else {
         for (auto dev : m_networkWorker->devices()) {
-            m_wirelessPage = new WirelessPage(dev, this);
+            m_wirelessPage = new WirelessPage(m_localeName, dev, this);
             m_wirelessPage->setWorker(m_networkWorker);
             m_mainLayout->addWidget(m_wirelessPage);
+
+            m_wirelessPage->updateWiFiStrengthDisplay();
         }
     }
 }
 
-WirelessWidget *WirelessWidget::getInstance()
+WirelessWidget *WirelessWidget::getInstance(const QString locale)
 {
-    static WirelessWidget w;
+    static WirelessWidget w(locale);
     return &w;
 }
 
@@ -84,5 +87,10 @@ WirelessWidget::~WirelessWidget()
 void WirelessWidget::setModel(SessionBaseModel *const model)
 {
     m_model = model;
+}
+
+void WirelessWidget::updateLocale(std::shared_ptr<User> user)
+{
+    m_localeName = user->locale();
 }
 

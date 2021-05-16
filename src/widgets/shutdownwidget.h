@@ -52,6 +52,7 @@ public slots:
     void leftKeySwitch();
     void rightKeySwitch();
     void shutdownAction();
+    void updateLocale(std::shared_ptr<User> user);
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
