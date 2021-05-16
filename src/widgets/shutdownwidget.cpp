@@ -87,28 +87,24 @@ void ShutdownWidget::initUI()
     m_requireShutdownButton->setFocusPolicy(Qt::NoFocus);
     m_requireShutdownButton->setObjectName("RequireShutdownButton");
     m_requireShutdownButton->setAutoExclusive(true);
-    updateTr(m_requireShutdownButton, "Shut down");
     m_actionMap[m_requireShutdownButton] = SessionBaseModel::RequireShutdown;
 
     m_requireRestartButton = new RoundItemButton(tr("Reboot"), this);
     m_requireRestartButton->setFocusPolicy(Qt::NoFocus);
     m_requireRestartButton->setObjectName("RequireRestartButton");
     m_requireRestartButton->setAutoExclusive(true);
-    updateTr(m_requireRestartButton, "Reboot");
     m_actionMap[m_requireRestartButton] = SessionBaseModel::RequireRestart;
 
     m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
     m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
     m_requireSuspendButton->setObjectName("RequireSuspendButton");
     m_requireSuspendButton->setAutoExclusive(true);
-    updateTr(m_requireSuspendButton, "Suspend");
     m_actionMap[m_requireSuspendButton] = SessionBaseModel::RequireSuspend;
 
     m_requireHibernateButton = new RoundItemButton(tr("Hibernate"), this);
     m_requireHibernateButton->setFocusPolicy(Qt::NoFocus);
     m_requireHibernateButton->setObjectName("RequireHibernateButton");
     m_requireHibernateButton->setAutoExclusive(true);
-    updateTr(m_requireHibernateButton, "Hibernate");
     m_actionMap[m_requireHibernateButton] = SessionBaseModel::RequireHibernate;
 
     m_currentSelectedBtn = m_requireShutdownButton;
@@ -251,7 +247,32 @@ void ShutdownWidget::setModel(SessionBaseModel *const model)
 
     connect(model, &SessionBaseModel::onHasSwapChanged, m_requireHibernateButton, &RoundItemButton::setVisible);
     connect(model, &SessionBaseModel::canSleepChanged, m_requireSuspendButton, &RoundItemButton::setVisible);
+    connect(model, &SessionBaseModel::currentUserChanged, this, &ShutdownWidget::updateLocale);
 
     m_requireHibernateButton->setVisible(model->hasSwap());
     m_requireSuspendButton->setVisible(model->canSleep());
+}
+
+void ShutdownWidget::updateLocale(std::shared_ptr<User> user)
+{
+    //只有登陆界面才需要根据系统切换语言
+    if (qApp->applicationName() == "dde-lock") return;
+
+    auto locale = user->locale();
+
+    if ("en_US" == locale.split(".").first()) {
+        m_requireShutdownButton->setText("Shut down");
+        m_requireRestartButton->setText("Reboot");
+        m_requireSuspendButton->setText("Suspend");
+        m_requireHibernateButton->setText("Hibernate");
+    } else {
+        QTranslator translator;
+        translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first());
+        qApp->installTranslator(&translator);
+    }
+
+    // refresh language
+    for (auto it = m_trList.constBegin(); it != m_trList.constEnd(); ++it) {
+        it->first(qApp->translate("ShutdownWidget", it->second.toUtf8()));
+    }
 }

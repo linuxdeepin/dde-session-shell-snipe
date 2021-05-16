@@ -47,6 +47,7 @@ private:
     SessionWidget *m_sessionFrame;
     WirelessWidget *m_wirelessWigdet;
     QWidget *m_wirelessConcealWidget;
+    std::shared_ptr<User> m_user;
 };
 
 #endif // LOGINCONTENT_H

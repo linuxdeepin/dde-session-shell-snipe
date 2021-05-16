@@ -58,7 +58,7 @@ public:
     QString m_connectionUuid;
     QString m_itemName;
 
-    explicit WirelessEditWidget(const QString &ItemName, QWidget *parent = nullptr);
+    explicit WirelessEditWidget(const QString locale, const QString &ItemName, QWidget *parent = nullptr);
     ~ WirelessEditWidget();
     void setItemWidgetInfo(const AccessPoint *ap);
     void setWidgetVisible(bool enable);
@@ -107,11 +107,14 @@ private Q_SLOTS:
 
 private:
     QString m_devPath;
+    QString m_locale;
     QLabel *m_ssidLable;
     QLabel *m_securityLabel;
     QLabel *m_strengthLabel;
     StateButton *m_stateButton;
     DSpinner *m_loadingStat;
+    QPushButton *m_cancelBtn;
+    QPushButton *m_connectBtn;
 
     DLineEdit *m_ssidLineEdit;
     DPasswordEdit *m_passwdEdit;

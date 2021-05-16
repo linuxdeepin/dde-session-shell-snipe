@@ -32,16 +32,21 @@
 #include <networkmanagerqt/generictypes.h>
 #include <networkmanagerqt/utils.h>
 
-#define PLUGIN_ICON_SIZE 20
+#define PLUGIN_ICON_SIZE 15
+#define AP_ITEM_HEIGHT 50
+#define HIDE_WIRELESS_EDIT_WIDGET_HEIGHT 180
+#define WIRELESS_EDIT_WIDGET_HEIGHT 120
+#define EN_US_LOCALE "en_US.UTF-8"
 
 using namespace dcc::widgets;
 using namespace NetworkManager;
 
-WirelessEditWidget::WirelessEditWidget(const QString &ItemName, QWidget *parent)
+WirelessEditWidget::WirelessEditWidget(const QString locale, const QString &ItemName, QWidget *parent)
     : QWidget(parent)
     , isHiddenNetWork(false)
     , isSecurityNetWork(false)
     , m_itemName(ItemName)
+    , m_locale(locale)
 {
     if (m_itemName.isEmpty()) {
         return;
@@ -111,28 +116,48 @@ void WirelessEditWidget::intiUI(const QString &itemName)
 
     if (isHiddenNetWork) {
         m_ssidLineEdit->setVisible(true);
-        m_ssidLineEdit->lineEdit()->setPlaceholderText(tr("Please input SSID"));
+        if (EN_US_LOCALE == m_locale) {
+            m_ssidLineEdit->lineEdit()->setPlaceholderText("Please input SSID");
+        } else {
+            m_ssidLineEdit->lineEdit()->setPlaceholderText(tr("Please input SSID"));
+        }
+
         m_ssidLineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     }
 
-    m_passwdEdit->lineEdit()->setPlaceholderText(tr("Please input Wi-Fi password"));
+    if (EN_US_LOCALE == m_locale) {
+        m_passwdEdit->lineEdit()->setPlaceholderText("Please input Wi-Fi password");
+    } else {
+        m_passwdEdit->lineEdit()->setPlaceholderText(tr("Please input Wi-Fi password"));
+    }
+
     m_passwdEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QHBoxLayout *btnLayout = new QHBoxLayout;
     m_buttonTuple = new ButtonTuple(ButtonTuple::Save);
-    QPushButton *cancelBtn = m_buttonTuple->leftButton();
-    QPushButton *connectBtn = m_buttonTuple->rightButton();
+    m_cancelBtn = m_buttonTuple->leftButton();
+    m_connectBtn = m_buttonTuple->rightButton();
 
-    cancelBtn->setText(tr("Cancel"));
-    QPalette pa = cancelBtn->palette();
+    if (EN_US_LOCALE == m_locale) {
+        m_cancelBtn->setText("Cancel");
+    } else {
+        m_cancelBtn->setText(tr("Cancel"));
+    }
+
+    QPalette pa = m_cancelBtn->palette();
     pa.setColor(DPalette::Light, Qt::black);
     pa.setColor(DPalette::Dark, Qt::black);
     pa.setColor(DPalette::ButtonText, Qt::white);
-    cancelBtn->setPalette(pa);
-    connectBtn->setText(tr("Connect"));
-    btnLayout->addWidget(cancelBtn);
+    m_cancelBtn->setPalette(pa);
+    if (EN_US_LOCALE == m_locale) {
+        m_connectBtn->setText("Connect");
+    } else {
+        m_connectBtn->setText(tr("Connect"));
+    }
+
+    btnLayout->addWidget(m_cancelBtn);
     btnLayout->addSpacing(20);
-    btnLayout->addWidget(connectBtn);
+    btnLayout->addWidget(m_connectBtn);
 
     if (isHiddenNetWork) {
         inputEditLayout->addWidget(m_ssidLineEdit);
@@ -201,27 +226,27 @@ void WirelessEditWidget::onBtnClickedHandle()
 
     m_passwdEdit->clear();
     m_wirelessEditWidget->setVisible(false);
-    m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 50));
+    m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), AP_ITEM_HEIGHT));
 }
 
 void WirelessEditWidget::setItemDisplay()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
     } else if (!m_clickedItemWidget->isSecurityNetWork) {
         setWidgetVisible(false);
         onRequestConnect();
     } else {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
     }
 }
 
 void WirelessEditWidget::updateItemDisplay()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 180));
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
     } else {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 120));
+        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
     }
 }
 
@@ -264,25 +289,50 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
 
     if (errorReason == Device::SsidNotFound) {
         if (m_clickedItemWidget->isHiddenNetWork) {
-            m_ssidLineEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            if (EN_US_LOCALE == m_locale) {
+                m_ssidLineEdit->showAlertMessage(QString("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            } else {
+                m_ssidLineEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            }
         } else {
-            m_passwdEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            if (EN_US_LOCALE == m_locale) {
+                m_passwdEdit->showAlertMessage(QString("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            } else {
+                m_passwdEdit->showAlertMessage(tr("The %1 802.11 WLAN network could not be found").arg(m_clickedItemWidget->m_ssid));
+            }
         }
 
     } else if (errorReason == Device::NoSecretsReason) {
-        m_passwdEdit->showAlertMessage(tr("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
+        if (EN_US_LOCALE == m_locale) {
+            m_passwdEdit->showAlertMessage(QString("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
+        } else {
+            m_passwdEdit->showAlertMessage(tr("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
+        }
     } else if (errorReason == Device::ConfigUnavailableReason) {
-        m_passwdEdit->showAlertMessage(tr("Unable to connect %1, please keep closer to the wireless router").arg(m_clickedItemWidget->m_ssid));
+        if (EN_US_LOCALE == m_locale) {
+            m_passwdEdit->showAlertMessage(QString("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
+        } else {
+            m_passwdEdit->showAlertMessage(tr("Connection failed, unable to connect %1, wrong password").arg(m_clickedItemWidget->m_ssid));
+        }
     } else if (errorReason == Device::AuthSupplicantTimeoutReason) {
-        m_passwdEdit->showAlertMessage(tr("The 802.1X supplicant took too long time to authenticate"));
-    }else{
-        m_passwdEdit->showAlertMessage(tr("Connect failed"));
+        if (EN_US_LOCALE == m_locale) {
+            m_passwdEdit->showAlertMessage(QString("The 802.1X supplicant took too long time to authenticate"));
+        } else {
+            m_passwdEdit->showAlertMessage(tr("The 802.1X supplicant took too long time to authenticate"));
+        }
+    } else {
+        if (EN_US_LOCALE == m_locale) {
+            m_passwdEdit->showAlertMessage(QString("connect failed"));
+        } else {
+            m_passwdEdit->showAlertMessage(tr("connect failed"));
+        }
     }
 
     QTimer::singleShot(2000, this, [ = ] {
-        if (!m_clickedItemWidget->isSecurityNetWork) {
-                setWidgetVisible(false);
-                m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), 50));
+        if (!m_clickedItemWidget->isSecurityNetWork)
+        {
+            setWidgetVisible(false);
+            m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), AP_ITEM_HEIGHT));
         }
     });
 
@@ -356,7 +406,12 @@ bool WirelessEditWidget::ssidInputValid()
     if (!(length > 0 && length < 33)) {
         valid = false;
         updateItemDisplay();
-        m_ssidLineEdit->showAlertMessage(tr("Invalid SSID"));
+        if (EN_US_LOCALE == m_locale) {
+            m_ssidLineEdit->showAlertMessage("Invalid SSID");
+        } else {
+            m_ssidLineEdit->showAlertMessage(tr("Invalid SSID"));
+        }
+
         qDebug() << "input ssid is invalid!";
     }
 
@@ -371,7 +426,12 @@ bool WirelessEditWidget::passwdInputValid()
     // 判断输入的passwd的有效性
     if (!valid) {
         updateItemDisplay();
-        m_passwdEdit->showAlertMessage(tr("Invalid password"));
+        if (EN_US_LOCALE == m_locale) {
+            m_passwdEdit->showAlertMessage("Invalid password");
+        } else {
+            m_passwdEdit->showAlertMessage(tr("Invalid password"));
+        }
+
         qDebug() << "input passwd is invalid!";
     }
 
@@ -413,6 +473,10 @@ void WirelessEditWidget::saveConnSettings()
 
         if (m_passwdEdit->text().isEmpty()) {
             setWirelessSettings();
+
+            if (m_clickedItemWidget->isHiddenNetWork) {
+                m_ssidLineEdit->clear();
+            }
             return;
         } else {
             if (!passwdInputValid()) {

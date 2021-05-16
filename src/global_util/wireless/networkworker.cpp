@@ -36,7 +36,7 @@ using namespace NetworkManager;
 
 NetworkWorker::NetworkWorker(QObject *parent)
     : QObject(parent)
-    ,m_systemNetworkInter("com.deepin.system.Network", "/com/deepin/system/Network", QDBusConnection::systemBus(), this)
+    , m_systemNetworkInter("com.deepin.system.Network", "/com/deepin/system/Network", QDBusConnection::systemBus(), this)
 {
     if (m_devices.isEmpty()) {
         initWirelessDevice();
@@ -109,9 +109,6 @@ void NetworkWorker::queryDeviceStatus(const QString &devPath)
  */
 void NetworkWorker::onDeviceChanged(const QString &uni)
 {
-    qDebug() << uni;
-    qDebug() << m_devices;
-
     if (m_devices.isEmpty()) {
         initWirelessDevice();
     } else {

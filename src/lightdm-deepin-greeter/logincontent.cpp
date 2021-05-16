@@ -57,9 +57,11 @@ void LoginContent::onRequestWirelessPage()
 {
     if (!m_wirelessWigdet) {
         QTimer::singleShot(0, this, [ = ] {
-            m_wirelessWigdet = WirelessWidget::getInstance();
+            auto localeName = m_user->locale();
+            m_wirelessWigdet = WirelessWidget::getInstance(localeName);
             qDebug() << "init WirelessWidget over." << m_wirelessWigdet;
 
+            connect(m_model, &SessionBaseModel::currentUserChanged, m_wirelessWigdet, &WirelessWidget::updateLocale);
             connect(m_wirelessWigdet, &WirelessWidget::signalStrengthChanged, m_controlWidget, &ControlWidget::updateWifiIconDisplay);
             onRequestWirelessPage();
         });
@@ -89,8 +91,7 @@ void LoginContent::updateWirelessListPosition()
 
 void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
-    if (user.get() == nullptr) return;
-
+    m_user = user;
     LockContent::onCurrentUserChanged(user);
     m_sessionFrame->switchToUser(user->name());
 }
@@ -126,7 +127,8 @@ void LoginContent::pushWirelessFrame()
 void LoginContent::updateWirelessDisplay()
 {
     if (!m_wirelessWigdet) {
-        m_wirelessWigdet = WirelessWidget::getInstance();
+        auto localeName = m_user->locale();
+        m_wirelessWigdet = WirelessWidget::getInstance(localeName);
     }
 
     if (m_wirelessWigdet) {
