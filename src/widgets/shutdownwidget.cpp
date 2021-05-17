@@ -22,6 +22,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <DSysInfo>
 
 #include "shutdownwidget.h"
 #include "multiuserswarningview.h"
@@ -33,6 +34,8 @@ QT_TRANSLATE_NOOP("ShutdownWidget", "Reboot"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Suspend"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Hibernate")
 #endif
+
+DCORE_USE_NAMESPACE
 
 ShutdownWidget::ShutdownWidget(QWidget *parent)
     : QFrame(parent)
@@ -47,8 +50,10 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     initConnect();
 
     onEnable("systemShutdown", enableState(GSettingWatcher::instance()->getStatus("systemShutdown")));
-    onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
-    onEnable("systemHibernate", enableState(GSettingWatcher::instance()->getStatus("systemHibernate")));
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
+        onEnable("systemHibernate", enableState(GSettingWatcher::instance()->getStatus("systemHibernate")));
+    }
     onEnable("systemLock", enableState(GSettingWatcher::instance()->getStatus("systemLock")));
 
     std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
@@ -61,8 +66,10 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
 
 ShutdownWidget::~ShutdownWidget()
 {
-    GSettingWatcher::instance()->erase("systemSuspend");
-    GSettingWatcher::instance()->erase("systemHibernate");
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        GSettingWatcher::instance()->erase("systemSuspend");
+        GSettingWatcher::instance()->erase("systemHibernate");
+    }
     GSettingWatcher::instance()->erase("systemShutdown");
 }
 
@@ -76,14 +83,17 @@ void ShutdownWidget::initConnect()
         m_currentSelectedBtn = m_requireShutdownButton;
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown);
     });
-    connect(m_requireSuspendButton, &RoundItemButton::clicked, this, [ = ] {
-        m_currentSelectedBtn = m_requireSuspendButton;
-        onRequirePowerAction(SessionBaseModel::PowerAction::RequireSuspend);
-    });
-    connect(m_requireHibernateButton, &RoundItemButton::clicked, this, [ = ] {
-        m_currentSelectedBtn = m_requireHibernateButton;
-        onRequirePowerAction(SessionBaseModel::PowerAction::RequireHibernate);
-    });
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        connect(m_requireSuspendButton, &RoundItemButton::clicked, this, [ = ] {
+            m_currentSelectedBtn = m_requireSuspendButton;
+            onRequirePowerAction(SessionBaseModel::PowerAction::RequireSuspend);
+        });
+        connect(m_requireHibernateButton, &RoundItemButton::clicked, this, [ = ] {
+            m_currentSelectedBtn = m_requireHibernateButton;
+            onRequirePowerAction(SessionBaseModel::PowerAction::RequireHibernate);
+        });
+    }
+
     connect(m_requireLockButton, &RoundItemButton::clicked, this, [ = ] {
         m_currentSelectedBtn = m_requireLockButton;
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireLock);
@@ -128,11 +138,15 @@ void ShutdownWidget::onEnable(const QString &gsettingsName, bool enable)
     if ("systemShutdown" == gsettingsName) {
         m_requireShutdownButton->setDisabled(!enable);
     } else if ("systemSuspend" == gsettingsName) {
-        m_requireSuspendButton->setDisabled(!enable);
-        m_requireSuspendButton->setCheckable(enable);
+        if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+            m_requireSuspendButton->setDisabled(!enable);
+            m_requireSuspendButton->setCheckable(enable);
+        }
     } else if ("systemHibernate" == gsettingsName) {
-        m_requireHibernateButton->setDisabled(!enable);
-        m_requireHibernateButton->setCheckable(enable);
+        if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+            m_requireHibernateButton->setDisabled(!enable);
+            m_requireHibernateButton->setCheckable(enable);
+        }
     } else if ("systemLock" == gsettingsName) {
         m_requireLockButton->setDisabled(!enable);
     }
@@ -174,9 +188,9 @@ void ShutdownWidget::enterKeyPushed()
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown);
     else if (m_currentSelectedBtn == m_requireRestartButton)
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart);
-    else if (m_currentSelectedBtn == m_requireSuspendButton)
+    else if (DSysInfo::deepinType() != DSysInfo::DeepinServer && m_currentSelectedBtn == m_requireSuspendButton)
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireSuspend);
-    else if (m_currentSelectedBtn == m_requireHibernateButton)
+    else if (DSysInfo::deepinType() != DSysInfo::DeepinServer && m_currentSelectedBtn == m_requireHibernateButton)
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireHibernate);
     else if (m_currentSelectedBtn == m_requireLockButton)
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireLock);
@@ -190,12 +204,16 @@ void ShutdownWidget::enterKeyPushed()
 
 void ShutdownWidget::enableHibernateBtn(bool enable)
 {
-    m_requireHibernateButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemHibernate") != "Hiden"));
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        m_requireHibernateButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemHibernate") != "Hiden"));
+    }
 }
 
 void ShutdownWidget::enableSleepBtn(bool enable)
 {
-    m_requireSuspendButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemSuspend") != "Hiden"));
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        m_requireSuspendButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemSuspend") != "Hiden"));
+    }
 }
 
 void ShutdownWidget::initUI()
@@ -214,19 +232,21 @@ void ShutdownWidget::initUI()
     m_requireRestartButton->setAutoExclusive(true);
     updateTr(m_requireRestartButton, "Reboot");
 
-    m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
-    m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
-    m_requireSuspendButton->setObjectName("RequireSuspendButton");
-    m_requireSuspendButton->setAutoExclusive(true);
-    updateTr(m_requireSuspendButton, "Suspend");
-    GSettingWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);  // GSettings配置项
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
+        m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
+        m_requireSuspendButton->setObjectName("RequireSuspendButton");
+        m_requireSuspendButton->setAutoExclusive(true);
+        updateTr(m_requireSuspendButton, "Suspend");
+        GSettingWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);  // GSettings配置项
 
-    m_requireHibernateButton = new RoundItemButton(tr("Hibernate"), this);
-    m_requireHibernateButton->setFocusPolicy(Qt::NoFocus);
-    m_requireHibernateButton->setObjectName("RequireHibernateButton");
-    m_requireHibernateButton->setAutoExclusive(true);
-    updateTr(m_requireHibernateButton, "Hibernate");
-    GSettingWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);  // GSettings配置项
+        m_requireHibernateButton = new RoundItemButton(tr("Hibernate"), this);
+        m_requireHibernateButton->setFocusPolicy(Qt::NoFocus);
+        m_requireHibernateButton->setObjectName("RequireHibernateButton");
+        m_requireHibernateButton->setAutoExclusive(true);
+        updateTr(m_requireHibernateButton, "Hibernate");
+        GSettingWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);  // GSettings配置项
+    }
 
     m_requireLockButton = new RoundItemButton(tr("Lock"));
     m_requireLockButton->setFocusPolicy(Qt::NoFocus);
@@ -258,8 +278,10 @@ void ShutdownWidget::initUI()
 
     m_btnList.append(m_requireShutdownButton);
     m_btnList.append(m_requireRestartButton);
-    m_btnList.append(m_requireSuspendButton);
-    m_btnList.append(m_requireHibernateButton);
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        m_btnList.append(m_requireSuspendButton);
+        m_btnList.append(m_requireHibernateButton);
+    }
     m_btnList.append(m_requireLockButton);
     m_btnList.append(m_requireSwitchUserBtn);
     if(m_requireSwitchSystemBtn) {
@@ -273,8 +295,10 @@ void ShutdownWidget::initUI()
     m_shutdownLayout->addStretch();
     m_shutdownLayout->addWidget(m_requireShutdownButton);
     m_shutdownLayout->addWidget(m_requireRestartButton);
-    m_shutdownLayout->addWidget(m_requireSuspendButton);
-    m_shutdownLayout->addWidget(m_requireHibernateButton);
+    if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
+        m_shutdownLayout->addWidget(m_requireSuspendButton);
+        m_shutdownLayout->addWidget(m_requireHibernateButton);
+    }
     m_shutdownLayout->addWidget(m_requireLockButton);
     m_shutdownLayout->addWidget(m_requireSwitchUserBtn);
     if(m_requireSwitchSystemBtn) {
