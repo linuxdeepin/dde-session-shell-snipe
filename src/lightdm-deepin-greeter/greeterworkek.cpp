@@ -156,7 +156,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
 
     {
         initDBus();
-        initData();
+        //initData();
 
         if (QFile::exists("/etc/deepin/no_suspend"))
             m_model->setCanSleep(false);

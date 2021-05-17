@@ -181,7 +181,7 @@ static void set_auto_QT_SCALE_FACTOR() {
 
 int main(int argc, char* argv[])
 {
-    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "kwayland-shell");
+    //qputenv("QT_WAYLAND_SHELL_INTEGRATION", "kwayland-shell");
     DGuiApplicationHelper::setUseInactiveColorGroup(false);
     // load dpi settings
     if (!QFile::exists("/etc/lightdm/deepin/qt-theme.ini")) {

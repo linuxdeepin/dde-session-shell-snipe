@@ -400,6 +400,8 @@ install(PROGRAMS ${SCRIPTS} DESTINATION /etc/deepin/greeters.d)
 file(GLOB QM_FILES "translations/*.qm")
 install(FILES ${QM_FILES}
         DESTINATION share/dde-session-shell/translations)
+install(FILES qt-theme.ini
+        DESTINATION /etc/lightdm/deepin)
 
 install(FILES files/lightdm-deepin-greeter.desktop DESTINATION share/xgreeters/)
 
