@@ -185,15 +185,9 @@ NativeUser::NativeUser(const QString &path, QObject *parent)
         m_avatar = avatar;
         emit avatarChanged(avatar);
     });
-
-    connect(m_userInter, &UserInter::FullNameChanged, this, [ = ](const QString & fullname) {
-        m_fullName = fullname;
-        emit displayNameChanged(fullname.isEmpty() ? m_userName : fullname);
-    });
-
     connect(m_userInter, &UserInter::UserNameChanged, this, [ = ](const QString & user_name) {
         m_userName = user_name;
-        emit displayNameChanged(m_fullName.isEmpty() ? m_userName : m_fullName);
+        emit displayNameChanged(m_userName);
     });
 
     connect(m_userInter, &UserInter::UidChanged, this, [ = ](const QString & uid) {
@@ -295,7 +289,7 @@ void NativeUser::setCurrentLayout(const QString &layout)
 
 QString NativeUser::displayName() const
 {
-    return m_fullName.isEmpty() ? m_userName : m_fullName;
+    return m_userName;
 }
 
 QString NativeUser::avatarPath() const
