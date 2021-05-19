@@ -31,10 +31,12 @@
 #include "src/global_util/wireless/networkworker.h"
 #include "src/session-widgets/sessionbasemodel.h"
 #include "src/session-widgets/framedatabind.h"
+#include <dboxwidget.h>
+#include <DFrame>
 
 DWIDGET_USE_NAMESPACE
 
-class WirelessWidget: public QWidget
+class WirelessWidget: public DFrame
 {
     Q_OBJECT
 
@@ -67,7 +69,7 @@ private Q_SLOTS:
 
 private:
     void init();
-    void initConnect();
+    void initConnect(QPointer<dtk::wireless::WirelessPage> wirelessPage);
 
 private:
     SessionBaseModel *m_model;
@@ -75,6 +77,7 @@ private:
     dtk::wireless::NetworkWorker *m_networkWorker;
     QPointer<dtk::wireless::WirelessPage> m_wirelessPage;
     QVBoxLayout *m_mainLayout = nullptr;
+    DVBoxWidget *m_boxWidget;
 };
 #endif // WIRELESSWIDGET
 

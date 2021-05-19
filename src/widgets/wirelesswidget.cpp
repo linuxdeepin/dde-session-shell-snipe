@@ -25,19 +25,38 @@
 using namespace dtk::wireless;
 
 WirelessWidget::WirelessWidget(QWidget *parent)
-    : QWidget(parent)
+    : DFrame(parent)
 {
     this->setFixedSize(420, 410);
-    setWindowFlags(Qt::Widget | windowFlags());
+    setBackgroundRole(QPalette::Background);
+    setFrameRounded(true);
 
-    m_mainLayout = new QVBoxLayout;
+    QPalette p = palette();
+    p.setColor(QPalette::Background, QColor(255, 255, 255, 12));
+    setPalette(p);
+
+    m_mainLayout = new QVBoxLayout();
     m_mainLayout->setSpacing(0);
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
-
     setLayout(m_mainLayout);
 
+    QScrollArea *area = new QScrollArea(this);
+    area->viewport()->setAutoFillBackground(false);
+    area->setFrameStyle(QFrame::NoFrame);
+    area->setWidgetResizable(true);
+    area->setFocusPolicy(Qt::NoFocus);
+
+    m_boxWidget = new DVBoxWidget(area);
+    QPalette p2 = m_boxWidget->palette();
+    p2.setColor(QPalette::Background, Qt::transparent);
+    m_boxWidget->setPalette(p2);
+
+    area->setWidget(m_boxWidget);
+    m_mainLayout->addWidget(area);
+
     init();
-    initConnect();
+
+    connect(m_networkWorker, &NetworkWorker::deviceChaged, this, &WirelessWidget::onDeviceChanged);
 }
 
 void WirelessWidget::init()
@@ -48,13 +67,12 @@ void WirelessWidget::init()
     onDeviceChanged();
 }
 
-void WirelessWidget::initConnect()
+void WirelessWidget::initConnect(QPointer<dtk::wireless::WirelessPage> wirelessPage)
 {
-    connect(m_wirelessPage, &WirelessPage::requestConnectAp, m_networkWorker, &NetworkWorker::activateAccessPoint);
-    connect(m_wirelessPage, &WirelessPage::requestDeviceEnabled, m_networkWorker, &NetworkWorker::setDeviceEnable);
-    connect(m_wirelessPage, &WirelessPage::requestWirelessScan, m_networkWorker, &NetworkWorker::requestWirelessScan);
-    connect(m_networkWorker, &NetworkWorker::deviceChaged, this, &WirelessWidget::onDeviceChanged);
-    connect(m_wirelessPage, &WirelessPage::requestRefreshWiFiStrengthDisplay, this, &WirelessWidget::signalStrengthChanged);
+    connect(wirelessPage, &WirelessPage::requestConnectAp, m_networkWorker, &NetworkWorker::activateAccessPoint);
+    connect(wirelessPage, &WirelessPage::requestDeviceEnabled, m_networkWorker, &NetworkWorker::setDeviceEnable);
+    connect(wirelessPage, &WirelessPage::requestWirelessScan, m_networkWorker, &NetworkWorker::requestWirelessScan);
+    connect(wirelessPage, &WirelessPage::requestRefreshWiFiStrengthDisplay, this, &WirelessWidget::signalStrengthChanged);
 }
 
 void WirelessWidget::onDeviceChanged()
@@ -64,9 +82,12 @@ void WirelessWidget::onDeviceChanged()
         delete m_wirelessPage;
     } else {
         for (auto dev : m_networkWorker->devices()) {
-            m_wirelessPage = new WirelessPage(dev, this);
-            m_wirelessPage->setWorker(m_networkWorker);
-            m_mainLayout->addWidget(m_wirelessPage);
+            WirelessPage *page = new WirelessPage(dev, this);
+            page->setWorker(m_networkWorker);
+            m_boxWidget->addWidget(page);
+
+            page->updateWiFiStrengthDisplay();
+            initConnect(page);
         }
     }
 }
