@@ -55,9 +55,8 @@ private:
     void initWirelessDevice();
 
 Q_SIGNALS:
-    void deviceChaged();
+    void deviceChaged(WirelessDevice *dev,bool isNewDev = true);
     void requestDeviceStatus(const QString &devPath) const;
-    void deviceListChanged(const QList<dtk::wireless::WirelessDevice *> devices) const;
     void deviceEnableChanged(const QString &device, const bool enabled) const;
 
 public Q_SLOTS:
@@ -71,7 +70,8 @@ public Q_SLOTS:
 private Q_SLOTS:
     void onDeviceEnableChanged(const QString &path, const bool enabled);
     void queryDeviceStatusCB(QDBusPendingCallWatcher *w);
-    void onDeviceChanged(const QString &uni);
+    void onDeviceAdd(const QString &uni);
+    void onDeviceRemove(const QString &uni);
     void updateConnects();
     void updateActiveConnects(const QString &activeConnPath);
 

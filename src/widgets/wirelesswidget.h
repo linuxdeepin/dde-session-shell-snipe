@@ -36,6 +36,9 @@
 
 DWIDGET_USE_NAMESPACE
 
+typedef dtk::wireless::WirelessPage DtkWirelessPage;
+typedef dtk::wireless::WirelessDevice DtkWirelessDev;
+
 class WirelessWidget: public DFrame
 {
     Q_OBJECT
@@ -53,9 +56,7 @@ public:
     explicit WirelessWidget(const QString locale, QWidget *parent = nullptr);
     static WirelessWidget *getInstance(const QString locale);
     ~WirelessWidget() override;
-
-    inline QPointer<dtk::wireless::WirelessPage> getWirelessPagePtr() {return m_wirelessPage;}
-
+    void initWireless();
     void setModel(SessionBaseModel *const model);
 
 signals:
@@ -68,17 +69,18 @@ public:
     void updateLocale(std::shared_ptr<User> user);
 
 private Q_SLOTS:
-    void onDeviceChanged();
+    void onDeviceChanged(DtkWirelessDev *dev, bool isNewDev = true);
 
 private:
     void init();
-    void initConnect(QPointer<dtk::wireless::WirelessPage> wirelessPage);
+    void initConnect(DtkWirelessPage* wirelessPage);
+    void createNewWirelessPage(DtkWirelessDev *device);
 
 private:
     SessionBaseModel *m_model;
     FrameDataBind *m_frameDataBind;
     dtk::wireless::NetworkWorker *m_networkWorker;
-    QPointer<dtk::wireless::WirelessPage> m_wirelessPage;
+    QMap<QString, QPointer<dtk::wireless::WirelessPage>> m_mapWirelessPage;
     QVBoxLayout *m_mainLayout = nullptr;
     QString m_localeName;
     DVBoxWidget *m_boxWidget;

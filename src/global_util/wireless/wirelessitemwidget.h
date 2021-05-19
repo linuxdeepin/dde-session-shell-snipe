@@ -64,13 +64,10 @@ public:
     void setWidgetVisible(bool enable);
     void setHiddenNetWork(const QString &info);
     void setClickItem(QStandardItem *clickItem);
-    void setCurrentAvailableItemWidgets(QMap<QString, WirelessEditWidget *> availableItemWidgets);
     void setClickItemWidget(WirelessEditWidget *clickItemWidget);
-    void setCurrentActiveConnect(NetworkManager::ActiveConnection::Ptr activeConnect);
     void updateItemDisplay();
     void setItemDisplay();
     void setConnectIconVisible(bool enabled);
-    void setCurrentConnectItemWidget(WirelessEditWidget *connectItemWidget);
     void updateItemWidgetDisplay(const QString &ssid, const int &signalStrength, const bool isSecurity);
     inline dcc::widgets::ButtonTuple *getButtonTuple() {return m_buttonTuple;}
     void setDevPath(const QString &devPath);
@@ -123,10 +120,7 @@ private:
     QPixmap m_securityPixmap;
 
     QStandardItem *m_clickedItem;
-    NetworkManager::ActiveConnection::Ptr m_currentActiveConnect;
     WirelessEditWidget *m_clickedItemWidget;
-    WirelessEditWidget *m_connectItemWidget;
-    QMap<QString, WirelessEditWidget *> m_availableItemWidgets;
     QWidget *m_wirelessInfoWidget;
     QWidget *m_wirelessEditWidget;
 

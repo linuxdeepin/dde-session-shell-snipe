@@ -45,8 +45,8 @@ NetworkWorker::NetworkWorker(QObject *parent)
     connect(&m_systemNetworkInter, &SystemNetworkInter::DeviceEnabled, this, &NetworkWorker::onDeviceEnableChanged);
 
     // 处理设备状态改变
-    connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceAdded, this, &NetworkWorker::onDeviceChanged);
-    connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceRemoved, this, &NetworkWorker::onDeviceChanged);
+    connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceAdded, this, &NetworkWorker::onDeviceAdd);
+    connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceRemoved, this, &NetworkWorker::onDeviceRemove);
     connect(NetworkManager::notifier(), &NetworkManager::Notifier::activeConnectionsChanged, this, &NetworkWorker::updateConnects);
     connect(NetworkManager::notifier(), &NetworkManager::Notifier::activeConnectionAdded, this, &NetworkWorker::updateActiveConnects);
     connect(NetworkManager::notifier(), &NetworkManager::Notifier::activeConnectionRemoved, this, &NetworkWorker::updateActiveConnects);
@@ -107,24 +107,36 @@ void NetworkWorker::queryDeviceStatus(const QString &devPath)
  * @param uni 改变的对应WiFi设备路径
  * @return void
  */
-void NetworkWorker::onDeviceChanged(const QString &uni)
+void NetworkWorker::onDeviceAdd(const QString &uni)
 {
+    QString devPath = uni;
+    if (devPath.isEmpty())
+        return;
+
     if (m_devices.isEmpty()) {
         initWirelessDevice();
-    } else {
-        for (auto dev : m_devices) {
-            if (dev->uni() == uni) {
-                m_devices.removeAt(m_devices.indexOf(dev));
-            } else {
-                m_devices.append(dev);
-            }
-
-            queryDeviceStatus(dev->uni());
-        }
     }
 
-    Q_EMIT deviceChaged();
-    Q_EMIT deviceListChanged(m_devices);
+    WirelessDevice *newWirelessDevice = new WirelessDevice(uni);
+    m_devices.append(newWirelessDevice);
+
+    queryDeviceStatus(newWirelessDevice->uni());
+
+    Q_EMIT deviceChaged(newWirelessDevice);
+
+}
+
+
+void NetworkWorker::onDeviceRemove(const QString &uni)
+{
+    for (auto dev : m_devices) {
+        if (dev->uni() == uni) {
+            m_devices.removeOne(dev);
+
+            Q_EMIT deviceChaged(dev, false);
+            break;
+        }
+    }
 }
 
 /**

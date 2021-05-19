@@ -65,10 +65,10 @@ void WirelessWidget::init()
     m_networkWorker = new NetworkWorker();
     m_networkWorker->moveToThread(qApp->thread());
 
-    onDeviceChanged();
+    initWireless();
 }
 
-void WirelessWidget::initConnect(QPointer<dtk::wireless::WirelessPage> wirelessPage)
+void WirelessWidget::initConnect(DtkWirelessPage *wirelessPage)
 {
     connect(wirelessPage, &WirelessPage::requestConnectAp, m_networkWorker, &NetworkWorker::activateAccessPoint);
     connect(wirelessPage, &WirelessPage::requestDeviceEnabled, m_networkWorker, &NetworkWorker::setDeviceEnable);
@@ -76,20 +76,14 @@ void WirelessWidget::initConnect(QPointer<dtk::wireless::WirelessPage> wirelessP
     connect(wirelessPage, &WirelessPage::requestRefreshWiFiStrengthDisplay, this, &WirelessWidget::signalStrengthChanged);
 }
 
-void WirelessWidget::onDeviceChanged()
+void WirelessWidget::onDeviceChanged(DtkWirelessDev *dev, bool isNewDev)
 {
-    if (m_wirelessPage) {
-        m_wirelessPage->hide();
-        delete m_wirelessPage;
-    } else {
-        for (auto dev : m_networkWorker->devices()) {
-            WirelessPage *page = new WirelessPage(m_localeName, dev, this);
-            page->setWorker(m_networkWorker);
-            m_boxWidget->addWidget(page);
-
-            page->updateWiFiStrengthDisplay();
-            initConnect(page);
-        }
+    QString devPath = dev->uni();
+    if (isNewDev && !m_mapWirelessPage.contains(devPath)) {
+        createNewWirelessPage(dev);
+    } else if (!isNewDev && m_mapWirelessPage.contains(devPath)) {
+        DtkWirelessPage *page = m_mapWirelessPage.take(devPath);
+        page->deleteLater();
     }
 }
 
@@ -103,6 +97,26 @@ WirelessWidget::~WirelessWidget()
 {
 }
 
+void WirelessWidget::initWireless()
+{
+    m_mapWirelessPage.clear();
+    for (auto dev : m_networkWorker->devices()) {
+        createNewWirelessPage(dev);
+    }
+}
+
+void WirelessWidget::createNewWirelessPage(DtkWirelessDev *device)
+{
+    DtkWirelessPage *page = new DtkWirelessPage(m_localeName, device, this);
+
+    page->setWorker(m_networkWorker);
+    page->updateWiFiStrengthDisplay();
+    initConnect(page);
+
+    m_mapWirelessPage[device->uni()] = page;
+    m_boxWidget->addWidget(page);
+}
+
 void WirelessWidget::setModel(SessionBaseModel *const model)
 {
     m_model = model;
@@ -112,4 +126,3 @@ void WirelessWidget::updateLocale(std::shared_ptr<User> user)
 {
     m_localeName = user->locale();
 }
-
