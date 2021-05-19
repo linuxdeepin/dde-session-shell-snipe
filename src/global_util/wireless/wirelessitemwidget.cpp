@@ -360,9 +360,8 @@ void WirelessEditWidget::updateItemWidgetDisplay(const QString &ssid, const int 
 {
     m_ssid = ssid;
     m_signalStrength = signalStrength;
-    if (m_ssid.isEmpty()) {
-        m_wirelessInfoWidget->setVisible(false);
-    }
+
+    m_ssidLable->setText(m_ssid);
 
     setSignalStrength(m_signalStrength);
 
@@ -370,10 +369,6 @@ void WirelessEditWidget::updateItemWidgetDisplay(const QString &ssid, const int 
         m_securityLabel->clear();
     } else if (!m_securityLabel->pixmap()) {
         m_securityLabel->setPixmap(m_securityPixmap);
-    }
-
-    if (m_ssidLable->text().isEmpty()) {
-        m_wirelessInfoWidget->setVisible(false);
     }
 }
 
@@ -394,6 +389,7 @@ void WirelessEditWidget::initConnection()
     connect(m_buttonTuple->leftButton(), &QPushButton::clicked, this, &WirelessEditWidget::onBtnClickedHandle);
     connect(this, &WirelessEditWidget::saveSettingsDone, this, &WirelessEditWidget::prepareConnection);
     connect(this, &WirelessEditWidget::prepareConnectionDone, this, &WirelessEditWidget::updateConnection);
+    connect(m_passwdEdit, SIGNAL(returnPressed()), m_connectBtn, SIGNAL(clicked()), Qt::UniqueConnection);
 }
 
 bool WirelessEditWidget::ssidInputValid()
@@ -509,10 +505,6 @@ void WirelessEditWidget::saveConnSettings()
                 }
             }
         }
-    }
-
-    for (auto availableItemWidget : m_availableItemWidgets) {
-        availableItemWidget->setConnectIconVisible(false);
     }
 
     // 设置WIFi连接信息
@@ -632,18 +624,4 @@ void WirelessEditWidget::setClickItemWidget(WirelessEditWidget *clickItemWidget)
     m_clickedItemWidget = clickItemWidget;
 }
 
-void WirelessEditWidget::setCurrentActiveConnect(NetworkManager::ActiveConnection::Ptr activeConnect)
-{
-    m_currentActiveConnect = activeConnect;
-}
-
-void WirelessEditWidget::setCurrentConnectItemWidget(WirelessEditWidget *connectItemWidget)
-{
-    m_connectItemWidget = connectItemWidget;
-}
-
-void WirelessEditWidget::setCurrentAvailableItemWidgets(QMap<QString, WirelessEditWidget *> availableItemWidgets)
-{
-    m_availableItemWidgets = availableItemWidgets;
-}
 
