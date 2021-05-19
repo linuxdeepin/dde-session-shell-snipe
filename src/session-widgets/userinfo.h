@@ -57,6 +57,7 @@ public:
 
     bool isLogin() const { return m_isLogind; }
     uid_t uid() const { return m_uid; }
+    void setUid(uid_t uuid);
 
     const QString locale() const { return m_locale; }
     void setLocale(const QString &locale);

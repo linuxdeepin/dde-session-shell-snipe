@@ -291,3 +291,8 @@ void SessionBaseModel::setIsCheckedPowerAction(bool isChecked)
     if (m_isCheckedPowerAction == isChecked) return;
     m_isCheckedPowerAction = isChecked;
 }
+
+void SessionBaseModel::setUid(uid_t uuid)
+{
+    m_currentUser->setUid(uuid);
+}

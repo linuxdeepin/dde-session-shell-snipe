@@ -104,6 +104,7 @@ public:
 
     inline bool isCheckedPowerAction() const { return m_isCheckedPowerAction;}
     void setIsCheckedPowerAction(bool isChecked);
+    void setUid(uid_t uuid);
 
 signals:
     void onUserAdded(std::shared_ptr<User> user);

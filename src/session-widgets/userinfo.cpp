@@ -176,6 +176,11 @@ void User::updateLockLimit(bool is_lock, uint lock_time, uint rest_second)
     emit lockChanged(m_lockLimit.isLock);
 }
 
+void User::setUid(uid_t uuid)
+{
+    m_uid = uuid;
+}
+
 NativeUser::NativeUser(const QString &path, QObject *parent)
     : User(parent)
     , m_userInter(new UserInter(ACCOUNT_DBUS_SERVICE, path, QDBusConnection::systemBus(), this))

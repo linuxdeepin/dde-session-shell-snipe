@@ -5,6 +5,8 @@
 
 #include <libintl.h>
 #include <DSysInfo>
+#include <pwd.h>
+#include <sys/types.h>
 
 #define LOCKSERVICE_PATH "/com/deepin/dde/LockService"
 #define LOCKSERVICE_NAME "com.deepin.dde.LockService"
@@ -340,6 +342,16 @@ void GreeterWorkek::authenticationComplete()
         resetLightdmAuth(m_model->currentUser(), 100, false);
 
         return;
+    }
+
+    // 自定义登录域用时，uid为999，需要修改为实际登录的uid
+    if (m_model->currentUser()->isDoMainUser()) {
+        // 此时m_model的用户名是实际用户，根据用户名获取uid
+        QString currentName = m_model->currentUser()->name();
+        struct passwd *pw = getpwnam(currentName.toUtf8().data());
+        uid_t currentUid = pw->pw_uid;
+        m_model->setUid(currentUid);
+        m_currentUserUid = currentUid;
     }
 
     m_password.clear();
