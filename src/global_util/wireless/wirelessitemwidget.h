@@ -24,6 +24,7 @@
 
 #include "src/global_util/buttontuple.h"
 #include "src/global_util/statebutton.h"
+#include "src/global_util/wireless/wirelessdevice.h"
 #include <dloadingindicator.h>
 
 #include <QWidget>
@@ -58,7 +59,7 @@ public:
     QString m_connectionUuid;
     QString m_itemName;
 
-    explicit WirelessEditWidget(const QString locale, const QString &ItemName, QWidget *parent = nullptr);
+    explicit WirelessEditWidget(dtk::wireless::WirelessDevice * dev, const QString locale, const QString &ItemName, QWidget *parent = nullptr);
     ~ WirelessEditWidget();
     void setItemWidgetInfo(const AccessPoint *ap);
     void setWidgetVisible(bool enable);
@@ -66,16 +67,19 @@ public:
     void setClickItem(QStandardItem *clickItem);
     void setClickItemWidget(WirelessEditWidget *clickItemWidget);
     void updateItemDisplay();
-    void setItemDisplay();
+    void requestApConnect();
     void setConnectIconVisible(bool enabled);
     void updateItemWidgetDisplay(const QString &ssid, const int &signalStrength, const bool isSecurity);
     inline dcc::widgets::ButtonTuple *getButtonTuple() {return m_buttonTuple;}
-    void setDevPath(const QString &devPath);
     bool getConnectIconStatus();
+    bool getIndicatorStatus();
     void setSignalStrength(int strength);
     void connectWirelessFailedTips(const Device::StateChangeReason &reason);
     void setWirelessSettings();
     void setSecurityWirelessSettings();
+    void initWirelessConnection();
+    void requestActiveConnection();
+    void deactiveCurrentDeviceConnection();
 
 private:
     void intiUI(const QString &itemName);
@@ -103,7 +107,6 @@ private Q_SLOTS:
     void onRequestConnect();
 
 private:
-    QString m_devPath;
     QString m_locale;
     QLabel *m_ssidLable;
     QLabel *m_securityLabel;
@@ -124,6 +127,7 @@ private:
     QWidget *m_wirelessInfoWidget;
     QWidget *m_wirelessEditWidget;
 
+    dtk::wireless::WirelessDevice * m_device;
     NetworkManager::Connection::Ptr m_connection;
     NetworkManager::ConnectionSettings::Ptr m_connectionSettings;
     NetworkManager::WirelessSetting::Ptr m_wirelessSetting;

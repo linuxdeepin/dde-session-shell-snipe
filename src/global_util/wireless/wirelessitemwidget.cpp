@@ -40,37 +40,28 @@
 
 using namespace dcc::widgets;
 using namespace NetworkManager;
+using namespace dtk::wireless;
 
-WirelessEditWidget::WirelessEditWidget(const QString locale, const QString &ItemName, QWidget *parent)
+WirelessEditWidget::WirelessEditWidget(dtk::wireless::WirelessDevice *dev, const QString locale, const QString &ItemName, QWidget *parent)
     : QWidget(parent)
     , isHiddenNetWork(false)
     , isSecurityNetWork(false)
     , m_itemName(ItemName)
     , m_locale(locale)
+    , m_device(dev)
 {
     if (m_itemName.isEmpty()) {
         return;
     }
 
     if (m_itemName.contains("hidden")) {
+        createConnSettings();
         isHiddenNetWork = true;
     }
 
     intiUI(m_itemName);
-
-    if (m_connectionUuid.isEmpty()) {
-        qDebug() << "connection uuid is empty, creating new ConnectionSettings...";
-        createConnSettings();
-    } else {
-        m_connection = findConnectionByUuid(m_connectionUuid);
-        if (!m_connection) {
-            qDebug() << "can't find connection by uuid";
-            return;
-        }
-        m_connectionSettings = m_connection->settings();
-    }
-
     initConnection();
+    initWirelessConnection();
 }
 
 void WirelessEditWidget::intiUI(const QString &itemName)
@@ -203,6 +194,11 @@ void WirelessEditWidget::updateIndicatorDisplay(bool enable)
     }
 }
 
+bool WirelessEditWidget::getIndicatorStatus()
+{
+    return m_loadingStat->isVisible();
+}
+
 void WirelessEditWidget::setWidgetVisible(bool enable)
 {
     m_wirelessEditWidget->setVisible(enable);
@@ -229,19 +225,31 @@ void WirelessEditWidget::onBtnClickedHandle()
     m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), AP_ITEM_HEIGHT));
 }
 
-void WirelessEditWidget::setItemDisplay()
+void WirelessEditWidget::requestApConnect()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
-    } else if (!m_clickedItemWidget->isSecurityNetWork) {
-        setWidgetVisible(false);
-        onRequestConnect();
-    } else if (!m_clickedItemWidget->m_passwdEdit->text().isEmpty()) {
-        setWidgetVisible(false);
-        onRequestConnect();
     } else {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
+        if (m_clickedItemWidget->m_connectionUuid.isEmpty()) {
+            qDebug() << "connection uuid is empty, creating new ConnectionSettings...";
+            createConnSettings();
+
+            // 无安全要求的网络直接去请求连接
+            if (!m_clickedItemWidget->isSecurityNetWork) {
+                setWidgetVisible(false);
+                onRequestConnect();
+            } else {  // 有安全要求的网络需要输入密码去请求连接
+                m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
+            }
+        } else {
+            // 对于之前连接过的网络, 直接去请求连接
+            setWidgetVisible(false);
+
+            deactiveCurrentDeviceConnection();
+            prepareConnection();
+        }
     }
+
 }
 
 void WirelessEditWidget::updateItemDisplay()
@@ -375,11 +383,6 @@ void WirelessEditWidget::updateItemWidgetDisplay(const QString &ssid, const int 
     }
 }
 
-void WirelessEditWidget::setDevPath(const QString &devPath)
-{
-    m_devPath = devPath;
-}
-
 void WirelessEditWidget::setHiddenNetWork(const QString &info)
 {
     m_ssidLable->setText(info);
@@ -393,6 +396,35 @@ void WirelessEditWidget::initConnection()
     connect(this, &WirelessEditWidget::saveSettingsDone, this, &WirelessEditWidget::prepareConnection);
     connect(this, &WirelessEditWidget::prepareConnectionDone, this, &WirelessEditWidget::updateConnection);
     connect(m_passwdEdit, &DLineEdit::returnPressed, m_connectBtn, &QPushButton::click);
+}
+
+/**
+ * @brief 根据获取的连接初始化相关连接信息
+ *
+ * @param void
+ * @return void
+ */
+void WirelessEditWidget::initWirelessConnection()
+{
+    NetworkManager::Connection::List connList = listConnections();
+    for (auto conn : connList) {
+        if (conn->settings()->connectionType() != ConnectionSettings::ConnectionType::Wireless) {
+            continue;
+        }
+
+        NetworkManager::WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+        NetworkManager::WirelessSecuritySetting::Ptr wsSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
+
+        if (QByteArray::fromHex(m_device->hardwareAddress().toUtf8()) == wirelessSetting->macAddress()) {
+            if (wirelessSetting->ssid() == m_itemName) {
+                m_wsSetting = wsSetting;
+                m_wirelessSetting = wirelessSetting;
+                m_connectionUuid =  conn->uuid();
+                m_connection = conn;
+                m_connectionSettings = conn->settings();
+            }
+        }
+    }
 }
 
 bool WirelessEditWidget::ssidInputValid()
@@ -443,6 +475,7 @@ void WirelessEditWidget::setWirelessSettings()
     m_wirelessSetting->setHidden(true);
     m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaNone);
     m_wirelessSetting->setMode(WirelessSetting::NetworkMode::Infrastructure);
+    m_wirelessSetting->setMacAddress(QByteArray::fromHex(m_device->hardwareAddress().toUtf8()));
 
     m_wirelessSetting->setInitialized(true);
     m_wsSetting->setInitialized(false);
@@ -453,6 +486,7 @@ void WirelessEditWidget::setSecurityWirelessSettings()
 {
     m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaPsk);
     m_wirelessSetting->setSsid(m_ssidLineEdit->text().toUtf8());
+    m_wirelessSetting->setMacAddress(QByteArray::fromHex(m_device->hardwareAddress().toUtf8()));
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::AgentOwned);
     m_wsSetting->setWepKeyType(NetworkManager::WirelessSecuritySetting::WepKeyType::NotSpecified);
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::NotRequired);
@@ -463,8 +497,6 @@ void WirelessEditWidget::setSecurityWirelessSettings()
 
 void WirelessEditWidget::saveConnSettings()
 {
-    QDBusPendingReply<> reply;
-
     if (isHiddenNetWork) {
         if (!ssidInputValid()) {
             return;
@@ -497,10 +529,29 @@ void WirelessEditWidget::saveConnSettings()
         }
     }
 
+    deactiveCurrentDeviceConnection();
+
+    // 设置WIFi连接信息
+    m_wsSetting->setInitialized(true);
+
+    onBtnClickedHandle();
+
+    Q_EMIT saveSettingsDone();
+}
+
+/**
+ * @brief 取消当前无线设备的所有激活的连接
+ *
+ * @param void
+ * @return void
+ */
+void WirelessEditWidget::deactiveCurrentDeviceConnection()
+{
+    QDBusPendingReply<> reply;
     // 在激活一个新的连接前,需要先取消之前的连接
     for (auto aConn : activeConnections()) {
         for (auto devPath : aConn->devices()) {
-            if (devPath == m_devPath) {
+            if (devPath == m_device->uni()) {
                 reply = deactivateConnection(aConn->path());
                 reply.waitForFinished();
                 if (reply.isError()) {
@@ -509,13 +560,6 @@ void WirelessEditWidget::saveConnSettings()
             }
         }
     }
-
-    // 设置WIFi连接信息
-    m_wsSetting->setInitialized(true);
-
-    onBtnClickedHandle();
-
-    Q_EMIT saveSettingsDone();
 }
 
 void WirelessEditWidget::prepareConnection()
@@ -539,24 +583,28 @@ void WirelessEditWidget::updateConnection()
     QDBusPendingReply<> reply;
 
     // update function saves the settings on the hard disk
-    reply = m_connection->update(m_connectionSettings->toMap());
-    reply.waitForFinished();
-    if (reply.isError()) {
-        qDebug() << "error occurred while updating the connection" << reply.error();
-        return;
-    }
+    if (m_connection) {
+        reply = m_connection->update(m_connectionSettings->toMap());
+        reply.waitForFinished();
+        if (reply.isError()) {
+            qDebug() << "error occurred while updating the connection" << reply.error();
+            return;
+        }
 
-    if (m_clickedItemWidget->isHiddenNetWork) {
-        Q_EMIT activateWirelessConnection(m_ssid, m_connectionUuid);
-    }
+        if (m_clickedItemWidget->isHiddenNetWork) {
+            Q_EMIT activateWirelessConnection(m_ssid, m_connectionUuid);
+        }
 
-    reply = activateConnection(m_connection->path(), m_devPath, "");
-    reply.waitForFinished();
-    if (reply.isError()) {
-        qDebug() << "error occurred while activate connection" << reply.error();
+        requestActiveConnection();
     }
 }
 
+/**
+ * @brief 创建无线网络连接的Setting和安全Setting
+ *
+ * @param void
+ * @return void
+ */
 void WirelessEditWidget::createConnSettings()
 {
     m_connectionSettings = QSharedPointer<NetworkManager::ConnectionSettings>(
@@ -587,6 +635,23 @@ void WirelessEditWidget::createConnSettings()
         m_connectionUuid.replace(24, QString::number(second).length(), QString::number(second));
     }
     m_connectionSettings->setUuid(m_connectionUuid);
+}
+
+/**
+ * @brief 请求激活一个连接
+ *
+ * @param void
+ * @return void
+ */
+void WirelessEditWidget::requestActiveConnection()
+{
+    QDBusPendingReply<> reply;
+
+    reply = activateConnection(m_connection->path(), m_device->uni(), "");
+    reply.waitForFinished();
+    if (reply.isError()) {
+        qDebug() << "error occurred while activate connection" << reply.error();
+    }
 }
 
 int WirelessEditWidget::connectionSuffixNum(const QString &matchConnName)

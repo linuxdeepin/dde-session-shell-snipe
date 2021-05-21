@@ -208,15 +208,20 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
     // WiFi AP点击处理
     connect(m_lvAP, &QListView::clicked, this, [this](const QModelIndex & idx) {
         auto item = dynamic_cast<WirelessEditWidget *>(m_lvAP->indexWidget(idx));
-        if (!item || item->getConnectIconStatus())
+
+        // 如果当前AP正在激活或者已经连接的AP, 不做处理
+        if (!item || (!item->isHiddenNetWork && item->getIndicatorStatus()) || item->getConnectIconStatus())
             return;
 
         m_isHideNetwork = false;
 
-        // 在重新选择一个新的AP后，关闭其他AP的编辑框，消除加载状态
+        // 在重新选择一个新的AP后，关闭其他AP的编辑框，消除加载状态,并更新排序的连接状态
         for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
             if (it.value() != item) {
                 it.value()->setWidgetVisible(false);
+                APSortInfo info = m_apItems[it.key()]->sortInfo();
+                info.connected = false;
+                m_apItems[it.key()]->setSortInfo(info);
                 m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), AP_ITEM_HEIGHT));
             }
             it.value()->updateIndicatorDisplay(false);
@@ -228,8 +233,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
         item->setWidgetVisible(true);
         item->setClickItem(m_modelAP->item(idx.row()));
         item->setClickItemWidget(item);
-        item->setItemDisplay();
-        item->setDevPath(m_device->uni());
+        item->requestApConnect();
 
         connect(item, &WirelessEditWidget::activateWirelessConnection, this, [this](const QString & ssid, const QString & uuid) {
             Q_UNUSED(uuid);
@@ -262,7 +266,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
 
     // 创建隐藏网络Item
     APItem *nonbc = new APItem(style());
-    WirelessEditWidget *APWdiget = new WirelessEditWidget(m_localeName, QString("Connect to hidden network"), m_lvAP);
+    WirelessEditWidget *APWdiget = new WirelessEditWidget(m_device, m_localeName, QString("Connect to hidden network"), m_lvAP);
     m_apItems[QString("Connect to hidden network")] = nonbc;
     m_apItemsWidget[QString("Connect to hidden network")] = APWdiget;
     if (EN_US_LOCALE == m_localeName) {
@@ -327,7 +331,7 @@ void WirelessPage::onAPAdded(const QString &apPath)
 
         m_ApList[ssid] = apPath;
         m_modelAP->appendRow(apItem);
-        WirelessEditWidget *APWdiget = new WirelessEditWidget(m_localeName, ssid, m_lvAP);
+        WirelessEditWidget *APWdiget = new WirelessEditWidget(m_device, m_localeName, ssid, m_lvAP);
 
         APWdiget->setItemWidgetInfo(nmAp);
         m_apItems[apPath] = apItem;
@@ -367,6 +371,8 @@ void WirelessPage::onAPRemoved(const QString &apPath)
 {
     if (!m_apItems.contains(apPath)) return;
 
+    // 添加隐藏网络时, networkmanager-qt会发一个accessPointDisappeared信号,导致连接的隐藏网络被移除,
+    // 因此此处如果为隐藏网络我们不去做移除处理
     if (m_isHideNetwork) {
         return;
     }
@@ -453,8 +459,8 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
         m_preWifiStatus = curWifiStatus;
     }
     if (newstate == WirelessDevice::Failed) {
-        m_isHideNetwork = false;
         if (m_clickedItemWidget && m_activingItemWidget) {
+            m_isHideNetwork = false;
             // 连接失败, 取消连接加载的状态
             for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
                 it.value()->updateIndicatorDisplay(false);
@@ -490,18 +496,16 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 it.value()->updateIndicatorDisplay(false);
                 it.value()->setConnectIconVisible(true);
 
-                APSortInfo info = m_apItems[it.key()]->sortInfo();
-                info.connected = true;
-                m_apItems[it.key()]->setSortInfo(info);
-                m_sortDelayTimer->start();
-
                 AccessPoint::Ptr activeAp = m_device->activeAccessPoint();
 
                 if (activeAp) {
                     it.value()->updateItemWidgetDisplay(activeAp->ssid(), activeAp->signalStrength(), activeAp->capabilities());
+                    m_apItems[it.key()]->setSortInfo({activeAp->signalStrength(), activeAp->ssid(), true});
                     WiFiStrenthLevel wifiSignalStrength = getWiFiSignalStrengthLevel(activeAp->signalStrength());
                     emit requestRefreshWiFiStrengthDisplay(wifiSignalStrength);
                 }
+
+                m_sortDelayTimer->start();
             }
         }
     }
