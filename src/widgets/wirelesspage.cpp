@@ -211,6 +211,8 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
         if (!item || item->getConnectIconStatus())
             return;
 
+        m_isHideNetwork = false;
+
         // 在重新选择一个新的AP后，关闭其他AP的编辑框，消除加载状态
         for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
             if (it.value() != item) {
@@ -392,18 +394,6 @@ void WirelessPage::onAPChanged(const QString &apPath)
     const QString &ssid = nmAp->ssid();
 
     if (ssid.isEmpty() || nmAp->rsnFlags() == WPAFLAG_KEYMGMT8021X) {
-        // 如果网络变成隐藏网络,需要移除
-        if (m_apItems.contains(apPath) && m_apItemsWidget.contains(apPath)){
-            for (auto it = m_ApList.cbegin(); it != m_ApList.cend(); ++it) {
-                if (it.value() == apPath){
-                    m_ApList.take(it.key());
-                    m_modelAP->removeRow(m_modelAP->indexFromItem(m_apItems[apPath]).row());
-                    m_apItems.remove(apPath);
-                    m_apItemsWidget.remove(apPath);
-                }
-            }
-        }
-
         qDebug() << "do not show hide network or KeyMgmt8021x network";
         return;
     }
