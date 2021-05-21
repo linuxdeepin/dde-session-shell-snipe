@@ -222,9 +222,9 @@ void WirelessEditWidget::onBtnClickedHandle()
 {
     if (m_clickedItemWidget->isHiddenNetWork) {
         m_ssidLineEdit->clear();
+        m_passwdEdit->clear();
     }
 
-    m_passwdEdit->clear();
     m_wirelessEditWidget->setVisible(false);
     m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), AP_ITEM_HEIGHT));
 }
@@ -234,6 +234,9 @@ void WirelessEditWidget::setItemDisplay()
     if (m_clickedItemWidget->isHiddenNetWork) {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
     } else if (!m_clickedItemWidget->isSecurityNetWork) {
+        setWidgetVisible(false);
+        onRequestConnect();
+    } else if (!m_clickedItemWidget->m_passwdEdit->text().isEmpty()) {
         setWidgetVisible(false);
         onRequestConnect();
     } else {

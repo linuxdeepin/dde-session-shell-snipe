@@ -102,9 +102,9 @@ void NetworkWorker::queryDeviceStatus(const QString &devPath)
 }
 
 /**
- * @brief 处理WiFi设备改变
+ * @brief 处理设备添加
  *
- * @param uni 改变的对应WiFi设备路径
+ * @param uni 改变的对应设备路径
  * @return void
  */
 void NetworkWorker::onDeviceAdd(const QString &uni)
@@ -117,16 +117,30 @@ void NetworkWorker::onDeviceAdd(const QString &uni)
         initWirelessDevice();
     }
 
+    // 需要过滤掉其他设备,只有wifi设备才添加
+    for (auto device : NetworkManager::networkInterfaces()) {
+        if (device->uni() == uni) {
+            qDebug() << device->type();
+            if (device->type() != NetworkManager::Device::Type::Wifi) {
+                return;
+            }
+        }
+    }
+
     WirelessDevice *newWirelessDevice = new WirelessDevice(uni);
     m_devices.append(newWirelessDevice);
-
     queryDeviceStatus(newWirelessDevice->uni());
 
     Q_EMIT deviceChaged(newWirelessDevice);
 
 }
 
-
+/**
+ * @brief 处理设备移除
+ *
+ * @param uni 改变的对应设备路径
+ * @return void
+ */
 void NetworkWorker::onDeviceRemove(const QString &uni)
 {
     for (auto dev : m_devices) {
