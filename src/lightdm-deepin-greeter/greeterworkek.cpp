@@ -113,25 +113,31 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
         oneKeyLogin();
     }
 
+    QDBusInterface interface("com.deepin.udcp.iam",
+                             "/com/deepin/udcp/iam",
+                             "com.deepin.udcp.iam",
+                             QDBusConnection::systemBus());
+    if (interface.isValid()) {
         //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
         std::shared_ptr<ADDomainUser> user = std::make_shared<ADDomainUser>(DEFAULT_ENTRY_UID);
         user->setUserDisplayName("...");
         user->setIsServerUser(true);
         m_model->userAdd(user);
+    }
 
-        connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [ = ] {
-            // lockservice sometimes fails to call on olar server
-            QDBusPendingReply<QString> replay = m_lockInter->CurrentUser();
-            replay.waitForFinished();
+    connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [ = ] {
+        // lockservice sometimes fails to call on olar server
+        QDBusPendingReply<QString> replay = m_lockInter->CurrentUser();
+        replay.waitForFinished();
 
-            if (!replay.isError()) {
-                const QJsonObject obj = QJsonDocument::fromJson(replay.value().toUtf8()).object();
-                auto user_ptr = m_model->findUserByUid(static_cast<uint>(obj["Uid"].toInt()));
+        if (!replay.isError()) {
+            const QJsonObject obj = QJsonDocument::fromJson(replay.value().toUtf8()).object();
+            auto user_ptr = m_model->findUserByUid(static_cast<uint>(obj["Uid"].toInt()));
 
-                m_model->setCurrentUser(user_ptr);
-                userAuthForLightdm(user_ptr);
-            }
-        });
+            m_model->setCurrentUser(user_ptr);
+            userAuthForLightdm(user_ptr);
+        }
+    });
 }
 
 void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
