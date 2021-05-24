@@ -114,7 +114,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     }
 
         //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
-        std::shared_ptr<ADDomainUser> user = std::make_shared<ADDomainUser>(999);
+        std::shared_ptr<ADDomainUser> user = std::make_shared<ADDomainUser>(DEFAULT_ENTRY_UID);
         user->setUserDisplayName("...");
         user->setIsServerUser(true);
         m_model->userAdd(user);

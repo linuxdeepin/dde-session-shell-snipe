@@ -11,6 +11,7 @@
 #define ACCOUNT_DBUS_SERVICE "com.deepin.daemon.Accounts"
 #define ACCOUNT_DBUS_PATH "/com/deepin/daemon/Accounts"
 #define DEFAULT_BACKGROUND "/usr/share/backgrounds/default_background.jpg"
+#define DEFAULT_ENTRY_UID 999
 
 using UserInter = com::deepin::daemon::accounts::User;
 using com::deepin::daemon::Authenticate;
@@ -68,7 +69,7 @@ public:
     // 1、m_isServer指的是本地账号的服务器模式，不是指远程账号，真正的远程账号需要表现得跟本地账号一样才符合用户的需求
     //  　dde后端账号服务配合参考本地账号一样提供远程账号的dbus服务
     // 2、INT_MAX被分配为域账号UID，参考lightdm把允许用户自行输入账号密码的的界面入口设置为999
-    virtual bool isDoMainUser() const { return m_uid == 999; } 
+    virtual bool isDoMainUser() const { return m_uid == DEFAULT_ENTRY_UID; } 
     virtual bool is24HourFormat() const { return true; }
 
     void setisLogind(bool isLogind);

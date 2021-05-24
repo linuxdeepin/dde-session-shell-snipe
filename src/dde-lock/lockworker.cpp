@@ -135,11 +135,17 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
         initData();
     }
 
-    //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
-    std::shared_ptr<User> user = std::make_shared<ADDomainUser>(999);
-    static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
-    static_cast<ADDomainUser *>(user.get())->setIsServerUser(true);
-    m_model->userAdd(user);
+    QDBusInterface interface("com.deepin.udcp.iam",
+                             "/com/deepin/udcp/iam",
+                             "com.deepin.udcp.iam",
+                             QDBusConnection::systemBus());
+    if (interface.isValid()) {
+        //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
+        std::shared_ptr<User> user = std::make_shared<ADDomainUser>(DEFAULT_ENTRY_UID);
+        static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
+        static_cast<ADDomainUser *>(user.get())->setIsServerUser(true);
+        m_model->userAdd(user);
+    }
 }
 
 void LockWorker::switchToUser(std::shared_ptr<User> user)
@@ -218,7 +224,14 @@ void LockWorker::onPasswordResult(const QString &msg)
 
 void LockWorker::onUserAdded(const QString &user)
 {
-    std::shared_ptr<NativeUser> user_ptr(new NativeUser(user));
+    std::shared_ptr<User> user_ptr = nullptr;
+    uid_t uid = user.mid(QString(ACCOUNTS_DBUS_PREFIX).size()).toUInt();
+    if(uid != DEFAULT_ENTRY_UID) {
+        user_ptr = std::make_shared<NativeUser>(user);
+    } else {
+        user_ptr = std::make_shared<ADDomainUser>(uid);
+        static_cast<ADDomainUser *>(user_ptr.get())->setUserName(userPwdName(uid));
+    }
 
     if (!user_ptr->isUserIsvalid())
         return;
@@ -228,9 +241,11 @@ void LockWorker::onUserAdded(const QString &user)
     if (user_ptr->uid() == m_currentUserUid) {
         m_model->setCurrentUser(user_ptr);
 
-        // AD domain account auth will not be activated for the first time
-        connect(user_ptr->getUserInter(), &UserInter::UserNameChanged, this, [ = ] {
-            updateLockLimit(user_ptr);
+        // 正常情况认证走SessionBaseModel::visibleChanged,这里是异常状况没有触发认证的补充,Authenticate调用时间间隔过短,会导致认证会崩溃,加延时处理
+        QTimer::singleShot(100, user_ptr.get(), [ = ]{
+            if (user_ptr.get()) {
+                m_authFramework->Authenticate(user_ptr);
+            }
         });
     }
 
