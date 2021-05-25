@@ -365,6 +365,9 @@ void WirelessPage::onAPAdded(const QString &apPath)
 
         m_sortDelayTimer->start();
     }
+
+    // 根据wifi开关的状态去更新显示
+    updateWirelessListViewDisplay(m_switchBtn->isChecked());
 }
 
 void WirelessPage::onAPRemoved(const QString &apPath)
@@ -470,7 +473,7 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 return;
             }
 
-            if (reason == Device::SsidNotFound) {
+            if ((reason == Device::SsidNotFound) && (m_clickedItemWidget->isHiddenNetWork)) {
                 m_clickedItemWidget->connectWirelessFailedTips(reason);
             } else {
                 connectWirelessErrorHandle(reason);
@@ -647,7 +650,6 @@ void WirelessPage::connectWirelessErrorHandle(const Device::StateChangeReason &r
 {
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
         if (m_activingItemWidget == it.value()) {
-            it.value()->updateIndicatorDisplay(false);
             m_activingItemWidget->connectWirelessFailedTips(reason);
         }
     }

@@ -178,6 +178,7 @@ WirelessEditWidget::~ WirelessEditWidget()
 
 void WirelessEditWidget::onRequestConnect()
 {
+    createConnSettings();
     saveConnSettings();
 }
 
@@ -232,7 +233,6 @@ void WirelessEditWidget::requestApConnect()
     } else {
         if (m_clickedItemWidget->m_connectionUuid.isEmpty()) {
             qDebug() << "connection uuid is empty, creating new ConnectionSettings...";
-            createConnSettings();
 
             // 无安全要求的网络直接去请求连接
             if (!m_clickedItemWidget->isSecurityNetWork) {
@@ -607,34 +607,37 @@ void WirelessEditWidget::updateConnection()
  */
 void WirelessEditWidget::createConnSettings()
 {
-    m_connectionSettings = QSharedPointer<NetworkManager::ConnectionSettings>(
-                               new NetworkManager::ConnectionSettings(ConnectionSettings::ConnectionType::Wireless));
+    // 只有在第一次去创建连接时出初始化m_connectionSettings和m_wsSetting, 后面去连接时不重复创建
+    if (!m_connectionSettings && !m_wsSetting) {
+        m_connectionSettings = QSharedPointer<NetworkManager::ConnectionSettings>(
+                                   new NetworkManager::ConnectionSettings(ConnectionSettings::ConnectionType::Wireless));
 
-    m_wsSetting = m_connectionSettings->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
+        m_wsSetting = m_connectionSettings->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
 
-    m_wirelessSetting = m_connectionSettings->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+        m_wirelessSetting = m_connectionSettings->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
 
-    QString connName = tr("Wireless Connection %1");
+        QString connName = tr("Wireless Connection %1");
 
-    // 设置自动回连
-    m_connectionSettings->setAutoconnect(true);
+        // 设置自动回连
+        m_connectionSettings->setAutoconnect(true);
 
-    // 安全选项配置
-    m_connectionSettings->setting(Setting::Security8021x).staticCast<NetworkManager::Security8021xSetting>()->setPasswordFlags(Setting::AgentOwned);
+        // 安全选项配置
+        m_connectionSettings->setting(Setting::Security8021x).staticCast<NetworkManager::Security8021xSetting>()->setPasswordFlags(Setting::AgentOwned);
 
-    // IP 配置
-    m_connectionSettings->setting(Setting::SettingType::Ipv4).staticCast<NetworkManager::Ipv4Setting>();
-    m_connectionSettings->setting(Setting::SettingType::Ipv6).staticCast<NetworkManager::Ipv6Setting>();
+        // IP 配置
+        m_connectionSettings->setting(Setting::SettingType::Ipv4).staticCast<NetworkManager::Ipv4Setting>();
+        m_connectionSettings->setting(Setting::SettingType::Ipv6).staticCast<NetworkManager::Ipv6Setting>();
 
-    if (!connName.isEmpty()) {
-        m_connectionSettings->setId(connName.arg(connectionSuffixNum(connName)));
+        if (!connName.isEmpty()) {
+            m_connectionSettings->setId(connName.arg(connectionSuffixNum(connName)));
+        }
+        m_connectionUuid = m_connectionSettings->createNewUuid();
+        while (findConnectionByUuid(m_connectionUuid) != nullptr) {
+            qint64 second = QDateTime::currentDateTime().toSecsSinceEpoch();
+            m_connectionUuid.replace(24, QString::number(second).length(), QString::number(second));
+        }
+        m_connectionSettings->setUuid(m_connectionUuid);
     }
-    m_connectionUuid = m_connectionSettings->createNewUuid();
-    while (findConnectionByUuid(m_connectionUuid) != nullptr) {
-        qint64 second = QDateTime::currentDateTime().toSecsSinceEpoch();
-        m_connectionUuid.replace(24, QString::number(second).length(), QString::number(second));
-    }
-    m_connectionSettings->setUuid(m_connectionUuid);
 }
 
 /**
