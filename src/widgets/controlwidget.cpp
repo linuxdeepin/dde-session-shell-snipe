@@ -147,7 +147,7 @@ void ControlWidget::setWirelessListEnable(const bool visible)
 
     if (!m_wirelessBtn) {
         m_wirelessBtn = new DFloatingButton(this);
-        updateWifiIconDisplay(WiFiStrengthNoLevel);
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-80-symbolic.svg"));
         m_wirelessBtn->setIconSize(BUTTON_ICON_SIZE);
         m_wirelessBtn->setFixedSize(BUTTON_SIZE);
         m_wirelessBtn->setFocusPolicy(Qt::ClickFocus);
@@ -327,39 +327,6 @@ void ControlWidget::rightKeySwitch()
     }
 
     m_btnList.at(m_index)->setFocus();
-}
-
-/**
- * @brief 根据wifi信号等级刷新登录界面的显示
- *
- * @param int wifiLevel 对应的WiFi等级
- * @return void
- */
-void ControlWidget::updateWifiIconDisplay(int wifiLevel)
-{
-    int wifiSignalStrength = wifiLevel;
-    switch (wifiSignalStrength) {
-    case (WiFiStrengthNoNE):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-network-wirelss-no-route-symbolic.svg"));
-        break;
-    case (WiFiStrengthNoLevel):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-0-symbolic.svg"));
-        break;
-    case (WiFiStrengthLOWLevel):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-20-symbolic.svg"));
-        break;
-    case (WiFiStrengthMidLevel):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-40-symbolic.svg"));
-        break;
-    case (WiFiStrengthMidHighLevel):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-60-symbolic.svg"));
-        break;
-    case (WiFiStrengthHighLevel):
-        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-80-symbolic.svg"));
-        break;
-    default:
-        break;
-    }
 }
 
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)

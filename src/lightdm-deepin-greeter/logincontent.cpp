@@ -62,7 +62,6 @@ void LoginContent::onRequestWirelessPage()
             qDebug() << "init WirelessWidget over." << m_wirelessWigdet;
 
             connect(m_model, &SessionBaseModel::currentUserChanged, m_wirelessWigdet, &WirelessWidget::updateLocale);
-            connect(m_wirelessWigdet, &WirelessWidget::signalStrengthChanged, m_controlWidget, &ControlWidget::updateWifiIconDisplay);
             onRequestWirelessPage();
         });
 

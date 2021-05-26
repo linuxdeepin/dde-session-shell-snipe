@@ -80,6 +80,7 @@ public:
     void initWirelessConnection();
     void requestActiveConnection();
     void deactiveCurrentDeviceConnection();
+    void setConnectWirelessSettings(NetworkManager::ActiveConnection::Ptr);
 
 private:
     void intiUI(const QString &itemName);

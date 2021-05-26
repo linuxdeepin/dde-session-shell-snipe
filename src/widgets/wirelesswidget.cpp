@@ -73,7 +73,6 @@ void WirelessWidget::initConnect(DtkWirelessPage *wirelessPage)
     connect(wirelessPage, &WirelessPage::requestConnectAp, m_networkWorker, &NetworkWorker::activateAccessPoint);
     connect(wirelessPage, &WirelessPage::requestDeviceEnabled, m_networkWorker, &NetworkWorker::setDeviceEnable);
     connect(wirelessPage, &WirelessPage::requestWirelessScan, m_networkWorker, &NetworkWorker::requestWirelessScan);
-    connect(wirelessPage, &WirelessPage::requestRefreshWiFiStrengthDisplay, this, &WirelessWidget::signalStrengthChanged);
 }
 
 void WirelessWidget::onDeviceChanged(DtkWirelessDev *dev, bool isNewDev)
@@ -110,7 +109,6 @@ void WirelessWidget::createNewWirelessPage(DtkWirelessDev *device)
     DtkWirelessPage *page = new DtkWirelessPage(m_localeName, device, this);
 
     page->setWorker(m_networkWorker);
-    page->updateWiFiStrengthDisplay();
     initConnect(page);
 
     m_mapWirelessPage[device->uni()] = page;
