@@ -229,7 +229,6 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
                 m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), AP_ITEM_HEIGHT));
             }
             it.value()->updateIndicatorDisplay(false);
-            emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
         }
 
         m_autoConnectHideSsid = "";
@@ -344,11 +343,6 @@ void WirelessPage::onAPAdded(const QString &apPath)
         if (ssid == m_autoConnectHideSsid) {
             m_isHideNetwork = true;
             m_autoConnectHideSsid = "";
-            APWdiget->updateIndicatorDisplay(true);
-            APWdiget->setClickItem(apItem);
-            APWdiget->setClickItemWidget(APWdiget);
-            APWdiget->updateItemDisplay();
-            m_activingItemWidget = APWdiget;
         }
 
         apItem->setSizeHint(QSize(this->width(), AP_ITEM_HEIGHT));
@@ -392,13 +386,19 @@ void WirelessPage::onAPRemoved(const QString &apPath)
         }
     }
 
-    if (m_apItemsWidget[apPath]->getConnectIconStatus()) {
-        emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
+    // 移除的是我们点击的或者正在激活的Ap item, 需要更新对应item Widget的状态
+    for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
+        if (it.key() == apPath){
+            if (m_activingItemWidget == it.value()){
+                m_activingItemWidget = nullptr;
+                m_clickedItemWidget = nullptr;
+            }
+        }
     }
+
     m_modelAP->removeRow(m_modelAP->indexFromItem(m_apItems[apPath]).row());
     m_apItems.remove(apPath);
     m_apItemsWidget.remove(apPath);
-    emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
 }
 
 void WirelessPage::onAPChanged(const QString &apPath)
@@ -430,24 +430,6 @@ void WirelessPage::onActiveAPChanged()
     }
 }
 
-void WirelessPage::updateWiFiStrengthDisplay()
-{
-    auto activeConn = m_device->activeConnection();
-    int signalStrength = 0;
-
-    for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-        if (activeConn && m_device->state() == Device::State::Activated) {
-            if (it.value()->m_apPath == activeConn->specificObject()) {
-                signalStrength = it.value()->m_signalStrength;
-            }
-        }
-    }
-
-    WiFiStrenthLevel wifiSignalStrength = WiFiStrengthNoLevel;
-    wifiSignalStrength = getWiFiSignalStrengthLevel(signalStrength);
-    emit requestRefreshWiFiStrengthDisplay(wifiSignalStrength);
-}
-
 void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate, NetworkManager::Device::State oldstate, NetworkManager::Device::StateChangeReason reason)
 {
     Q_UNUSED(oldstate);
@@ -468,12 +450,14 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
     if (newstate == WirelessDevice::Failed) {
         if (m_clickedItemWidget && m_activingItemWidget) {
             m_isHideNetwork = false;
+
             // 连接失败, 取消连接加载的状态
             for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
                 it.value()->updateIndicatorDisplay(false);
             }
-            // 无安全要求的网络连接失败后,不弹提示,去连接之前成功连接的网络
-            if (!m_activingItemWidget->isSecurityNetWork) {
+
+            // 无安全要求的网络(非隐藏网络)连接失败后,不弹提示,去连接之前成功连接的网络
+            if (!m_clickedItemWidget->isHiddenNetWork && !m_activingItemWidget->isSecurityNetWork) {
                 return;
             }
 
@@ -482,14 +466,14 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
             } else {
                 connectWirelessErrorHandle(reason);
             }
-
-            emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoLevel);
         }
     } else if (WirelessDevice::Preparing <= newstate && newstate < WirelessDevice::Activated) {
         for (auto conn : activeConnections()) {
             for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
                 if (!it.value()->isHiddenNetWork && conn->uuid() == it.value()->m_connectionUuid) {
                     m_activingItemWidget = it.value();
+                    it.value()->setClickItem(m_apItems[it.key()]);
+                    it.value()->setClickItemWidget(m_activingItemWidget);
                     it.value()->updateIndicatorDisplay(true);
                 }
             }
@@ -508,8 +492,6 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 if (activeAp) {
                     it.value()->updateItemWidgetDisplay(activeAp->ssid(), activeAp->signalStrength(), activeAp->capabilities());
                     m_apItems[it.key()]->setSortInfo({activeAp->signalStrength(), activeAp->ssid(), true});
-                    WiFiStrenthLevel wifiSignalStrength = getWiFiSignalStrengthLevel(activeAp->signalStrength());
-                    emit requestRefreshWiFiStrengthDisplay(wifiSignalStrength);
                 }
 
                 m_sortDelayTimer->start();
@@ -528,12 +510,6 @@ void WirelessPage::onNetworkAdapterChanged(bool checked)
     Q_EMIT requestDeviceEnabled(m_device->uni(), checked);
 
     m_loadingIndicator->setVisible(checked);
-
-    if (!m_switchBtn->isChecked()) {
-        emit requestRefreshWiFiStrengthDisplay(WiFiStrengthNoNE);
-    } else {
-        updateWiFiStrengthDisplay();
-    }
 
     if (checked)
         Q_EMIT requestWirelessScan();
@@ -582,8 +558,14 @@ void WirelessPage::updateActiveAp()
     if (activeConn) {
         for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
             if (!m_apItems.contains(it.key())) return;
+            // 在有一个新的连接激活时, 更新wifi item的相关显示状态
             it.value()->setConnectIconVisible(false);
             it.value()->setWidgetVisible(false);
+            APSortInfo info = m_apItems[it.key()]->sortInfo();
+            info.connected = false;
+            m_apItems[it.key()]->setSortInfo(info);
+            it.value()->updateIndicatorDisplay(false);
+
             m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), AP_ITEM_HEIGHT));
             it.value()->updateIndicatorDisplay(false);
             if (it.value()->m_apPath == activeConn->specificObject()) {
@@ -591,6 +573,8 @@ void WirelessPage::updateActiveAp()
                 it.value()->updateIndicatorDisplay(true);
                 it.value()->setClickItem(m_apItems[it.key()]);
                 it.value()->setClickItemWidget(it.value());
+                // 在每次激活一个连接时,我们需要去设置对应连接的settings信息
+                it.value()->setConnectWirelessSettings(activeConn);
             }
         }
     }
@@ -627,33 +611,14 @@ bool WirelessPage::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-WiFiStrenthLevel WirelessPage::getWiFiSignalStrengthLevel(int ss)
-{
-    int signalStrenth = ss;
-    WiFiStrenthLevel wifiStrengthLevel = WiFiStrengthNoLevel;
-    if (ss < 0) {
-        return WiFiStrengthNoLevel;
-    }
-
-    if (5 >= signalStrenth)
-        wifiStrengthLevel = WiFiStrengthNoLevel;
-    else if (5 < signalStrenth && 30 >= signalStrenth)
-        wifiStrengthLevel =  WiFiStrengthLOWLevel;
-    else if (30 < signalStrenth && 55 >= signalStrenth)
-        wifiStrengthLevel = WiFiStrengthMidLevel;
-    else if (55 < signalStrenth && 65 >= signalStrenth)
-        wifiStrengthLevel = WiFiStrengthMidHighLevel;
-    else if (65 < signalStrenth)
-        wifiStrengthLevel = WiFiStrengthHighLevel;
-
-    return wifiStrengthLevel;
-}
-
 void WirelessPage::connectWirelessErrorHandle(const Device::StateChangeReason &reason)
 {
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-        if (m_activingItemWidget == it.value()) {
-            m_activingItemWidget->connectWirelessFailedTips(reason);
+        if (m_activingItemWidget && m_clickedItemWidget){
+            // 激活的Ap item存在且是点击的Ap, 才去弹错误提示
+            if (m_activingItemWidget == it.value() && m_clickedItemWidget == m_activingItemWidget) {
+                m_activingItemWidget->connectWirelessFailedTips(reason);
+            }
         }
     }
 }

@@ -61,7 +61,6 @@ public:
 
 signals:
     void abortOperation();
-    void signalStrengthChanged(int signalLevel);
     void hideWirelessList();
     void clicked();
 

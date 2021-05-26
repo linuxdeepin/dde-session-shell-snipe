@@ -234,6 +234,8 @@ void WirelessEditWidget::requestApConnect()
         if (m_clickedItemWidget->m_connectionUuid.isEmpty()) {
             qDebug() << "connection uuid is empty, creating new ConnectionSettings...";
 
+            // 此处创建网络连接Setting的逻辑移到用户点击连接按钮才去调用(onRequestConnect), 否则在用户点击取消按钮后依然创建了一个连接,下次点击时会直接去请求连接
+            // 而之前的连接由于用户没有输入密码导致m_wirelessSetting数据不正确,导致连接出错
             // 无安全要求的网络直接去请求连接
             if (!m_clickedItemWidget->isSecurityNetWork) {
                 setWidgetVisible(false);
@@ -244,7 +246,6 @@ void WirelessEditWidget::requestApConnect()
         } else {
             // 对于之前连接过的网络, 直接去请求连接
             setWidgetVisible(false);
-
             deactiveCurrentDeviceConnection();
             prepareConnection();
         }
@@ -254,10 +255,12 @@ void WirelessEditWidget::requestApConnect()
 
 void WirelessEditWidget::updateItemDisplay()
 {
-    if (m_clickedItemWidget->isHiddenNetWork) {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
-    } else {
-        m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
+    if (m_clickedItemWidget && m_clickedItem) {
+        if (m_clickedItemWidget->isHiddenNetWork) {
+            m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
+        } else {
+            m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), WIRELESS_EDIT_WIDGET_HEIGHT));
+        }
     }
 }
 
@@ -422,6 +425,38 @@ void WirelessEditWidget::initWirelessConnection()
                 m_connectionUuid =  conn->uuid();
                 m_connection = conn;
                 m_connectionSettings = conn->settings();
+            }
+        }
+    }
+}
+
+/**
+ * @brief 更新对应连接的settings信息
+ *
+ * @param void
+ * @return void
+ */
+void WirelessEditWidget::setConnectWirelessSettings(NetworkManager::ActiveConnection::Ptr activeConn)
+{
+    NetworkManager::Connection::List connList = listConnections();
+    for (auto conn : connList) {
+        if (activeConn->connection()->path() == conn->path()) {
+            if (conn->settings()->connectionType() != ConnectionSettings::ConnectionType::Wireless) {
+                continue;
+            }
+
+            NetworkManager::WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+            NetworkManager::WirelessSecuritySetting::Ptr wsSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
+
+            if (m_clickedItemWidget) {
+                qDebug() << "set connect wireless settings" << wirelessSetting->ssid();
+                if (wirelessSetting->ssid() == m_clickedItemWidget->m_itemName) {
+                    m_wsSetting = wsSetting;
+                    m_wirelessSetting = wirelessSetting;
+                    m_connectionUuid =  conn->uuid();
+                    m_connection = conn;
+                    m_connectionSettings = conn->settings();
+                }
             }
         }
     }

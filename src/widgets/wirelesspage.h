@@ -52,15 +52,6 @@ namespace wireless {
 class NetworkWorker;
 class WirelessDevice;
 
-enum WiFiStrenthLevel {
-    WiFiStrengthNoNE,
-    WiFiStrengthNoLevel,
-    WiFiStrengthLOWLevel,
-    WiFiStrengthMidLevel,
-    WiFiStrengthMidHighLevel,
-    WiFiStrengthHighLevel,
-};
-
 struct APSortInfo {
     int signalstrength;
     QString ssid;
@@ -124,8 +115,6 @@ public:
 
     void setWorker(dtk::wireless::NetworkWorker *worker);
     inline bool isHideNetwork() { return m_isHideNetwork;}
-    void updateWiFiStrengthDisplay();
-    WiFiStrenthLevel getWiFiSignalStrengthLevel(int ss);
     void connectWirelessErrorHandle(const Device::StateChangeReason &reason);
     void updateWirelessListViewDisplay(bool checked);
 
@@ -143,7 +132,6 @@ Q_SIGNALS:
     void requestShowAPEditPage(dtk::wireless::WirelessDevice *device, const QString &session) const;
     void requestRemoveAPEditPage(dtk::wireless::WirelessDevice *device) const;
     void requestRefresh() const;
-    void requestRefreshWiFiStrengthDisplay(int wifiStrength);
 
 public Q_SLOTS:
     void onAPAdded(const QString &path);

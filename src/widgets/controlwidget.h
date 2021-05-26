@@ -36,15 +36,6 @@ DWIDGET_USE_NAMESPACE
 class ControlWidget : public QWidget
 {
     Q_OBJECT
-
-    enum WiFiStrenthLevel {
-        WiFiStrengthNoNE,
-        WiFiStrengthNoLevel,
-        WiFiStrengthLOWLevel,
-        WiFiStrengthMidLevel,
-        WiFiStrengthMidHighLevel,
-        WiFiStrengthHighLevel,
-    };
 public:
     explicit ControlWidget(QWidget *parent = nullptr);
     inline bool getWirelessDeviceExistFlg() {return m_wifiDeviceExist;}
@@ -66,7 +57,6 @@ public slots:
     void chooseToSession(const QString &session);
     void leftKeySwitch();
     void rightKeySwitch();
-    void updateWifiIconDisplay(int wifiLevel);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
