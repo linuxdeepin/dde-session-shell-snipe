@@ -139,7 +139,8 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
                              "/com/deepin/udcp/iam",
                              "com.deepin.udcp.iam",
                              QDBusConnection::systemBus());
-    if (interface.isValid()) {
+
+    if (interface.isValid() && interface.property("Enable").toBool()) {
         //INT_MAX这个值远程账号可能会使用，参考lightdm改用系统平常用不到的UID 999
         std::shared_ptr<User> user = std::make_shared<ADDomainUser>(DEFAULT_ENTRY_UID);
         static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
