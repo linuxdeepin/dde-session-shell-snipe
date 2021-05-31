@@ -30,7 +30,6 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <DLabel>
-#include <QGSettings>
 
 DWIDGET_USE_NAMESPACE
 
@@ -54,7 +53,5 @@ private:
     QLabel *m_logoLabel;
     DLabel *m_logoVersionLabel;
     QString m_locale;
-    bool m_isContensServer;
-    QGSettings *m_logSmall = nullptr;
 };
 #endif // LOGOFRAME

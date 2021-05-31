@@ -39,7 +39,6 @@ DCORE_USE_NAMESPACE
 
 #define PIXMAP_WIDTH 128
 #define PIXMAP_HEIGHT 132 /* SessionBaseWindow */
-#define GSETTINGS_CONTENS_SERVER "iscontens-server"
 
 const QPixmap systemLogo(const QSize &size)
 {
@@ -50,7 +49,6 @@ LogoWidget::LogoWidget(QWidget *parent)
     : QFrame(parent)
     , m_logoLabel(new QLabel(this))
     , m_logoVersionLabel(new DLabel(this))
-    , m_isContensServer(false)
 {
     setObjectName("LogoWidget");
 
@@ -90,11 +88,6 @@ void LogoWidget::initUI()
     font.setFamily("Noto Sans CJK SC-Thin");
     m_logoVersionLabel->setFont(font);
 
-    if (QGSettings::isSchemaInstalled("com.deepin.dde.control-versiontype")) {
-        m_logSmall = new QGSettings("com.deepin.dde.control-versiontype", QByteArray(), this);
-        m_isContensServer = m_logSmall->get(GSETTINGS_CONTENS_SERVER).toBool();
-    }
-
     QString systemVersion = getVersion();
     m_logoVersionLabel->setText(systemVersion);
     logoLayout->addWidget(m_logoVersionLabel, 1, Qt::AlignTop | Qt::AlignLeft);
@@ -105,7 +98,7 @@ void LogoWidget::initUI()
 QString LogoWidget::getVersion()
 {
     QString version;
-    if (m_isContensServer) {
+    if (Dtk::Core::DSysInfo::uosEditionType() == Dtk::Core::DSysInfo::UosEuler) {
         version = QString("%1").arg(DSysInfo::majorVersion());
     } else if (DSysInfo::isDeepin()) {
         version = QString("%1 %2").arg(DSysInfo::majorVersion()).arg(DSysInfo::uosEditionName(m_locale));
