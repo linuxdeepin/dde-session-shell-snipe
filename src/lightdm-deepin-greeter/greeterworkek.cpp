@@ -345,14 +345,6 @@ void GreeterWorkek::authenticationComplete()
 
         m_password.clear();
 
-        if (m_model->currentUser()->type() == User::Native) {
-            emit m_model->authFaildTipsMessage(tr("Wrong Password"));
-        }
-
-        if (m_model->currentUser()->type() == User::ADDomain) {
-            emit m_model->authFaildTipsMessage(tr("The account or password is not correct. Please enter again."));
-        }
-
         resetLightdmAuth(m_model->currentUser(), 100, false);
 
         return;
