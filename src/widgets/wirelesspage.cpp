@@ -215,7 +215,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
 
         m_isHideNetwork = false;
 
-        // 在重新选择一个新的AP后，关闭其他AP的编辑框，消除加载状态,并更新排序的连接状态
+        // 在重新选择一个新的AP后，关闭其他AP的编辑框，消除加载和连接的状态,并更新排序的连接状态
         for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
             if (it.value() != item) {
                 it.value()->setWidgetVisible(false);
@@ -225,9 +225,11 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
                 m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), AP_ITEM_HEIGHT));
             }
             it.value()->updateIndicatorDisplay(false);
+            it.value()->setConnectIconVisible(false);
         }
 
         m_autoConnectHideSsid = "";
+        m_autoConnectHideUuid = "";
         m_clickedItemWidget = item;
         item->setWidgetVisible(true);
         item->setClickItem(m_modelAP->item(idx.row()));
@@ -235,7 +237,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
         item->requestApConnect();
 
         connect(item, &WirelessEditWidget::activateWirelessConnection, this, [this](const QString & ssid, const QString & uuid) {
-            Q_UNUSED(uuid);
+            m_autoConnectHideUuid = uuid;
             m_autoConnectHideSsid = ssid;
         });
 
@@ -325,7 +327,7 @@ void WirelessPage::onAPAdded(const QString &apPath)
         return;
     }
 
-    if (!m_apItems.contains(apPath) && !m_ApList.contains(ssid)) {
+    if (!m_apItems.contains(ssid) && !m_ApList.contains(ssid)) {
         APItem *apItem = new APItem(style(), m_lvAP);
 
         m_ApList[ssid] = apPath;
@@ -333,11 +335,13 @@ void WirelessPage::onAPAdded(const QString &apPath)
         WirelessEditWidget *APWdiget = new WirelessEditWidget(m_device, m_localeName, ssid, m_lvAP);
 
         APWdiget->setItemWidgetInfo(nmAp);
-        m_apItems[apPath] = apItem;
-        m_apItemsWidget[apPath] = APWdiget;
+        m_apItems[ssid] = apItem;
+        m_apItemsWidget[ssid] = APWdiget;
 
         if (ssid == m_autoConnectHideSsid) {
             m_isHideNetwork = true;
+            APWdiget->m_connectionUuid = m_autoConnectHideUuid;
+            m_autoConnectHideUuid = "";
             m_autoConnectHideSsid = "";
         }
 
@@ -364,9 +368,20 @@ void WirelessPage::onAPAdded(const QString &apPath)
     updateWirelessListViewDisplay(m_switchBtn->isChecked());
 }
 
+QString WirelessPage::getSsidByApPath(const QString &path)
+{
+    QString ssid;
+    if (!path.isEmpty()) {
+        AccessPoint *nmAp = new AccessPoint(path);
+        ssid = nmAp->ssid().toUtf8();
+    }
+
+    return ssid;
+}
+
 void WirelessPage::onAPRemoved(const QString &apPath)
 {
-    if (!m_apItems.contains(apPath)) return;
+    QString ssid;
 
     // 添加隐藏网络时, networkmanager-qt会发一个accessPointDisappeared信号,导致连接的隐藏网络被移除,
     // 因此此处如果为隐藏网络我们不去做移除处理
@@ -376,6 +391,7 @@ void WirelessPage::onAPRemoved(const QString &apPath)
 
     for (auto it = m_ApList.cbegin(); it != m_ApList.cend(); ++it) {
         if (it.value() == apPath) {
+            ssid = it.key();
             m_ApList.remove(it.key());
 
             break;
@@ -384,17 +400,21 @@ void WirelessPage::onAPRemoved(const QString &apPath)
 
     // 移除的是我们点击的或者正在激活的Ap item, 需要更新对应item Widget的状态
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-        if (it.key() == apPath){
-            if (m_activingItemWidget == it.value()){
+        if (it.key() == ssid) {
+            if (m_activingItemWidget == it.value()) {
                 m_activingItemWidget = nullptr;
                 m_clickedItemWidget = nullptr;
+
+                break;
             }
         }
     }
 
-    m_modelAP->removeRow(m_modelAP->indexFromItem(m_apItems[apPath]).row());
-    m_apItems.remove(apPath);
-    m_apItemsWidget.remove(apPath);
+    if (!ssid.isEmpty()) {
+        m_modelAP->removeRow(m_modelAP->indexFromItem(m_apItems[ssid]).row());
+        m_apItems.remove(ssid);
+        m_apItemsWidget.remove(ssid);
+    }
 }
 
 void WirelessPage::onAPChanged(const QString &apPath)
@@ -407,9 +427,9 @@ void WirelessPage::onAPChanged(const QString &apPath)
         return;
     }
 
-    if (m_ApList.contains(ssid) && m_apItemsWidget.contains(apPath)) {
-        m_apItemsWidget[apPath]->updateItemWidgetDisplay(ssid, nmAp->signalStrength(), nmAp->capabilities());
-        m_apItems[apPath]->setSortInfo({nmAp->signalStrength(), ssid, m_apItemsWidget[apPath]->getConnectIconStatus()});
+    if (m_ApList.contains(ssid) && m_apItemsWidget.contains(ssid)) {
+        m_apItemsWidget[ssid]->updateItemWidgetDisplay(ssid, nmAp->signalStrength(), nmAp->capabilities());
+        m_apItems[ssid]->setSortInfo({nmAp->signalStrength(), ssid, m_apItemsWidget[ssid]->getConnectIconStatus()});
     }
 
     m_sortDelayTimer->start();
@@ -444,7 +464,7 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
         m_preWifiStatus = curWifiStatus;
     }
     if (newstate == WirelessDevice::Failed) {
-        if (m_clickedItemWidget && m_activingItemWidget) {
+        if (m_activingItemWidget) {
             m_isHideNetwork = false;
 
             // 连接失败, 取消连接加载的状态
@@ -453,11 +473,17 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
             }
 
             // 无安全要求的网络(非隐藏网络)连接失败后,不弹提示,去连接之前成功连接的网络
-            if (!m_clickedItemWidget->isHiddenNetWork && !m_activingItemWidget->isSecurityNetWork) {
-                return;
+            if (!m_activingItemWidget->isSecurityNetWork) {
+                if (!m_clickedItemWidget) {
+                    return;
+                } else {
+                    if (!m_clickedItemWidget->isHiddenNetWork) {
+                        return;
+                    }
+                }
             }
 
-            if ((reason == Device::SsidNotFound) && (m_clickedItemWidget->isHiddenNetWork)) {
+            if (m_clickedItemWidget && (reason == Device::SsidNotFound) && (m_clickedItemWidget->isHiddenNetWork)) {
                 m_clickedItemWidget->connectWirelessFailedTips(reason);
             } else {
                 connectWirelessErrorHandle(reason);
@@ -476,21 +502,21 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
         }
     } else if (newstate == WirelessDevice::Activated) {
         m_isHideNetwork = false;
-        auto activeConn = m_device->activeConnection();
-        for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-            if (it.value()->m_apPath == activeConn->specificObject()) {
-                m_connectItemWidget = it.value();
-                it.value()->updateIndicatorDisplay(false);
-                it.value()->setConnectIconVisible(true);
+        auto activeAp = m_device->activeAccessPoint();
+        if (activeAp) {
+            for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
+                if (it.key() == getSsidByApPath(activeAp->uni())) {
+                    m_connectItemWidget = it.value();
+                    it.value()->updateIndicatorDisplay(false);
+                    it.value()->setConnectIconVisible(true);
 
-                AccessPoint::Ptr activeAp = m_device->activeAccessPoint();
+                    if (activeAp) {
+                        it.value()->updateItemWidgetDisplay(activeAp->ssid(), activeAp->signalStrength(), activeAp->capabilities());
+                        m_apItems[it.key()]->setSortInfo({activeAp->signalStrength(), activeAp->ssid(), true});
+                    }
 
-                if (activeAp) {
-                    it.value()->updateItemWidgetDisplay(activeAp->ssid(), activeAp->signalStrength(), activeAp->capabilities());
-                    m_apItems[it.key()]->setSortInfo({activeAp->signalStrength(), activeAp->ssid(), true});
+                    m_sortDelayTimer->start();
                 }
-
-                m_sortDelayTimer->start();
             }
         }
     }
@@ -564,13 +590,11 @@ void WirelessPage::updateActiveAp()
 
             m_apItems[it.key()]->setSizeHint(QSize(m_apItems[it.key()]->sizeHint().width(), AP_ITEM_HEIGHT));
             it.value()->updateIndicatorDisplay(false);
-            if (it.value()->m_apPath == activeConn->specificObject()) {
+            if (it.key() == getSsidByApPath(activeConn->specificObject())) {
                 m_activingItemWidget = it.value();
                 it.value()->updateIndicatorDisplay(true);
                 it.value()->setClickItem(m_apItems[it.key()]);
                 it.value()->setClickItemWidget(it.value());
-                // 在每次激活一个连接时,我们需要去设置对应连接的settings信息
-                it.value()->setConnectWirelessSettings(activeConn);
             }
         }
     }
@@ -610,7 +634,7 @@ bool WirelessPage::eventFilter(QObject *watched, QEvent *event)
 void WirelessPage::connectWirelessErrorHandle(const Device::StateChangeReason &reason)
 {
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-        if (m_activingItemWidget && m_clickedItemWidget){
+        if (m_activingItemWidget && m_clickedItemWidget) {
             // 激活的Ap item存在且是点击的Ap, 才去弹错误提示
             if (m_activingItemWidget == it.value() && m_clickedItemWidget == m_activingItemWidget) {
                 m_activingItemWidget->connectWirelessFailedTips(reason);
