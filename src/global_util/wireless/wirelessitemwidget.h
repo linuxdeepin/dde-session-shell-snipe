@@ -59,7 +59,7 @@ public:
     QString m_connectionUuid;
     QString m_itemName;
 
-    explicit WirelessEditWidget(dtk::wireless::WirelessDevice * dev, const QString locale, const QString &ItemName, QWidget *parent = nullptr);
+    explicit WirelessEditWidget(dtk::wireless::WirelessDevice *dev, const QString locale, const QString &ItemName, QWidget *parent = nullptr);
     ~ WirelessEditWidget();
     void setItemWidgetInfo(const AccessPoint *ap);
     void setWidgetVisible(bool enable);
@@ -77,10 +77,11 @@ public:
     void connectWirelessFailedTips(const Device::StateChangeReason &reason);
     void setWirelessSettings();
     void setSecurityWirelessSettings();
-    void initWirelessConnection();
     void requestActiveConnection();
     void deactiveCurrentDeviceConnection();
     void setConnectWirelessSettings(NetworkManager::ActiveConnection::Ptr);
+    void createConnSettings();
+    bool isWirelessConnectExist();
 
 private:
     void intiUI(const QString &itemName);
@@ -103,7 +104,6 @@ private Q_SLOTS:
     void saveConnSettings();
     void prepareConnection();
     void updateConnection();
-    void createConnSettings();
     void onBtnClickedHandle();
     void onRequestConnect();
 
@@ -128,7 +128,7 @@ private:
     QWidget *m_wirelessInfoWidget;
     QWidget *m_wirelessEditWidget;
 
-    dtk::wireless::WirelessDevice * m_device;
+    dtk::wireless::WirelessDevice *m_device;
     NetworkManager::Connection::Ptr m_connection;
     NetworkManager::ConnectionSettings::Ptr m_connectionSettings;
     NetworkManager::WirelessSetting::Ptr m_wirelessSetting;

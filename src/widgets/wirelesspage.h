@@ -117,6 +117,7 @@ public:
     inline bool isHideNetwork() { return m_isHideNetwork;}
     void connectWirelessErrorHandle(const Device::StateChangeReason &reason);
     void updateWirelessListViewDisplay(bool checked);
+    QString getSsidByApPath(const QString &path);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -151,6 +152,7 @@ private:
     int m_layoutCount;
     WifiStatus m_preWifiStatus;
     QString m_autoConnectHideSsid;
+    QString m_autoConnectHideUuid;
     QString m_localeName;
     QTimer *m_sortDelayTimer;
     DLoadingIndicator *m_loadingIndicator;

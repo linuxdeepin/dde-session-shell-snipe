@@ -55,13 +55,11 @@ WirelessEditWidget::WirelessEditWidget(dtk::wireless::WirelessDevice *dev, const
     }
 
     if (m_itemName.contains("hidden")) {
-        createConnSettings();
         isHiddenNetWork = true;
     }
 
     intiUI(m_itemName);
     initConnection();
-    initWirelessConnection();
 }
 
 void WirelessEditWidget::intiUI(const QString &itemName)
@@ -231,7 +229,7 @@ void WirelessEditWidget::requestApConnect()
     if (m_clickedItemWidget->isHiddenNetWork) {
         m_clickedItem->setSizeHint(QSize(m_clickedItem->sizeHint().width(), HIDE_WIRELESS_EDIT_WIDGET_HEIGHT));
     } else {
-        if (m_clickedItemWidget->m_connectionUuid.isEmpty()) {
+        if (!isWirelessConnectExist()) {
             qDebug() << "connection uuid is empty, creating new ConnectionSettings...";
 
             // 此处创建网络连接Setting的逻辑移到用户点击连接按钮才去调用(onRequestConnect), 否则在用户点击取消按钮后依然创建了一个连接,下次点击时会直接去请求连接
@@ -399,35 +397,6 @@ void WirelessEditWidget::initConnection()
     connect(this, &WirelessEditWidget::saveSettingsDone, this, &WirelessEditWidget::prepareConnection);
     connect(this, &WirelessEditWidget::prepareConnectionDone, this, &WirelessEditWidget::updateConnection);
     connect(m_passwdEdit, SIGNAL(returnPressed()), m_connectBtn, SIGNAL(clicked()), Qt::UniqueConnection);
-}
-
-/**
- * @brief 根据获取的连接初始化相关连接信息
- *
- * @param void
- * @return void
- */
-void WirelessEditWidget::initWirelessConnection()
-{
-    NetworkManager::Connection::List connList = listConnections();
-    for (auto conn : connList) {
-        if (conn->settings()->connectionType() != ConnectionSettings::ConnectionType::Wireless) {
-            continue;
-        }
-
-        NetworkManager::WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
-        NetworkManager::WirelessSecuritySetting::Ptr wsSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
-
-        if (QByteArray::fromHex(m_device->hardwareAddress().toUtf8()) == wirelessSetting->macAddress()) {
-            if (wirelessSetting->ssid() == m_itemName) {
-                m_wsSetting = wsSetting;
-                m_wirelessSetting = wirelessSetting;
-                m_connectionUuid =  conn->uuid();
-                m_connection = conn;
-                m_connectionSettings = conn->settings();
-            }
-        }
-    }
 }
 
 /**
@@ -642,7 +611,6 @@ void WirelessEditWidget::updateConnection()
  */
 void WirelessEditWidget::createConnSettings()
 {
-    // 只有在第一次去创建连接时出初始化m_connectionSettings和m_wsSetting, 后面去连接时不重复创建
     if (!m_connectionSettings && !m_wsSetting) {
         m_connectionSettings = QSharedPointer<NetworkManager::ConnectionSettings>(
                                    new NetworkManager::ConnectionSettings(ConnectionSettings::ConnectionType::Wireless));
@@ -651,7 +619,7 @@ void WirelessEditWidget::createConnSettings()
 
         m_wirelessSetting = m_connectionSettings->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
 
-        QString connName = tr("Wireless Connection %1");
+        QString connName = m_ssidLineEdit->text().toUtf8();
 
         // 设置自动回连
         m_connectionSettings->setAutoconnect(true);
@@ -664,7 +632,7 @@ void WirelessEditWidget::createConnSettings()
         m_connectionSettings->setting(Setting::SettingType::Ipv6).staticCast<NetworkManager::Ipv6Setting>();
 
         if (!connName.isEmpty()) {
-            m_connectionSettings->setId(connName.arg(connectionSuffixNum(connName)));
+            m_connectionSettings->setId(connName);
         }
         m_connectionUuid = m_connectionSettings->createNewUuid();
         while (findConnectionByUuid(m_connectionUuid) != nullptr) {
@@ -690,6 +658,39 @@ void WirelessEditWidget::requestActiveConnection()
     if (reply.isError()) {
         qDebug() << "error occurred while activate connection" << reply.error();
     }
+}
+
+/**
+ * @brief 根据点击的Item m_ssid判断该热点是否连接过
+ *
+ * @param void
+ * @return bool
+ */
+bool WirelessEditWidget::isWirelessConnectExist()
+{
+    bool ret = false;
+    NetworkManager::Connection::List connList = listConnections();
+    for (auto conn : connList) {
+        if (conn->settings()->connectionType() != ConnectionSettings::ConnectionType::Wireless) {
+            continue;
+        }
+
+        NetworkManager::WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+        NetworkManager::WirelessSecuritySetting::Ptr wsSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
+
+        if (QByteArray::fromHex(m_device->hardwareAddress().toUtf8()) == wirelessSetting->macAddress()) {
+            if (wirelessSetting->ssid() == m_ssid) {
+                m_wsSetting = wsSetting;
+                m_wirelessSetting = wirelessSetting;
+                m_connectionUuid =  conn->uuid();
+                m_connection = conn;
+                m_connectionSettings = conn->settings();
+                ret = true;
+            }
+        }
+    }
+
+    return  ret;
 }
 
 int WirelessEditWidget::connectionSuffixNum(const QString &matchConnName)
