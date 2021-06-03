@@ -34,6 +34,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event);
 };
 
 #endif // DLINEEDITEX_H

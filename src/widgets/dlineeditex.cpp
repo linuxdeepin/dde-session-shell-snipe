@@ -22,10 +22,19 @@
 #include "dlineeditex.h"
 
 #include <QPainter>
+#include <QEvent>
 
 DLineEditEx::DLineEditEx(QWidget *parent)
     : DLineEdit(parent)
 {
+#if 0 // FIXME:不生效,改为在eventFilter过滤InputMethodQuery事件
+    // 在锁屏或登录界面，输入类型的控件不要唤出输入法
+    setAttribute(Qt::WA_InputMethodEnabled, false);
+    this->lineEdit()->setAttribute(Qt::WA_InputMethodEnabled, false);
+#endif
+
+    this->lineEdit()->installEventFilter(this);
+    this->installEventFilter(this);
 }
 
 //重写QLineEdit paintEvent函数，实现当文本设置居中后，holderText仍然显示的需求
@@ -45,4 +54,16 @@ void DLineEditEx::paintEvent(QPaintEvent *event)
         option.setAlignment(Qt::AlignCenter);
         pa.drawText(lineEdit()->rect(), lineEdit()->placeholderText(), option);
     }
+}
+
+bool DLineEditEx::eventFilter(QObject *watched, QEvent *event)
+{
+    Q_UNUSED(watched)
+
+    // 禁止输入法
+    if ((watched == this || watched == this->lineEdit()) && event->type() == QEvent::InputMethodQuery) {
+        return true;
+    }
+
+    return QWidget::eventFilter(watched,event);
 }
