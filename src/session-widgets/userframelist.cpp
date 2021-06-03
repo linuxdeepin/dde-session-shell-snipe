@@ -78,6 +78,12 @@ void UserFrameList::handlerBeforeAddUser(std::shared_ptr<User> user)
             }
         });
     } else {
+        // 已经add的用户直接return
+        foreach (auto w, m_loginWidgets) {
+            if (w->uid() == user->uid()) {
+                return;
+            }
+        }
         addUser(user);
     }
 }
