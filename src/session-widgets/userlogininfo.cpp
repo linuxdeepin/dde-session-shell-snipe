@@ -25,7 +25,10 @@
 #include "sessionbasemodel.h"
 #include "userframelist.h"
 #include "src/global_util/constants.h"
+#include <DSysInfo>
 #include <QKeyEvent>
+
+DCORE_USE_NAMESPACE
 
 UserLoginInfo::UserLoginInfo(SessionBaseModel *model, QObject *parent)
     : QObject(parent)
@@ -73,7 +76,9 @@ void UserLoginInfo::initConnect()
 {
     //UserLoginWidget
     connect(m_userLoginWidget, &UserLoginWidget::requestAuthUser, this, [ = ](const QString & account, const QString & password) {
-        if (!m_userLoginWidget->inputInfoCheck(m_model->isServerModel())) return;
+        bool isADDomainUser = DSysInfo::deepinType() == DSysInfo::DeepinProfessional && \
+                              m_model->currentUser()->displayName().contains("...");
+        if (!m_userLoginWidget->inputInfoCheck(m_model->isServerModel() || isADDomainUser)) return;
 
         //当前锁定不需要密码和当前用户不需要密码登录则直接进入系统
         if(m_model->isLockNoPassword() && m_model->currentUser()->isNoPasswdGrp()) {
@@ -81,7 +86,7 @@ void UserLoginInfo::initConnect()
             return;
         }
 
-        if (m_model->isServerModel() && m_model->currentUser()->isDoMainUser()) {
+        if ((m_model->isServerModel() && m_model->currentType() == SessionBaseModel::LightdmType) || isADDomainUser) {
             auto user = dynamic_cast<NativeUser *>(m_model->findUserByName(account).get());
             auto current_user = m_model->currentUser();
 
@@ -179,10 +184,14 @@ void UserLoginInfo::receiveSwitchUser(std::shared_ptr<User> user)
 
 void UserLoginInfo::updateLoginContent()
 {
-    //在INT_MAX的切换用户时输入用户名，其他用户直接显示用户名
-    if (m_model->currentUser()->uid() == INT_MAX) {
+    bool isADDomainUser = DSysInfo::deepinType() == DSysInfo::DeepinProfessional && \
+                          m_model->currentUser()->displayName().contains("...");
+
+    if (m_model->currentUser()->isDoMainUser()) {
         m_userLoginWidget->setWidgetShowType(UserLoginWidget::IDAndPasswordType);
-    } else {
+    } else if (isADDomainUser){
+        m_userLoginWidget->setWidgetShowType(UserLoginWidget::IDAndPasswordType);
+    }else {
         if (m_user->isNoPasswdGrp()) {
             m_userLoginWidget->setWidgetShowType(UserLoginWidget::NoPasswordType);
         } else {

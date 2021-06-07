@@ -3,11 +3,14 @@
 
 #include <QWidget>
 #include <memory>
+#include <com_deepin_daemon_accounts.h>
 
 #include "sessionbasewindow.h"
 #include "sessionbasemodel.h"
 #include "src/widgets/mediawidget.h"
 #include "src/widgets/wirelesswidget.h"
+
+using AccountsInter = com::deepin::daemon::Accounts;
 
 class ControlWidget;
 class UserInputWidget;
@@ -70,6 +73,7 @@ protected:
     MediaWidget *m_mediaWidget;
     UserLoginInfo *m_userLoginInfo;
     int m_failures = 0;
+    AccountsInter *    m_accountsInter;
 };
 
 #endif // LOCKCONTENT_H

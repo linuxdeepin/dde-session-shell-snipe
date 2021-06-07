@@ -136,6 +136,13 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
         initData();
     }
 
+    // 平安科技1022专业版需要支持用户手动输入用户名和密码去请求认证
+    if (DSysInfo::deepinType() == DSysInfo::DeepinProfessional){
+        std::shared_ptr<User> user = std::make_shared<ADDomainUser>(INT_MAX);
+        static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
+        m_model->userAdd(user);
+    }
+
     // init ADDomain User
     if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false)) {
         std::shared_ptr<User> user = std::make_shared<ADDomainUser>(INT_MAX);
