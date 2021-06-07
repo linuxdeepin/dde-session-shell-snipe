@@ -2,6 +2,8 @@
 #include "deepinauthframework.h"
 #include "public_func.h"
 
+#include <DSysInfo>
+
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -16,6 +18,7 @@
 
 #define PAM_SERVICE_SYSTEM_NAME "password-auth"
 #define PAM_SERVICE_DEEPIN_NAME "common-auth"
+#define PAM_SERVICE_EULER_NAME "system-auth"
 
 AuthAgent::AuthAgent(DeepinAuthFramework *deepin)
     : m_deepinauth(deepin)
@@ -41,9 +44,14 @@ void AuthAgent::Authenticate(const QString& username)
 {
     pam_handle_t* m_pamHandle = nullptr;
     pam_conv conv = { pamConversation, static_cast<void*>(this) };
-    const char* serviceName = isDeepinAuth() ? PAM_SERVICE_DEEPIN_NAME : PAM_SERVICE_SYSTEM_NAME;
-    int ret = pam_start(serviceName, username.toLocal8Bit().data(), &conv, &m_pamHandle);
 
+    const char* serviceName;
+    if (Dtk::Core::DSysInfo::uosEditionType()==Dtk::Core::DSysInfo::UosEuler)
+        serviceName = PAM_SERVICE_EULER_NAME;
+    else
+        serviceName = isDeepinAuth() ? PAM_SERVICE_DEEPIN_NAME : PAM_SERVICE_SYSTEM_NAME;
+
+    int ret = pam_start(serviceName, username.toLocal8Bit().data(), &conv, &m_pamHandle);
     if (ret != PAM_SUCCESS) {
         qDebug() << "pam_start() failed: " << pam_strerror(m_pamHandle, ret);
     }
@@ -134,8 +142,11 @@ int AuthAgent::pamConversation(int num_msg, const struct pam_message **msg,
         }
 
         case PAM_TEXT_INFO: {
-            qDebug() << "pam authagent info: " << PAM_MSG_MEMBER(msg, idx, msg);
-            app_ptr->displayTextInfo(QString::fromLocal8Bit(PAM_MSG_MEMBER(msg, idx, msg)));
+            qDebug() << "pam authagent info: " << PAM_MSG_MEMBER(msg, idx, msg) ;
+            if (Dtk::Core::DSysInfo::uosEditionType()==Dtk::Core::DSysInfo::UosEuler)
+                app_ptr->displayErrorMsg(QString::fromLocal8Bit(PAM_MSG_MEMBER(msg, idx, msg)));
+            else
+                app_ptr->displayTextInfo(QString::fromLocal8Bit(PAM_MSG_MEMBER(msg, idx, msg)));
             aresp[idx].resp_retcode = PAM_SUCCESS;
             break;
          }

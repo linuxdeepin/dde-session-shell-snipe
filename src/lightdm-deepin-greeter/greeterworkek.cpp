@@ -296,9 +296,16 @@ void GreeterWorkek::prompt(QString text, QLightDM::Greeter::PromptType type)
     // we'll provide our own prompt or just not.
     qWarning() << "pam prompt: " << text << type;
 
-    const QString msg = text.simplified() == "Please input Password" ? "" : text;
+    const QString msg;
+    if (Dtk::Core::DSysInfo::uosEditionType()==Dtk::Core::DSysInfo::UosEuler)
+        const QString msg = text.simplified() == "Password:" ? "" : text;
+    else
+        const QString msg = text.simplified() == "Please input Password" ? "" : text;
 
     switch (type) {
+    case QLightDM::Greeter::PromptTypeQuestion:
+        emit m_model->authTipsMessage(text);
+        break;
     case QLightDM::Greeter::PromptTypeSecret:
         m_authenticating = false;
         if (msg.isEmpty() && !m_password.isEmpty()) {
@@ -306,9 +313,6 @@ void GreeterWorkek::prompt(QString text, QLightDM::Greeter::PromptType type)
         } else {
             emit m_model->authFaildMessage(text);
         }
-        break;
-    case QLightDM::Greeter::PromptTypeQuestion:
-        emit m_model->authTipsMessage(text);
         break;
     }
 }
@@ -321,7 +325,10 @@ void GreeterWorkek::message(QString text, QLightDM::Greeter::MessageType type)
     switch (type) {
     case QLightDM::Greeter::MessageTypeInfo:
         qWarning() << Q_FUNC_INFO << "lightdm greeter message type info: " << text.toUtf8() << QString(dgettext("fprintd", text.toUtf8()));
-        emit m_model->authFaildMessage(QString(dgettext("fprintd", text.toUtf8())));
+        if (Dtk::Core::DSysInfo::uosEditionType() == Dtk::Core::DSysInfo::UosEuler)
+            emit m_model->authFaildTipsMessage(QString(dgettext("fprintd", text.toUtf8())));
+        else
+            emit m_model->authFaildMessage(QString(dgettext("fprintd", text.toUtf8())));
         break;
 
     case QLightDM::Greeter::MessageTypeError:
