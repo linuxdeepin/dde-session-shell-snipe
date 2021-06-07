@@ -6,6 +6,7 @@
 
 #include <com_deepin_daemon_imageblur.h>
 #include <com_deepin_sessionmanager.h>
+#include <com_deepin_daemon_accounts.h>
 
 using SessionManager = com::deepin::SessionManager;
 
@@ -15,6 +16,7 @@ using SessionManager = com::deepin::SessionManager;
 #include "src/widgets/wirelesswidget.h"
 
 using ImageBlur = com::deepin::daemon::ImageBlur;
+using AccountsInter = com::deepin::daemon::Accounts;
 
 class ControlWidget;
 class UserInputWidget;
@@ -80,6 +82,7 @@ protected:
     UserLoginInfo *m_userLoginInfo;
     int m_failures = 0;
     SessionManager *m_sessionManager;
+    AccountsInter *    m_accountsInter;
 };
 
 #endif // LOCKCONTENT_H

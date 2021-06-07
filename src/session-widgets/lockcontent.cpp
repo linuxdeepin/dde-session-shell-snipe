@@ -23,6 +23,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_translator(new QTranslator)
     , m_userLoginInfo(new UserLoginInfo(model))
     , m_sessionManager(new SessionManager("com.deepin.SessionManager", "/com/deepin/SessionManager", QDBusConnection::sessionBus(), this))
+    , m_accountsInter(new AccountsInter(ACCOUNT_DBUS_SERVICE, ACCOUNT_DBUS_PATH, QDBusConnection::systemBus(), this))
 {
     m_controlWidget = new ControlWidget;
     m_shutdownFrame = new ShutdownWidget;
@@ -54,6 +55,11 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     // init connect
     connect(model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [ = ] {
+        // 在用户去切换用户时，我们重新获取远程网络账户的状态，去刷新用户列表
+        if (m_accountsInter){
+            m_accountsInter->UpdateADDomainUserList();
+        }
+
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::UserMode) return;
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
     });
