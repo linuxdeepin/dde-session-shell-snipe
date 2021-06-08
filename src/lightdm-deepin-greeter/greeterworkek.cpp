@@ -176,9 +176,8 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
 
 void GreeterWorkek::authUser(const QString &password)
 {
-    if (m_authenticating) return;
-
-    m_authenticating = true;
+    if (m_authenticating == false)
+        m_authenticating = true;
 
     // auth interface
     std::shared_ptr<User> user = m_model->currentUser();
@@ -296,22 +295,15 @@ void GreeterWorkek::prompt(QString text, QLightDM::Greeter::PromptType type)
     // we'll provide our own prompt or just not.
     qWarning() << "pam prompt: " << text << type;
 
-    const QString msg;
-    if (Dtk::Core::DSysInfo::uosEditionType()==Dtk::Core::DSysInfo::UosEuler)
-        const QString msg = text.simplified() == "Password:" ? "" : text;
-    else
-        const QString msg = text.simplified() == "Please input Password" ? "" : text;
-
     switch (type) {
     case QLightDM::Greeter::PromptTypeQuestion:
         emit m_model->authTipsMessage(text);
         break;
     case QLightDM::Greeter::PromptTypeSecret:
         m_authenticating = false;
-        if (msg.isEmpty() && !m_password.isEmpty()) {
-            m_greeter->respond(m_password);
-        } else {
+        if (text.isEmpty()){
             emit m_model->authFaildMessage(text);
+            break;
         }
         break;
     }
