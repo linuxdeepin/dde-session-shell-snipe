@@ -97,6 +97,7 @@ void UserLoginInfo::initConnect()
         emit requestAuthUser(password);
     });
     connect(m_model, &SessionBaseModel::authFaildMessage, m_userLoginWidget, &UserLoginWidget::setFaildMessage);
+    connect(m_model, &SessionBaseModel::authFinished, m_userLoginWidget, &UserLoginWidget::setAccountEnable);
     connect(m_model, &SessionBaseModel::authFaildTipsMessage, m_userLoginWidget, &UserLoginWidget::setFaildTipMessage);
     connect(m_userLoginWidget, &UserLoginWidget::requestUserKBLayoutChanged, this, [ = ](const QString & value) {
         emit requestSetLayout(m_user, value);

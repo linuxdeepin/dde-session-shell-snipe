@@ -71,6 +71,7 @@ public:
     void disablePassword(bool disable, uint lockTime = 0);
     void setFaildMessage(const QString &message, SessionBaseModel::AuthFaildType type = SessionBaseModel::KEYBOARD);
     void setFaildTipMessage(const QString &message, SessionBaseModel::AuthFaildType type = SessionBaseModel::KEYBOARD);
+    void setAccountEnable(bool success);
     void setWidgetShowType(WidgetShowType showType);
     void setName(const QString &name);
     void setAvatar(const QString &avatar);

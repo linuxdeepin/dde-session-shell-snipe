@@ -111,6 +111,13 @@ void UserLoginWidget::setFaildMessage(const QString &message, SessionBaseModel::
     m_passwordEdit->lineEdit()->update();
 }
 
+void UserLoginWidget::setAccountEnable(bool success)
+{
+    if (!success) {
+        m_accountEdit->lineEdit()->setEnabled(true);
+    }
+}
+
 //密码输入错误,设置错误信息
 void UserLoginWidget::setFaildTipMessage(const QString &message, SessionBaseModel::AuthFaildType type)
 {
