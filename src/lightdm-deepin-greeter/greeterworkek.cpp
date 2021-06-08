@@ -176,7 +176,7 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
 
 void GreeterWorkek::authUser(const QString &password)
 {
-    if (m_authenticating == false)
+    if (!m_authenticating)
         m_authenticating = true;
 
     // auth interface
@@ -301,11 +301,11 @@ void GreeterWorkek::prompt(QString text, QLightDM::Greeter::PromptType type)
         break;
     case QLightDM::Greeter::PromptTypeSecret:
         m_authenticating = false;
-        if (text.isEmpty()){
+        if (!text.isEmpty()) {
             emit m_model->authFaildMessage(text);
             break;
-        }
-        break;
+        } else
+            break;
     }
 }
 
