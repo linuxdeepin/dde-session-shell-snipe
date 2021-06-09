@@ -49,6 +49,9 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     initUI();
     initConnect();
 
+    auto locale = QLocale::system().name();
+    setLocale(locale);
+
     onEnable("systemShutdown", enableState(GSettingWatcher::instance()->getStatus("systemShutdown")));
     if (DSysInfo::deepinType() != DSysInfo::DeepinServer) {
         onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
@@ -553,7 +556,11 @@ void ShutdownWidget::updateLocale(std::shared_ptr<User> user)
     if(qApp->applicationName() == "dde-lock") return;
 
     auto locale = user->locale();
+    setLocale(locale);
+}
 
+void ShutdownWidget::setLocale(const QString &locale)
+{
     QTranslator translator;
     translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first());
     qApp->installTranslator(&translator);

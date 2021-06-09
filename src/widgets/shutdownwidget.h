@@ -57,6 +57,7 @@ public slots:
     void setUserSwitchEnable(bool enable);
     void onEnable(const QString &gsettingsName, bool enable);
     void updateLocale(std::shared_ptr<User> user);
+    void setLocale(const QString &locale);
 
 protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
