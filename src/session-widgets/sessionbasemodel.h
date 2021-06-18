@@ -148,7 +148,8 @@ signals:
     void updateLockLimit(std::shared_ptr<User> user);
     void activeGreeterAuthentciate();
     void activeGreeterAuthenticateInServer(const QString &username);
-
+    void updateCheckAccountErrorMessage(const QString &msg);
+    void requestCheckAccountNameFinish(const QString &name);
 
 private:
     com::deepin::SessionManager *m_sessionManagerInter;

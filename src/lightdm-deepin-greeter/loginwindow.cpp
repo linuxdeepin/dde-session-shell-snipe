@@ -72,6 +72,7 @@ LoginWindow::LoginWindow(SessionBaseModel *const model, QWidget *parent)
     connect(m_loginContent, &LockContent::requestAuthUser, this, &LoginWindow::requestAuthUser);
     connect(m_loginContent, &LockContent::requestSwitchToUser, this, &LoginWindow::requestSwitchToUser);
     connect(m_loginContent, &LockContent::requestSetLayout, this, &LoginWindow::requestSetLayout);
+    connect(m_loginContent, &LockContent::requestCheckAccountName, this, &LoginWindow::requestCheckAccountName);
 }
 
 void LoginWindow::resizeEvent(QResizeEvent *event)

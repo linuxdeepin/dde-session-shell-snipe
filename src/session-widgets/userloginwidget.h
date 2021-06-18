@@ -104,7 +104,7 @@ signals:
     void clicked();
     void requestUserKBLayoutChanged(const QString &layout);
     void unlockActionFinish();
-    void accountLineEditFinished(const QString &accountName);
+    void requestCheckAccountName(const QString &name);
 
 public slots:
     void updateAuthType(SessionBaseModel::AuthType type);
@@ -113,6 +113,8 @@ public slots:
     void hidePasswordEditMessage();
     void unlockSuccessAni();
     void unlockFailedAni();
+    void authUser(const QString &name);
+    void updateCheckAccountErrorMessage(const QString &msg);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

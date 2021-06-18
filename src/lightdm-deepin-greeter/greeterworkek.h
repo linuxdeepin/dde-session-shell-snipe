@@ -29,6 +29,7 @@ public:
     void authUser(const QString &password) override;
     void onUserAdded(const QString &user) override;
     bool isConnectSync() {return m_greeter->connectSync();}
+    void onDisplayErrorInfo(const QString &msg);
 
 signals:
     void requestUpdateBackground(const QString &path);
@@ -44,6 +45,9 @@ private:
     void saveNumlockStatus(std::shared_ptr<User> user, const bool &on);
     void recoveryUserKBState(std::shared_ptr<User> user);
     void resetLightdmAuth(std::shared_ptr<User> user,int delay_time, bool is_respond);
+
+public slots:
+    void checkAccountName(const QString &name);
 
 private:
     QLightDM::Greeter *m_greeter;

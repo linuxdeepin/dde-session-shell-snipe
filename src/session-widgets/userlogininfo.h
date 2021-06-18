@@ -54,7 +54,7 @@ signals:
     void hideUserFrameList();
     void requestSetLayout(std::shared_ptr<User> user, const QString &value);
     void unlockActionFinish();
-    void accountLineEditFinished(const QString &accountName);
+    void requestCheckAccountName(const QString &name);
 
 private:
     void userLockChanged(bool disable);

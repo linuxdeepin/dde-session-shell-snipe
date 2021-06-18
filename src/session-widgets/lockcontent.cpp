@@ -47,7 +47,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     }
 
     // init connect
-    connect(m_userLoginInfo, &UserLoginInfo::accountLineEditFinished, this, [ = ](const QString &accountName) {
+    connect(model, &SessionBaseModel::requestCheckAccountNameFinish, this, [ = ](const QString &accountName) {
         auto user_ptr = m_model->findUserByName(accountName);
         if (user_ptr != nullptr) {
             emit m_model->activeGreeterAuthenticateInServer(user_ptr->name());
@@ -71,6 +71,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
     connect(m_userLoginInfo, &UserLoginInfo::requestAuthUser, this, &LockContent::requestAuthUser);
+    connect(m_userLoginInfo, &UserLoginInfo::requestCheckAccountName, this, &LockContent::requestCheckAccountName);
     connect(m_userLoginInfo, &UserLoginInfo::hideUserFrameList, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::requestSwitchUser, this, &LockContent::requestSwitchToUser);
     connect(m_userLoginInfo, &UserLoginInfo::switchToCurrentUser, this, &LockContent::restoreMode);

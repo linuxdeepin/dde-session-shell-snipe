@@ -557,29 +557,27 @@ void UserLoginWidget::initConnect()
         FrameDataBind::Instance()->updateValue("UserLoginPassword", value);
     });
     connect(m_accountEdit, &DLineEdit::editingFinished, this, [ = ]{
-       Q_EMIT accountLineEditFinished(m_accountEdit->text());
+       emit requestCheckAccountName(m_accountEdit->text());
+    });
+
+    connect(m_accountEdit, &DLineEdit::textChanged, this, [ = ]{
+        if (m_accountEdit->isAlert()) {
+            m_accountEdit->setAlert(false);
+            m_accountEdit->hideAlertMessage();
+        }
     });
 
     connect(m_passwordEdit, &DPasswordEditEx::returnPressed, this, [ = ] {
-        const QString account = m_accountEdit->text();
-        const QString passwd = m_passwordEdit->text();
-
-        m_accountEdit->lineEdit()->setEnabled(false);
-        emit requestAuthUser(account, passwd);
+        emit requestCheckAccountName(m_accountEdit->text());
     });
 
     connect(m_lockButton, &QPushButton::clicked, this, [ = ] {
-        const QString account = m_accountEdit->text();
-        const QString password = m_passwordEdit->text();
-
-        if (m_passwordEdit->isVisible())
-        {
+        if (m_passwordEdit->isVisible()) {
             m_passwordEdit->lineEdit()->setFocus();
         }
 
         m_passwordEdit->showLoadSlider();
-        m_accountEdit->lineEdit()->setEnabled(false);
-        emit requestAuthUser(m_accountEdit->text(), password);
+        emit requestCheckAccountName(m_accountEdit->text());
     });
     connect(m_userAvatar, &UserAvatar::clicked, this, &UserLoginWidget::clicked);
 
@@ -592,6 +590,22 @@ void UserLoginWidget::initConnect()
     connect(m_passwordEdit, &DPasswordEditEx::selectionChanged, this, &UserLoginWidget::hidePasswordEditMessage);
     //字体大小改变需要更新用户名显示
     connect(qGuiApp, &QGuiApplication::fontChanged, this, &UserLoginWidget::updateNameLabel);
+}
+
+void UserLoginWidget::authUser(const QString &name)
+{
+    const QString passwd = m_passwordEdit->text();
+
+    m_accountEdit->lineEdit()->setEnabled(false);
+    emit requestAuthUser(name, passwd);
+
+}
+void UserLoginWidget::updateCheckAccountErrorMessage(const QString &msg)
+{
+    m_passwordEdit->hideLoadSlider();
+    m_accountEdit->lineEdit()->setEnabled(true);
+    m_accountEdit->setAlert(true);
+    m_accountEdit->showAlertMessage(msg);
 }
 
 //设置用户名

@@ -72,8 +72,11 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
 void UserLoginInfo::initConnect()
 {
     if (m_model->isServerModel()) {
-        connect(m_userLoginWidget, &UserLoginWidget::accountLineEditFinished, this, &UserLoginInfo::accountLineEditFinished);
+        connect(m_userLoginWidget, &UserLoginWidget::requestCheckAccountName, this, &UserLoginInfo::requestCheckAccountName);
         connect(m_model, &SessionBaseModel::clearServerLoginWidgetContent, m_userLoginWidget, &UserLoginWidget::resetAllState);
+        connect(m_model, &SessionBaseModel::requestCheckAccountNameFinish, m_userLoginWidget, &UserLoginWidget::authUser);
+        connect(m_model, &SessionBaseModel::updateCheckAccountErrorMessage, m_userLoginWidget, &UserLoginWidget::updateCheckAccountErrorMessage);
+
     }
     connect(m_userLoginWidget, &UserLoginWidget::requestAuthUser, this, [ = ](const QString & account, const QString & password) {
         if (!m_userLoginWidget->inputInfoCheck(m_model->isServerModel())) return;

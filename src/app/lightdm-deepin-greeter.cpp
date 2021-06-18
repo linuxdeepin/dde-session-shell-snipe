@@ -255,6 +255,7 @@ int main(int argc, char* argv[])
         LoginWindow *loginFrame = new LoginWindow(model);
         loginFrame->setScreen(screen);
         property_group->addObject(loginFrame);
+        QObject::connect(loginFrame, &LoginWindow::requestCheckAccountName, worker, &GreeterWorkek::checkAccountName);
         QObject::connect(loginFrame, &LoginWindow::requestSwitchToUser, worker, &GreeterWorkek::switchToUser);
         QObject::connect(loginFrame, &LoginWindow::requestAuthUser, worker, &GreeterWorkek::authUser);
         QObject::connect(loginFrame, &LoginWindow::requestSetLayout, worker, &GreeterWorkek::setLayout);

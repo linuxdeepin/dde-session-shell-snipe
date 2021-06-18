@@ -196,6 +196,23 @@ void GreeterWorkek::authUser(const QString &password)
     }
 }
 
+void GreeterWorkek::checkAccountName(const QString &name)
+{
+    QString path = m_accountsInter->FindUserByName(name);
+    if (!path.startsWith("/")) {
+        path = tr("Wrong account");
+        onDisplayErrorInfo(path);
+        return;
+    }
+
+    Q_EMIT m_model->requestCheckAccountNameFinish(name);
+}
+
+void GreeterWorkek::onDisplayErrorInfo(const QString &msg)
+{
+    Q_EMIT m_model->updateCheckAccountErrorMessage(msg);
+}
+
 void GreeterWorkek::onUserAdded(const QString &user)
 {
     std::shared_ptr<NativeUser> user_ptr(new NativeUser(user));
