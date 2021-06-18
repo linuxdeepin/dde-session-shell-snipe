@@ -102,6 +102,15 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     m_model->setAllowShowUserSwitchButton(switchUserButtonValue == "ondemand");
 
     {
+        // 平安科技1022专业版需要支持用户手动输入用户名和密码去请求认证
+        // 添加自定义账户需要在调用onUserAdded之前, 否则在自定义页面也会发起指纹认证
+        if (DSysInfo::deepinType() == DSysInfo::DeepinProfessional){
+            std::shared_ptr<User> user = std::make_shared<ADDomainUser>(INT_MAX);
+            static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
+            m_model->userAdd(user);
+            m_model->setCurrentUser(user);
+        }
+
         initDBus();
         initData();
 
@@ -110,14 +119,6 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
 
         checkDBusServer(m_accountsInter->isValid());
         oneKeyLogin();
-    }
-
-    // 平安科技1022专业版需要支持用户手动输入用户名和密码去请求认证
-    if (DSysInfo::deepinType() == DSysInfo::DeepinProfessional){
-        std::shared_ptr<User> user = std::make_shared<ADDomainUser>(INT_MAX);
-        static_cast<ADDomainUser *>(user.get())->setUserDisplayName("...");
-        m_model->userAdd(user);
-        m_model->setCurrentUser(user);
     }
 
     if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false)) {
