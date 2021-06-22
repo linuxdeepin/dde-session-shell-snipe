@@ -361,6 +361,9 @@ void GreeterWorkek::authenticationComplete()
 
         m_password.clear();
 
+        if (Dtk::Core::DSysInfo::uosEditionType()==Dtk::Core::DSysInfo::UosEuler)
+            emit m_model->authFaildTipsMessage(tr("Wrong Password"));
+
         resetLightdmAuth(m_model->currentUser(), 100, false);
 
         return;
