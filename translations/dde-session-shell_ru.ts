@@ -104,7 +104,12 @@
 <context>
     <name>GreeterWorkek</name>
     <message>
-        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="329"/>
+        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="515"/>
+        <source>Wrong account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="626"/>
         <source>Wrong Password</source>
         <translation>Неверный Пароль</translation>
     </message>

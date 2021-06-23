@@ -104,7 +104,10 @@
 <context>
     <name>GreeterWorkek</name>
     <message>
-        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="329"/>
+        <source>Wrong account</source>
+        <translation>Verkeerd account</translation>
+    </message>
+    <message>
         <source>Wrong Password</source>
         <translation>Het wachtwoord is onjuist</translation>
     </message>

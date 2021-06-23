@@ -104,7 +104,10 @@
 <context>
     <name>GreeterWorkek</name>
     <message>
-        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="329"/>
+        <source>Wrong account</source>
+        <translation>Hibás Felhasználói fiók</translation>
+    </message>
+    <message>
         <source>Wrong Password</source>
         <translation>Helytelen jelszó</translation>
     </message>

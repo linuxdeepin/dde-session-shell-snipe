@@ -104,7 +104,10 @@
 <context>
     <name>GreeterWorkek</name>
     <message>
-        <location filename="../src/lightdm-deepin-greeter/greeterworkek.cpp" line="329"/>
+        <source>Wrong account</source>
+        <translation>帐户错误</translation>
+    </message>
+    <message>
         <source>Wrong Password</source>
         <translation>密码错误</translation>
     </message>
