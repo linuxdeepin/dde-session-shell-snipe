@@ -206,6 +206,7 @@ void GreeterWorkek::checkAccountName(const QString &name)
     }
 
     Q_EMIT m_model->requestCheckAccountNameFinish(name);
+    Q_EMIT m_model->requestAccountNameExist(true);
 }
 
 void GreeterWorkek::onDisplayErrorInfo(const QString &msg)

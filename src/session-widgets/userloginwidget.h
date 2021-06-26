@@ -98,6 +98,8 @@ public:
     bool inputInfoCheck(bool is_server = false);
     void prepareForSleep(bool isSleep);//待机信号
     void updateLoginEditLocale(const QLocale &locale);
+    void setAccountNameExist(bool exist);
+    bool isAccountNameExist();
 
 signals:
     void requestAuthUser(const QString &account, const QString &password);
@@ -171,6 +173,7 @@ private:
     QMetaObject::Connection m_connection;           //定時器connection
     int m_timerIndex = 0;
     int m_action;                                   //重启或关机行为记录
+    bool m_isAccountNameExist;                      //用户名是否存在
 };
 
 #endif // USERLOGINWIDGET_H

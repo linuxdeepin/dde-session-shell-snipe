@@ -150,6 +150,7 @@ signals:
     void activeGreeterAuthenticateInServer(const QString &username);
     void updateCheckAccountErrorMessage(const QString &msg);
     void requestCheckAccountNameFinish(const QString &name);
+    void requestAccountNameExist(bool exist);
 
 private:
     com::deepin::SessionManager *m_sessionManagerInter;

@@ -106,7 +106,6 @@ void DPasswordEditEx::initAnimation()
     m_isLoading = false;
 
     m_clipEffectWidget = new DClipEffectWidget(this);
-    connect(this,  &DPasswordEditEx::returnPressed, this, &DPasswordEditEx::inputDone);
 }
 
 void DPasswordEditEx::setKBLayoutList(QStringList kbLayoutList)

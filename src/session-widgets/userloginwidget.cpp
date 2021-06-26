@@ -64,6 +64,7 @@ UserLoginWidget::UserLoginWidget(QWidget *parent)
     , m_capslockMonitor(KeyboardMonitor::instance())
     , m_isAlertMessageShow(false)
     , m_aniTimer(new QTimer(this))
+    , m_isAccountNameExist(false)
 {
     initUI();
     initConnect();
@@ -557,7 +558,8 @@ void UserLoginWidget::initConnect()
         FrameDataBind::Instance()->updateValue("UserLoginPassword", value);
     });
     connect(m_accountEdit, &DLineEdit::editingFinished, this, [ = ]{
-       emit requestCheckAccountName(m_accountEdit->text());
+        if(!m_accountEdit->text().isEmpty())
+            emit requestCheckAccountName(m_accountEdit->text());
     });
 
     connect(m_accountEdit, &DLineEdit::textChanged, this, [ = ]{
@@ -568,7 +570,10 @@ void UserLoginWidget::initConnect()
     });
 
     connect(m_passwordEdit, &DPasswordEditEx::returnPressed, this, [ = ] {
-        emit requestCheckAccountName(m_accountEdit->text());
+        if (!m_passwordEdit->text().isEmpty() && isAccountNameExist()) {
+            m_passwordEdit->showLoadSlider();
+            authUser(m_accountEdit->text());
+        }
     });
 
     connect(m_lockButton, &QPushButton::clicked, this, [ = ] {
@@ -576,8 +581,10 @@ void UserLoginWidget::initConnect()
             m_passwordEdit->lineEdit()->setFocus();
         }
 
-        m_passwordEdit->showLoadSlider();
-        emit requestCheckAccountName(m_accountEdit->text());
+        if (!m_passwordEdit->text().isEmpty() && !m_accountEdit->text().isEmpty() && isAccountNameExist()) {
+            m_passwordEdit->showLoadSlider();
+            authUser(m_accountEdit->text());
+        }
     });
     connect(m_userAvatar, &UserAvatar::clicked, this, &UserLoginWidget::clicked);
 
@@ -590,6 +597,16 @@ void UserLoginWidget::initConnect()
     connect(m_passwordEdit, &DPasswordEditEx::selectionChanged, this, &UserLoginWidget::hidePasswordEditMessage);
     //字体大小改变需要更新用户名显示
     connect(qGuiApp, &QGuiApplication::fontChanged, this, &UserLoginWidget::updateNameLabel);
+}
+
+void UserLoginWidget::setAccountNameExist(bool exist)
+{
+    m_isAccountNameExist = exist;
+}
+
+bool UserLoginWidget::isAccountNameExist()
+{
+    return m_isAccountNameExist;
 }
 
 void UserLoginWidget::authUser(const QString &name)

@@ -74,7 +74,7 @@ void UserLoginInfo::initConnect()
     if (m_model->isServerModel()) {
         connect(m_userLoginWidget, &UserLoginWidget::requestCheckAccountName, this, &UserLoginInfo::requestCheckAccountName);
         connect(m_model, &SessionBaseModel::clearServerLoginWidgetContent, m_userLoginWidget, &UserLoginWidget::resetAllState);
-        connect(m_model, &SessionBaseModel::requestCheckAccountNameFinish, m_userLoginWidget, &UserLoginWidget::authUser);
+        connect(m_model, &SessionBaseModel::requestAccountNameExist, m_userLoginWidget, &UserLoginWidget::setAccountNameExist);
         connect(m_model, &SessionBaseModel::updateCheckAccountErrorMessage, m_userLoginWidget, &UserLoginWidget::updateCheckAccountErrorMessage);
 
     }
