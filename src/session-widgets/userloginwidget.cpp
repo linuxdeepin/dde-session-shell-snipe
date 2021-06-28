@@ -581,7 +581,7 @@ void UserLoginWidget::initConnect()
             m_passwordEdit->lineEdit()->setFocus();
         }
 
-        if (!m_passwordEdit->text().isEmpty() && !m_accountEdit->text().isEmpty() && isAccountNameExist()) {
+        if (!m_passwordEdit->text().isEmpty() && isAccountNameExist()) {
             m_passwordEdit->showLoadSlider();
             authUser(m_accountEdit->text());
         }
@@ -606,6 +606,8 @@ void UserLoginWidget::setAccountNameExist(bool exist)
 
 bool UserLoginWidget::isAccountNameExist()
 {
+    if (!m_accountEdit->isVisible())
+        return true;
     return m_isAccountNameExist;
 }
 
