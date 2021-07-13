@@ -55,7 +55,7 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     m_currentUserConnects.clear();
     m_currentUserConnects << connect(user.get(), &User::lockChanged, this, &UserLoginInfo::userLockChanged);
     m_currentUserConnects << connect(user.get(), &User::lockLimitFinished, m_model, &SessionBaseModel::lockLimitFinished);
-    m_currentUserConnects << connect(user.get(), &User::lockLimitFinished,this, &UserLoginInfo::userLockChanged);
+    m_currentUserConnects << connect(user.get(), &User::lockLimitFinished, this, &UserLoginInfo::userLockChanged);
     m_currentUserConnects << connect(user.get(), &User::avatarChanged, m_userLoginWidget, &UserLoginWidget::setAvatar);
     m_currentUserConnects << connect(user.get(), &User::displayNameChanged, m_userLoginWidget, &UserLoginWidget::setName);
     m_currentUserConnects << connect(user.get(), &User::kbLayoutListChanged, m_userLoginWidget, &UserLoginWidget::updateKBLayout, Qt::UniqueConnection);
@@ -119,7 +119,7 @@ void UserLoginInfo::initConnect()
         if (!m_userLoginWidget->inputInfoCheck(m_model->isServerModel())) return;
 
         //当前锁定不需要密码和当前用户不需要密码登录则直接进入系统
-        if(m_model->isLockNoPassword() && m_model->currentUser()->isNoPasswdGrp()) {
+        if (m_model->isLockNoPassword() && m_model->currentUser()->isNoPasswdGrp()) {
             emit m_model->authFinished(true);
             return;
         }
@@ -169,8 +169,9 @@ void UserLoginInfo::initConnect()
     connect(m_userLoginWidget, &UserLoginWidget::requestUserKBLayoutChanged, this, [ = ](const QString & value) {
         emit requestSetLayout(m_user, value);
     });
-    connect(m_userLoginWidget, &UserLoginWidget::unlockActionFinish, this, [&]{
-        if (!m_userLoginWidget.isNull()) {
+    connect(m_userLoginWidget, &UserLoginWidget::unlockActionFinish, this, [&] {
+        if (!m_userLoginWidget.isNull())
+        {
             //由于添加锁跳动会冲掉"验证完成"。这里只能临时关闭清理输入框
             m_userLoginWidget->resetAllState();
         }
@@ -181,7 +182,7 @@ void UserLoginInfo::initConnect()
     connect(m_userFrameList, &UserFrameList::clicked, this, &UserLoginInfo::hideUserFrameList);
     connect(m_userFrameList, &UserFrameList::requestSwitchUser, this, &UserLoginInfo::receiveSwitchUser);
     connect(m_model, &SessionBaseModel::abortConfirmChanged, this, &UserLoginInfo::onAbortConfirmChanged);
-    connect(m_userLoginWidget, &UserLoginWidget::clicked, this, [=] {
+    connect(m_userLoginWidget, &UserLoginWidget::clicked, this, [ = ] {
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ConfirmPasswordMode)
             m_model->setAbortConfirm(false);
     });
@@ -208,9 +209,9 @@ void UserLoginInfo::abortConfirm(bool abort)
 
 void UserLoginInfo::beforeUnlockAction(bool is_finish)
 {
-    if(is_finish){
+    if (is_finish) {
         m_userLoginWidget->unlockSuccessAni();
-    }else {
+    } else {
         m_userLoginWidget->unlockFailedAni();
     }
 }
@@ -248,14 +249,8 @@ void UserLoginInfo::receiveSwitchUser(std::shared_ptr<User> user)
         m_userLoginWidget->clearPassWord();
 
         abortConfirm(false);
-    } else  if (user->uid() != 999) {
-        emit switchToCurrentUser();
-    }
-
-    if (user->displayName() == ",,,") {
-        m_userLoginWidget->setWidgetShowType(UserLoginWidget::IDAndPasswordType);
     } else {
-        emit requestSwitchUser(user);
+        emit switchToCurrentUser();
     }
     emit requestSwitchUser(user);
 }
