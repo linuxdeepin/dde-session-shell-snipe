@@ -307,8 +307,9 @@ void LockWorker::switchToUser(std::shared_ptr<User> user)
 
     // if type is lock, switch to greeter
     QJsonObject json;
-    json["Uid"] = static_cast<int>(user->uid());
+    json["Name"] = user->name();
     json["Type"] = user->type();
+    json["Uid"] = static_cast<int>(user->uid());
     m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
 
     if (user->isLogin()) {

@@ -144,8 +144,8 @@ void SessionBaseModel::setCurrentUser(std::shared_ptr<User> user)
 void SessionBaseModel::setCurrentUser(const QString &userJson)
 {
     const QJsonObject userObj = QJsonDocument::fromJson(userJson.toUtf8()).object();
-    const uid_t uid = static_cast<uid_t>(userObj["Uid"].toInt());
-    std::shared_ptr<User> user_ptr = findUserByUid(uid);
+    const QString name = userObj["Name"].toString();
+    std::shared_ptr<User> user_ptr = findUserByName(name);
     if (user_ptr != nullptr) {
         setCurrentUser(user_ptr);
     }

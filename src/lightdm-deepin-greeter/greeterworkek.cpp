@@ -332,9 +332,9 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
     }
 
     QJsonObject json;
-    json["Uid"] = static_cast<int>(user->uid());
+    json["Name"] = user->name();
     json["Type"] = user->type();
-
+    json["Uid"] = static_cast<int>(user->uid());
     m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
 
     // just switch user
@@ -690,8 +690,9 @@ void GreeterWorkek::authenticationComplete()
 
     auto startSessionSync = [=] () {
         QJsonObject json;
-        json["Uid"] = static_cast<int>(m_model->currentUser()->uid());
+        json["Name"] = m_model->currentUser()->name();
         json["Type"] = m_model->currentUser()->type();
+        json["Uid"] = static_cast<int>(m_model->currentUser()->uid());
         m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
 
         m_greeter->startSessionSync(m_model->sessionKey());
