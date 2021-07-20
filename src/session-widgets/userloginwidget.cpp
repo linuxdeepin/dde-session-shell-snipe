@@ -233,7 +233,8 @@ void UserLoginWidget::ShutdownPrompt(SessionBaseModel::PowerAction action)
 
 bool UserLoginWidget::inputInfoCheck(bool is_server)
 {
-    if (is_server && m_accountEdit->isVisible() && m_accountEdit->text().isEmpty()) {
+    // 远程账号(域账号)不能用Server模式处理， 因此此处改为通过显示的类型判断
+    if ((m_showType == IDAndPasswordType) && m_accountEdit->isVisible() && m_accountEdit->text().isEmpty()) {
         setFaildTipMessage(tr("Please enter the account"));
         m_accountEdit->lineEdit()->setFocus();
         return false;
