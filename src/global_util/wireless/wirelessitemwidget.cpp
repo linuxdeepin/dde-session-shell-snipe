@@ -479,7 +479,6 @@ void WirelessEditWidget::setWirelessSettings()
     m_wirelessSetting->setHidden(true);
     m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaNone);
     m_wirelessSetting->setMode(WirelessSetting::NetworkMode::Infrastructure);
-    m_wirelessSetting->setMacAddress(QByteArray::fromHex(m_device->hardwareAddress().toUtf8()));
 
     m_wirelessSetting->setInitialized(true);
     m_wsSetting->setInitialized(false);
@@ -490,7 +489,6 @@ void WirelessEditWidget::setSecurityWirelessSettings()
 {
     m_wsSetting->setKeyMgmt(NetworkManager::WirelessSecuritySetting::WpaPsk);
     m_wirelessSetting->setSsid(m_ssidLineEdit->text().toUtf8());
-    m_wirelessSetting->setMacAddress(QByteArray::fromHex(m_device->hardwareAddress().toUtf8()));
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::AgentOwned);
     m_wsSetting->setWepKeyType(NetworkManager::WirelessSecuritySetting::WepKeyType::NotSpecified);
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::NotRequired);
@@ -678,14 +676,25 @@ bool WirelessEditWidget::isWirelessConnectExist()
         NetworkManager::WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
         NetworkManager::WirelessSecuritySetting::Ptr wsSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
 
-        if (QByteArray::fromHex(m_device->hardwareAddress().toUtf8()) == wirelessSetting->macAddress()) {
-            if (wirelessSetting->ssid() == m_ssid) {
+        if (wirelessSetting->ssid() == m_ssid) {
+            m_wirelessSetting = wirelessSetting;
+
+            // 第一次初始化连接时，如果之前没有设置对应无线网络的Mac地址，且该网络之前有连接过(或者有系统预装时有配置)，则拿之前已有的连接去请求网络连接
+            if (m_wirelessSetting->macAddress().isEmpty()) {
                 m_wsSetting = wsSetting;
-                m_wirelessSetting = wirelessSetting;
                 m_connectionUuid =  conn->uuid();
                 m_connection = conn;
                 m_connectionSettings = conn->settings();
                 ret = true;
+            } else {
+                // 第一次通过控制中心连接时如果有设置过Mac地址且与当前连接设备的Mac匹配，直接拿之前建立的连接信息去请求连接，否则查找下一个与该设备Mac地址匹配的连接
+                if (QByteArray::fromHex(m_device->hardwareAddress().toUtf8()) == wirelessSetting->macAddress()) {
+                    m_wsSetting = wsSetting;
+                    m_connectionUuid =  conn->uuid();
+                    m_connection = conn;
+                    m_connectionSettings = conn->settings();
+                    ret = true;
+                }
             }
         }
     }
