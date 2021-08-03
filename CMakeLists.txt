@@ -37,7 +37,6 @@ endif ()
 # Find the library
 find_package(PAM REQUIRED)
 find_package(PkgConfig REQUIRED)
-find_package(DtkWidget5.5 REQUIRED)
 find_package(DtkCMake REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
@@ -48,6 +47,14 @@ find_package(Qt5 COMPONENTS
     Xml
     Svg
 REQUIRED)
+
+find_package(DtkWidget5.5)
+if (DtkWidget5.5_LIBRARIES_FOUND)
+    set(DTKWIDGET_INCLUDE_DIR ${DTKWIDGET5.5_INCLUDE_DIR})
+    set(DtkWidget_LIBRARIES ${DtkWidget5.5_LIBRARIES})
+else()
+    find_package(DtkWidget REQUIRED)
+endif()
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
 pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
@@ -132,7 +139,7 @@ add_executable(dde-lock
 )
 target_include_directories(dde-lock PUBLIC
     ${PAM_INCLUDE_DIR}
-    ${DTKWIDGET5.5_INCLUDE_DIR}
+    ${DTKWIDGET_INCLUDE_DIR}
     ${XCB_EWMH_INCLUDE_DIRS}
     ${DFrameworkDBus_INCLUDE_DIRS}
     ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
@@ -147,7 +154,7 @@ target_link_libraries(dde-lock PRIVATE
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}
     ${DFrameworkDBus_LIBRARIES}
-    ${DtkWidget5.5_LIBRARIES}
+    ${DtkWidget_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
     ${Qt5X11Extras_LIBRARIES}
@@ -178,7 +185,7 @@ add_executable(lightdm-deepin-greeter
 )
 target_include_directories(lightdm-deepin-greeter PUBLIC
     ${PAM_INCLUDE_DIR}
-    ${DTKWIDGET5.5_INCLUDE_DIR}
+    ${DTKWIDGET_INCLUDE_DIR}
     ${XCB_EWMH_INCLUDE_DIRS}
     ${DFrameworkDBus_INCLUDE_DIRS}
     ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
@@ -196,7 +203,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}
     ${DFrameworkDBus_LIBRARIES}
-    ${DtkWidget5.5_LIBRARIES}
+    ${DtkWidget_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     ${Qt5Concurrent_LIBRARIES}
     ${Qt5X11Extras_LIBRARIES}

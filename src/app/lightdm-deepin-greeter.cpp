@@ -184,8 +184,11 @@ int main(int argc, char* argv[])
     if (!QString(qgetenv("XDG_CURRENT_DESKTOP")).toLower().startsWith("deepin")){
         setenv("XDG_CURRENT_DESKTOP", "Deepin", 1);
     }
-
+#if DTK_VERSION >= DTK_VERSION_CHECK(5, 4, 7, 0)
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
+#else
+    DGuiApplicationHelper::setUseInactiveColorGroup(false);
+#endif
     // load dpi settings
     if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf")) {
         set_auto_QT_SCALE_FACTOR();

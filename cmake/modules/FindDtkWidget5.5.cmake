@@ -1,0 +1,6 @@
+find_package(DtkWidget5.5 CONFIG)
+
+if (DTKWIDGET5.5_INCLUDE_DIR AND DtkWidget5.5_LIBRARIES)
+    set(DtkWidget5.5_LIBRARIES_FOUND TRUE)
+endif (DTKWIDGET5.5_INCLUDE_DIR AND DtkWidget5.5_LIBRARIES)
+message(STATUS "Found DtkWidget5.5: ${DtkWidget5.5_LIBRARIES}")

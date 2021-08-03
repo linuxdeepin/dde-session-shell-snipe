@@ -92,8 +92,12 @@ void LogoWidget::initUI()
     font.setPixelSize(m_logoLabel->height() / 2);
     m_logoVersionLabel->setFont(font);
 
-    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
-      //systemVersion = "";
+#if DTK_VERSION >= DTK_VERSION_CHECK(5, 4, 7, 0) // dtk从5.4.7版本开始增加教育版标识
+    const bool IsEducationSystem = DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType(); // 是否是教育版
+#else
+    const bool IsEducationSystem = false; // dtk版本低于5.4.7默认不是教育版
+#endif
+    if(IsEducationSystem) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
       return;
     }
 
