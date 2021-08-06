@@ -39,11 +39,13 @@ class ControlWidget : public QWidget
 public:
     explicit ControlWidget(QWidget *parent = nullptr);
 
+    void showChangepwBtn();
 signals:
     void requestSwitchUser();
     void requestShutdown();
     void requestSwitchSession();
     void requestSwitchVirtualKB();
+    void requestChangePassword(QPoint pos);
 
 public slots:
     void setVirtualKBVisible(bool visible);
@@ -82,6 +84,7 @@ private:
     DFloatingButton *m_switchUserBtn = nullptr;
     DFloatingButton *m_powerBtn = nullptr;
     DFloatingButton *m_sessionBtn = nullptr;
+    DFloatingButton *m_changepwBtn = nullptr;
     QLabel *m_sessionTip = nullptr;
     QWidget *m_tipWidget = nullptr;
 #ifndef SHENWEI_PLATFORM

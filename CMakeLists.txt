@@ -25,6 +25,7 @@ find_package(PAM REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(DtkWidget REQUIRED)
 find_package(DtkCMake REQUIRED)
+find_package(Qt5Network REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
     Widgets
@@ -48,7 +49,10 @@ set(Qt_LIBS
     Qt5::X11Extras
     Qt5::Xml
     Qt5::Svg
+    Qt5::Network
 )
+
+include_directories(/usr/include/crypto++)
 
 function(generation_dbus_interface xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -p ${class_file} -c ${class_name} ${xml}
@@ -123,6 +127,8 @@ set(GLOBAL_UTILS_SRCS
     ./src/global_util/keyboardplatform.h
     ./src/global_util/keyboardplantform_x11.h
     ./src/global_util/keyboardplantform_wayland.h
+    ./src/global_util/AesEncryptoEcbmode.h
+    ./src/global_util/supportssl.h
     ./src/global_util/xkbparser.cpp
     ./src/global_util/dbus/dbusdisplaymanager.cpp
     ./src/global_util/dbus/dbuslogin1manager.cpp
@@ -142,6 +148,9 @@ set(GLOBAL_UTILS_SRCS
     ./src/global_util/keyboardmonitor.cpp
     ./src/global_util/keyboardplantform_x11.cpp
     ./src/global_util/keyboardplantform_wayland.cpp
+    ./src/global_util/AesEncryptoEcbmode.cpp
+    ./src/global_util/supportssl.cpp
+
 )
 
 set(WIDGETS_SRCS
@@ -193,6 +202,7 @@ set(SESSION_WIDGETS_SRCS
     ./src/session-widgets/userframelist.h
     ./src/session-widgets/userlogininfo.h
     ./src/session-widgets/hibernatewidget.h
+    ./src/session-widgets/modify_dialog.h
     ./src/session-widgets/lockpasswordwidget.cpp
     ./src/session-widgets/authinterface.cpp
     ./src/session-widgets/userinfo.cpp
@@ -206,6 +216,7 @@ set(SESSION_WIDGETS_SRCS
     ./src/session-widgets/userframelist.cpp
     ./src/session-widgets/userlogininfo.cpp
     ./src/session-widgets/hibernatewidget.cpp
+    ./src/session-widgets/modify_dialog.cpp
 )
 
 set(LOCK_SRCS
@@ -276,6 +287,7 @@ add_executable(
     ./src/dde-lock/images.qrc
     ./src/dde-lock/logintheme.qrc
 )
+
 target_include_directories(dde-lock PUBLIC
     ${PAM_INCLUDE_DIR}
     ${DtkWidget_INCLUDE_DIRS}
@@ -298,6 +310,7 @@ target_link_libraries(dde-lock PRIVATE
     ${Qt5DBus_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
+    crypto++
 )
 
 add_executable(
@@ -329,6 +342,7 @@ target_link_libraries(dde-shutdown PRIVATE
     ${Qt5DBus_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
+    crypto++
 )
 
 add_executable(
@@ -366,6 +380,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
     ${Greeter_LIBRARIES}
+    crypto++
 )
 
 # Install settings

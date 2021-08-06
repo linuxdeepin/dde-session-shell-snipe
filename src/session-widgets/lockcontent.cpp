@@ -11,9 +11,12 @@
 #include "userloginwidget.h"
 #include "userexpiredwidget.h"
 #include "userframelist.h"
+#include "modify_dialog.h"
 
 #include <QMouseEvent>
 #include <DDBusSender>
+
+DWIDGET_USE_NAMESPACE
 
 LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     : SessionBaseWindow(parent)
@@ -61,6 +64,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
+    connect(m_controlWidget, &ControlWidget::requestChangePassword, this, &LockContent::showChangePassword);
 
     //lixin
     //connect(m_userLoginInfo, &UserLoginInfo::requestAuthUser, this, &LockContent::restoreMode);
@@ -73,6 +77,11 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(m_userLoginInfo, &UserLoginInfo::unlockActionFinish, this, [&]{
         emit unlockActionFinish();
     });
+
+    connect(m_model, &SessionBaseModel::authFaildTipsMessage, this, [ = ]{
+        m_controlWidget->showChangepwBtn();
+    });
+
     connect(m_shutdownFrame, &ShutdownWidget::abortOperation, this, [ = ] {
         if (m_model->powerAction() != SessionBaseModel::RequireShutdown &&
                 m_model->powerAction() != SessionBaseModel::RequireRestart)
@@ -299,6 +308,57 @@ void LockContent::toggleVirtualKB()
 
     updateVirtualKBPosition();
     m_virtualKB->setVisible(!m_virtualKB->isVisible());
+}
+
+void LockContent::showChangePassword(QPoint pos)
+{
+    QFile file("/etc/dmcg/machine.txt");
+    if (!file.exists()) {
+       qWarning() << "ERROR, file not exist: " << file.fileName();
+       return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "ERROR, file open failed: " << file.fileName();
+        return;
+    }
+
+    QString machineID = QString::fromStdString(file.readAll().toStdString());
+    file.close();
+
+    file.setFileName("/etc/dmcg/config.json");
+    if (!file.exists()) {
+       qWarning() << "ERROR, file not exist: " << file.fileName();
+       return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "ERROR, file open failed: " << file.fileName();
+        return;
+    }
+
+    QJsonParseError err;
+    QJsonObject obj = QJsonDocument::fromJson(file.readAll(), &err).object();
+    file.close();
+    if (err.error != QJsonParseError::NoError) {
+        qWarning() << "ERROR, parse json data failed, error: " << err.errorString();
+        return;
+    }
+
+    QString ip = obj["server_host"].toString();
+    QString port = QString::number(obj["server_port"].toInt());
+    QString protocol = (port == "443") ? "https:" : "http:";
+
+    if (ip.isEmpty() || port.isEmpty() || protocol.isEmpty() || m_user->name().isEmpty() || machineID.isEmpty()) {
+        qWarning() << "ERROR, parameters is empty";
+        return;
+    }
+
+
+    ModifyDialog dlg(QString("%1//%2:%3").arg(protocol, ip, port), machineID);
+    dlg.setUserName(m_user->name(),"intranet-scene");
+    dlg.move(pos.x() - dlg.width()/2 + 20 , pos.y() - dlg.height()*2 - 20);
+    dlg.exec();
 }
 
 void LockContent::updateVirtualKBPosition()

@@ -86,3 +86,39 @@ QString readSharedImage(uid_t uid, int purpose)
 #endif
     return shareKey;
 }
+
+
+void runByRoot(const QString &filePath, const QStringList &args)
+{
+    ///opt/deepin/dcmc/dmcg/dmcg-cli.bash --cmd script
+    QString strPath = "/opt/deepin/dcmc/dmcg/dmcg-cli.bash";// --cmd script " + strList[0];
+    QProcess process;
+    QStringList strCmdList;
+    strCmdList.append(strPath);
+    strCmdList.append("--cmd");
+    strCmdList.append("thirdscript");
+
+    strCmdList.append("--thirdscript");
+    strCmdList.append(filePath);
+
+    strCmdList.append("--args");
+    //加密
+    QString strKey = "uniontech_20200620";
+    QString strIv = "dmcw_20200620";
+    QString strContent = "";
+    if (!args.empty())
+        strContent = args[0];
+    QString strData = strKey + strContent + strIv ;
+
+    QByteArray ary1 = QCryptographicHash::hash(strData.toLocal8Bit(), QCryptographicHash::Sha256);
+    QByteArray ary2 = QCryptographicHash::hash(ary1.toHex(), QCryptographicHash::Sha256);
+    strCmdList.append(ary2.toHex());
+
+    for (int i = 1; i < args.size(); i++) {
+        strCmdList.append(args[i]);
+    }
+
+    qDebug() << "shell command: " << strCmdList;
+
+    process.startDetached("bash", strCmdList);
+}

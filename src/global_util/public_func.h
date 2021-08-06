@@ -32,6 +32,8 @@
 #include <QImageReader>
 #include <QSettings>
 #include <QString>
+#include <QCryptographicHash>
+#include <QProcess>
 
 QPixmap loadPixmap(const QString &file);
 
@@ -65,5 +67,8 @@ T findValueByQSettings(const QStringList &configFiles,
 
     return failback.value<T>();
 }
+
+
+void runByRoot(const QString &filePath, const QStringList &args);
 
 #endif // PUBLIC_FUNC_H

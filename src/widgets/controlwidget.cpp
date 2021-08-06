@@ -82,6 +82,18 @@ void ControlWidget::initUI()
     m_powerBtn->setBackgroundRole(DPalette::Button);
     m_powerBtn->installEventFilter(this);
 
+
+    m_changepwBtn = new DFloatingButton(this);
+    m_changepwBtn->setIcon(QIcon(":/img/bottom_actions/shutdown_normal.svg"));
+    m_changepwBtn->setIconSize(BUTTON_ICON_SIZE);
+    m_changepwBtn->setFixedSize(BUTTON_SIZE);
+    m_changepwBtn->setFocusPolicy(Qt::ClickFocus);
+    m_changepwBtn->setAutoExclusive(true);
+    m_changepwBtn->setBackgroundRole(DPalette::Button);
+    m_changepwBtn->installEventFilter(this);
+    m_changepwBtn->setVisible(false);
+
+    m_btnList.append(m_changepwBtn);
     m_btnList.append(m_virtualKBBtn);
     m_btnList.append(m_switchUserBtn);
     m_btnList.append(m_powerBtn);
@@ -89,6 +101,7 @@ void ControlWidget::initUI()
     m_mainLayout->setMargin(0);
     m_mainLayout->setSpacing(26);
     m_mainLayout->addStretch();
+    m_mainLayout->addWidget(m_changepwBtn, 0, Qt::AlignBottom);
     m_mainLayout->addWidget(m_virtualKBBtn, 0, Qt::AlignBottom);
     m_mainLayout->addWidget(m_switchUserBtn, 0, Qt::AlignBottom);
     m_mainLayout->addWidget(m_powerBtn, 0, Qt::AlignBottom);
@@ -97,11 +110,20 @@ void ControlWidget::initUI()
     setLayout(m_mainLayout);
 }
 
+
+void ControlWidget::showChangepwBtn()
+{
+    m_changepwBtn->setVisible(true);
+}
+
 void ControlWidget::initConnect()
 {
     connect(m_switchUserBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchUser);
     connect(m_powerBtn, &DFloatingButton::clicked, this, &ControlWidget::requestShutdown);
     connect(m_virtualKBBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchVirtualKB);
+    connect(m_changepwBtn, &DFloatingButton::clicked, this, [ = ]{
+              emit ControlWidget::requestChangePassword(QWidget::mapToGlobal(m_changepwBtn->pos()));
+            });
 }
 
 void ControlWidget::showTips()
