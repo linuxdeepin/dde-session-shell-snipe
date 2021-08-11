@@ -292,6 +292,12 @@ void GreeterWorkek::message(QString text, QLightDM::Greeter::MessageType type)
 {
     qDebug() << "pam message: " << text << type;
 
+    //密码过期的提示
+    if(text.indexOf("expired") != -1 || text.indexOf("过期") != -1) {
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ChangePasswordMode);
+        return;
+    }
+
     switch (type) {
     case QLightDM::Greeter::MessageTypeInfo:
         qDebug() << Q_FUNC_INFO << "lightdm greeter message type info: " << text.toUtf8() << QString(dgettext("fprintd", text.toUtf8()));

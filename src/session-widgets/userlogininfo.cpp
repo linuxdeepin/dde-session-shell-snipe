@@ -96,11 +96,8 @@ void UserLoginInfo::initConnect()
                 static_cast<ADDomainUser *>(m_model->currentUser().get())->setUserInter(user->getUserInter());
                 m_userExpiredWidget->setDisplayName(user->displayName());
                 m_userExpiredWidget->setUserName(account);
+                m_userExpiredWidget->setPassword(password);
             }
-        }
-
-        if (m_model->currentUser()->isPasswordExpired()) {
-            m_userExpiredWidget->setPassword(password);
         }
         emit requestAuthUser(password);
     });

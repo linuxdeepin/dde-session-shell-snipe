@@ -60,7 +60,6 @@ protected:
     void updateTimeFormat(bool use24);
     void onBlurDone(const QString &source, const QString &blur, bool status);
     void toggleVirtualKB();
-    void showChangePassword(QPoint pos);
     void updateVirtualKBPosition();
     void onUserListChanged(QList<std::shared_ptr<User>> list);
     void tryGrabKeyboard();

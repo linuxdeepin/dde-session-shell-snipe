@@ -33,9 +33,12 @@
 DWIDGET_USE_NAMESPACE
 
 class User;
+class DPasswordEditEx;
 class LoginButton;
 class FrameDataBind;
 class QVBoxLayout;
+class QNetworkReply;
+class QNetworkAccessManager;
 
 class UserExpiredWidget : public QWidget
 {
@@ -55,6 +58,9 @@ public:
     void setUserName(const QString &name);
     void setPassword(const QString &passwd);
 
+    void onConfirmClicked();
+
+    void onPasswordChecked(QNetworkReply *reply);
 signals:
     void changePasswordFinished();
 
@@ -74,18 +80,16 @@ private:
     void onOtherPageConfirmPasswordChanged(const QVariant &value);
     void onOtherPagePasswordChanged(const QVariant &value);
     void onOtherPageOldPasswordChanged(const QVariant &value);
-    void onChangePassword();
     bool errorFilter(const QString &new_pass, const QString &confirm);
     void updateNameLabel();
-    bool validatePassword(const QString &password);
 
 private:
     DBlurEffectWidget *m_blurEffectWidget;         //阴影窗体
     QLabel *m_nameLbl;                             //用户名
     SessionBaseModel::AuthType m_authType;         //认证类型
     DLabel *m_expiredTips;                         //提示信息
-    DLineEdit *m_passwordEdit;                     //新密码输入框
-    DLineEdit *m_confirmPasswordEdit;              //新密码确认
+    DPasswordEditEx *m_passwordEdit;                     //新密码输入框
+    DPasswordEditEx *m_confirmPasswordEdit;              //新密码确认
     DFloatingButton *m_lockButton;                 //解锁按钮
     QVBoxLayout *m_userLayout;                     //用户输入框布局
     QVBoxLayout *m_lockLayout;                     //解锁按钮布局
@@ -95,6 +99,12 @@ private:
     QString m_showName;
     QString m_userName;
     QString m_password;
+
+    QString m_machine_id;                          //唯一机器码
+    QString m_requestPrefix;                        //urs
+    QString m_newPasswd;
+
+    QNetworkAccessManager *m_modifyPasswordManager;
 };
 
 #endif // USEREXPIREDWIDGET_H

@@ -25,16 +25,22 @@
 #include "src/widgets/loginbutton.h"
 #include "src/global_util/constants.h"
 #include "src/session-widgets/framedatabind.h"
+#include "src/global_util/public_func.h"
+#include "src/global_util/AesEncryptoEcbmode.h"
+#include "src/global_util/supportssl.h"
+#include "src/widgets/dpasswordeditex.h"
 
 #include <DFontSizeManager>
 #include <DPalette>
 #include "dhidpihelper.h"
 
+#include <QNetworkReply>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QAction>
 #include <QImage>
 
+#define REMOVE_USER_PSWD_SCRIPT_PATH    "/usr/share/dcmc/scene/renew_cache.bash"
 static const int BlurRectRadius = 15;
 static const int WidgetsSpacing = 10;
 
@@ -43,9 +49,10 @@ UserExpiredWidget::UserExpiredWidget(QWidget *parent)
     , m_blurEffectWidget(new DBlurEffectWidget(this))
     , m_nameLbl(new QLabel(this))
     , m_expiredTips(new DLabel(this))
-    , m_passwordEdit(new DLineEdit(this))
-    , m_confirmPasswordEdit(new DLineEdit(this))
+    , m_passwordEdit(new DPasswordEditEx(this))
+    , m_confirmPasswordEdit(new DPasswordEditEx(this))
     , m_lockButton(new DFloatingButton(DStyle::SP_ArrowNext))
+    , m_modifyPasswordManager(new QNetworkAccessManager(this))
 {
     initUI();
     initConnect();
@@ -210,6 +217,50 @@ void UserExpiredWidget::initUI()
 
     setTabOrder(m_passwordEdit->lineEdit(), m_confirmPasswordEdit->lineEdit());
     setTabOrder(m_confirmPasswordEdit->lineEdit(), m_lockButton);
+
+    QFile file("/etc/dmcg/machine.txt");
+    if (!file.exists()) {
+       qWarning() << "ERROR, file not exist: " << file.fileName();
+       return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "ERROR, file open failed: " << file.fileName();
+        return;
+    }
+
+    m_machine_id = QString::fromStdString(file.readAll().toStdString());
+    file.close();
+
+    file.setFileName("/etc/dmcg/config.json");
+    if (!file.exists()) {
+       qWarning() << "ERROR, file not exist: " << file.fileName();
+       return;
+    }
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "ERROR, file open failed: " << file.fileName();
+        return;
+    }
+
+    QJsonParseError err;
+    QJsonObject obj = QJsonDocument::fromJson(file.readAll(), &err).object();
+    file.close();
+    if (err.error != QJsonParseError::NoError) {
+        qWarning() << "ERROR, parse json data failed, error: " << err.errorString();
+        return;
+    }
+
+    QString ip = obj["server_host"].toString();
+    QString port = QString::number(obj["server_port"].toInt());
+    QString protocol = (port == "443") ? "https:" : "http:";
+
+    if (ip.isEmpty() || port.isEmpty() || protocol.isEmpty() || m_machine_id.isEmpty()) {
+        qWarning() << "ERROR, parameters is empty";
+        return;
+    }
+
+    m_requestPrefix = QString("%1//%2:%3").arg(protocol, ip, port);
 }
 
 //初始化槽函数连接
@@ -223,9 +274,10 @@ void UserExpiredWidget::initConnect()
         FrameDataBind::Instance()->updateValue("UserConfimPassword", value);
     });
 
-    connect(m_passwordEdit, &DLineEdit::returnPressed, this, &UserExpiredWidget::onChangePassword);
-    connect(m_confirmPasswordEdit, &DLineEdit::returnPressed, this, &UserExpiredWidget::onChangePassword);
-    connect(m_lockButton, &QPushButton::clicked, this,  &UserExpiredWidget::onChangePassword);
+    connect(m_passwordEdit, &DLineEdit::returnPressed, this, &UserExpiredWidget::onConfirmClicked);
+    connect(m_confirmPasswordEdit, &DLineEdit::returnPressed, this, &UserExpiredWidget::onConfirmClicked);
+    connect(m_lockButton, &QPushButton::clicked, this,  &UserExpiredWidget::onConfirmClicked);
+    connect(m_modifyPasswordManager, &QNetworkAccessManager::finished, this, &UserExpiredWidget::onPasswordChecked);
 
     QMap<QString, int> registerFunctionIndexs;
     std::function<void (QVariant)> confirmPaswordChanged = std::bind(&UserExpiredWidget::onOtherPageConfirmPasswordChanged, this, std::placeholders::_1);
@@ -280,130 +332,67 @@ void UserExpiredWidget::updateAuthType(SessionBaseModel::AuthType type)
     }
 }
 
-
-void UserExpiredWidget::onChangePassword()
+void UserExpiredWidget::onConfirmClicked()
 {
-    const QString new_pass = m_passwordEdit->text();
-    const QString confirm = m_confirmPasswordEdit->text();
+    //Sha512加密小写
+    QString stroldPWD = m_passwordEdit->text();
+    QString strPWD = m_confirmPasswordEdit->text();
 
-    if (!m_userName.isEmpty() && !m_password.isEmpty() && errorFilter(new_pass, confirm)) {
-#define TIMEOUT 1000
+    if(stroldPWD != strPWD) {
+        m_confirmPasswordEdit->showAlertMessage(QString("密码不一致"));
+        return;
+    }
 
-        QProcess process;
-        process.start("su", {m_userName});
-        process.setReadChannel(QProcess::StandardError);
+    m_newPasswd = strPWD;
+    QString stroldMD5PWD = QString::fromStdString(dmcg_ecb_encrypt(m_password.toStdString()));
+    QString strnewMD5PWD = QString::fromStdString(dmcg_ecb_encrypt(strPWD.toStdString()));
 
-        if (!process.waitForStarted(TIMEOUT)) {
-            qWarning() << "failed on start 'su'";
-            return;
-        }
+    QString url = QString("%1/api/client/modifyaccount?username=%2&password=%3&newpassword=%4&machine_id=%5&newlen=%6&scene_code=intranet-scene")
+            .arg(m_requestPrefix).arg(m_userName).arg(stroldMD5PWD).arg(strnewMD5PWD).arg(m_machine_id).arg(m_confirmPasswordEdit->text().length());
+    qInfo() << "request url: " << url;
+    QNetworkRequest request = QNetworkRequest(QUrl(url));
+    SupportSsl::instance().supportHttps(request);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    m_modifyPasswordManager->post(request, "");
+}
 
-        qDebug() << QString::fromLocal8Bit(process.readAllStandardError());
-        process.write(m_password.toLocal8Bit());
-        process.write("\n");
-        process.waitForReadyRead(TIMEOUT);
-        qDebug() << QString::fromLocal8Bit(process.readAllStandardError());
-        process.write(m_password.toLocal8Bit());
-        process.write("\n");
-        process.waitForReadyRead(TIMEOUT);
-        qDebug() << QString::fromLocal8Bit(process.readAllStandardError());
-        process.write(new_pass.toLocal8Bit());
-        process.write("\n");
-        process.waitForReadyRead(TIMEOUT);
-        qDebug() << QString::fromLocal8Bit(process.readAllStandardError());
-        process.write(confirm.toLocal8Bit());
-        process.write("\n");
-        process.waitForFinished(TIMEOUT);
 
-        QString output = process.readAllStandardOutput();
-        QString time = process.readAllStandardError();
-        if (process.exitCode() != 0 || output.isEmpty()) {
-            process.terminate();
-            m_confirmPasswordEdit->showAlertMessage(tr("Failed to change your password"));
-            qDebug() << "password modify failed: " << process.readLine();
+void UserExpiredWidget::onPasswordChecked(QNetworkReply *reply)
+{
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug() << "reply status code: " << statusCode;
+    QByteArray data = reply->readAll();
+
+    // 数据格式错误
+    QJsonParseError err;
+    QJsonObject obj = QJsonDocument::fromJson(data, &err).object();
+    if (err.error != QJsonParseError::NoError) {
+        m_newPasswd.clear();
+        qDebug() << "ERROR, failed to parse the json data from server: " << data;
+        if(statusCode == 400 || statusCode == 401 || statusCode == 403 || statusCode == 423 || statusCode == 500) {
+            m_confirmPasswordEdit->showAlertMessage(QString("密码修改失败, 原因：%1").arg(err.errorString()));
         } else {
-            emit changePasswordFinished();
+            m_confirmPasswordEdit->showAlertMessage(QString("连接服务器失败"));
         }
-
-        if (process.state() == QProcess::Running) process.kill();
-    }
-}
-
-bool UserExpiredWidget::errorFilter(const QString &new_pass, const QString &confirm)
-{
-    if (!new_pass.isEmpty()) {
-        if (!validatePassword(new_pass)) {
-            m_passwordEdit->showAlertMessage(tr("Password too weak"));
-            return false;
-        }
+        return;
     }
 
-    if (new_pass.isEmpty() || confirm.isEmpty()) {
-        if (new_pass.isEmpty()) {
-            m_passwordEdit->lineEdit()->setFocus();
-            m_passwordEdit->showAlertMessage(tr("Please enter the new password"));
-            return false;
-        }
-
-        if (confirm.isEmpty()) {
-            m_confirmPasswordEdit->lineEdit()->setFocus();
-            m_confirmPasswordEdit->showAlertMessage(tr("Please repeat the new password"));
-            return false;
-        }
+    // 解析服务端返回的json数据
+    if (0 != obj["code"].toInt()) {
+        m_newPasswd.clear();
+        m_confirmPasswordEdit->showAlertMessage(QString("密码修改失败, 原因：%1").arg(obj["message"].toString()));
     } else {
-        if (new_pass != confirm) {
-            m_confirmPasswordEdit->lineEdit()->setFocus();
-            m_confirmPasswordEdit->showAlertMessage(tr("Passwords do not match"));
-            return false;
-        }
+        // 修改成功,清除密码缓存
+        QStringList args;
+        args.append(REMOVE_USER_PSWD_SCRIPT_PATH);
+        args.append(m_userName);
+        args.append(m_newPasswd);
+        runByRoot(REMOVE_USER_PSWD_SCRIPT_PATH, args);
+
+        m_confirmPasswordEdit->showAlertMessage(QString("修改成功"));
+        // 关闭
+        close();
+
+        emit changePasswordFinished();
     }
-
-    return true;
-}
-
-bool UserExpiredWidget::validatePassword(const QString &password)
-{
-    // NOTE(justforlxz): 配置文件由安装器生成，后续改成PAM模块
-    QSettings *setting = nullptr;
-    if (QFile("/etc/deepin/dde.conf").exists()) {
-        setting = new QSettings("/etc/deepin/dde.conf", QSettings::IniFormat);
-    } else {
-        setting = new QSettings(":/skin/validate-policy.conf", QSettings::IniFormat);
-    }
-
-    setting->beginGroup("Password");
-    const bool strong_password_check = setting->value("STRONG_PASSWORD", false).toBool();
-    const int  password_min_length   = setting->value("PASSWORD_MIN_LENGTH").toInt();
-    const int  password_max_length   = setting->value("PASSWORD_MAX_LENGTH").toInt();
-    const QStringList validate_policy = setting->value("VALIDATE_POLICY").toString().split(";");
-    const int validate_required      = setting->value("VALIDATE_REQUIRED").toInt();
-    delete setting;
-
-    if (!strong_password_check) {
-        return true;
-    }
-
-    if (password.size() < password_min_length || password.size() > password_max_length) {
-        return false;
-    }
-
-    // NOTE(justforlxz): 转换为set，如果密码中包含了不存在与validate_policy中的字符，相减以后不为空。
-    if (!(password.split("").toSet() - validate_policy.join("").split("").toSet())
-            .isEmpty()) {
-        return false;
-    }
-
-    if (std::count_if(validate_policy.cbegin(), validate_policy.cend(),
-    [ = ](const QString & policy) {
-    for (const QChar &c : policy) {
-            if (password.contains(c)) {
-                return true;
-            }
-        }
-        return false;
-    }) < validate_required) {
-        return false;
-    }
-
-    return true;
 }
