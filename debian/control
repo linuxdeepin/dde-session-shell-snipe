@@ -39,7 +39,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  dbus-x11,
  deepin-authenticate(>=1.2.27),
  xsettingsd,
- libssl-dev
 Provides: lightdm-greeter
 Recommends: onboard
 Conflicts: dde-workspace,
