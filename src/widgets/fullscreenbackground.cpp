@@ -45,7 +45,11 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
     , m_originalCursor(cursor())
 {
 #ifndef QT_DEBUG
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+    if (DGuiApplicationHelper::isXWindowPlatform()) {
+        setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
+    } else {
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Window);
+    }
 #endif
     m_fadeOutAni->setEasingCurve(QEasingCurve::InOutCubic);
     m_fadeOutAni->setDuration(2000);
