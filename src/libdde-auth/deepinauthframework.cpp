@@ -404,9 +404,11 @@ void DeepinAuthFramework::DestoryAuthController(const QString &account)
     m_authenticateControllers->remove(account);
     delete authControllerInter;
 
-    m_F_RSA_free(m_RSA);
-    m_F_BIO_free(m_BIO);
-    dlclose(m_encryptionHandle);
+    if (!m_publicKey.isEmpty()) {
+        m_F_RSA_free(m_RSA);
+        m_F_BIO_free(m_BIO);
+        dlclose(m_encryptionHandle);
+    }
 }
 
 /**
