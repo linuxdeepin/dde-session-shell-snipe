@@ -488,7 +488,7 @@ void LockWorker::createAuthentication(const QString &account)
     }
     m_account = account;
     switch (m_model->getAuthProperty().FrameworkState) {
-    case 0:
+    case Available:
         m_authFramework->CreateAuthController(account, m_authFramework->GetSupportedMixAuthFlags(), AppTypeLock);
         break;
     default:
@@ -507,7 +507,7 @@ void LockWorker::destoryAuthentication(const QString &account)
 {
     qDebug() << "LockWorker::destoryAuthentication:" << account;
     switch (m_model->getAuthProperty().FrameworkState) {
-    case 0:
+    case Available:
         if (m_model->getAuthProperty().MFAFlag) {
             m_authFramework->DestoryAuthController(account);
         } else {
@@ -532,7 +532,7 @@ void LockWorker::startAuthentication(const QString &account, const int authType)
 {
     qDebug() << "LockWorker::startAuthentication:" << account << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
-    case 0:
+    case Available:
         if (m_model->getAuthProperty().MFAFlag) {
             m_authFramework->StartAuthentication(account, authType, -1);
         } else {
@@ -559,7 +559,7 @@ void LockWorker::sendTokenToAuth(const QString &account, const int authType, con
 {
     qDebug() << "LockWorker::sendTokenToAuth:" << account << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
-    case 0:
+    case Available:
         if (m_model->getAuthProperty().MFAFlag) {
             m_authFramework->SendTokenToAuth(account, authType, token);
         } else {
@@ -582,7 +582,7 @@ void LockWorker::endAuthentication(const QString &account, const int authType)
 {
     qDebug() << "LockWorker::endAuthentication:" << account << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
-    case 0:
+    case Available:
         m_authFramework->EndAuthentication(account, authType);
         break;
     default:

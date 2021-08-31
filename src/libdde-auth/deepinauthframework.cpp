@@ -521,11 +521,6 @@ QString DeepinAuthFramework::GetPreOneKeyLogin(const int flag) const
  */
 int DeepinAuthFramework::GetFrameworkState() const
 {
-    const QString serviceName = "com.deepin.daemon.Authenticate";
-    QDBusConnectionInterface *interface = QDBusConnection::systemBus().interface();
-    if (!interface->isServiceRegistered(serviceName)) {
-        return 1;
-    }
     return m_authenticateInter->frameworkState();
 }
 

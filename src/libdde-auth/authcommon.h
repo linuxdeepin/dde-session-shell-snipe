@@ -22,6 +22,15 @@
 namespace AuthCommon {
 
 /**
+ * @brief The AuthFrameFlag enum
+ * 认证框架是否可用的标志位
+ */
+enum AuthFrameFlag {
+    Unavailable,
+    Available
+};
+
+/**
  * @brief The AppType enum
  * 发起认证的应用类型
  */

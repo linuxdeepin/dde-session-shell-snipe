@@ -53,7 +53,7 @@ public:
 
     struct AuthProperty {
         /* com.deepin.daemon.Authenticate */
-        int FrameworkState;     // 认证平台类型
+        int FrameworkState;     // 认证框架是否可用标志位
         int MixAuthFlags;       // 受支持的认证类型
         QString EncryptionType; // 加密类型
         /* com.deepin.daemon.Authenticate.Session */
