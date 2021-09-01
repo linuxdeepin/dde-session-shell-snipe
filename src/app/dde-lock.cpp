@@ -141,31 +141,51 @@ int main(int argc, char *argv[])
 
     QObject::connect(model, &SessionBaseModel::visibleChanged, &multi_screen_manager, &MultiScreenManager::startRaiseContentFrame);
 
-    QDBusConnection conn = QDBusConnection::sessionBus();
-    if (!conn.registerService(DBUS_NAME) ||
-            !conn.registerObject("/com/deepin/dde/lockFront", &agent) ||
-            !app.setSingleInstance(QString("dde-lock%1").arg(getuid()), DApplication::UserScope)) {
-        qDebug() << "register dbus failed"<< "maybe lockFront is running..." << conn.lastError();
 
-        if (!runDaemon) {
-            const char *interface = "com.deepin.dde.lockFront";
-            QDBusInterface ifc(DBUS_NAME, DBUS_PATH, interface, QDBusConnection::sessionBus(), nullptr);
-            if (showUserList) {
-                ifc.asyncCall("ShowUserList");
-            } else {
-                ifc.asyncCall("Show");
+    bool isLockExists = !app.setSingleInstance(QString("dde-lock%1").arg(getuid()), DApplication::UserScope);
+
+    const QString serviceName = "com.deepin.dde.lockFront";
+    QDBusConnectionInterface *interface = QDBusConnection::sessionBus().interface();
+    if (!interface->isServiceRegistered(serviceName)) {
+        qInfo() << "lockFront service is not registered!";
+
+        //如果不存在dde-lock进程 ，而且服务没有被注册，则本次启动注册服务，并等待服务注册完成
+        if (!isLockExists) {
+            qInfo() << "dde-lock is not exists, beign to register lockFront service!";
+
+            QDBusConnection conn = QDBusConnection::sessionBus();
+            //如果注册服务失败，则退出程序
+            if (!conn.registerService(DBUS_NAME) || !conn.registerObject("/com/deepin/dde/lockFront", &agent)) {
+                qInfo() << "lockFront service registe failed!";
+                return 0;
             }
         }
-    } else {
-        if (!runDaemon) {
-            if (showUserList) {
-                emit model->showUserList();
-            } else {
-                model->setIsShow(true);
-            }
-        }
-        app.exec();
+
+        //等待服务注册完成
+        QEventLoop eventLoop;
+        QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(serviceName, QDBusConnection::sessionBus());
+        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceRegistered, &eventLoop, &QEventLoop::quit);
+        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceRegistered, serviceWatcher, &QDBusServiceWatcher::deleteLater);
+        eventLoop.exec();
     }
+
+    qInfo() << "lockFront service is registered, call show!";
+    if (!runDaemon ) {
+        const char *interface = "com.deepin.dde.lockFront";
+        QDBusInterface ifc(DBUS_NAME, DBUS_PATH, interface, QDBusConnection::sessionBus(), nullptr);
+        if (showUserList) {
+            ifc.asyncCall("ShowUserList");
+        } else {
+            ifc.asyncCall("Show");
+        }
+    }
+
+    //如果进程存在则调用完接口锁屏后直接退出
+    if (isLockExists) {
+        return 0;
+    }
+
+    app.exec();
 
     return 0;
 }
