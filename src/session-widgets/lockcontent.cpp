@@ -387,7 +387,7 @@ void LockContent::tryGrabKeyboard()
                 .arg(5000)
                 .call();
 
-        return qApp->quit();
+        // return qApp->quit();
     }
 
     QTimer::singleShot(100, this, &LockContent::tryGrabKeyboard);
