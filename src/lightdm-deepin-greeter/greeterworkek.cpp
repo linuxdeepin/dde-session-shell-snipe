@@ -95,18 +95,6 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     m_model->setAlwaysShowUserSwitchButton(true);
     m_model->setAllowShowUserSwitchButton(true);
 
-    {
-        initDBus();
-        initData();
-
-        if (QFile::exists("/etc/deepin/no_suspend"))
-            m_model->setCanSleep(false);
-
-        checkDBusServer(m_accountsInter->isValid());
-
-        oneKeyLogin();
-    }
-
     QDBusInterface interface("com.deepin.udcp.iam",
                              "/com/deepin/udcp/iam",
                              "com.deepin.udcp.iam",
@@ -117,6 +105,18 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
         user->setUserDisplayName("...");
         user->setIsServerUser(true);
         m_model->userAdd(user);
+    }
+
+    {
+        initDBus();
+        initData();
+
+        if (QFile::exists("/etc/deepin/no_suspend"))
+            m_model->setCanSleep(false);
+
+        checkDBusServer(m_accountsInter->isValid());
+
+        oneKeyLogin();
     }
 
     connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [ = ] {
