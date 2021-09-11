@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("2015.1.0");
 
     // crash catch
-    init_sig_crash();
+//    init_sig_crash();
 
     DGuiApplicationHelper::instance()->setPaletteType(DGuiApplicationHelper::LightType);
     DPalette pa = DGuiApplicationHelper::instance()->applicationPalette();

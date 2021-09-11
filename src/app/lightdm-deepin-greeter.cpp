@@ -191,7 +191,7 @@ int main(int argc, char* argv[])
     qApp->setAttribute(Qt::AA_ForceRasterWidgets);
 
     // crash catch
-    init_sig_crash();
+//    init_sig_crash();
 
     DGuiApplicationHelper::instance()->setPaletteType(DGuiApplicationHelper::LightType);
     DPalette pa = DGuiApplicationHelper::instance()->applicationPalette();

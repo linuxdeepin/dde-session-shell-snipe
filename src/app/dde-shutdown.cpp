@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("dde-shutdown");
 
     // crash catch
-    init_sig_crash();
+//    init_sig_crash();
 
     DGuiApplicationHelper::instance()->setPaletteType(DGuiApplicationHelper::LightType);
     DPalette pa = DGuiApplicationHelper::instance()->applicationPalette();
