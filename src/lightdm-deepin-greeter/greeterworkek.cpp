@@ -10,6 +10,7 @@
 #include <QGSettings>
 
 #include <com_deepin_system_systempower.h>
+#include <pwd.h>
 
 
 #define LOCKSERVICE_PATH "/com/deepin/dde/LockService"
@@ -534,10 +535,11 @@ void GreeterWorkek::checkAccount(const QString &account)
     QString userPath = m_accountsInter->FindUserByName(account);
     std::shared_ptr<User> user_ptr;
     if (!userPath.startsWith("/")) {
-        if (account.startsWith("@")) {
+        std::string str = account.toStdString();
+        passwd *pw = getpwnam(str.c_str());
+        if (pw) {
             user_ptr = std::make_shared<ADDomainUser>(INT_MAX - 1);
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setUserName(account);
-            dynamic_cast<ADDomainUser *>(user_ptr.get())->setUserDisplayName(account.midRef(QString("@").size()).toString());
         } else {
             qWarning() << userPath;
             userPath = tr("Wrong account");
