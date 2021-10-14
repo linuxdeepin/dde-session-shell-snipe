@@ -120,7 +120,6 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     , m_clickedItemWidget(nullptr)
     , m_connectItemWidget(nullptr)
 {
-    setAttribute(Qt::WA_TranslucentBackground);
     m_preWifiStatus = Wifi_Unknown;
     m_lvAP->setAccessibleName("List_wirelesslist");
     m_lvAP->setModel(m_modelAP);
@@ -129,7 +128,6 @@ WirelessPage::WirelessPage(WirelessDevice *dev, QWidget *parent)
     m_lvAP->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     m_lvAP->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_lvAP->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_lvAP->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_lvAP->setSelectionMode(QAbstractItemView::NoSelection);
     m_lvAP->setViewportMargins(0, 0, 7, 0);
 
@@ -553,10 +551,10 @@ void WirelessPage::updateWirelessListViewDisplay(bool checked)
             m_lvAP->setRowHidden(item->index().row(), true);
         }
 
-//        this->setFixedSize(420, 60);
+        this->setFixedSize(420, 60);
         m_lvAP->setRowHidden(m_titleItem->index().row(), false);
     } else {
-//        this->setFixedSize(420, 410);
+        this->setFixedSize(420, 410);
         for (auto item : m_apItems) {
             m_lvAP->setRowHidden(item->index().row(), false);
         }
@@ -661,4 +659,17 @@ void WirelessPage::connectWirelessErrorHandle(const Device::StateChangeReason &r
             m_activingItemWidget->connectWirelessFailedTips(reason);
         }
     }
+}
+
+void WirelessPage::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event);
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);  // 反锯齿;
+    painter.setBrush(QBrush(QColor(255, 255, 255, 12)));
+    painter.setPen(Qt::transparent);
+    QRect rect = this->rect();
+    rect.setWidth(rect.width() - 1);
+    rect.setHeight(rect.height() - 1);
+    painter.drawRoundedRect(rect, 15, 15);
 }
