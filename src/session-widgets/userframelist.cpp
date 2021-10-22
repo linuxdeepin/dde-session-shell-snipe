@@ -61,6 +61,12 @@ void UserFrameList::setModel(SessionBaseModel *model)
 
 void UserFrameList::handlerBeforeAddUser(std::shared_ptr<User> user)
 {
+    // 已经add的用户直接return
+    foreach (auto w, m_loginWidgets) {
+        if (w->uid() == user->uid()) {
+            return;
+        }
+    }
     if (m_model->isServerModel()) {
         if (user->isLogin() || user->isDoMainUser()) addUser(user);
         connect(user.get(), &User::logindChanged, this, [ = ](bool is_login) {
@@ -69,14 +75,8 @@ void UserFrameList::handlerBeforeAddUser(std::shared_ptr<User> user)
             } else {
                 removeUser(user->uid());
             }
-        });
+        }, Qt::UniqueConnection);
     } else {
-        // 已经add的用户直接return
-        foreach (auto w, m_loginWidgets) {
-            if (w->uid() == user->uid()) {
-                return;
-            }
-        }
         addUser(user);
     }
 }
