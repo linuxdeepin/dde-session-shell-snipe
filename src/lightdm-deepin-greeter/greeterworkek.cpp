@@ -532,9 +532,18 @@ void GreeterWorkek::endAuthentication(const QString &account, const int authType
  */
 void GreeterWorkek::checkAccount(const QString &account)
 {
-    QString userPath = m_accountsInter->FindUserByName(account);
-    std::shared_ptr<User> user_ptr;
-    if (!userPath.startsWith("/")) {
+    qDebug() << "GreeterWorkek::checkAccount:" << account;
+    if (m_greeter->authenticationUser() == account) {
+        return;
+    }
+
+    std::shared_ptr<User> user_ptr = m_model->findUserByName(account);
+    // 当用户登录成功后，判断用户输入帐户有效性逻辑改为后端去做处理
+    const QString userPath = m_accountsInter->FindUserByName(account);
+    if (userPath.startsWith("/")) {
+        user_ptr = std::make_shared<NativeUser>(userPath);
+    } else if (user_ptr == nullptr) {
+        // 判断账户第一次登录时的有效性
         std::string str = account.toStdString();
         passwd *pw = getpwnam(str.c_str());
         if (pw) {
@@ -542,8 +551,9 @@ void GreeterWorkek::checkAccount(const QString &account)
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setUserName(pw->pw_name);
         } else {
             qWarning() << userPath;
-            userPath = tr("Wrong account");
-            onDisplayErrorMsg(userPath);
+            onDisplayErrorMsg(tr("Wrong account"));
+            m_model->setAuthType(AuthTypeNone);
+            m_greeter->authenticate();
             return;
         }
     } else {
@@ -557,11 +567,13 @@ void GreeterWorkek::checkAccount(const QString &account)
 
     m_model->setCurrentUser(user_ptr);
     if (user_ptr->isNoPasswdGrp()) {
-        m_greeter->authenticate(account);
+        m_greeter->authenticate(user_ptr->name());
     } else {
         m_resetSessionTimer->stop();
-        destoryAuthentication(account);
-        createAuthentication(account);
+        endAuthentication(m_account, AuthTypeAll);
+        m_model->updateAuthStatus(AuthTypeAll, StatusCodeCancel, "Cancel");
+        destoryAuthentication(m_account);
+        createAuthentication(user_ptr->name());
     }
 }
 
