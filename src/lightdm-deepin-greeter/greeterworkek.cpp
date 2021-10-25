@@ -539,7 +539,7 @@ void GreeterWorkek::checkAccount(const QString &account)
         passwd *pw = getpwnam(str.c_str());
         if (pw) {
             user_ptr = std::make_shared<ADDomainUser>(INT_MAX - 1);
-            dynamic_cast<ADDomainUser *>(user_ptr.get())->setUserName(account);
+            dynamic_cast<ADDomainUser *>(user_ptr.get())->setUserName(pw->pw_name);
         } else {
             qWarning() << userPath;
             userPath = tr("Wrong account");
