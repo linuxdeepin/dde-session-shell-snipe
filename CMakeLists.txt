@@ -38,7 +38,7 @@ endif ()
 find_package(PAM REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(DtkWidget5.5 REQUIRED)
-find_package(DtkCMake REQUIRED)
+find_package(DtkCMake5.5 REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
     Widgets
