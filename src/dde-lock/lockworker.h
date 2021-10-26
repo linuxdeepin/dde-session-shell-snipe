@@ -18,13 +18,11 @@
 #include <com_deepin_daemon_accounts_user.h>
 #include <com_deepin_daemon_logined.h>
 #include <com_deepin_sessionmanager.h>
-#include <com_deepin_daemon_power.h>
 
 using AccountsInter = com::deepin::daemon::Accounts;
 using UserInter = com::deepin::daemon::accounts::User;
 using LoginedInter = com::deepin::daemon::Logined;
 using SessionManagerInter = com::deepin::SessionManager;
-using PowerInter = com::deepin::daemon::Power;
 
 class SessionBaseModel;
 class LockWorker : public Auth::AuthInterface
@@ -85,7 +83,6 @@ private:
     AccountsInter *m_accountsInter;
     LoginedInter *m_loginedInter;
     QString m_account;
-    PowerInter *m_powerInter;
 };
 
 #endif // LOCKWORKER_H

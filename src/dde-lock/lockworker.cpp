@@ -34,7 +34,6 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     , m_switchosInterface(new HuaWeiSwitchOSInterface("com.huawei", "/com/huawei/switchos", QDBusConnection::sessionBus(), this))
     , m_accountsInter(new AccountsInter("com.deepin.daemon.Accounts", "/com/deepin/daemon/Accounts", QDBusConnection::systemBus(), this))
     , m_loginedInter(new LoginedInter("com.deepin.daemon.Accounts", "/com/deepin/daemon/Logined", QDBusConnection::systemBus(), this))
-    , m_powerInter(new PowerInter("com.deepin.daemon.Power", "/com/deepin/daemon/Power", QDBusConnection::sessionBus(), this))
 {
     initConnections();
     initData();
@@ -302,13 +301,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setIsBlackModel(true);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         QTimer::singleShot(100, this, [=] {
-            //为实现待机一段时间后转休眠的功能，待机调用session daemon的接口，由session daemon去做待机和转休眠的工作。
-            //QDBusPendingReply<> reply = m_powerInter->RequestSuspend();
-            //reply.waitForFinished();
-           // if (reply.isError()) {
-                //如果调用失败则调用startdde的接口
-                m_sessionManagerInter->RequestSuspend();
-            //}
+            m_sessionManagerInter->RequestSuspend();
         });
         break;
     case SessionBaseModel::PowerAction::RequireHibernate:
