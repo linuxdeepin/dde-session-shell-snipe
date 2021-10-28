@@ -83,7 +83,7 @@ void ShutdownWidget::onOtherPageChanged(const QVariant &value)
 void ShutdownWidget::initUI()
 {
     setFocusPolicy(Qt::StrongFocus);
-    m_requireShutdownButton = new RoundItemButton(this);
+    m_requireShutdownButton = new RoundItemButton(tr("Shut down"), this);
     m_requireShutdownButton->setFocusPolicy(Qt::NoFocus);
     m_requireShutdownButton->setObjectName("RequireShutdownButton");
     m_requireShutdownButton->setAutoExclusive(true);
