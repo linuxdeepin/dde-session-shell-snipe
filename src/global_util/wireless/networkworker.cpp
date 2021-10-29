@@ -158,11 +158,11 @@ void NetworkWorker::onDeviceRemove(const QString &uni)
  * @param path 对应设备的路径
  * @return void
  */
-void NetworkWorker::onDeviceEnableChanged(const QString &path, const bool enabled)
+void NetworkWorker::onDeviceEnableChanged(const QDBusObjectPath &path, const bool enabled)
 {
     WirelessDevice *dev = nullptr;
     for (auto const d : m_devices) {
-        if (d->uni() == path) {
+        if (d->uni() == path.path()) {
             dev = d;
             break;
         }
@@ -173,14 +173,14 @@ void NetworkWorker::onDeviceEnableChanged(const QString &path, const bool enable
 
     dev->setEnabled(enabled);
 
-    Q_EMIT deviceEnableChanged(path, enabled);
+    Q_EMIT deviceEnableChanged(path.path(), enabled);
 }
 
 void NetworkWorker::queryDeviceStatusCB(QDBusPendingCallWatcher *w)
 {
     QDBusPendingReply<bool> reply = *w;
 
-    onDeviceEnableChanged(w->property("devPath").toString(), reply.value());
+    onDeviceEnableChanged(QDBusObjectPath(w->property("devPath").toString()), reply.value());
 
     w->deleteLater();
 }

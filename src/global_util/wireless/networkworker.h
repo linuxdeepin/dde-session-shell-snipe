@@ -68,7 +68,7 @@ public Q_SLOTS:
     void setDeviceEnable(const QString &devPath, const bool enable);
 
 private Q_SLOTS:
-    void onDeviceEnableChanged(const QString &path, const bool enabled);
+    void onDeviceEnableChanged(const QDBusObjectPath &path, const bool enabled);
     void queryDeviceStatusCB(QDBusPendingCallWatcher *w);
     void onDeviceAdd(const QString &uni);
     void onDeviceRemove(const QString &uni);
