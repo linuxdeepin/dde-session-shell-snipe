@@ -83,6 +83,11 @@ void ShutdownWidget::onOtherPageChanged(const QVariant &value)
 void ShutdownWidget::initUI()
 {
     setFocusPolicy(Qt::StrongFocus);
+    // init first translation
+    QTranslator translator;
+    translator.load("/home/aris/Desktop/tmp/dde-session-shell/translations/dde-session-shell_" + QLocale::system().name());
+    qApp->installTranslator(&translator);
+
     m_requireShutdownButton = new RoundItemButton(tr("Shut down"), this);
     m_requireShutdownButton->setFocusPolicy(Qt::NoFocus);
     m_requireShutdownButton->setObjectName("RequireShutdownButton");
