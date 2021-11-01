@@ -85,7 +85,7 @@ void ShutdownWidget::initUI()
     setFocusPolicy(Qt::StrongFocus);
     // init first translation
     QTranslator translator;
-    translator.load("/home/aris/Desktop/tmp/dde-session-shell/translations/dde-session-shell_" + QLocale::system().name());
+    translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + QLocale::system().name());
     qApp->installTranslator(&translator);
 
     m_requireShutdownButton = new RoundItemButton(tr("Shut down"), this);
