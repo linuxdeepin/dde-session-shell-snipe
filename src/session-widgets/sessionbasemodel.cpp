@@ -45,8 +45,7 @@ std::shared_ptr<User> SessionBaseModel::findUserByName(const QString &name) cons
     if (name.isEmpty()) return std::shared_ptr<User>(nullptr);
 
     for (auto user : m_userList) {
-        //在登录服务器时，当前登录用户永远是...，用户名会设置为输入的用户名，此时查找用户可能找到的是...，所以需要排除...用户
-        if (user->name() == name && user->uid() != INT_MAX) {
+        if (user->name() == name) {
             return user;
         }
     }

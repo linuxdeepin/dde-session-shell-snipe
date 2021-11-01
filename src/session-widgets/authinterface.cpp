@@ -54,7 +54,7 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
                                            "/com/deepin/daemon/Authenticate",
                                            QDBusConnection::systemBus(),
                                            this))
-    , m_lastLogoutUid(INT_MAX)
+    , m_lastLogoutUid(0)
     , m_loginUserList(0)
 {
     if (m_login1Inter->isValid()) {

@@ -98,7 +98,6 @@ public:
 
 signals:
     void requestAuthUser(const QString &account, const QString &password);
-    void requestCheckAccount(const QString &account);
     void clicked();
     void requestUserKBLayoutChanged(const QString &layout);
     void unlockActionFinish();
