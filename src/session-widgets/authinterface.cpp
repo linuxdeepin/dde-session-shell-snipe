@@ -13,23 +13,6 @@
 
 using namespace Auth;
 
-static std::pair<bool, qint64> checkIsPartitionType(const QStringList &list)
-{
-    std::pair<bool, qint64> result{ false, -1 };
-
-    if (list.length() != 5) {
-        return result;
-    }
-
-    const QString type{ list[1] };
-    const QString size{ list[2] };
-
-    result.first  = type == "partition";
-    result.second = size.toLongLong() * 1024.0f;
-
-    return result;
-}
-
 AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
     : QObject(parent)
     , m_model(model)
