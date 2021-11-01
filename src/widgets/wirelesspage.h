@@ -170,6 +170,8 @@ private:
     QMap<QString, QString> m_ApList;
     QMap<QString, APItem *> m_apItems;
     QMap<QString, WirelessEditWidget *> m_apItemsWidget;
+    // add scan timer
+    QTimer *m_requestWirelessScanTimer;
     QLabel *m_lblTitle;
 };
 

@@ -25,6 +25,7 @@ using namespace dtk::wireless;
 
 dtk::wireless::WirelessDevice::WirelessDevice(const QString &path, QObject *parent)
     : NetworkManager::WirelessDevice(path, parent)
+    , m_path(path)
 {
 
 }
@@ -51,6 +52,11 @@ const QStringList dtk::wireless::WirelessDevice::apList() const
     }
 
     return apList;
+}
+
+const QString dtk::wireless::WirelessDevice::path()
+{
+    return m_path;
 }
 
 void dtk::wireless::WirelessDevice::setEnabled(const bool enabled)

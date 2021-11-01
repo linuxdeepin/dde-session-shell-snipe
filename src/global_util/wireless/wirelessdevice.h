@@ -43,6 +43,7 @@ public:
 
     inline  bool enabled() const { return m_enabled; }
     const QStringList apList() const;
+    const QString path();
 
 Q_SIGNALS:
     void enableChanged(const bool enabled) const;
@@ -53,6 +54,7 @@ public Q_SLOTS:
 
 private:
     bool m_enabled = false;
+    QString m_path = "";
 };
 
 } // namespace wireless

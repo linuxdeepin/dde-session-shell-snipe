@@ -123,6 +123,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
     , m_clickedItemWidget(nullptr)
     , m_activingItemWidget(nullptr)
     , m_connectItemWidget(nullptr)
+    , m_requestWirelessScanTimer(new QTimer(this))
 {
     setAttribute(Qt::WA_TranslucentBackground);
     m_preWifiStatus = Wifi_Unknown;
@@ -145,6 +146,10 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
     m_modelAP->setSortRole(APItem::SortRole);
     m_sortDelayTimer->setInterval(100);
     m_sortDelayTimer->setSingleShot(true);
+
+    // add timer
+    m_requestWirelessScanTimer->setInterval(60000);
+    m_requestWirelessScanTimer->setSingleShot(false);
 
     if (EN_US_LOCALE == m_localeName) {
         m_lblTitle = new QLabel("Wireless Network");
@@ -256,6 +261,11 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
     connect(m_device, &WirelessDevice::accessPointAppeared, this, &WirelessPage::onAPAdded); // 新增WIFI热点信号监听
     connect(m_device, &WirelessDevice::accessPointDisappeared, this, &WirelessPage::onAPRemoved); // 移除WIFI热点信号监听
     connect(m_device, &WirelessDevice::activeConnectionChanged, this, &WirelessPage::updateActiveAp);
+    // add timer scan
+    connect(m_requestWirelessScanTimer, &QTimer::timeout, this, [ = ] {
+        Q_EMIT requestDeviceAPList(m_device->path());
+        Q_EMIT requestWirelessScan();
+    });
 
     // init data
     const QStringList mApList = m_device->accessPoints();
@@ -286,6 +296,9 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
         Q_EMIT requestWirelessScan();
     });
 
+    // start timer
+    m_requestWirelessScanTimer->start();
+
     updateWirelessListViewDisplay(m_switchBtn->isChecked());
 }
 
@@ -301,6 +314,8 @@ WirelessPage::~WirelessPage()
     if (scroller) {
         scroller->stop();
     }
+    // stop timer
+    m_requestWirelessScanTimer->stop();
 }
 
 void WirelessPage::setWorker(NetworkWorker *worker)
