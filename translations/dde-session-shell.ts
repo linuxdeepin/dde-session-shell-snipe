@@ -280,4 +280,80 @@
         </translation>
     </message>
 </context>
+<context>
+    <name>WirelessEditWidget</name>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="109"/>
+        <source>Please input SSID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="114"/>
+        <source>Please input Wi-Fi password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="123"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="124"/>
+        <source>Connect</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="251"/>
+        <source>The %1 802.11 WLAN network could not be found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="253"/>
+        <source>Connection failed, unable to connect %1, wrong password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="255"/>
+        <source>Unable to connect %1, please keep closer to the wireless router</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="257"/>
+        <source>The 802.1X supplicant took too long time to authenticate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="259"/>
+        <source>connect failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="331"/>
+        <source>Invalid SSID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="346"/>
+        <source>Invalid password</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="471"/>
+        <source>Wireless Connection %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>dtk::wireless::WirelessPage</name>
+    <message>
+        <location filename="../src/widgets/wirelesspage.cpp" line="140"/>
+        <source>Wireless Network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/wirelesspage.cpp" line="249"/>
+        <source>Connect to hidden network</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

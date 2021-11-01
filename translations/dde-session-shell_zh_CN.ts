@@ -276,4 +276,79 @@
         <translation><numerusform>请%n分钟后再试</numerusform></translation>
     </message>
 </context>
+<context>
+    <name>dtk::wireless::WirelessPage</name>
+    <message>
+        <location filename="../src/widgets/wirelesspage.cpp" line="140"/>
+        <source>Wireless Network</source>
+        <translation>无线网络</translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/wirelesspage.cpp" line="249"/>
+        <source>Connect to hidden network</source>
+        <translation>连接到隐藏网络</translation>
+    </message>
+</context>
+<context>
+    <name>WirelessEditWidget</name>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="109"/>
+        <source>Please input SSID</source>
+        <translation>请输入SSID</translation>
+    </message>
+    <message>
+        <source>Please input Wi-Fi password</source>
+        <translation>请输入Wi-Fi密码</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="123"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="124"/>
+        <source>Connect</source>
+        <translation>连接</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="251"/>
+        <source>The %1 802.11 WLAN network could not be found</source>
+        <translation>%1 802.11 WLAN网络无法找到</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="253"/>
+        <source>Connection failed, unable to connect %1, wrong password</source>
+        <translation>连接失败，未能加入%1，密码不正确</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="255"/>
+        <source>Unable to connect %1, please keep closer to the wireless router</source>
+        <translation>未能加入%1，请尝试靠近无线路由器</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="257"/>
+        <source>The 802.1X supplicant took too long time to authenticate</source>
+        <translation>802.1X客户端验证时间过长</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="259"/>
+        <source>Connection failed</source>
+        <translation>连接失败</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="331"/>
+        <source>Invalid SSID</source>
+        <translation>无效的SSID</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="346"/>
+        <source>Invalid password</source>
+        <translation>密码无效</translation>
+    </message>
+    <message>
+        <location filename="../src/global_util/wireless/wirelessitemwidget.cpp" line="471"/>
+        <source>Wireless Connection %1</source>
+        <translation>无线连接 %1</translation>
+    </message>
+</context>
 </TS>
