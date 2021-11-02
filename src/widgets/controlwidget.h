@@ -29,9 +29,12 @@
 #include <QWidget>
 #include <QHBoxLayout>
 #include <DFloatingButton>
+#include <com_deepin_system_systemnetwork.h>
 #include "mediawidget.h"
 
 DWIDGET_USE_NAMESPACE
+
+using SystemNetworkInter = com::deepin::system::Network;
 
 class ControlWidget : public QWidget
 {
@@ -53,6 +56,7 @@ public slots:
     void setUserSwitchEnable(const bool visible);
     void setWirelessListEnable(const bool visible);
     void setSessionSwitchEnable(const bool visible);
+    void updateWirelessListEnabled();
     void updateWirelessBtnDisplay(const QString &path);
     void chooseToSession(const QString &session);
     void leftKeySwitch();
@@ -78,6 +82,8 @@ private:
     };
     FocusState m_focusState = FocusNo;
 
+    QList<QDBusObjectPath> m_deviceList;
+
     int m_index = 0;
     QList<DFloatingButton *> m_btnList;
 
@@ -90,6 +96,8 @@ private:
     QLabel *m_sessionTip = nullptr;
     QWidget *m_tipWidget = nullptr;
     bool m_wifiDeviceExist = false;
+    SystemNetworkInter m_systemNetworkInter;
+    QList<QString> m_enabledDevices;
 #ifndef SHENWEI_PLATFORM
     QPropertyAnimation *m_tipsAni = nullptr;
 #endif

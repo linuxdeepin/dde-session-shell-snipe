@@ -40,6 +40,7 @@
 DWIDGET_USE_NAMESPACE
 
 ControlWidget::ControlWidget(QWidget *parent) : QWidget(parent)
+  , m_systemNetworkInter("com.deepin.system.Network", "/com/deepin/system/Network", QDBusConnection::systemBus(), this)
 {
     initUI();
     initConnect();
@@ -104,6 +105,24 @@ void ControlWidget::initConnect()
     connect(m_switchUserBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchUser);
     connect(m_powerBtn, &DFloatingButton::clicked, this, &ControlWidget::requestShutdown);
     connect(m_virtualKBBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchVirtualKB);
+    // refresh button
+    connect(&m_systemNetworkInter, &SystemNetworkInter::DeviceEnabled, this, [=](const QDBusObjectPath & path, bool enabled){
+        // check if type is wifi
+        if (NetworkManager::Device(path.path()).type() != NetworkManager::Device::Wifi)
+            return;
+        // check if already exist
+        if (enabled && m_enabledDevices.indexOf(path.path(), 0) == -1)
+            m_enabledDevices.append(path.path());
+        else if (!enabled)
+            m_enabledDevices.removeAll(path.path());
+
+        // check size
+        if (m_enabledDevices.size() > 0)
+            this->setWirelessListEnable(true);
+        else
+            this->setWirelessListEnable(false);
+    });
+    updateWirelessListEnabled();
 }
 
 void ControlWidget::showTips()
@@ -143,8 +162,6 @@ void ControlWidget::setUserSwitchEnable(const bool visible)
 
 void ControlWidget::setWirelessListEnable(const bool visible)
 {
-    if (!visible) return;
-
     if (!m_wirelessBtn) {
         m_wirelessBtn = new DFloatingButton(this);
         m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-80-symbolic.svg"));
@@ -166,6 +183,11 @@ void ControlWidget::setWirelessListEnable(const bool visible)
         connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceAdded, this, &ControlWidget::updateWirelessBtnDisplay);
         connect(NetworkManager::notifier(), &NetworkManager::Notifier::deviceRemoved, this, &ControlWidget::updateWirelessBtnDisplay);
     }
+
+    if (visible)
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/wireless-80-symbolic.svg"));
+    else
+        m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-network-wirelss-no-route-symbolic.svg"));
 }
 
 /**
@@ -253,6 +275,25 @@ void ControlWidget::setSessionSwitchEnable(const bool visible)
         m_tipsAni = new QPropertyAnimation(m_sessionTip, "pos", this);
     }
 #endif
+}
+
+void ControlWidget::updateWirelessListEnabled()
+{
+    for (auto dev : NetworkManager::networkInterfaces()) {
+        // check if type is wifi
+        if (dev->type() != NetworkManager::Device::Wifi)
+            continue;
+        // check if device is enabled
+        if (m_systemNetworkInter.IsDeviceEnabled(dev->uni())
+                && m_enabledDevices.indexOf(dev->uni(), 0) == -1)
+            m_enabledDevices.append(dev->uni());
+    }
+
+    // check size
+    if (m_enabledDevices.size() > 0)
+        this->setWirelessListEnable(true);
+    else
+        this->setWirelessListEnable(false);
 }
 
 void ControlWidget::chooseToSession(const QString &session)

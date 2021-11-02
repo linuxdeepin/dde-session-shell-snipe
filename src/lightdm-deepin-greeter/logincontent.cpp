@@ -31,7 +31,7 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
     m_wirelessConcealWidget = new QWidget(this);
     m_sessionFrame->setModel(model);
     m_controlWidget->setSessionSwitchEnable(m_sessionFrame->sessionCount() > 1);
-    m_controlWidget->setWirelessListEnable(true);
+    // m_controlWidget->setWirelessListEnable(true);
 
     connect(m_sessionFrame, &SessionWidget::hideFrame, this, &LockContent::restoreMode);
     connect(m_sessionFrame, &SessionWidget::sessionChanged, this, &LockContent::restoreMode);
