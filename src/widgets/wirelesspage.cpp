@@ -668,7 +668,8 @@ void WirelessPage::connectWirelessErrorHandle(const Device::StateChangeReason &r
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
         if (m_activingItemWidget && m_clickedItemWidget) {
             // 激活的Ap item存在且是点击的Ap, 才去弹错误提示
-            if (m_activingItemWidget == it.value() && m_clickedItemWidget == m_activingItemWidget) {
+            qInfo() << "clicke ssid is  " << m_clickedItemWidget->m_ssid << ", activting ssid is " << m_activingItemWidget->m_ssid;
+            if (m_activingItemWidget == it.value() && m_clickedItemWidget->m_ssid == m_activingItemWidget->m_ssid) {
                 m_activingItemWidget->connectWirelessFailedTips(reason);
             }
         }
