@@ -335,6 +335,7 @@ void WirelessPage::onAPAdded(const QString &apPath)
 {
     AccessPoint *nmAp = new AccessPoint(apPath);
     const QString &ssid = nmAp->ssid().toUtf8();
+    qDebug() << "add ap ssid is " << ssid;
     bool isConnect = false;
 
     if (ssid.isEmpty()) {

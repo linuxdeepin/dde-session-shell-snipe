@@ -298,7 +298,7 @@ void WirelessEditWidget::connectWirelessFailedTips(const Device::StateChangeReas
     updateItemDisplay();
     m_wirelessEditWidget->setVisible(true);
     m_passwdEdit->clear();
-
+    qInfo() << errorReason;
     if (errorReason == Device::SsidNotFound) {
         if (m_clickedItemWidget->isHiddenNetWork) {
             if (EN_US_LOCALE == m_locale) {
@@ -567,13 +567,43 @@ void WirelessEditWidget::deactiveCurrentDeviceConnection()
 void WirelessEditWidget::prepareConnection()
 {
     if (!m_connection) {
-        QDBusPendingReply<QDBusObjectPath> reply = addConnection(m_connectionSettings->toMap());
-        reply.waitForFinished();
-        const QString &connPath = reply.value().path();
-        m_connection = findConnection(connPath);
-        if (!m_connection) {
-            qDebug() << "create connection failed..." << reply.error();
+        // check if connection is nullptr or type is not wireless
+        if (!m_connectionSettings || m_connectionSettings->connectionType() != ConnectionSettings::Wireless) {
             return;
+        }
+
+        bool exist = false;
+        Connection::List connList = listConnections();
+        for (auto conn : connList) {
+            // check if type is wireless
+            if (conn->settings()->connectionType() != ConnectionSettings::Wireless)
+                continue;
+            WirelessSetting::Ptr wirelessSetting = conn->settings()->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+            // search for ssid qual conn
+            if (!wirelessSetting || (m_ssid != "" && wirelessSetting->ssid() != m_ssid))
+                continue;
+            // ssid alreay exist
+            qInfo() << "setting already exist, ssid: " << m_ssid << ", path: " << conn->path();
+            m_connectionSettings->setUuid(conn->uuid());
+            exist = true;
+            QDBusPendingReply<> reply = conn->update(m_connectionSettings->toMap());
+            if (reply.isError()) {
+                qWarning() << "update exist conn failed, err: " << reply.error();
+            }
+            m_connection = conn;
+            break;
+        }
+
+        // not exist, request add new connection
+        if (!exist) {
+            QDBusPendingReply<QDBusObjectPath> reply = addConnection(m_connectionSettings->toMap());
+            reply.waitForFinished();
+            const QString &connPath = reply.value().path();
+            m_connection = findConnection(connPath);
+            if (!m_connection) {
+                qDebug() << "create connection failed..." << reply.error();
+                return;
+            }
         }
     }
 
