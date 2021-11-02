@@ -616,6 +616,10 @@ void WirelessEditWidget::createConnSettings()
         m_wsSetting = m_connectionSettings->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
 
         m_wirelessSetting = m_connectionSettings->setting(Setting::SettingType::Wireless).staticCast<NetworkManager::WirelessSetting>();
+        // set hidden
+        if (isHiddenNetWork) {
+            m_wirelessSetting->setHidden(true);
+        }
 
         QString connName = m_ssidLineEdit->text().toUtf8();
 
@@ -632,6 +636,7 @@ void WirelessEditWidget::createConnSettings()
         if (!connName.isEmpty()) {
             m_connectionSettings->setId(connName);
         }
+
         m_connectionUuid = m_connectionSettings->createNewUuid();
         while (findConnectionByUuid(m_connectionUuid) != nullptr) {
             qint64 second = QDateTime::currentDateTime().toSecsSinceEpoch();
