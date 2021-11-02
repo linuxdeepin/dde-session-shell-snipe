@@ -398,12 +398,6 @@ void WirelessPage::onAPRemoved(const QString &apPath)
 {
     QString ssid;
 
-    // 添加隐藏网络时, networkmanager-qt会发一个accessPointDisappeared信号,导致连接的隐藏网络被移除,
-    // 因此此处如果为隐藏网络我们不去做移除处理
-    if (m_isHideNetwork) {
-        return;
-    }
-
     for (auto it = m_ApList.cbegin(); it != m_ApList.cend(); ++it) {
         if (it.value() == apPath) {
             ssid = it.key();
@@ -416,6 +410,13 @@ void WirelessPage::onAPRemoved(const QString &apPath)
     // 移除的是我们点击的或者正在激活的Ap item, 需要更新对应item Widget的状态
     for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
         if (it.key() == ssid) {
+            if (m_connectItemWidget && m_connectItemWidget == it.value()) {
+                // check if removed ap is connected ap
+                m_connectItemWidget->setConnectIconVisible(false);
+                m_connectItemWidget = nullptr;
+                break;
+            }
+
             if (m_activingItemWidget == it.value()) {
                 m_activingItemWidget = nullptr;
                 m_clickedItemWidget = nullptr;
@@ -543,6 +544,11 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                     m_sortDelayTimer->start();
                 }
             }
+        }
+    } else if (newstate == WirelessDevice::Disconnected) {
+        if (m_connectItemWidget) {
+            m_connectItemWidget->setConnectIconVisible(false);
+            m_connectItemWidget = nullptr;
         }
     }
 }
