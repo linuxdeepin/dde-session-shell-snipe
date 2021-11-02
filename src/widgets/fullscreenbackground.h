@@ -74,12 +74,19 @@ private:
     void updateGeometry();
     bool isPicture(const QString &file);
     QString getLocalFile(const QString &file);
+    const QPixmap& getPixmap(int type);
+    QSize trueSize() const;
+    void addPixmap(const QPixmap &pixmap, const int type);
+    static void updatePixmap();
+    bool contains(int type);
 
 private:
     static QString backgroundPath;                             // 高清背景图片路径
-    static QSharedPointer<QPixmap> backgroundCache;            // 高清背景缓存
     static QString blurBackgroundPath;                         // 模糊背景图片路径
-    static QSharedPointer<QPixmap> blurBackgroundCache;        // 模糊背景缓存
+    
+    static QList<QPair<QSize, QPixmap>> backgroundCacheList;
+    static QList<QPair<QSize, QPixmap>> blurBackgroundCacheList;
+    static QList<FullscreenBackground *> frameList;
 
     QVariantAnimation *m_fadeOutAni;      // 背景动画
     ImageEffectInter *m_imageEffectInter; // 获取模糊背景服务

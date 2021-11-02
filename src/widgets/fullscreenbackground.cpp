@@ -38,10 +38,15 @@
 
 DGUI_USE_NAMESPACE
 
+const int PIXMAP_TYPE_BACKGROUND = 0;
+const int PIXMAP_TYPE_BLUR_BACKGROUND = 1;
+
 QString FullscreenBackground::backgroundPath;
-QSharedPointer<QPixmap> FullscreenBackground::backgroundCache = nullptr;
 QString FullscreenBackground::blurBackgroundPath;
-QSharedPointer<QPixmap> FullscreenBackground::blurBackgroundCache = nullptr;
+
+QList<QPair<QSize, QPixmap>> FullscreenBackground::backgroundCacheList;
+QList<QPair<QSize, QPixmap>> FullscreenBackground::blurBackgroundCacheList;
+QList<FullscreenBackground *> FullscreenBackground::frameList;
 
 FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *parent)
     : QWidget(parent)
@@ -56,6 +61,7 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
 #ifndef QT_DEBUG
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
 #endif
+    frameList.append(this);
     m_useSolidBackground = getDConfigValue("useSolidBackground", false).toBool();
     m_enableAnimation = DGuiApplicationHelper::isSpecialEffectsEnvironment();
     if (m_enableAnimation && !m_useSolidBackground) { 
@@ -69,7 +75,7 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
             update();
             // 动画播放完毕后不在需要清晰的壁纸，释放资源
             if (m_fadeOutAni->currentValue() == 1.0) {
-                backgroundCache.clear();
+                backgroundCacheList.clear();
                 backgroundPath = "";
                 m_fadeOutAniFinished = true;
             }
@@ -81,19 +87,19 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
 
 FullscreenBackground::~FullscreenBackground()
 {
+    frameList.removeAll(this);
 }
 
 void FullscreenBackground::updateBackground(const QString &path)
 {
-    qDebug() << "FullscreenBackground::updateBackground:" << path;
-    if (m_useSolidBackground) 
+    if (m_useSolidBackground)
         return;
 
     if (isPicture(path)) {
         // 动画播放完毕不再需要清晰的背景图片
         if (!m_fadeOutAniFinished) {
             backgroundPath = path;
-            backgroundCache = QSharedPointer<QPixmap>::create(pixmapHandle(QPixmap(path)));
+            addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BACKGROUND);
         }
 
         // 需要播放动画的时候才更新模糊壁纸
@@ -114,11 +120,11 @@ void FullscreenBackground::updateBlurBackground(const QString &path)
                 path = "/usr/share/backgrounds/default_background.jpg";
             }
             blurBackgroundPath = path;
-            blurBackgroundCache = QSharedPointer<QPixmap>::create(pixmapHandle(QPixmap(path)));
+            addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BLUR_BACKGROUND);
             // 只播放一次动画，后续背景图片变更直接更新模糊壁纸即可
             if (m_fadeOutAni && !m_fadeOutAniFinished)
                 m_fadeOutAni->start();
-            else 
+            else
                 update();
         } else {
             qWarning() << "get blur background image error: " << call.error().message();
@@ -235,6 +241,9 @@ void FullscreenBackground::paintEvent(QPaintEvent *e)
     QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
+    const QPixmap &background = getPixmap(PIXMAP_TYPE_BACKGROUND);
+    const QPixmap &blurBackground = getPixmap(PIXMAP_TYPE_BLUR_BACKGROUND);
+
     const QRect trueRect(QPoint(0, 0), QSize(size() * devicePixelRatioF()));
     if (m_isBlackMode) {
         painter.fillRect(trueRect, Qt::black);
@@ -243,25 +252,25 @@ void FullscreenBackground::paintEvent(QPaintEvent *e)
     } else {
         if (m_fadeOutAni) {
             const double currentAniValue = m_fadeOutAni->currentValue().toDouble();
-            if (!backgroundCache.isNull() && !backgroundCache.data()->isNull() && currentAniValue != 1) {
+            if (!background.isNull() && currentAniValue != 1) {
                 painter.setOpacity(1);
                 painter.drawPixmap(trueRect,
-                                *backgroundCache,
-                                QRect(trueRect.topLeft(), trueRect.size() * backgroundCache->devicePixelRatioF()));
+                                background,
+                                QRect(trueRect.topLeft(), trueRect.size() * background.devicePixelRatioF()));
             }
 
-            if (!blurBackgroundCache.isNull() && !blurBackgroundCache.data()->isNull()) {
+            if (!blurBackground.isNull()) {
                 painter.setOpacity(currentAniValue);
                 painter.drawPixmap(trueRect,
-                                *blurBackgroundCache,
-                                QRect(trueRect.topLeft(), trueRect.size() * blurBackgroundCache->devicePixelRatioF()));
+                                blurBackground,
+                                QRect(trueRect.topLeft(), trueRect.size() * blurBackground.devicePixelRatioF()));
             }
         } else {
             // 不使用的动画的过渡的时候直接绘制清晰的背景
-            if (!backgroundCache.isNull() && !backgroundCache.data()->isNull()) {
+            if (!background.isNull()) {
                 painter.drawPixmap(trueRect,
-                                *backgroundCache,
-                                QRect(trueRect.topLeft(), trueRect.size() * backgroundCache->devicePixelRatioF()));
+                                background,
+                                QRect(trueRect.topLeft(), trueRect.size() * background.devicePixelRatioF()));
             }
         }
     }
@@ -285,11 +294,12 @@ void FullscreenBackground::leaveEvent(QEvent *event)
 void FullscreenBackground::resizeEvent(QResizeEvent *event)
 {
     m_content->resize(size());
-    if (isPicture(backgroundPath)) 
-        backgroundCache = QSharedPointer<QPixmap>::create(pixmapHandle(QPixmap(backgroundPath)));
-    if (isPicture(blurBackgroundPath))
-        blurBackgroundCache = QSharedPointer<QPixmap>::create(pixmapHandle(QPixmap(blurBackgroundPath)));
+    if (isPicture(backgroundPath) && !contains(PIXMAP_TYPE_BACKGROUND))
+        addPixmap(pixmapHandle(QPixmap(backgroundPath)), PIXMAP_TYPE_BACKGROUND);
+    if (isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND))
+        addPixmap(pixmapHandle(QPixmap(blurBackgroundPath)), PIXMAP_TYPE_BLUR_BACKGROUND);
 
+    updatePixmap();
     QWidget::resizeEvent(event);
 }
 
@@ -366,16 +376,13 @@ void FullscreenBackground::updateScreen(QScreen *screen)
     if (screen == m_screen)
         return;
 
-    if (m_screen) {
+    if (m_screen)
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
-    }
 
-    if (screen) {
+    if (screen)
         connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
-    }
 
     m_screen = screen;
-
     if (m_screen)
         updateGeometry();
 }
@@ -399,4 +406,98 @@ bool FullscreenBackground::eventFilter(QObject *watched, QEvent *e)
     }
 #endif
     return QWidget::eventFilter(watched, e);
+}
+
+const QPixmap& FullscreenBackground::getPixmap(int type)
+{
+    static QPixmap pixmap;
+
+    const QSize &size = trueSize();
+    auto findPixmap = [ this, size ] (QList<QPair<QSize, QPixmap>> &list) -> const QPixmap & {
+        for (const auto &pair : list) {
+            if (pair.first == size)
+                return pair.second;
+        }
+
+        return pixmap;
+    };
+
+    if (PIXMAP_TYPE_BACKGROUND == type)
+        return findPixmap(backgroundCacheList);
+    else
+        return findPixmap(blurBackgroundCacheList);
+}
+
+QSize FullscreenBackground::trueSize() const
+{
+    return size() * devicePixelRatioF();
+}
+
+/**
+ * @brief FullscreenBackground::addPixmap
+ * 新增pixmap，存在相同size的则替换，没有则新增
+ * @param pixmap pixmap对象
+ * @param type 清晰壁纸还是模糊壁纸
+ */
+void FullscreenBackground::addPixmap(const QPixmap &pixmap, const int type)
+{
+    const QSize &size = trueSize();
+    auto addFunc = [ this, &pixmap, size ] (QList<QPair<QSize, QPixmap>> &list){
+        bool exist = false;
+        for (auto &pair : list) {
+            if (pair.first == size) {
+                pair.second = pixmap;
+                exist = true;
+            }
+        }
+        if (!exist)
+            list.append(QPair<QSize, QPixmap>(trueSize(), pixmap));
+    };
+
+    if (PIXMAP_TYPE_BACKGROUND == type)
+        addFunc(backgroundCacheList);
+    else
+        addFunc(blurBackgroundCacheList);
+}
+
+/**
+ * @brief FullscreenBackground::updatePixmap
+ * 更新壁纸列表，移除当前所有屏幕都不会使用的壁纸数据
+ */
+void FullscreenBackground::updatePixmap()
+{
+    auto isNoUsefunc = [ ] (const QSize &size) -> bool {
+        for (FullscreenBackground * frame : frameList) {
+            if (frame->trueSize() == size) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    auto updateFunc = [ isNoUsefunc ] (QList<QPair<QSize, QPixmap>> &list) {
+        for (auto &pair : list) {
+            if (isNoUsefunc(pair.first))
+                list.removeAll(pair);
+        }
+    };
+
+    updateFunc(backgroundCacheList);
+    updateFunc(blurBackgroundCacheList);
+}
+
+bool FullscreenBackground::contains(int type)
+{
+    auto containsFunc = [ this ] (QList<QPair<QSize, QPixmap>> &list) -> bool {
+        for (const auto &pair : list) {
+            if (pair.first == trueSize())
+                return true;
+        }
+        return false;
+    };
+
+    if (PIXMAP_TYPE_BACKGROUND == type)
+        return containsFunc(backgroundCacheList);
+    else
+        return containsFunc(blurBackgroundCacheList);
 }
