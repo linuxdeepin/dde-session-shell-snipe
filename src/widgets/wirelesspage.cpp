@@ -219,7 +219,7 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
             return;
 
         // if already visable, dont show again
-        if (m_clickedItemWidget->isVisible())
+        if (m_clickedItemWidget && item == m_clickedItemWidget && m_clickedItemWidget->isVisible())
             return;
 
         m_isHideNetwork = false;
@@ -355,6 +355,8 @@ void WirelessPage::onAPAdded(const QString &apPath)
         WirelessEditWidget *APWdiget = new WirelessEditWidget(m_device, m_localeName, ssid, m_lvAP);
 
         APWdiget->setItemWidgetInfo(nmAp);
+        // store ap path
+        APWdiget->m_apPath = apPath;
         m_apItems[ssid] = apItem;
         m_apItemsWidget[ssid] = APWdiget;
 
@@ -521,12 +523,23 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
             }
         }
     } else if (WirelessDevice::Preparing <= newstate && newstate < WirelessDevice::Activated) {
-        QString ssid = m_clickedItemWidget->m_ssid;
+        auto ap = m_device->activeAccessPoint();
+        if (!ap) {
+            // if ap is del, regard click item as activting ap
+            m_activingItemWidget = m_clickedItemWidget;
+            return;
+        }
+        QString apPath = ap->uni();
+        if (apPath == "") {
+            // if ap is del, regard click item as activting ap
+            m_activingItemWidget = m_clickedItemWidget;
+            return;
+        }
         for (auto item : m_apItemsWidget) {
-            if (item->m_ssid != ssid )
+            if (item->m_apPath != apPath )
                 continue;
             m_activingItemWidget = item;
-            item->setClickItem(m_apItems[ssid]);
+            item->setClickItem(m_apItems[item->m_ssid]);
             item->setClickItemWidget(m_activingItemWidget);
             item->updateIndicatorDisplay(true);
         }
