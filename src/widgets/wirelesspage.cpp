@@ -215,7 +215,11 @@ WirelessPage::WirelessPage(const QString locale, WirelessDevice *dev, QWidget *p
         auto item = dynamic_cast<WirelessEditWidget *>(m_lvAP->indexWidget(idx));
 
         // 如果当前AP正在激活或者已经连接的AP, 不做处理
-        if (!item || (!item->isHiddenNetWork && item->getIndicatorStatus()) || item->getConnectIconStatus())
+        if (!item  || (!item->isHiddenNetWork && item->getIndicatorStatus()) || item->getConnectIconStatus())
+            return;
+
+        // if already visable, dont show again
+        if (m_clickedItemWidget->isVisible())
             return;
 
         m_isHideNetwork = false;
@@ -517,15 +521,14 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
             }
         }
     } else if (WirelessDevice::Preparing <= newstate && newstate < WirelessDevice::Activated) {
-        for (auto conn : activeConnections()) {
-            for (auto it = m_apItemsWidget.cbegin(); it != m_apItemsWidget.cend(); ++it) {
-                if (!it.value()->isHiddenNetWork && conn->uuid() == it.value()->m_connectionUuid) {
-                    m_activingItemWidget = it.value();
-                    it.value()->setClickItem(m_apItems[it.key()]);
-                    it.value()->setClickItemWidget(m_activingItemWidget);
-                    it.value()->updateIndicatorDisplay(true);
-                }
-            }
+        QString ssid = m_clickedItemWidget->m_ssid;
+        for (auto item : m_apItemsWidget) {
+            if (item->m_ssid != ssid )
+                continue;
+            m_activingItemWidget = item;
+            item->setClickItem(m_apItems[ssid]);
+            item->setClickItemWidget(m_activingItemWidget);
+            item->updateIndicatorDisplay(true);
         }
     } else if (newstate == WirelessDevice::Activated) {
         m_isHideNetwork = false;
