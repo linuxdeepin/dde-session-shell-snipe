@@ -494,6 +494,8 @@ void WirelessEditWidget::setSecurityWirelessSettings()
     m_wsSetting->setWepKeyFlags(NetworkManager::Setting::NotRequired);
     m_wsSetting->setAuthAlg(NetworkManager::WirelessSecuritySetting::AuthAlg::None);
     m_wsSetting->setPsk(m_passwdEdit->text());
+    // save for all users
+    m_wsSetting->setPskFlags(NetworkManager::Setting::None);
     m_wirelessSetting->setInitialized(true);
 }
 
@@ -582,8 +584,12 @@ void WirelessEditWidget::prepareConnection()
             // search for ssid qual conn
             if (!wirelessSetting || (m_ssid != "" && wirelessSetting->ssid() != m_ssid))
                 continue;
+            // in greeter, all connection should be update to save for all users
+            WirelessSecuritySetting::Ptr secretSetting = conn->settings()->setting(Setting::SettingType::WirelessSecurity).staticCast<NetworkManager::WirelessSecuritySetting>();
+            if (secretSetting)
+                secretSetting->setPskFlags(NetworkManager::Setting::None);
             // ssid alreay exist
-            qInfo() << "setting already exist, ssid: " << m_ssid << ", path: " << conn->path();
+            qDebug() << "setting already exist, ssid: " << m_ssid << ", path: " << conn->path();
             m_connectionSettings->setUuid(conn->uuid());
             exist = true;
             QDBusPendingReply<> reply = conn->update(m_connectionSettings->toMap());

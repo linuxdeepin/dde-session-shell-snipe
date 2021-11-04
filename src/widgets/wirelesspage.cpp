@@ -562,6 +562,8 @@ void WirelessPage::onDeviceStatusChanged(NetworkManager::Device::State newstate,
                 }
             }
         }
+        // reset click item
+        m_clickedItemWidget = nullptr;
     } else if (newstate == WirelessDevice::Disconnected) {
         if (m_connectItemWidget) {
             m_connectItemWidget->setConnectIconVisible(false);
