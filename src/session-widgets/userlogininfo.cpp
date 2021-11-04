@@ -60,6 +60,7 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     m_user = user;
 
     m_userLoginWidget->setIsServerMode(m_model->isServerModel());
+    updateLoginContent();
     m_userLoginWidget->setName(user->displayName());
     m_userLoginWidget->setAvatar(user->avatarPath());
     m_userLoginWidget->setUserAvatarSize(UserLoginWidget::AvatarLargeSize);
@@ -68,8 +69,6 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     m_userLoginWidget->disablePassword(user.get()->isLock(), user->lockTime());
     user->kbLayoutList();
     user->currentKBLayout();
-
-    updateLoginContent();
 }
 
 void UserLoginInfo::initConnect()
