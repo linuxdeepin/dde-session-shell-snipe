@@ -303,12 +303,12 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         QTimer::singleShot(100, this, [=] {
             //为实现待机一段时间后转休眠的功能，待机调用session daemon的接口，由session daemon去做待机和转休眠的工作。
-            QDBusPendingReply<> reply = m_powerInter->RequestSuspend();
-            reply.waitForFinished();
-            if (reply.isError()) {
+            //QDBusPendingReply<> reply = m_powerInter->RequestSuspend();
+            //reply.waitForFinished();
+           // if (reply.isError()) {
                 //如果调用失败则调用startdde的接口
                 m_sessionManagerInter->RequestSuspend();
-            }
+            //}
         });
         break;
     case SessionBaseModel::PowerAction::RequireHibernate:

@@ -1,11 +1,5 @@
 #!/bin/bash
 
-export XDG_CONFIG_DIRS=/etc/xdg
-export QML2_IMPORT_PATH=/usr/lib/x86_64-linux-gnu/qt5/qml
-export XDG_DATA_DIRS=/usr/share
-#export KWIN_COMPOSE=O2ES
-export GDK_BACKEND=x11
-export QT_QPA_PLATFORM=wayland
-
-#/usr/bin/kwin_wayland --xwayland --drm --no-lockscreen /etc/deepin/greeters.d/lightdm-deepin-greeter
-/usr/bin/kwin_wayland --drm --no-lockscreen /etc/deepin/greeters.d/lightdm-deepin-greeter
+for i in /etc/deepin/greeters.d/*; do
+    $i
+done
