@@ -435,8 +435,8 @@ void ShutdownWidget::recoveryLayout()
     //同时需要判断切换用户按钮是否允许可见
     m_requireShutdownButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemShutdown") != "Hiden"));
     m_requireRestartButton->setVisible(true);
-    enableHibernateBtn(m_model->canSleep());
-    enableSleepBtn(m_model->hasSwap());
+    enableHibernateBtn(m_model->hasSwap());
+    enableSleepBtn(m_model->canSleep());
     m_requireLockButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemLock") != "Hiden"));
     m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
 
