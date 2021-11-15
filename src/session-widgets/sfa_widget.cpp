@@ -255,6 +255,12 @@ void SFAWidget::setAuthStatus(const int type, const int status, const QString &m
         }
         break;
     case AuthTypeAll:
+        // 等所有类型验证通过的时候在发送验证完成信息，否则pam从DA获取验证结果的时候会返回错误
+        if ((m_passwordAuth && StatusCodeSuccess == m_passwordAuth->authStatus())
+                || (m_ukeyAuth && StatusCodeSuccess == m_ukeyAuth->authStatus())
+                || (m_fingerprintAuth && StatusCodeSuccess == m_fingerprintAuth->authStatus()))
+            emit authFinished();
+
         break;
     default:
         break;
@@ -342,7 +348,6 @@ void SFAWidget::initPasswdAuth()
         if (authStatus == StatusCodeSuccess) {
             m_lastAuth = m_passwordAuth;
             m_lockButton->setEnabled(true);
-            emit authFinished();
         }
     });
     connect(m_passwordAuth, &AuthPassword::requestAuthenticate, this, [this] {
@@ -426,7 +431,6 @@ void SFAWidget::initFingerprintAuth()
             m_lastAuth = m_fingerprintAuth;
             m_lockButton->setEnabled(true);
             m_lockButton->setFocus();
-            emit authFinished();
         } else {
             m_lockButton->setEnabled(false);
         }
@@ -474,7 +478,6 @@ void SFAWidget::initUKeyAuth()
             m_lastAuth = m_ukeyAuth;
             m_lockButton->setEnabled(true);
             m_lockButton->setFocus();
-            emit authFinished();
         } else {
             m_lockButton->setEnabled(false);
         }
@@ -549,8 +552,6 @@ void SFAWidget::initFaceAuth()
             m_lastAuth = m_faceAuth;
             m_lockButton->setEnabled(true);
             m_lockButton->setFocus();
-        } else {
-            m_lockButton->setEnabled(false);
         }
     });
     connect(m_lockButton, &QPushButton::clicked, this, [this] {
@@ -608,8 +609,6 @@ void SFAWidget::initIrisAuth()
             m_lastAuth = m_irisAuth;
             m_lockButton->setEnabled(true);
             m_lockButton->setFocus();
-        } else {
-            m_lockButton->setEnabled(false);
         }
     });
     connect(m_lockButton, &QPushButton::clicked, this, [ this ] {
