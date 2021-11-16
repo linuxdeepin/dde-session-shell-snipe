@@ -105,7 +105,6 @@ private:
     bool m_isHibernateMode = false;
     bool m_enableEnterEvent = true;
     QCursor m_originalCursor;
-    bool m_blackModeContentVisible = true;
     int m_displayMode;
 };
 
