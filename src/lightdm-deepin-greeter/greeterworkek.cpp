@@ -363,31 +363,6 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
     }
 }
 
-/**
- * @brief 旧的认证接口，已废弃
- *
- * @param password
- */
-void GreeterWorkek::authUser(const QString &password)
-{
-    // auth interface
-    std::shared_ptr<User> user = m_model->currentUser();
-    m_password = password;
-
-    qWarning() << "greeter authenticate user: " << m_greeter->authenticationUser() << " current user: " << user->name();
-    if (m_greeter->authenticationUser() != user->name()) {
-        resetLightdmAuth(user, 100, false);
-    } else {
-        if (m_greeter->inAuthentication()) {
-            // m_authFramework->AuthenticateByUser(user);
-            // m_authFramework->Responsed(password);
-            // m_greeter->respond(password);
-        } else {
-            m_greeter->authenticate(user->name());
-        }
-    }
-}
-
 void GreeterWorkek::onUserAdded(const QString &user)
 {
     std::shared_ptr<User> user_ptr;
@@ -550,7 +525,7 @@ void GreeterWorkek::checkAccount(const QString &account)
         } else {
             qWarning() << userPath;
             userPath = tr("Wrong account");
-            onDisplayErrorMsg(userPath);
+            emit m_model->authFaildTipsMessage(userPath);
             return;
         }
     } else {
@@ -739,26 +714,6 @@ void GreeterWorkek::recoveryUserKBState(std::shared_ptr<User> user)
     KeyboardMonitor::instance()->setNumlockStatus(cur_numlock);
 
     KeyboardMonitor::instance()->setNumlockStatus(enabled);
-}
-
-//TODO 显示内容
-void GreeterWorkek::onDisplayErrorMsg(const QString &msg)
-{
-    emit m_model->authFaildTipsMessage(msg);
-}
-
-void GreeterWorkek::onDisplayTextInfo(const QString &msg)
-{
-    emit m_model->authFaildMessage(msg);
-}
-
-void GreeterWorkek::onPasswordResult(const QString &msg)
-{
-    //onUnlockFinished(!msg.isEmpty());
-
-    //if(msg.isEmpty()) {
-    //    m_authFramework->AuthenticateByUser(m_model->currentUser());
-    //}
 }
 
 void GreeterWorkek::resetLightdmAuth(std::shared_ptr<User> user, int delay_time, bool is_respond)

@@ -27,7 +27,6 @@
 #include "lockcontent.h"
 #include "sessionbasemodel.h"
 #include "userinfo.h"
-#include "hibernatewidget.h"
 #include "warningcontent.h"
 
 #include <QApplication>

@@ -10,14 +10,13 @@
 #include "deepinauthframework.h"
 #include "dbuslogin1manager.h"
 #include "sessionbasemodel.h"
-#include "interface/deepinauthinterface.h"
 #include <com_deepin_daemon_authenticate.h>
 #include <com_deepin_api_xeventmonitor.h>
 
 using XEventInter = com::deepin::api::XEventMonitor;
 using com::deepin::daemon::Authenticate;
 
-class GreeterWorkek : public Auth::AuthInterface, public DeepinAuthInterface
+class GreeterWorkek : public Auth::AuthInterface
 {
     Q_OBJECT
 public:
@@ -35,17 +34,10 @@ public:
     void onUserAdded(const QString &user) override;
     bool isConnectSync() {return m_greeter->connectSync();}
 
-    /* Old authentication methods */
-    void onDisplayErrorMsg(const QString &msg) override;
-    void onDisplayTextInfo(const QString &msg) override;
-    void onPasswordResult(const QString &msg) override;
-
 signals:
     void requestUpdateBackground(const QString &path);
 
 public slots:
-    /* Old authentication methods */
-    void authUser(const QString &password) override;
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destoryAuthentication(const QString &account);

@@ -29,7 +29,5 @@ void UT_LockFrame::TearDown()
 
 TEST_F(UT_LockFrame, init)
 {
-    m_lockWorker->onDisplayErrorMsg("aaaa");
-    m_lockWorker->onDisplayTextInfo("ssssss");
-    m_lockWorker->onPasswordResult("ddddd");
+
 }

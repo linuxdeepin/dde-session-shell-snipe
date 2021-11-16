@@ -76,27 +76,6 @@ void UserLoginInfo::initConnect()
     if (m_model->isServerModel()) {
         connect(this, &UserLoginInfo::updateLocale, m_userLoginWidget, &UserLoginWidget::updateAccoutLocale);
     }
-    connect(m_userLoginWidget, &UserLoginWidget::requestAuthUser, this, [ = ](const QString & account, const QString & password) {
-        // if (!m_userLoginWidget->inputInfoCheck(m_model->isServerModel())) return;
-
-        //当前锁定不需要密码和当前用户不需要密码登录则直接进入系统
-        if (m_model->isLockNoPassword() && m_model->currentUser()->isNoPasswdGrp()) {
-            emit m_model->authFinished(true);
-            return;
-        }
-
-        if (m_model->isServerModel() && m_model->currentUser()->isDoMainUser()) {
-            auto user = dynamic_cast<NativeUser *>(m_model->findUserByName(account).get());
-            auto current_user = m_model->currentUser();
-
-            // static_cast<ADDomainUser *>(m_model->currentUser().get())->setUserName(account);
-            // static_cast<ADDomainUser *>(m_model->currentUser().get())->setUserInter(nullptr);
-            if (user != nullptr) {
-                static_cast<ADDomainUser *>(m_model->currentUser().get())->setUserInter(user->getUserInter());
-            }
-        }
-        // emit requestAuthUser(password);
-    });
     connect(m_model, &SessionBaseModel::authFaildMessage, m_userLoginWidget, &UserLoginWidget::setFaildMessage);
     connect(m_model, &SessionBaseModel::authFaildTipsMessage, m_userLoginWidget, &UserLoginWidget::setFaildTipMessage);
     connect(m_userLoginWidget, &UserLoginWidget::requestUserKBLayoutChanged, this, [=] (const QString &value) {

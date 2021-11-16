@@ -47,7 +47,6 @@ public:
     void updateLoginContent();
 
 signals:
-    void requestAuthUser(const QString &password);
     void switchToCurrentUser();
     void requestSwitchUser(std::shared_ptr<User> user);
     void hideUserFrameList();

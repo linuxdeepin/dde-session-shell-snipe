@@ -34,7 +34,6 @@ public:
 signals:
     void requestSetLocked(const bool);
     void requestBackground(const QString &path);
-    void requestAuthUser(const QString &password);
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetLayout(std::shared_ptr<User> user, const QString &value);
     void unlockActionFinish();
