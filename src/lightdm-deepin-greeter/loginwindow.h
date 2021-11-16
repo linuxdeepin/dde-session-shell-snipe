@@ -44,7 +44,6 @@ private:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
 signals:
-    void requestAuthUser(const QString &password);
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetLayout(std::shared_ptr<User> user, const QString &layout);
 

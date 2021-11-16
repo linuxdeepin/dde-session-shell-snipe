@@ -29,10 +29,6 @@ TEST_F(UT_GreeterWorker, BasicTest)
 {
     std::shared_ptr<User> user_ptr(new User);
     m_worker->switchToUser(user_ptr);
-
-    m_worker->onDisplayErrorMsg("test");
-    m_worker->onDisplayTextInfo("test");
-    m_worker->onPasswordResult("test");
 }
 
 TEST_F(UT_GreeterWorker, AuthTest)

@@ -394,31 +394,6 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
 }
 
 /**
- * @brief 旧的认证接口，已废弃
- *
- * @param password
- */
-void GreeterWorkek::authUser(const QString &password)
-{
-    // auth interface
-    std::shared_ptr<User> user = m_model->currentUser();
-    m_password = password;
-
-    qWarning() << "greeter authenticate user: " << m_greeter->authenticationUser() << " current user: " << user->name();
-    if (m_greeter->authenticationUser() != user->name()) {
-        resetLightdmAuth(user, 100, false);
-    } else {
-        if (m_greeter->inAuthentication()) {
-            // m_authFramework->AuthenticateByUser(user);
-            // m_authFramework->Responsed(password);
-            // m_greeter->respond(password);
-        } else {
-            m_greeter->authenticate(user->name());
-        }
-    }
-}
-
-/**
  * @brief 创建认证服务
  * 有用户时，通过dbus发过来的user信息创建认证服务，类服务器模式下通过用户输入的用户创建认证服务
  * @param account
@@ -575,7 +550,7 @@ void GreeterWorkek::checkAccount(const QString &account)
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setFullName(userFullName);
         } else {
             qWarning() << userPath;
-            onDisplayErrorMsg(tr("Wrong account"));
+            emit m_model->authFaildTipsMessage(tr("Wrong account"));
             m_model->setAuthType(AuthTypeNone);
             m_greeter->authenticate();
             return;
@@ -754,26 +729,6 @@ void GreeterWorkek::recoveryUserKBState(std::shared_ptr<User> user)
     KeyboardMonitor::instance()->setNumlockStatus(cur_numlock);
 
     KeyboardMonitor::instance()->setNumlockStatus(enabled);
-}
-
-//TODO 显示内容
-void GreeterWorkek::onDisplayErrorMsg(const QString &msg)
-{
-    emit m_model->authFaildTipsMessage(msg);
-}
-
-void GreeterWorkek::onDisplayTextInfo(const QString &msg)
-{
-    emit m_model->authFaildMessage(msg);
-}
-
-void GreeterWorkek::onPasswordResult(const QString &msg)
-{
-    //onUnlockFinished(!msg.isEmpty());
-
-    //if(msg.isEmpty()) {
-    //    m_authFramework->AuthenticateByUser(m_model->currentUser());
-    //}
 }
 
 void GreeterWorkek::resetLightdmAuth(std::shared_ptr<User> user, int delay_time, bool is_respond)

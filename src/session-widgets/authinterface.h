@@ -35,7 +35,6 @@ public:
     explicit AuthInterface(SessionBaseModel *const model, QObject *parent = nullptr);
 
     virtual void switchToUser(std::shared_ptr<User> user) = 0;
-    virtual void authUser(const QString &password)        = 0;
 
     virtual void setLayout(std::shared_ptr<User> user, const QString &layout);
     virtual void onUserListChanged(const QStringList &list);

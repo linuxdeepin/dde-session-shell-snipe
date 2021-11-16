@@ -38,14 +38,11 @@ class QLabel;
 class QPushButton;
 class User;
 class UserAvatar;
-class LoginButton;
-class LockPasswordWidget;
 class FrameDataBind;
 class OtherUserInput;
 class QVBoxLayout;
 class KbLayoutWidget;
 class KeyboardMonitor;
-class DPasswordEditEx;
 class DLineEditEx;
 class AuthenticationModule;
 class AuthSingle;
@@ -85,7 +82,6 @@ public:
 signals:
     void requestStartAuthentication(const QString &account, const int authType);            // 开启某一种认证
     void sendTokenToAuth(const QString &account, const int authType, const QString &token); // 将密文发送给认证服务
-    void requestAuthUser(const QString &account, const QString &password);
     void requestCheckAccount(const QString &account);
     void clicked();
     void authFininshed(const int status);
@@ -176,9 +172,6 @@ private:
     AuthenticationModule *m_PINAuth;             // PIN
 
     ///////////////////////////////////////
-
-    DPasswordEditEx *m_passwordEdit;          // 密码输入框
-    LockPasswordWidget *m_lockPasswordWidget; // 密码锁定后，错误信息提示
 
     DArrowRectangle *m_kbLayoutBorder; // 键盘布局异性框类
     KbLayoutWidget *m_kbLayoutWidget;  // 键盘布局窗体

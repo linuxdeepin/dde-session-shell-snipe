@@ -405,61 +405,9 @@ void LockWorker::setLocked(const bool locked)
 #endif
 }
 
-/**
- * @brief 旧的认证接口，已废弃
- *
- * @param password
- */
-void LockWorker::authUser(const QString &password)
-{
-    QString userPath = m_accountsInter->FindUserByName(m_model->currentUser()->name());
-    if (!userPath.startsWith("/")) {
-        qWarning() << userPath;
-        onDisplayErrorMsg(userPath);
-        return;
-    }
-    m_authFramework->CreateAuthenticate(m_model->currentUser()->name());
-    m_authFramework->SendToken(password);
-}
-
 void LockWorker::enableZoneDetected(bool disable)
 {
     m_hotZoneInter->EnableZoneDetected(disable);
-}
-
-/**
- * @brief 显示错误信息
- *
- * @param msg
- */
-void LockWorker::onDisplayErrorMsg(const QString &msg)
-{
-    emit m_model->authFaildTipsMessage(msg);
-}
-
-/**
- * @brief 显示提示文案
- *
- * @param msg
- */
-void LockWorker::onDisplayTextInfo(const QString &msg)
-{
-    m_authenticating = false;
-    emit m_model->authFaildMessage(msg);
-}
-
-/**
- * @brief 显示认证结果
- *
- * @param msg
- */
-void LockWorker::onPasswordResult(const QString &msg)
-{
-    onUnlockFinished(!msg.isEmpty());
-
-    if (msg.isEmpty()) {
-        // m_authFramework->AuthenticateByUser(m_model->currentUser());
-    }
 }
 
 bool LockWorker::isLocked()

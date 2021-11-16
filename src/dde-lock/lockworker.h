@@ -6,7 +6,6 @@
 #include "dbuslockservice.h"
 #include "dbuslogin1manager.h"
 #include "deepinauthframework.h"
-#include "interface/deepinauthinterface.h"
 #include "sessionbasemodel.h"
 #include "switchos_interface.h"
 #include "userinfo.h"
@@ -26,7 +25,6 @@ using SessionManagerInter = com::deepin::SessionManager;
 
 class SessionBaseModel;
 class LockWorker : public Auth::AuthInterface
-    , public DeepinAuthInterface
 {
     Q_OBJECT
 public:
@@ -35,16 +33,9 @@ public:
 
     void enableZoneDetected(bool disable);
 
-    /* Old authentication methods */
-    void onDisplayErrorMsg(const QString &msg) override;
-    void onDisplayTextInfo(const QString &msg) override;
-    void onPasswordResult(const QString &msg) override;
     //获取当前Session是否被锁定
     bool isLocked();
-
 public slots:
-    /* Old authentication methods */
-    void authUser(const QString &password) override;
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destoryAuthentication(const QString &account);

@@ -29,13 +29,6 @@ void UT_LockWorker::TearDown()
     delete m_model;
 }
 
-TEST_F(UT_LockWorker, worker)
-{
-    m_worker->onDisplayErrorMsg("aaaa");
-    m_worker->onDisplayTextInfo("ssssss");
-    m_worker->onPasswordResult("ddddd");
-}
-
 TEST_F(UT_LockWorker, auth)
 {
     // m_worker->createAuthentication("uos");

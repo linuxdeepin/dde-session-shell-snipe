@@ -2,7 +2,6 @@
 
 #include "controlwidget.h"
 #include "sessionbasemodel.h"
-#include "userframe.h"
 #include "shutdownwidget.h"
 #include "virtualkbinstance.h"
 #include "logowidget.h"
@@ -59,7 +58,6 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
-    connect(m_userLoginInfo, &UserLoginInfo::requestAuthUser, this, &LockContent::requestAuthUser);
     connect(m_userLoginInfo, &UserLoginInfo::hideUserFrameList, this, &LockContent::restoreMode);
     connect(m_userLoginInfo, &UserLoginInfo::requestSwitchUser, this, &LockContent::requestSwitchToUser);
     connect(m_userLoginInfo, &UserLoginInfo::switchToCurrentUser, this, &LockContent::restoreMode);
