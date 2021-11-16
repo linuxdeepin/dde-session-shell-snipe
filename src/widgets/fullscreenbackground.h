@@ -89,7 +89,6 @@ private:
     bool m_isBlackMode = false;
     bool m_enableEnterEvent = true;
     QCursor m_originalCursor;
-    bool m_blackModeContentVisible = true;
 };
 
 #endif // FULLSCREENBACKGROUND_H

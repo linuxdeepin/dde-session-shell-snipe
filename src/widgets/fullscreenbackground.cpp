@@ -176,16 +176,8 @@ void FullscreenBackground::setIsBlackMode(bool is_black)
     m_enableEnterEvent = !is_black;
     m_isBlackMode = is_black;
 
-    if (m_isBlackMode) {
-        //记录待机黑屏前的显示状态
-        m_blackModeContentVisible = contentVisible();
-        m_content->setVisible(false);
-        emit contentVisibleChanged(false);
-    } else if (m_blackModeContentVisible) {
-        //若待机黑屏前是显示状态，则唤醒后也显示，否则不显示
-        m_content->setVisible(true);
-        emit contentVisibleChanged(true);
-    }
+    m_content->setVisible(!m_isBlackMode);
+    emit contentVisibleChanged(!m_isBlackMode);
 
     update();
 }
