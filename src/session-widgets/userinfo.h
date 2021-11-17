@@ -111,6 +111,7 @@ signals:
     void shortTimeFormatChanged(const int);
     void weekdayFormatChanged(const int);
     void use24HourFormatChanged(const bool);
+    void expiredInfoChanged(int status, int daysleft);
 
 protected:
     bool checkUserIsNoPWGrp(const User *user) const;

@@ -55,6 +55,7 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     m_currentUserConnects << connect(user.get(), &User::limitsInfoChanged, m_userLoginWidget, &UserLoginWidget::updateLimitsInfo);
     m_currentUserConnects << connect(user.get(), &User::avatarChanged, m_userLoginWidget, &UserLoginWidget::updateAvatar);
     m_currentUserConnects << connect(user.get(), &User::displayNameChanged, m_userLoginWidget, &UserLoginWidget::updateName);
+    m_currentUserConnects << connect(user.get(), &User::expiredInfoChanged, m_userLoginWidget, &UserLoginWidget::updateExpiredStatus);
     m_currentUserConnects << connect(user.get(), &User::keyboardLayoutListChanged, m_userLoginWidget, &UserLoginWidget::updateKeyboardList, Qt::UniqueConnection);
     m_currentUserConnects << connect(user.get(), &User::keyboardLayoutChanged, m_userLoginWidget, &UserLoginWidget::updateKeyboardInfo, Qt::UniqueConnection);
     m_currentUserConnects << connect(user.get(), &User::noPasswordLoginChanged, this, &UserLoginInfo::updateLoginContent); // TODO

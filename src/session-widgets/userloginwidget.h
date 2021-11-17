@@ -81,7 +81,6 @@ public:
     void setUid(const uint uid);
     inline uint uid() const { return m_uid; }
     void ShutdownPrompt(SessionBaseModel::PowerAction action);
-    void updateExpiredStatus();
 
 signals:
     void requestStartAuthentication(const QString &account, const int authType);            // 开启某一种认证
@@ -95,6 +94,7 @@ signals:
     void unlockActionFinish();
 
 public slots:
+    void updateExpiredStatus();
     void updateWidgetShowType(const int type);
     void updateAuthResult(const int type, const int status, const QString &message);
     void updateBlurEffectGeometry();
