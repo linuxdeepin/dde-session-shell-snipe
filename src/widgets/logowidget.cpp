@@ -79,6 +79,7 @@ void LogoWidget::initUI()
     m_logoVersionLabel->setObjectName("LogoVersion");
     //设置版本号显示部件自动拉伸,以保证高度和图标高度一致
     m_logoVersionLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_logoVersionLabel->setContentsMargins(0, m_logoLabel->geometry().y(), 0, 0);
     //设置版本号在左上角显示,以保证内容顶部和图标顶部对齐
     m_logoVersionLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 #ifdef SHENWEI_PLATFORM
@@ -102,9 +103,6 @@ void LogoWidget::initUI()
     logoLayout->addWidget(m_logoVersionLabel);
 
     updateStyle(":/skin/login.qss", m_logoVersionLabel);
-
-    //设置最高高度为Logo的高度,以保证右边版本号内容顶部能和图片对齐
-    setFixedHeight(pixmap.height());
 }
 
 QPixmap LogoWidget::loadSystemLogo()
@@ -140,6 +138,8 @@ void LogoWidget::updateLocale(const QString &locale)
 
 void LogoWidget::resizeEvent(QResizeEvent *event)
 {
+    QFrame::resizeEvent(event);
+    m_logoVersionLabel->setContentsMargins(0, m_logoLabel->geometry().y(), 0, 0);
     /** TODO
      * 使用系统名称图标一半高度做为版本信息字体大小。
      * 当系统名称图标比较大时，版本信息也会比较大，这里有待优化。
@@ -147,6 +147,4 @@ void LogoWidget::resizeEvent(QResizeEvent *event)
     QFont font(m_logoVersionLabel->font());
     font.setPixelSize(m_logoLabel->height() / 2);
     m_logoVersionLabel->setFont(font);
-
-    QFrame::resizeEvent(event);
 }
