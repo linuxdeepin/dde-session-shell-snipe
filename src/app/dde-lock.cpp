@@ -64,9 +64,6 @@ int main(int argc, char *argv[])
     app->setApplicationName("dde-lock");
     app->setApplicationVersion("2015.1.0");
 
-    // crash catch
-    init_sig_crash();
-
     //注册全局事件过滤器
     AppEventFilter appEventFilter;
     app->installEventFilter(&appEventFilter);

@@ -200,9 +200,6 @@ int main(int argc, char* argv[])
     qApp->setApplicationVersion("2015.1.0");
     qApp->setAttribute(Qt::AA_ForceRasterWidgets);
 
-    // crash catch
-    init_sig_crash();
-
     //注册全局事件过滤器
     AppEventFilter appEventFilter;
     a.installEventFilter(&appEventFilter);

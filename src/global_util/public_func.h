@@ -77,19 +77,6 @@ T findValueByQSettings(const QStringList &configFiles,
 bool isDeepinAuth();
 
 /**
- * @brief 捕获程序异常退出
- *
- * @param sig 异常退出信号
- */
-[[noreturn]] void sig_crash(int sig);
-
-/**
- * @brief 初始化需要捕获的异常信号
- */
-
-void init_sig_crash();
-
-/**
  * @brief 把字符串解析成时间，然后转换为Unix时间戳
  */
 uint timeFromString(QString time);
