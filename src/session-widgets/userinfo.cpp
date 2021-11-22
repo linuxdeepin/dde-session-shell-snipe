@@ -463,8 +463,6 @@ void NativeUser::updateNoPasswordLogin(const bool isNoPasswordLogin)
 void NativeUser::updatePasswordExpiredInfo()
 {
     m_expiredStatus = m_userInter->PasswordExpiredInfo(m_expiredDayLeft).value();
-
-    emit expiredInfoChanged(m_expiredStatus, m_expiredDayLeft);
 }
 
 /**
