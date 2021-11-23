@@ -1,5 +1,5 @@
 [Greeter Active WIFI Connection]
-Identity=unix-user:lightdm
+Identity=unix-user:lightdm;unix-group:domain
 Action=org.freedesktop.NetworkManager.*
 ResultAny=no
 ResultInactive=no
