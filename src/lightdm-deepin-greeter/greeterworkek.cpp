@@ -374,6 +374,7 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
     }
     qInfo() << "switch user from" << m_account << " to " << user->name() << user->uid() << user->isLogin();
     endAuthentication(m_account, AuthTypeAll);
+    destoryAuthentication(m_account);
 
     if (user->uid() == INT_MAX) {
         m_greeter->authenticate();
@@ -385,7 +386,6 @@ void GreeterWorkek::switchToUser(std::shared_ptr<User> user)
         QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
     } else {
         m_model->updateAuthStatus(AuthTypeAll, StatusCodeCancel, "Cancel");
-        destoryAuthentication(m_account);
         m_model->updateCurrentUser(user);
         if (!user->isNoPasswordLogin()) {
             createAuthentication(user->name());
