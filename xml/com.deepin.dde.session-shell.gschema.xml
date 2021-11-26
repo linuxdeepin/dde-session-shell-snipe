@@ -77,5 +77,10 @@
             <summary>change system logout status</summary>
             <description>default is Enabled</description>
         </key>
+        <key name='delaytime' type='i'>
+            <default>500</default>
+            <summary>delaytime</summary>
+            <range min="100" max="1000"/>
+        </key>
     </schema>
 </schemalist>

@@ -34,19 +34,21 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     , m_switchosInterface(new HuaWeiSwitchOSInterface("com.huawei", "/com/huawei/switchos", QDBusConnection::sessionBus(), this))
     , m_accountsInter(new AccountsInter("com.deepin.daemon.Accounts", "/com/deepin/daemon/Accounts", QDBusConnection::systemBus(), this))
     , m_loginedInter(new LoginedInter("com.deepin.daemon.Accounts", "/com/deepin/daemon/Logined", QDBusConnection::systemBus(), this))
+    , m_gsettings(nullptr)
 {
     initConnections();
     initData();
     initConfiguration();
 
     m_resetSessionTimer->setInterval(15000);
+
     if (QGSettings::isSchemaInstalled("com.deepin.dde.session-shell")) {
-         QGSettings gsetting("com.deepin.dde.session-shell", "/com/deepin/dde/session-shell/", this);
-         if(gsetting.keys().contains("authResetTime")){
-             int resetTime = gsetting.get("auth-reset-time").toInt();
-             if(resetTime > 0)
-                m_resetSessionTimer->setInterval(resetTime);
-         }
+        m_gsettings = new QGSettings("com.deepin.dde.session-shell", "/com/deepin/dde/session-shell/", this);
+        if(m_gsettings->keys().contains("authResetTime")){
+            int resetTime = m_gsettings->get("auth-reset-time").toInt();
+            if(resetTime > 0)
+               m_resetSessionTimer->setInterval(resetTime);
+        }
     }
 
     m_resetSessionTimer->setSingleShot(true);
@@ -299,19 +301,39 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
 {
     switch (action) {
     case SessionBaseModel::PowerAction::RequireSuspend:
+    {
         m_model->setIsBlackModel(true);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-        QTimer::singleShot(100, this, [=] {
+        int delayTime = 500;
+        if(m_gsettings && m_gsettings->keys().contains("delaytime")){
+            delayTime = m_gsettings->get("delaytime").toInt();
+            qInfo() << "delayTime : " << delayTime;
+        }
+        if (delayTime < 0) {
+            delayTime = 500;
+        }
+        QTimer::singleShot(delayTime, this, [=] {
             m_sessionManagerInter->RequestSuspend();
         });
         break;
+    }
     case SessionBaseModel::PowerAction::RequireHibernate:
+    {
         m_model->setIsBlackModel(true);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-        QTimer::singleShot(100, this, [=] {
+        int delayTime = 500;
+        if(m_gsettings && m_gsettings->keys().contains("delaytime")){
+            delayTime = m_gsettings->get("delaytime").toInt();
+            qInfo() << " delayTime : " << delayTime;
+        }
+        if (delayTime < 0) {
+            delayTime = 500;
+        }
+        QTimer::singleShot(delayTime, this, [=] {
             m_sessionManagerInter->RequestHibernate();
         });
         break;
+    }
     case SessionBaseModel::PowerAction::RequireRestart:
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
             m_sessionManagerInter->RequestReboot();
