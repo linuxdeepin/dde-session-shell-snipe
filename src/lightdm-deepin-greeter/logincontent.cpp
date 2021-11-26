@@ -80,6 +80,7 @@ void LoginContent::mouseReleaseEvent(QMouseEvent *event)
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::WirelessMode) {
         restoreMode();
     }
+    LockContent::mouseReleaseEvent(event);
 }
 
 void LoginContent::updateWirelessListPosition()
