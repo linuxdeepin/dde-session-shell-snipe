@@ -27,7 +27,7 @@ Build-Depends: debhelper (>= 8.0.0), pkg-config,
  qtmultimedia5-dev,
  libgtest-dev,
  libx11-xcb-dev,
- libssl-dev,
+ libssl3-dev,
  libdtkcore-dev
 Standards-Version: 3.9.4
 Homepage: http://www.deepin.org/
@@ -42,8 +42,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  x11-xserver-utils,
  dbus-x11,
  deepin-authenticate(>=1.2.27),
- xsettingsd,
- libssl-dev
+ xsettingsd
 Provides: lightdm-greeter
 Recommends: onboard,
  dss-network-plugin,
