@@ -83,6 +83,9 @@ protected:
     uint               m_currentUserUid;
     std::list<uint>    m_loginUserList;
     Authenticate*      m_authenticateInter;
+
+    QString            m_ukeyUserName;
+    QString            m_ukeyUserInfo;
 };
 }  // namespace Auth
 

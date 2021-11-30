@@ -10,11 +10,16 @@
 #include <grp.h>
 #include <signal.h>
 
+#define AUTHRNTICATESERVICE "com.deepin.daemon.Authenticate"
+
 DeepinAuthFramework::DeepinAuthFramework(DeepinAuthInterface *inter, QObject *parent)
     : QObject(parent)
     , m_interface(inter)
+    , m_authenticateInter(new AuthInter(AUTHRNTICATESERVICE, "/com/deepin/daemon/Authenticate", QDBusConnection::systemBus(), this))
 {
     m_authagent = new AuthAgent(this);
+
+    connect(m_authenticateInter, &AuthInter::UkeyUserData, this, &DeepinAuthFramework::UkeyUserData);
 }
 
 DeepinAuthFramework::~DeepinAuthFramework()
@@ -31,6 +36,18 @@ DeepinAuthFramework::~DeepinAuthFramework()
         delete m_authagent;
         m_authagent = nullptr;
     }
+}
+
+bool DeepinAuthFramework::GetUkeyUserData(QString &username, QString &userinfo)
+{
+    QDBusPendingReply<QString, QString> reply = m_authenticateInter->GetUkeyUserData();
+    if (reply.isError()) {
+        qWarning() << "GetUkeyUserData error:" << reply.error().message();
+        return false;
+    }
+    username = reply.argumentAt(0).toString();
+    userinfo = reply.argumentAt(1).toString();
+    return true;
 }
 
 bool DeepinAuthFramework::isAuthenticate() const
@@ -112,15 +129,24 @@ const QString DeepinAuthFramework::RequestEchoOn(const QString &msg)
 
 void DeepinAuthFramework::DisplayErrorMsg(const QString &msg)
 {
+    if (m_interface == nullptr) {
+        return;
+    }
     m_interface->onDisplayErrorMsg(msg);
 }
 
 void DeepinAuthFramework::DisplayTextInfo(const QString &msg)
 {
+    if (m_interface == nullptr) {
+        return;
+    }
     m_interface->onDisplayTextInfo(msg);
 }
 
 void DeepinAuthFramework::RespondResult(const QString &msg)
 {
+    if (m_interface == nullptr) {
+        return;
+    }
     m_interface->onPasswordResult(msg);
 }

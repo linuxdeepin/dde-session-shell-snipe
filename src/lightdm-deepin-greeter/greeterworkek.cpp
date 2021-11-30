@@ -42,6 +42,56 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
         qWarning() << "greeter connect fail !!!";
     }
 
+    m_authFramework = new DeepinAuthFramework(nullptr, this);
+
+    m_authFramework->GetUkeyUserData(m_ukeyUserName, m_ukeyUserInfo);
+    connect(m_authFramework, &DeepinAuthFramework::UkeyUserData, this, [=](const QString &username, const QString &userinfo){
+        qDebug() << "[UkeyUserData Change]username:" << username << ", userinfo:" << userinfo;
+        if (username == m_ukeyUserName && userinfo == m_ukeyUserInfo) {
+            return;
+        }
+        if (username == m_ukeyUserName && userinfo != m_ukeyUserInfo) {
+            m_ukeyUserInfo = userinfo;
+            return;
+        }
+        if (username.isEmpty()) {
+            // 拔掉ukey
+            // - 如果当前用户是ukey用户，则切换用户，否则不切换
+            std::shared_ptr<User> curUserPtr = m_model->currentUser();
+            qDebug() << "[UkeyUserData Change]curUserPtr->name():" << curUserPtr->name() << ", m_ukeyUserName:" << m_ukeyUserName;
+            if (curUserPtr->name() == m_ukeyUserName) {
+                qDebug() << "[UkeyUserData Change]m_currentUserUid:" << m_currentUserUid;
+                std::shared_ptr<User> userPtr = model->findUserByUid(m_currentUserUid);
+                if (userPtr == nullptr) {
+                    userPtr = m_model->userList().at(0);
+                }
+                if (userPtr != nullptr) {
+                    qDebug() << "[UkeyUserData Change]to user:" << userPtr->name();
+                    m_model->setCurrentUser(userPtr);
+                }
+            }
+            // - 清空ukeyUserData
+            qDebug() << "[UkeyUserData Change]clean ukeyUserData";
+            if (!m_ukeyUserName.isEmpty()) {
+                std::shared_ptr<User> ukeyUserPtr = model->findUserByName(m_ukeyUserName);
+                if (ukeyUserPtr != nullptr) {
+                    ukeyUserPtr->setUserDisplayName("");
+                }
+            }
+            m_ukeyUserInfo = "";
+            m_ukeyUserName = "";
+        } else {
+            // 插入ukey
+            std::shared_ptr<User> userPtr = model->findUserByName(username);
+            m_ukeyUserName = username;
+            m_ukeyUserInfo = userinfo;
+            if (userPtr != nullptr) {
+                userPtr->setUserDisplayName(userinfo);
+                m_model->setCurrentUser(userPtr);
+            }
+        }
+    });
+
     connect(m_greeter, &QLightDM::Greeter::showPrompt, this, &GreeterWorkek::prompt);
     connect(m_greeter, &QLightDM::Greeter::showMessage, this, &GreeterWorkek::message);
     connect(m_greeter, &QLightDM::Greeter::authenticationComplete, this, &GreeterWorkek::authenticationComplete);
@@ -130,7 +180,6 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
             if (!replay.isError()) {
                 const QJsonObject obj = QJsonDocument::fromJson(replay.value().toUtf8()).object();
                 auto user_ptr = m_model->findUserByUid(static_cast<uint>(obj["Uid"].toInt()));
-
                 m_model->setCurrentUser(user_ptr);
                 userAuthForLightdm(user_ptr);
             }
@@ -185,6 +234,9 @@ void GreeterWorkek::authUser(const QString &password)
 void GreeterWorkek::onUserAdded(const QString &user)
 {
     std::shared_ptr<NativeUser> user_ptr(new NativeUser(user));
+    if (user_ptr->name() == m_ukeyUserName) {
+        user_ptr->setUserDisplayName(m_ukeyUserInfo);
+    }
 
     if (!user_ptr->isUserIsvalid())
         return;
@@ -196,9 +248,12 @@ void GreeterWorkek::onUserAdded(const QString &user)
         }
     }
 
-    if (!user_ptr->isLogin() && user_ptr->uid() == m_currentUserUid && !m_model->isServerModel()) {
-        m_model->setCurrentUser(user_ptr);
-        userAuthForLightdm(user_ptr);
+    if (!user_ptr->isLogin() && !m_model->isServerModel()) {
+        if (user_ptr->name() == m_ukeyUserName ||
+            (user_ptr->uid() == m_currentUserUid && m_model->currentUser()->name() != m_ukeyUserName)) {
+            m_model->setCurrentUser(user_ptr);
+            userAuthForLightdm(user_ptr);
+        }
     }
 
     if (user_ptr->uid() == m_lastLogoutUid) {

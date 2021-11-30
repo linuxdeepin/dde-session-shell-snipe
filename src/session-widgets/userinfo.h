@@ -78,6 +78,7 @@ public:
 
     virtual UserType type() const = 0;
     virtual QString displayName() const { return m_userName; }
+    virtual void setUserDisplayName(const QString &name) {}
     virtual QString avatarPath() const = 0;
     virtual QString greeterBackgroundPath() const = 0;
     virtual QString desktopBackgroundPath() const = 0;
@@ -117,6 +118,7 @@ public:
     bool isNoPasswdGrp() const override;
     bool isUserIsvalid() const override;
     bool is24HourFormat() const override;
+    void setUserDisplayName(const QString &name) override;
 
 private:
     void configAccountInfo(const QString& account_config);
@@ -128,6 +130,7 @@ private:
     QString m_avatar;
     QString m_greeterBackground;
     QString m_desktopBackground;
+    QString m_displayName;
 };
 
 class ADDomainUser : public User
@@ -137,7 +140,7 @@ class ADDomainUser : public User
 public:
     ADDomainUser(uid_t uid, QObject *parent = nullptr);
 
-    void setUserDisplayName(const QString &name);
+    void setUserDisplayName(const QString &name) override;
     void setUserName(const QString &name);
     void setUserInter(UserInter *user_inter);
     void setUid(uid_t uid);

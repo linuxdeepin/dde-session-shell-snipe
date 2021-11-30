@@ -8,6 +8,8 @@
 #include "src/global_util/dbus/dbuslockservice.h"
 #include "src/session-widgets/authinterface.h"
 #include "src/global_util/dbus/dbuslogin1manager.h"
+#include "../libdde-auth/deepinauthframework.h"
+
 #include <com_deepin_daemon_authenticate.h>
 
 using com::deepin::daemon::Authenticate;
@@ -50,6 +52,7 @@ private:
     DBusLockService   *m_lockInter;
     bool               m_authenticating;
     QString            m_password;
+    DeepinAuthFramework *m_authFramework;
 };
 
 #endif  // GREETERWORKEK_H

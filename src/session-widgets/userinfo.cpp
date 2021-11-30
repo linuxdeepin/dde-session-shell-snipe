@@ -295,7 +295,13 @@ void NativeUser::setCurrentLayout(const QString &layout)
 
 QString NativeUser::displayName() const
 {
-    return m_fullName.isEmpty() ? m_userName : m_fullName;
+    if (!m_displayName.isEmpty()) {
+        return m_displayName;
+    }
+    if (!m_fullName.isEmpty()) {
+        return m_fullName;
+    }
+    return m_userName;
 }
 
 QString NativeUser::avatarPath() const
@@ -343,6 +349,15 @@ bool NativeUser::is24HourFormat() const
         return true;
 
     return m_userInter->use24HourFormat();
+}
+
+void NativeUser::setUserDisplayName(const QString &name)
+{
+    if (m_displayName == name) {
+        return;
+    }
+
+    m_displayName = name;
 }
 
 ADDomainUser::ADDomainUser(uid_t uid, QObject *parent)

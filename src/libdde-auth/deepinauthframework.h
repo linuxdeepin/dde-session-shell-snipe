@@ -2,10 +2,13 @@
 #define DEEPINAUTHFRAMEWORK_H
 
 #include "authagent.h"
+#include <com_deepin_daemon_authenticate.h>
 
 #include <QObject>
 #include <QPointer>
 #include <memory>
+
+using AuthInter = com::deepin::daemon::Authenticate;
 
 class DeepinAuthInterface;
 class QThread;
@@ -17,9 +20,15 @@ public:
     explicit DeepinAuthFramework(DeepinAuthInterface *inter, QObject *parent = nullptr);
     ~DeepinAuthFramework();
 
+    bool GetUkeyUserData(QString &username, QString &userinfo);
+
     friend class AuthAgent;
     bool isAuthenticate() const;
     int GetAuthType();
+
+signals:
+    /* com.deepin.daemon.Authenticate */
+    void UkeyUserData(const QString &, const QString &);
 
 public slots:
     void Authenticate(std::shared_ptr<User> user);
@@ -34,6 +43,7 @@ private:
     void RespondResult(const QString &msg);
 
 private:
+    AuthInter *m_authenticateInter;
     DeepinAuthInterface *m_interface;
     QPointer<AuthAgent> m_authagent;
     std::shared_ptr<User> m_currentUser = nullptr;
