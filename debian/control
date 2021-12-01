@@ -42,7 +42,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  x11-xserver-utils,
  dbus-x11,
  deepin-authenticate(>=1.2.27),
- xsettingsd
+ xsettingsd,
+ libssl3
 Provides: lightdm-greeter
 Recommends: onboard,
  dss-network-plugin,
