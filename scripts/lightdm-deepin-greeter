@@ -3,8 +3,13 @@ display_daemon="/usr/lib/deepin-daemon/greeter-display-daemon"
 if [ -x $display_daemon ]; then
     $display_daemon &
 fi
-xsettingsd_conf="/etc/lightdm/deepin/xsettingsd.conf"
-if [ -e $xsettingsd_conf ]; then
-    xsettingsd -c $xsettingsd_conf &
-fi
+
+export QT_QPA_PLATFORM=wayland
+export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/plugins/platforms
+export QT_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins
+export XDG_DATA_DIRS=/usr/share
+export XDG_CURRENT_DESKTOP=Deepin
+export QT_DEBUG_PLUGINS=1
+
+#QT_SCALE_FACTOR=1.0 /usr/bin/lightdm-deepin-greeter -platformtheme deepin
 /usr/bin/lightdm-deepin-greeter
