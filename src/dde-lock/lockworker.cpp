@@ -34,6 +34,11 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     m_currentUserUid = getuid();
     m_authFramework = new DeepinAuthFramework(this, this);
     m_sessionManager->setSync(false);
+    QGSettings* gsettings = nullptr;
+
+    if (QGSettings::isSchemaInstalled("com.deepin.dde.sessionshell.control")) {
+        gsettings = new QGSettings("com.deepin.dde.sessionshell.control", "/com/deepin/dde/sessionshell/control/", this);
+    }
 
     //当前用户m_currentUserUid是已登录用户,直接按AuthInterface::onLoginUserListChanged中的流程处理
     std::shared_ptr<User> u(new ADDomainUser(m_currentUserUid));
@@ -51,10 +56,40 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     connect(model, &SessionBaseModel::onPowerActionChanged, this, [ = ](SessionBaseModel::PowerAction poweraction) {
         switch (poweraction) {
         case SessionBaseModel::PowerAction::RequireSuspend:
-            m_sessionManager->RequestSuspend();
+        {
+//            m_sessionManager->RequestSuspend();
+            m_model->setIsBlackModel(true);
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+            int delayTime = 100;
+            if(gsettings && gsettings->keys().contains("delaytime")) {
+                delayTime = gsettings->get("delaytime").toInt();
+                qInfo() << "delayTime : " << delayTime;
+            }
+            if (delayTime < 0) {
+                delayTime = 100;
+            }
+            QTimer::singleShot(delayTime, this, [=] {
+                m_sessionManager->RequestSuspend();
+            });
+        }
             break;
         case SessionBaseModel::PowerAction::RequireHibernate:
-            m_sessionManager->RequestHibernate();
+        {
+//            m_sessionManager->RequestHibernate();
+            m_model->setIsBlackModel(true);
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+            int delayTime = 100;
+            if(gsettings && gsettings->keys().contains("delaytime")){
+                delayTime = gsettings->get("delaytime").toInt();
+                qInfo() << " delayTime : " << delayTime;
+            }
+            if (delayTime < 0) {
+                delayTime = 100;
+            }
+            QTimer::singleShot(delayTime, this, [=] {
+                m_sessionManager->RequestHibernate();
+            });
+        }
             break;
         case SessionBaseModel::PowerAction::RequireRestart:
             m_authFramework->Authenticate(m_model->currentUser());
