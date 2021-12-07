@@ -45,13 +45,10 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
     m_authFramework = new DeepinAuthFramework(nullptr, this);
 
     m_authFramework->GetUkeyUserData(m_ukeyUserName, m_ukeyUserInfo);
+    qDebug() << "greeterworkek init, ukey username:" << m_ukeyUserName << ", ukey userinfo:" << m_ukeyUserInfo;
     connect(m_authFramework, &DeepinAuthFramework::UkeyUserData, this, [=](const QString &username, const QString &userinfo){
         qDebug() << "[UkeyUserData Change]username:" << username << ", userinfo:" << userinfo;
         if (username == m_ukeyUserName && userinfo == m_ukeyUserInfo) {
-            return;
-        }
-        if (username == m_ukeyUserName && userinfo != m_ukeyUserInfo) {
-            m_ukeyUserInfo = userinfo;
             return;
         }
         if (username.isEmpty()) {
@@ -65,7 +62,7 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
                 if (userPtr == nullptr) {
                     userPtr = m_model->userList().at(0);
                 }
-                if (userPtr != nullptr) {
+                if (userPtr != nullptr && userPtr != curUserPtr) {
                     qDebug() << "[UkeyUserData Change]to user:" << userPtr->name();
                     m_model->setCurrentUser(userPtr);
                 }
@@ -87,7 +84,14 @@ GreeterWorkek::GreeterWorkek(SessionBaseModel *const model, QObject *parent)
             m_ukeyUserInfo = userinfo;
             if (userPtr != nullptr) {
                 userPtr->setUserDisplayName(userinfo);
-                m_model->setCurrentUser(userPtr);
+                std::shared_ptr<User> curUserPtr = m_model->currentUser();
+                if (curUserPtr->name() != m_ukeyUserName) {
+                    m_model->setCurrentUser(userPtr);
+                    QJsonObject json;
+                    json["Uid"] = static_cast<int>(userPtr->uid());
+                    json["Type"] = userPtr->type();
+                    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
+                }
             }
         }
     });
@@ -235,6 +239,7 @@ void GreeterWorkek::onUserAdded(const QString &user)
 {
     std::shared_ptr<NativeUser> user_ptr(new NativeUser(user));
     if (user_ptr->name() == m_ukeyUserName) {
+        qDebug() << "ukey user name: " << user_ptr->name() << ", info:" << m_ukeyUserInfo;
         user_ptr->setUserDisplayName(m_ukeyUserInfo);
     }
 
@@ -253,6 +258,13 @@ void GreeterWorkek::onUserAdded(const QString &user)
             (user_ptr->uid() == m_currentUserUid && m_model->currentUser()->name() != m_ukeyUserName)) {
             m_model->setCurrentUser(user_ptr);
             userAuthForLightdm(user_ptr);
+        }
+        if (user_ptr->name() == m_ukeyUserName) {
+            // 如果自动切了ukey用户，那么把当前用户设置为ukey用户
+            QJsonObject json;
+            json["Uid"] = static_cast<int>(user_ptr->uid());
+            json["Type"] = user_ptr->type();
+            m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
         }
     }
 

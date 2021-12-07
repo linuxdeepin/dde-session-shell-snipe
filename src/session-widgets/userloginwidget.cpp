@@ -562,6 +562,7 @@ void UserLoginWidget::initConnect()
 //设置用户名
 void UserLoginWidget::setName(const QString &name)
 {
+    qDebug() << "login widget set name:" << name << ", type:" << m_showType;
     if (m_showType != IDAndPasswordType) {
         m_name = name;
     }
