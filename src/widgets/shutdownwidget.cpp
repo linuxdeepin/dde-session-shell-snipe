@@ -50,6 +50,8 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
     onEnable("systemHibernate", enableState(GSettingWatcher::instance()->getStatus("systemHibernate")));
     onEnable("systemLock", enableState(GSettingWatcher::instance()->getStatus("systemLock")));
+    onEnable("systemReboot", enableState(GSettingWatcher::instance()->getStatus("systemReboot")));
+    onEnable("systemLogout", enableState(GSettingWatcher::instance()->getStatus("systemLogout")));
 
     std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
     int index = m_frameDataBind->registerFunction("ShutdownWidget", function);
@@ -64,6 +66,8 @@ ShutdownWidget::~ShutdownWidget()
     GSettingWatcher::instance()->erase("systemSuspend");
     GSettingWatcher::instance()->erase("systemHibernate");
     GSettingWatcher::instance()->erase("systemShutdown");
+    GSettingWatcher::instance()->erase("systemReboot");
+    GSettingWatcher::instance()->erase("systemLogout");
 }
 
 void ShutdownWidget::initConnect()
@@ -135,6 +139,10 @@ void ShutdownWidget::onEnable(const QString &gsettingsName, bool enable)
         m_requireHibernateButton->setCheckable(enable);
     } else if ("systemLock" == gsettingsName) {
         m_requireLockButton->setDisabled(!enable);
+    } else if ("systemReboot" == gsettingsName){
+        m_requireRestartButton->setDisabled(!enable);
+    } else if ("systemLogout" == gsettingsName) {
+        m_requireLogoutButton->setDisabled(!enable);
     }
 }
 
@@ -215,6 +223,7 @@ void ShutdownWidget::initUI()
     m_requireRestartButton->setAccessibleName("RequireRestartButton");
     m_requireRestartButton->setAutoExclusive(true);
     updateTr(m_requireRestartButton, "Reboot");
+    GSettingWatcher::instance()->bind("systemReboot", m_requireRestartButton);  // GSettings配置项
 
     m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
     m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
@@ -246,6 +255,7 @@ void ShutdownWidget::initUI()
     m_requireLogoutButton->setObjectName("RequireLogoutButton");
     m_requireLogoutButton->setAutoExclusive(true);
     updateTr(m_requireLogoutButton, "Log out");
+    GSettingWatcher::instance()->bind("systemLogout", m_requireLogoutButton);  // GSettings配置项
 
     m_requireSwitchUserBtn = new RoundItemButton(tr("Switch user"));
     m_requireSwitchUserBtn->setFocusPolicy(Qt::NoFocus);
@@ -391,12 +401,12 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
     //根据当前是锁屏还是关机,设置按钮可见状态,同时需要判官切换用户按钮是否允许可见
     RoundItemButton * roundItemButton = m_requireShutdownButton;
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-        m_requireLockButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemLock") != "Hiden"));
+        m_requireLockButton->setVisible(GSettingWatcher::instance()->getStatus("systemLock") != "Hiden");
         m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
         if (m_requireSwitchSystemBtn) {
             m_requireSwitchSystemBtn->setVisible(true);
         }
-        m_requireLogoutButton->setVisible(true);
+        m_requireLogoutButton->setVisible(GSettingWatcher::instance()->getStatus("systemLogout") != "Hiden");
         roundItemButton = m_requireLockButton;
     } else {
         m_requireLockButton->setVisible(false);
@@ -433,12 +443,13 @@ void ShutdownWidget::recoveryLayout()
 {
     //关机或重启确认前会隐藏所有按钮,取消重启或关机后隐藏界面时重置按钮可见状态
     //同时需要判断切换用户按钮是否允许可见
-    m_requireShutdownButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemShutdown") != "Hiden"));
-    m_requireRestartButton->setVisible(true);
+    m_requireShutdownButton->setVisible(GSettingWatcher::instance()->getStatus("systemShutdown") != "Hiden");
+    m_requireRestartButton->setVisible(GSettingWatcher::instance()->getStatus("systemReboot") != "Hiden");
     enableHibernateBtn(m_model->hasSwap());
     enableSleepBtn(m_model->canSleep());
-    m_requireLockButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemLock") != "Hiden"));
+    m_requireLockButton->setVisible(GSettingWatcher::instance()->getStatus("systemLock") != "Hiden");
     m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
+    m_requireLogoutButton->setVisible(GSettingWatcher::instance()->getStatus("systemLogout") != "Hiden");
 
     if (m_systemMonitor) {
         m_systemMonitor->setVisible(false);

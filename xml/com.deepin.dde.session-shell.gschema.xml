@@ -67,5 +67,15 @@
             <summary>change system lock status</summary>
             <description>default is Enabled</description>
         </key>
+        <key name="system-reboot" enum="com.deepin.dde.session-shell.StatusMode">
+            <default>'Enabled'</default>
+            <summary>change system reboot status</summary>
+            <description>default is Enabled</description>
+        </key>
+        <key name="system-logout" enum="com.deepin.dde.session-shell.StatusMode">
+            <default>'Enabled'</default>
+            <summary>change system logout status</summary>
+            <description>default is Enabled</description>
+        </key>
     </schema>
 </schemalist>
