@@ -518,12 +518,26 @@ void ContentWidget::shutDownFrameActions(const Actions action)
     case Restart:        m_sessionInterface->RequestReboot();        break;
     case Suspend: {
         m_model->setIsShow(false);
-        QTimer::singleShot(200, this, [ = ] {m_sessionInterface->RequestSuspend();});
+        m_sessionInterface->RequestLock();
+
+        QEventLoop loop;
+        connect(m_sessionInterface, &SessionManager::LockedChanged, &loop, &QEventLoop::quit);
+        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        m_sessionInterface->RequestSuspend();
         break;
     }
     case Hibernate: {
         m_model->setIsShow(false);
-        QTimer::singleShot(200, this, [ = ] {m_sessionInterface->RequestHibernate();});
+        m_sessionInterface->RequestLock();
+
+        QEventLoop loop;
+        connect(m_sessionInterface, &SessionManager::LockedChanged, &loop, &QEventLoop::quit);
+        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+        loop.exec();
+
+        m_sessionInterface->RequestHibernate();
         break;
     }
     case Lock:           m_sessionInterface->RequestLock();          break;
