@@ -30,6 +30,7 @@ public:
 
     struct lockLimit {
         uint lockTime; //当前的锁定时间
+        uint unlockTime; // 解锁时间
         bool isLock = false; //当前锁定状态
         bool isFinished = false;
     } m_lockLimit;
@@ -72,7 +73,7 @@ public:
     void setPath(const QString &path);
     const QString path() const { return m_path; }
 
-    void updateLockLimit(bool is_lock, uint lock_time, uint rest_second = 0);
+    void updateLockLimit(bool is_lock, uint unlock_time);
     uint lockTime() const { return m_lockLimit.lockTime; }
     bool isLock() const { return m_lockLimit.isLock; }
 

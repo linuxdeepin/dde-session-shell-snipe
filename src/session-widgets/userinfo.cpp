@@ -148,6 +148,12 @@ void User::onLockTimeOut()
         m_lockTimer->setInterval(1000 * 62);
 
     if(m_lockLimit.lockTime == 0) {
+        uint cur_time = QDateTime::currentDateTime().toTime_t();
+        qDebug() << "to unlock,  current time:" << cur_time << ", unlock time:" << m_lockLimit.unlockTime;
+        if (cur_time < m_lockLimit.unlockTime) {
+            updateLockLimit(m_lockLimit.isLock, m_lockLimit.unlockTime);
+            return;
+        }
         m_lockLimit.isLock = false;
         m_lockTimer->stop();
         emit lockLimitFinished(false);
@@ -156,8 +162,15 @@ void User::onLockTimeOut()
     emit lockChanged(m_lockLimit.isLock);
 }
 
-void User::updateLockLimit(bool is_lock, uint lock_time, uint rest_second)
+void User::updateLockLimit(bool is_lock, uint unlock_time)
 {
+    qDebug() << "update lock time, lock status:" << is_lock << ", unlock time:" << unlock_time;
+    uint cur_time = QDateTime::currentDateTime().toTime_t();
+    uint interval_time = unlock_time - cur_time;
+    uint rest_second = interval_time % 60;
+    uint lock_time = (interval_time + 59) / 60;
+
+    m_lockLimit.unlockTime = unlock_time;
     m_lockLimit.lockTime = lock_time;
     m_lockLimit.isLock = is_lock;
 
