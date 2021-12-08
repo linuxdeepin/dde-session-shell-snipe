@@ -95,6 +95,9 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
         QTimer::singleShot(100, this, [ = ] {
             emit LockContent::restoreMode();
         });
+
+        // 发生账户切换时，需要将该账户的锁屏界面窗口置顶去获取焦点和键盘，防止密码输入框焦点跟随错误
+        requestActiveWindow();
     });
 
     QTimer::singleShot(0, this, [ = ] {
@@ -206,6 +209,15 @@ void LockContent::beforeUnlockAction(bool is_finish)
     m_userLoginInfo->beforeUnlockAction(is_finish);
 }
 
+void LockContent::requestActiveWindow()
+{
+    // 在抓取键盘前, 如果锁屏界面窗口没有激活，将其窗口激活(置顶),然后再去抓取键盘
+    if (window() && !window()->isActiveWindow()){
+        activateWindow();
+        raise();
+    }
+}
+
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
     refreshLayout(status);
@@ -249,6 +261,7 @@ void LockContent::showEvent(QShowEvent *event)
 {
     onStatusChanged(m_model->currentModeState());
 
+    requestActiveWindow();
     tryGrabKeyboard();
     return QFrame::showEvent(event);
 }

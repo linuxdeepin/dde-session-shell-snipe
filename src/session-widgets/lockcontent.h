@@ -69,6 +69,7 @@ protected:
     void updateWallpaper(const QString &path);
     void refreshBackground(SessionBaseModel::ModeStatus status);
     void refreshLayout(SessionBaseModel::ModeStatus status);
+    void requestActiveWindow();
 
 protected:
     SessionBaseModel *m_model;
