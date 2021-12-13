@@ -32,7 +32,7 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
     m_sessionFrame->setModel(model);
     m_controlWidget->setSessionSwitchEnable(m_sessionFrame->sessionCount() > 1);
     // m_controlWidget->setWirelessListEnable(true);
-
+    m_controlWidget->setWirelessBtnVisible(true);
     connect(m_sessionFrame, &SessionWidget::hideFrame, this, &LockContent::restoreMode);
     connect(m_sessionFrame, &SessionWidget::sessionChanged, this, &LockContent::restoreMode);
     connect(m_controlWidget, &ControlWidget::updateWirelessDisplay, this, &LoginContent::updateWirelessDisplay);

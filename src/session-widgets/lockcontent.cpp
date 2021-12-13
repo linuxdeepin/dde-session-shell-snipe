@@ -23,6 +23,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_accountsInter(new AccountsInter(ACCOUNT_DBUS_SERVICE, ACCOUNT_DBUS_PATH, QDBusConnection::systemBus(), this))
 {
     m_controlWidget = new ControlWidget;
+    m_controlWidget->setWirelessBtnVisible(false);
     m_shutdownFrame = new ShutdownWidget;
     m_logoWidget = new LogoWidget;
 

@@ -190,6 +190,13 @@ void ControlWidget::setWirelessListEnable(const bool visible)
         m_wirelessBtn->setIcon(QIcon::fromTheme(":/img/wireless/Login-network-wirelss-no-route-symbolic.svg"));
 }
 
+void ControlWidget::setWirelessBtnVisible(const bool visible)
+{
+    if (m_wirelessBtn) {
+        m_wirelessBtn->setVisible(visible);
+    }
+}
+
 /**
  * @brief 当有WiFi设备添加或者移除时,更新登录界面WiFi按钮显示状态
  *

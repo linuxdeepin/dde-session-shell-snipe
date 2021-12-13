@@ -55,6 +55,7 @@ public slots:
     void setVirtualKBVisible(bool visible);
     void setUserSwitchEnable(const bool visible);
     void setWirelessListEnable(const bool visible);
+    void setWirelessBtnVisible(const bool visible);
     void setSessionSwitchEnable(const bool visible);
     void updateWirelessListEnabled();
     void updateWirelessBtnDisplay(const QString &path);
@@ -101,6 +102,8 @@ private:
 #ifndef SHENWEI_PLATFORM
     QPropertyAnimation *m_tipsAni = nullptr;
 #endif
+
+    void setWirelessBottenVisible();
 };
 
 #endif // CONTROLWIDGET_H
