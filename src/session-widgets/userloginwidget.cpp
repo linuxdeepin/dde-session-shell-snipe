@@ -801,6 +801,11 @@ void UserLoginWidget::updateExpiredStatus()
     }
 }
 
+void UserLoginWidget::setAccountLineEditEnable(const bool enable)
+{
+    m_accountEdit->setEnabled(enable);
+}
+
 /**
  * @brief 焦点同步
  *

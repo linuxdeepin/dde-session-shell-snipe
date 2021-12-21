@@ -57,7 +57,6 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     m_currentUserConnects << connect(user.get(), &User::displayNameChanged, m_userLoginWidget, &UserLoginWidget::updateName);
     m_currentUserConnects << connect(user.get(), &User::keyboardLayoutListChanged, m_userLoginWidget, &UserLoginWidget::updateKeyboardList, Qt::UniqueConnection);
     m_currentUserConnects << connect(user.get(), &User::keyboardLayoutChanged, m_userLoginWidget, &UserLoginWidget::updateKeyboardInfo, Qt::UniqueConnection);
-    m_currentUserConnects << connect(user.get(), &User::noPasswordLoginChanged, this, &UserLoginInfo::updateLoginContent); // TODO
 
     //需要清除上一个用户的验证状态数据
     if (m_user != nullptr && m_user != user) {
@@ -77,8 +76,8 @@ void UserLoginInfo::setUser(std::shared_ptr<User> user)
     // m_userLoginWidget->disablePassword(user.get()->isLock(), user->lockTime());
     m_userLoginWidget->updateKeyboardList(user->keyboardLayoutList());
     m_userLoginWidget->updateKeyboardInfo(user->keyboardLayout());
-
-    updateLoginContent();
+    // 当切换到已经登录过的用户时，禁用当前用户名输入框输入，防止用户修改用户名，使用错误的用户名登录
+    m_userLoginWidget->setAccountLineEditEnable(m_user->type() == User::Default);
 }
 
 void UserLoginInfo::initConnect()
@@ -179,16 +178,3 @@ void UserLoginInfo::receiveSwitchUser(std::shared_ptr<User> user)
     emit requestSwitchUser(user);
 }
 
-void UserLoginInfo::updateLoginContent()
-{
-    //在INT_MAX的切换用户时输入用户名，其他用户直接显示用户名
-    if (m_model->currentUser()->uid() == INT_MAX) {
-        // m_userLoginWidget->setWidgetShowType(UserLoginWidget::IDAndPasswordType);
-    } else {
-        if (m_user->isNoPasswordLogin()) {
-            // m_userLoginWidget->setWidgetShowType(UserLoginWidget::NoPasswordType);
-        } else {
-            // m_userLoginWidget->setWidgetShowType(UserLoginWidget::NormalType);
-        }
-    }
-}
