@@ -180,6 +180,7 @@ void FullscreenBackground::setIsBlackMode(bool is_black)
     emit contentVisibleChanged(!m_isBlackMode);
 
     update();
+    raise();
 }
 
 void FullscreenBackground::setIsHibernateMode()
