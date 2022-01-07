@@ -32,7 +32,7 @@
 #include <QApplication>
 #include <QWindow>
 #include <QDBusInterface>
-
+#include <QGSettings>
 
 LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     : FullscreenBackground(parent)
@@ -87,6 +87,14 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
             QTimer::singleShot(1000, this, [ = ] {
                 m_enablePowerOffKey = true;
             });
+
+            //待机唤醒后检查是否需要密码，若不需要密码直接隐藏锁定界面
+            if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
+                QGSettings powerSettings("com.deepin.dde.power", QByteArray(), this);
+                if (!powerSettings.get("sleep-lock").toBool()) {
+                    hide();
+                }
+            }
         }
 
         //待机休眠唤醒后将界面切换到锁屏状态
