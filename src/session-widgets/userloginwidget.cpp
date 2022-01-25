@@ -321,7 +321,7 @@ void UserLoginWidget::updateWidgetShowType(const int type)
             m_nameLabel->hide();
         }
     } else {
-        const bool visible = m_model->isServerModel() && m_model->currentType() == SessionBaseModel::LightdmType;
+        const bool visible = m_model->currentUser()->type() == User::Default && m_model->currentType() == SessionBaseModel::LightdmType;
         m_accountEdit->setVisible(visible);
         m_nameLabel->setVisible(!visible);
     }

@@ -52,6 +52,18 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [ = ] {
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::UserMode) return;
+
+        // 在服务器版本中，如果没有用户登录，当点击切换用户时，直接切回到账户输入界面
+        if (m_model->isServerModel() && m_model->loginedUserList().isEmpty()) {
+            std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
+
+            if (user_ptr) {
+                m_controlWidget->setUserSwitchEnable(false);
+                emit requestSwitchToUser(user_ptr);
+                return;
+            }
+        }
+
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
@@ -154,6 +166,11 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
     });
 
     m_logoWidget->updateLocale(locale);
+
+    // 在服务器版中，当没有用户登录时，在登录界面切换到之前登录过的用户时，显示切换用户按钮，供用户重新输入新的账户登录
+    if (m_model->isServerModel() && m_model->currentUser()->type() == User::Native && m_model->loginedUserList().isEmpty()) {
+        m_controlWidget->setUserSwitchEnable(true);
+    }
 }
 
 void LockContent::pushPasswordFrame()
