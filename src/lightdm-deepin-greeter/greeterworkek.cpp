@@ -537,6 +537,15 @@ void GreeterWorkek::checkAccount(const QString &account)
     const QString userPath = m_accountsInter->FindUserByName(account);
     if (userPath.startsWith("/")) {
         user_ptr = std::make_shared<NativeUser>(userPath);
+
+        // 对于没有设置密码的账户,直接认定为错误账户
+        if (!user_ptr->isPasswordValid()) {
+            qWarning() << userPath;
+            emit m_model->authFaildTipsMessage(tr("Wrong account"));
+            m_model->setAuthType(AuthTypeNone);
+            m_greeter->authenticate();
+            return;
+        }
     } else if (user_ptr == nullptr) {
         // 判断账户第一次登录时的有效性
         std::string str = account.toStdString();
