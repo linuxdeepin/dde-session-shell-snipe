@@ -259,27 +259,6 @@ int main(int argc, char* argv[])
     dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
     modulesLoader->start(QThread::LowestPriority);
 
-    const QString serviceName = "com.deepin.daemon.Accounts";
-    QDBusConnectionInterface *interface = QDBusConnection::systemBus().interface();
-    if (!interface->isServiceRegistered(serviceName)) {
-        qWarning() << "accounts service is not registered wait...";
-        QEventLoop eventLoop;
-
-        QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(serviceName, QDBusConnection::systemBus());
-        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceRegistered, &eventLoop, &QEventLoop::quit);
-        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceUnregistered, [ = ] (const QString &service) {
-            if (service == serviceName) {
-                qCritical() << "ERROR, accounts service unregistered, what should I do?";
-            }
-        });
-
-#ifdef  QT_DEBUG
-        QTimer::singleShot(10000, &eventLoop, &QEventLoop::quit);
-#endif
-        eventLoop.exec();
-        qDebug() << "service OK!";
-    }
-
     SessionBaseModel *model = new SessionBaseModel();
     model->setAppType(Login);
     GreeterWorker *worker = new GreeterWorker(model);
