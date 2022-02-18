@@ -435,7 +435,7 @@ void SessionBaseModel::updateLoginedUserList(const QString &list)
         m_users->value(path)->updateLoginStatus(false);
     }
     qInfo() << "Logined users:" << m_loginedUsers->keys();
-    emit loginedUserListChanged(m_loginedUsers->values());
+    emit userListLoginedChanged(m_loginedUsers->values());
 }
 
 /**

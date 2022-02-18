@@ -140,7 +140,6 @@ signals:
     void userAdded(const std::shared_ptr<User>);
     void userRemoved(const std::shared_ptr<User>);
     void userListChanged(const QList<std::shared_ptr<User>>);
-    void loginedUserListChanged(const QList<std::shared_ptr<User>>);
     /* others */
     void visibleChanged(const bool);
 

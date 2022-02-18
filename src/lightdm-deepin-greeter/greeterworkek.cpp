@@ -271,6 +271,16 @@ void GreeterWorkek::initData()
         m_model->addUser(user);
         if (DSysInfo::deepinType() == DSysInfo::DeepinServer) {
             m_model->updateCurrentUser(user);
+
+            // 服务器版，在用户注销后，在登录界面始终显示自定义登录界面
+            connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [=] {
+                qDebug() << "DBusLogin1Manager::SessionRemoved";
+
+                std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
+                if (user_ptr) {
+                    m_model->updateCurrentUser(user_ptr);
+                }
+            });
         } else {
             /* com.deepin.dde.LockService */
             m_model->updateCurrentUser(m_lockInter->CurrentUser());
