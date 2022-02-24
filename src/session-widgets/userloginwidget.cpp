@@ -823,7 +823,8 @@ void UserLoginWidget::onOtherPageFocusChanged(const QVariant &value)
  */
 void UserLoginWidget::onOtherPageSingleChanged(const QVariant &value)
 {
-    m_singleAuth->setLineEditInfo(value.toString(), AuthSingle::InputText);
+    if (m_singleAuth != nullptr)
+        m_singleAuth->setLineEditInfo(value.toString(), AuthSingle::InputText);
 }
 
 /**
@@ -845,7 +846,8 @@ void UserLoginWidget::onOtherPageAccountChanged(const QVariant &value)
  */
 void UserLoginWidget::onOtherPagePINChanged(const QVariant &value)
 {
-    m_PINAuth->setLineEditInfo(value.toString(), AuthenticationModule::InputText);
+    if (m_PINAuth != nullptr)
+        m_PINAuth->setLineEditInfo(value.toString(), AuthenticationModule::InputText);
 }
 
 /**
@@ -854,7 +856,7 @@ void UserLoginWidget::onOtherPagePINChanged(const QVariant &value)
  */
 void UserLoginWidget::onOtherPageUKeyChanged(const QVariant &value)
 {
-    if(m_ukeyAuth != nullptr)
+    if (m_ukeyAuth != nullptr)
         m_ukeyAuth->setLineEditInfo(value.toString(), AuthenticationModule::InputText);
 }
 
@@ -865,7 +867,7 @@ void UserLoginWidget::onOtherPageUKeyChanged(const QVariant &value)
  */
 void UserLoginWidget::onOtherPagePasswordChanged(const QVariant &value)
 {
-    if(m_passwordAuth != nullptr)
+    if (m_passwordAuth != nullptr)
         m_passwordAuth->setLineEditInfo(value.toString(), AuthenticationModule::InputText);
 }
 
