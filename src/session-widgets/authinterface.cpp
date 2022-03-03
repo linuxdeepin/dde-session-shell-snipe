@@ -189,7 +189,7 @@ void AuthInterface::onLoginUserListChanged(const QString &list)
     }
 
     if (m_model->isServerModel()) {
-        emit m_model->userListLoginedChanged(m_model->loginedUserList());
+        emit m_model->userListLoginedChanged();
     }
 }
 
