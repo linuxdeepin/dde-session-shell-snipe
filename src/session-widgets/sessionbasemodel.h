@@ -139,7 +139,7 @@ signals:
     void currentUserChanged(const std::shared_ptr<User>);
     void userAdded(const std::shared_ptr<User>);
     void userRemoved(const std::shared_ptr<User>);
-    void userListChanged(const QList<std::shared_ptr<User>>);
+    void userListChanged();
     /* others */
     void visibleChanged(const bool);
 
@@ -189,7 +189,7 @@ signals:
     void allowShowUserSwitchButtonChanged(bool allowShowUserSwitchButton);
     void abortConfirmChanged(bool abortConfirm);
     void lockLimitFinished();
-    void userListLoginedChanged(QList<std::shared_ptr<User>> list);
+    void userListLoginedChanged();
     void activeAuthChanged(bool active);
     void blackModeChanged(bool is_black);
     void HibernateModeChanged(bool is_hibernate); //休眠信号改变

@@ -62,7 +62,7 @@ protected:
     void updateTimeFormat(bool use24);
     void toggleVirtualKB();
     void updateVirtualKBPosition();
-    void onUserListChanged(QList<std::shared_ptr<User>> list);
+    void onUserListChanged();
     void tryGrabKeyboard();
     void hideToplevelWindow();
     void currentWorkspaceChanged();

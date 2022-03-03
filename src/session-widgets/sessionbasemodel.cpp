@@ -238,7 +238,7 @@ void SessionBaseModel::addUser(const QString &path)
     std::shared_ptr<NativeUser> user(new NativeUser(path));
     m_users->insert(path, user);
     emit userAdded(user);
-    emit userListChanged(m_users->values());
+    emit userListChanged();
 }
 
 /**
@@ -271,7 +271,7 @@ void SessionBaseModel::removeUser(const QString &path)
     const std::shared_ptr<User> user = m_users->value(path);
     m_users->remove(path);
     emit userRemoved(user);
-    emit userListChanged(m_users->values());
+    emit userListChanged();
 }
 
 /**
@@ -360,7 +360,7 @@ void SessionBaseModel::updateUserList(const QStringList &list)
     for (const QString &path : qAsConst(listTmp)) {
         m_users->remove(path);
     }
-    emit userListChanged(m_users->values());
+    emit userListChanged();
 }
 
 /**
@@ -435,7 +435,7 @@ void SessionBaseModel::updateLoginedUserList(const QString &list)
         m_users->value(path)->updateLoginStatus(false);
     }
     qInfo() << "Logined users:" << m_loginedUsers->keys();
-    emit userListLoginedChanged(m_loginedUsers->values());
+    emit userListLoginedChanged();
 }
 
 /**

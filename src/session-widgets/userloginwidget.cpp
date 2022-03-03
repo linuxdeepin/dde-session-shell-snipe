@@ -104,7 +104,9 @@ UserLoginWidget::UserLoginWidget(const SessionBaseModel *model, const WidgetType
     if (m_widgetType == LoginType) {
         m_userAvatar->setAvatarSize(UserAvatar::AvatarLargeSize);
         m_loginStateLabel->hide();
-        if (m_model->currentType() == SessionBaseModel::LightdmType && m_model->isServerModel()) {
+        // 在服务器版本或者允许手动输入账户时,切换用户...时显示账户输入框
+        if (m_model->currentType() == SessionBaseModel::LightdmType &&
+             (m_model->isServerModel() || m_model->allowShowCustomUser())) {
             m_accountEdit->show();
             m_nameLabel->hide();
         }

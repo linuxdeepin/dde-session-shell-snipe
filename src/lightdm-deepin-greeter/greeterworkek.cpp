@@ -269,7 +269,8 @@ void GreeterWorkek::initData()
         std::shared_ptr<User> user(new User());
         m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
         m_model->addUser(user);
-        if (DSysInfo::deepinType() == DSysInfo::DeepinServer) {
+        // 在服务版或允许手动输入账户时,将当前用户设置为...
+        if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
             m_model->updateCurrentUser(user);
 
             // 服务器版，在用户注销后，在登录界面始终显示自定义登录界面

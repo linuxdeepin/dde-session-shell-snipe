@@ -114,7 +114,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
     QTimer::singleShot(0, this, [ = ] {
         onCurrentUserChanged(model->currentUser());
-        onUserListChanged(model->isServerModel() ? model->loginedUserList() : model->userList());
+        onUserListChanged();
     });
 
     connect(m_wmInter, &__wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
@@ -185,9 +185,9 @@ void LockContent::pushPasswordFrame()
 
 void LockContent::pushUserFrame()
 {
-    if(m_model->isServerModel())
+    if (m_model->isServerModel())
         m_controlWidget->setUserSwitchEnable(false);
-    //设置用户列表大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
+    // 设置用户列表大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
     UserFrameList * userFrameList = m_userLoginInfo->getUserFrameList();
     userFrameList->setFixedSize(getCenterContentSize());
     userFrameList->move(0, 0);
@@ -240,7 +240,7 @@ void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
     refreshLayout(status);
 
     if(m_model->isServerModel())
-        onUserListChanged(m_model->loginedUserList());
+        onUserListChanged();
     switch (status) {
     case SessionBaseModel::ModeStatus::PasswordMode:
         pushPasswordFrame();
@@ -364,20 +364,24 @@ void LockContent::updateVirtualKBPosition()
     m_virtualKB->move(point);
 }
 
-void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
+void LockContent::onUserListChanged()
 {
+    // 配置文件中可以设置允许显示切换用户按钮
     const bool allowShowUserSwitchButton = m_model->allowShowUserSwitchButton();
+    // 配置文件中可以设置一直显示切换用户按钮
     const bool alwaysShowUserSwitchButton = m_model->alwaysShowUserSwitchButton();
     bool haveLogindUser = true;
 
+    // 只有服务器版本并且有已登录用户时,才显示登录按钮
     if (m_model->isServerModel() && m_model->currentType() == SessionBaseModel::LightdmType) {
         haveLogindUser = !m_model->loginedUserList().isEmpty();
     }
 
-    bool enable = (alwaysShowUserSwitchButton ||
-                   (allowShowUserSwitchButton &&
-                    (list.size() > (m_model->isServerModel() ? 0 : 1)))) &&
-                  haveLogindUser;
+    // 当前函数也会响应已登录用户列表改变信号,用户注销后list可能为空,原代码会将切换用户按钮隐藏不可用
+    bool enable = alwaysShowUserSwitchButton ||
+                  (allowShowUserSwitchButton &&
+                   (m_model->userList().size() > (m_model->isServerModel() ? 0 : 1)) &&
+                   haveLogindUser);
 
     m_controlWidget->setUserSwitchEnable(enable);
     m_shutdownFrame->setUserSwitchEnable(enable);
