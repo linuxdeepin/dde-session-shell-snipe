@@ -330,5 +330,7 @@ int main(int argc, char* argv[])
     checker.start();
 #endif
 
+    model->setVisible(true);
+
     return a.exec();
 }

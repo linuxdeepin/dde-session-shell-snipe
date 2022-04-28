@@ -348,7 +348,7 @@ void LockContent::mouseReleaseEvent(QMouseEvent *event)
 
     //在关机界面没有点击按钮直接点击界面时，直接隐藏关机界面
     if (m_model->currentModeState() == SessionBaseModel::ShutDownMode) {
-        hideToplevelWindow();
+        m_model->setVisible(false);
     }
 
     if (m_model->currentModeState() == SessionBaseModel::UserMode
@@ -539,16 +539,6 @@ void LockContent::tryGrabKeyboard()
 #endif
 }
 
-void LockContent::hideToplevelWindow()
-{
-    QWidgetList widgets = qApp->topLevelWidgets();
-    for (QWidget *widget : widgets) {
-        if (widget->isVisible()) {
-            widget->hide();
-        }
-    }
-}
-
 void LockContent::currentWorkspaceChanged()
 {
     QDBusPendingCall call = m_wmInter->GetCurrentWorkspaceBackgroundForMonitor(QGuiApplication::primaryScreen()->name());
@@ -610,8 +600,8 @@ void LockContent::keyPressEvent(QKeyEvent *event)
             m_model->setAbortConfirm(false);
             m_model->setPowerAction(SessionBaseModel::PowerAction::None);
         } else if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-            hideToplevelWindow();
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+            m_model->setVisible(false);
         } else if (m_model->currentModeState() == SessionBaseModel::ModeStatus::PowerMode) {
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         }

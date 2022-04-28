@@ -58,7 +58,7 @@ TEST_F(UT_LockContent, ModeTest)
     m_content->updateTimeFormat(true);
     m_content->toggleVirtualKB();
     m_content->tryGrabKeyboard();
-    m_content->hideToplevelWindow();
+    m_model->setVisible(false);
     m_content->currentWorkspaceChanged();
     m_content->updateWallpaper("/usr/share/wallpapers/deepin");
     QTest::mouseRelease(m_content, Qt::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(0, 0));

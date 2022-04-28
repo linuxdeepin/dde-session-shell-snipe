@@ -75,7 +75,6 @@ private:
     void initConnect();
     void updateTr(RoundItemButton * widget, const QString &tr);
     void onOtherPageChanged(const QVariant &value);
-    void hideToplevelWindow();
     void enterKeyPushed();
     void enableHibernateBtn(bool enable);
     void enableSleepBtn(bool enable);

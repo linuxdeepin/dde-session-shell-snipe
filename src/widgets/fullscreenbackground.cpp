@@ -96,7 +96,7 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
 
     connect(qApp, &QGuiApplication::primaryScreenChanged, this, [this](QScreen *screen) {
         qDebug() << "QGuiApplication::primaryScreenChanged:" << m_screen << screen << m_content;
-        if (m_screen && m_screen == screen && m_content) {
+        if (!m_screen.isNull() && m_screen == screen && m_content) {
             m_primaryShowFinished = true;
         }
     });
@@ -335,7 +335,7 @@ void FullscreenBackground::resizeEvent(QResizeEvent *event)
  */
 void FullscreenBackground::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_model->visible()) {
+    if (m_model->visible() && m_enableEnterEvent) {
         m_content->show();
         emit contentVisibleChanged(true);
     }
@@ -394,15 +394,15 @@ const QPixmap FullscreenBackground::pixmapHandle(const QPixmap &pixmap)
     return pix;
 }
 
-void FullscreenBackground::updateScreen(QScreen *screen)
+void FullscreenBackground::updateScreen(QPointer<QScreen> screen)
 {
     if (screen == m_screen)
         return;
 
-    if (m_screen)
+    if (!m_screen.isNull())
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
 
-    if (screen) {
+    if (!screen.isNull()) {
         connect(screen, &QScreen::geometryChanged, [=](){
             qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
         });
@@ -410,13 +410,19 @@ void FullscreenBackground::updateScreen(QScreen *screen)
     }
 
     m_screen = screen;
+
+    updateGeometry();
 }
 
 void FullscreenBackground::updateGeometry()
 {
-    setGeometry(m_screen->geometry());
-    qInfo() << "set background geometry:" << m_screen << m_screen->geometry() << "lockFrame:"
-            << this  << " lockframe geometry:" << this->geometry();
+    qInfo() << "set background screen:" << m_screen;
+
+    if (!m_screen.isNull()) {
+        setGeometry(m_screen->geometry());
+        qInfo() << "set background geometry:" << m_screen << m_screen->geometry() << "lockFrame:"
+                << this  << " lockframe geometry:" << this->geometry();
+    }
 }
 
 /********************************************************

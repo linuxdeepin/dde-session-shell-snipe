@@ -74,7 +74,6 @@ protected:
     void updateVirtualKBPosition();
     void onUserListChanged(QList<std::shared_ptr<User>> list);
     void tryGrabKeyboard();
-    void hideToplevelWindow();
     void currentWorkspaceChanged();
     void updateWallpaper(const QString &path);
     void refreshBackground(SessionBaseModel::ModeStatus status);
