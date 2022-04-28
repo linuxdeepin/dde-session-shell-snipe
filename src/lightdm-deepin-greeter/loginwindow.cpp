@@ -48,6 +48,7 @@ LoginWindow::LoginWindow(SessionBaseModel *const model, QWidget *parent)
 #endif
     });
 
+    connect(model, &SessionBaseModel::visibleChanged, this, &LoginWindow::setVisible);
     connect(model, &SessionBaseModel::authFinished, this, [ = ](bool successful) {
         setEnterEnable(!successful);
         if (successful)
@@ -76,7 +77,6 @@ void LoginWindow::showEvent(QShowEvent *event)
 
     //greeter界面显示时，需要调用虚拟键盘
     m_model->setHasVirtualKB(true);
-    m_model->setVisible(true);
 }
 
 void LoginWindow::hideEvent(QHideEvent *event)
@@ -85,5 +85,4 @@ void LoginWindow::hideEvent(QHideEvent *event)
 
     //greeter界面隐藏时，需要结束虚拟键盘
     m_model->setHasVirtualKB(false);
-    m_model->setVisible(false);
 }

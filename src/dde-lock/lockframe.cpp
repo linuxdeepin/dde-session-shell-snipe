@@ -85,9 +85,11 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     connect(m_lockContent, &LockContent::requestStartAuthentication, this, &LockFrame::requestStartAuthentication);
     connect(m_lockContent, &LockContent::sendTokenToAuth, this, &LockFrame::sendTokenToAuth);
     connect(m_lockContent, &LockContent::requestEndAuthentication, this, &LockFrame::requestEndAuthentication);
-    connect(m_lockContent, &LockContent::requestLockFrameHide, this, &LockFrame::hide);
+    connect(m_lockContent, &LockContent::requestLockFrameHide, this, [this] {
+        m_model->setVisible(false);
+    });
     connect(m_lockContent, &LockContent::authFinished, this, [this] {
-        hide();
+        m_model->setVisible(false);
         emit requestEnableHotzone(true);
         emit authFinished();
     });
@@ -116,7 +118,7 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
             if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
                 QGSettings powerSettings("com.deepin.dde.power", QByteArray(), this);
                 if (!powerSettings.get("sleep-lock").toBool()) {
-                    hide();
+                    m_model->setVisible(false);
                 }
             }
         }
@@ -125,7 +127,7 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     connect(model, &SessionBaseModel::authFinished, this, [this](bool success) {
         if (success) {
             Q_EMIT requestEnableHotzone(true);
-            hide();
+            m_model->setVisible(false);
         }
     });
 
@@ -243,20 +245,20 @@ void LockFrame::showUserList()
 {
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
     QTimer::singleShot(10, this, [ = ] {
-        this->show();
+        m_model->setVisible(true);
     });
 }
 
 void LockFrame::showLockScreen()
 {
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-    show();
+    m_model->setVisible(true);
 }
 
 void LockFrame::showShutdown()
 {
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
-    show();
+    m_model->setVisible(true);
 }
 
 void LockFrame::shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm)
@@ -317,7 +319,6 @@ void LockFrame::showEvent(QShowEvent *event)
 {
     emit requestEnableHotzone(false);
 
-    m_model->setVisible(true);
     if (m_autoExitTimer)
         m_autoExitTimer->stop();
 
@@ -328,7 +329,6 @@ void LockFrame::hideEvent(QHideEvent *event)
 {
     emit requestEnableHotzone(true);
 
-    m_model->setVisible(false);
     if (m_autoExitTimer)
         m_autoExitTimer->start();
 

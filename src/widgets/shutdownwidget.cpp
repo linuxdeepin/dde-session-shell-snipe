@@ -165,16 +165,6 @@ void ShutdownWidget::onOtherPageChanged(const QVariant &value)
     m_currentSelectedBtn->updateState(RoundItemButton::Checked);
 }
 
-void ShutdownWidget::hideToplevelWindow()
-{
-    QWidgetList widgets = qApp->topLevelWidgets();
-    for (QWidget *widget : widgets) {
-        if (widget->isVisible()) {
-            widget->hide();
-        }
-    }
-}
-
 void ShutdownWidget::enterKeyPushed()
 {
     if (m_systemMonitor && m_systemMonitor->state() == SystemMonitor::Enter) {
@@ -449,7 +439,7 @@ void ShutdownWidget::runSystemMonitor()
         m_systemMonitor->setState(SystemMonitor::Leave);
     }
 
-    hideToplevelWindow();
+    m_model->setVisible(false);
 }
 
 void ShutdownWidget::recoveryLayout()

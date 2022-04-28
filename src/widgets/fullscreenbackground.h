@@ -75,7 +75,7 @@ private:
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     const QPixmap pixmapHandle(const QPixmap &pixmap);
-    void updateScreen(QScreen *screen);
+    void updateScreen(QPointer<QScreen> screen);
     void updateGeometry();
     bool isPicture(const QString &file);
     QString getLocalFile(const QString &file);
