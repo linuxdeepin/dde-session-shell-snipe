@@ -49,6 +49,20 @@ void MultiScreenManager::startRaiseContentFrame()
     m_raiseContentFrameTimer->start();
 }
 
+bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
+{
+    // 捕获lockframe窗口显示事件
+    if (event->type() == QEvent::Show) {
+        QWidget *widget = qobject_cast<QWidget *>(watched);
+        if (widget && m_frames.values().contains(widget)) {
+            // 显示的时候获取窗口位置信息（调试）
+            QTimer::singleShot(0, this, &MultiScreenManager::checkLockFrameLocation);
+        }
+    }
+
+    return QObject::eventFilter(watched, event);
+}
+
 void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 {
     qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
@@ -70,6 +84,7 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
     // 如果指针为空，则不加入Map中，并析构创建的全屏窗口。
     if (w && !screen.isNull()) {
         m_frames[screen] = w;
+        w->installEventFilter(this);
     } else if (w) {
         w->deleteLater();
     }
@@ -134,6 +149,16 @@ void MultiScreenManager::onDisplayModeChanged(const QString &)
         for (QScreen *screen : qApp->screens()) {
             if (!m_frames[screen])
                 onScreenAdded(screen);
+        }
+    }
+}
+
+void MultiScreenManager::checkLockFrameLocation()
+{
+    for (QScreen *screen : m_frames.keys()) {
+        if (screen) {
+            qInfo() << Q_FUNC_INFO << ", screen:" << screen << " location:" << screen->geometry()
+                       << " lockframe:" << m_frames.value(screen) << " location:" << m_frames.value(screen)->geometry();
         }
     }
 }
