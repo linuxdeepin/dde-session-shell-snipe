@@ -173,6 +173,8 @@ void FullscreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
     if (screen.isNull())
         return;
 
+    qInfo() << Q_FUNC_INFO << ", init screen:" << screen << " screen geometry:"
+            << screen->geometry() << " lockframe:" << this;
     QScreen *primary_screen = QGuiApplication::primaryScreen();
     if (primary_screen == screen && isVisible) {
         m_content->show();
@@ -361,23 +363,8 @@ void FullscreenBackground::showEvent(QShowEvent *event)
     if (m_model->isUseWayland()) {
         Q_EMIT requestDisableGlobalShortcutsForWayland(true);
     }
-    if (QWindow *w = windowHandle()) {
-        if (m_screen) {
-            if (w->screen() != m_screen) {
-                w->setScreen(m_screen);
-            }
 
-            // 更新窗口位置和大小
-            updateGeometry();
-        } else {
-            updateScreen(w->screen());
-        }
-
-        if (!m_model->isUseWayland()) {
-            connect(w, &QWindow::screenChanged, this, &FullscreenBackground::updateScreen, Qt::DirectConnection);
-        }
-    }
-
+    updateGeometry();
     return QWidget::showEvent(event);
 }
 
@@ -415,18 +402,21 @@ void FullscreenBackground::updateScreen(QScreen *screen)
     if (m_screen)
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
 
-    if (screen)
+    if (screen) {
+        connect(screen, &QScreen::geometryChanged, [=](){
+            qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
+        });
         connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+    }
 
     m_screen = screen;
-    if (m_screen)
-        updateGeometry();
 }
 
 void FullscreenBackground::updateGeometry()
 {
-    qInfo() << "set background geometry:" << m_screen << m_screen->geometry();
     setGeometry(m_screen->geometry());
+    qInfo() << "set background geometry:" << m_screen << m_screen->geometry() << "lockFrame:"
+            << this  << " lockframe geometry:" << this->geometry();
 }
 
 /********************************************************

@@ -23,6 +23,9 @@ public:
     void register_for_mutil_screen(std::function<QWidget* (QScreen *, int)> function);
     void startRaiseContentFrame();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private:
     void onScreenAdded(QPointer<QScreen> screen);
     void onScreenRemoved(QPointer<QScreen> screen);
@@ -31,6 +34,7 @@ private:
 
 private slots:
     void onDisplayModeChanged(const QString &);
+    void checkLockFrameLocation();
 
 private:
     std::function<QWidget* (QPointer<QScreen> , int)> m_registerFunction;
