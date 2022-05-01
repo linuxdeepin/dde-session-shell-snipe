@@ -6,5 +6,6 @@ export XDG_DATA_DIRS=/usr/share
 export GDK_BACKEND=x11
 export QT_QPA_PLATFORM=wayland
 export KWIN_COMPOSE=O2ES
+export QT_WAYLAND_SHELL_INTEGRATION=kwayland-shell
 
 /usr/bin/kwin_wayland --drm --no-lockscreen /etc/deepin/greeters.d/lightdm-deepin-greeter
