@@ -232,11 +232,6 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Greeter_LIBRARIES}
 )
 
-# debug模式下增加示例demo的编译
-if ((${CMAKE_BUILD_TYPE} MATCHES "Debug"))
-    add_subdirectory(modules)
-endif ()
-
 add_subdirectory(tests)
 
 # Install settings
