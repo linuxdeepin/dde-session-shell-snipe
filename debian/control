@@ -25,8 +25,7 @@ Build-Depends: debhelper (>= 8.0.0), pkg-config,
  libgtest-dev,
  libx11-xcb-dev,
  libssl-dev,
- libdtkcore-dev,
- qtwebengine5-dev
+ libdtkcore-dev
 Standards-Version: 3.9.4
 Homepage: http://www.deepin.org/
 
