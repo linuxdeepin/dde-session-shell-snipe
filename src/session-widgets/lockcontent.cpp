@@ -297,8 +297,10 @@ void LockContent::onNewConnection()
         connect(socket, &QLocalSocket::readyRead, this, [socket, this] {
             auto content = socket->readAll();
             if (content == "close") {
-                m_sfaWidget->syncPasswordResetPasswordVisibleChanged(QVariant::fromValue(true));
-                m_sfaWidget->syncResetPasswordUI();
+                if (m_authWidget) {
+                    m_authWidget->syncPasswordResetPasswordVisibleChanged(QVariant::fromValue(true));
+                    m_authWidget->syncResetPasswordUI();
+                }
             }
         });
     }
