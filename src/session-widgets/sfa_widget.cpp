@@ -199,6 +199,7 @@ void SFAWidget::setAuthType(const int type)
         m_frameDataBind->clearValue("SFCustomAuthMsg");
     }
 
+    m_chooseAuthButtonBox->setEnabled(true);
     const int count = m_authButtons.values().size();
     if (count > 0) {
         m_chooseAuthButtonBox->setButtonList(m_authButtons.values(), true);
@@ -765,6 +766,11 @@ void SFAWidget::checkAuthResult(const int type, const int state)
         m_user->setLastAuthType(type);
         m_lockButton->setEnabled(true);
         m_lockButton->setFocus();
+
+        if (type == AT_Face || type == AT_Iris) {
+            // 禁止切换其他认证方式
+            m_chooseAuthButtonBox->setEnabled(false);
+        }
     }
 }
 
