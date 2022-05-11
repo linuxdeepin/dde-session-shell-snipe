@@ -130,7 +130,6 @@ public slots:
     void setKeyboardType(const QString& str);
     void setKeyboardList(const QStringList& str);
     void onItemClicked(const QString& str);
-    void resizeArrowWidget();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;

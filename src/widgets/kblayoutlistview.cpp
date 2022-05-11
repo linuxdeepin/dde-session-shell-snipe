@@ -153,9 +153,3 @@ void KBLayoutListView::addItem(const QString &name)
     item->setActionList(Qt::Edge::LeftEdge, { leftAction });
     m_buttonModel->appendRow(item);
 }
-
-void KBLayoutListView::resizeEvent(QResizeEvent *event)
-{
-    emit sizeChange();
-    DListView::resizeEvent(event);
-}

@@ -47,7 +47,6 @@ public:
 
 signals:
     void itemClicked(const QString &str);
-    void sizeChange();
 
 public slots:
     void onItemClick(const QModelIndex &index);
@@ -56,7 +55,6 @@ private:
     void initUI();
     void updateSelectState(const QString &name);
     void addItem(const QString &name);
-    void resizeEvent(QResizeEvent *event) override;
 
 private:
     QStringList m_buttons;
