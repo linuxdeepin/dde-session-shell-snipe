@@ -114,6 +114,7 @@ void ControlWidget::initKeyboardLayoutList()
     m_kbLayoutListView->setMinimumWidth(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH);
     m_kbLayoutListView->setMaximumSize(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH, DDESESSIONCC::LAYOUTBUTTON_HEIGHT * 7);
     m_kbLayoutListView->setFocusPolicy(Qt::NoFocus);
+    m_kbLayoutListView->setVisible(false);
 
     const QStringList languageList = language.split(";");
     if (!languageList.isEmpty())
@@ -132,14 +133,13 @@ void ControlWidget::initKeyboardLayoutList()
     m_arrowRectWidget->setMinimumWidth(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH);
     m_arrowRectWidget->setMaximumSize(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH, DDESESSIONCC::LAYOUTBUTTON_HEIGHT * 7);
     m_arrowRectWidget->setFocusPolicy(Qt::NoFocus);
+    m_arrowRectWidget->setBackgroundColor(QColor(235, 235, 235, int(0.05 * 255)));
 
     QPalette pal = m_arrowRectWidget->palette();
     pal.setColor(DPalette::Inactive, DPalette::Base, QColor(235, 235, 235, int(0.05 * 255)));
     setPalette(pal);
 
-    m_arrowRectWidget->setContent(m_kbLayoutListView);
     connect(m_kbLayoutListView, &KBLayoutListView::itemClicked, this, &ControlWidget::onItemClicked);
-    connect(m_kbLayoutListView, &KBLayoutListView::sizeChange, this, &ControlWidget::resizeArrowWidget);
 }
 
 void ControlWidget::setVirtualKBVisible(bool visible)
@@ -539,9 +539,14 @@ void ControlWidget::setKBLayoutVisible()
     if (!layoutButton)
         return;
 
-    // 算上三角形的高度
-    QPoint pos = mapToGlobal(layoutButton->pos()) - QPoint((m_kbLayoutListView->width() - layoutButton->width())/2, m_kbLayoutListView->height() + 10);
-    m_arrowRectWidget->setGeometry(QRect(pos, m_kbLayoutListView->size() + QSize(0, 10)));
+    if (!m_arrowRectWidget->getContent()) {
+        m_arrowRectWidget->setContent(m_kbLayoutListView);
+    }
+
+    m_arrowRectWidget->resize(m_kbLayoutListView->size() + QSize(0, 10));
+
+    QPoint pos = QPoint(mapToGlobal(layoutButton->pos()).x() + layoutButton->width() / 2, mapToGlobal(layoutButton->pos()).y());
+    m_arrowRectWidget->move(pos.x(), pos.y());
     m_arrowRectWidget->setVisible(!m_arrowRectWidget->isVisible());
 }
 
@@ -582,12 +587,6 @@ void ControlWidget::onItemClicked(const QString &str)
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
     m_arrowRectWidget->hide();
     m_curUser->setKeyboardLayout(str);
-}
-
-void ControlWidget::resizeArrowWidget()
-{
-    if (m_arrowRectWidget)
-        m_arrowRectWidget->setFixedSize(m_kbLayoutListView->size() + QSize(0, 10));
 }
 
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
