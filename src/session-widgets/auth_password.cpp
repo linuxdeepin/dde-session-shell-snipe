@@ -298,7 +298,7 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
     m_passwordHintBtn->setVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
         setAuthState(AS_Locked, "Locked");
-        if (this->isVisible() && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999) {
+        if (this->isVisible() && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();
