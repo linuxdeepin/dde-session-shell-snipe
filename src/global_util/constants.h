@@ -26,6 +26,8 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <DSysInfo>
+
 #include <QString>
 #include <QStringList>
 
@@ -74,6 +76,12 @@ enum AuthFactorType {
     SingleAuthFactor,
     MultiAuthFactor,
 };
+
+using namespace Dtk::Core;
+
+const DSysInfo::UosEdition UosEdition = DSysInfo::uosEditionType();
+const bool IsCommunitySystem = (DSysInfo::UosCommunity == UosEdition);//是否是社区版
+
 }
 
 
