@@ -33,6 +33,7 @@
 #include <QPainterPath>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QButtonGroup>
 
 const static QSize UserAvatarSize = QSize(64, 64);
 const static QSize UserListItemSize = QSize(180, 80);
@@ -89,7 +90,13 @@ MultiUsersWarningView::MultiUsersWarningView(SessionBaseModel::PowerAction inhib
     m_vLayout->addSpacing(40);
     m_vLayout->addLayout(btnLayout);
     m_vLayout->addStretch();
+
+    QButtonGroup *btnGroup = new QButtonGroup(this);
+    btnGroup->setExclusive(true);
+    btnGroup->addButton(m_cancelBtn);
+    btnGroup->addButton(m_actionBtn);
     m_cancelBtn->setCheckable(true);
+    m_actionBtn->setCheckable(true);
 
     m_cancelBtn->setChecked(true);
     m_currentBtn = m_cancelBtn;
