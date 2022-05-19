@@ -132,7 +132,7 @@ void LockContent::initConnections()
         isMFA ? initMFAWidget() : initSFAWidget();
         // 当前中间窗口为空或者中间窗口就是验证窗口的时候显示验证窗口
         if (!m_centerWidget || m_centerWidget == m_authWidget)
-            setCenterContent(m_authWidget, Qt::AlignTop, m_authWidget->getTopSpacing());
+            setCenterContent(m_authWidget, 0, Qt::AlignTop, m_authWidget->getTopSpacing());
     });
 
     connect(m_wmInter, &__wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
@@ -248,7 +248,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
 void LockContent::pushPasswordFrame()
 {
-    setCenterContent(m_authWidget, Qt::AlignTop, m_authWidget->getTopSpacing());
+    setCenterContent(m_authWidget, 0, Qt::AlignTop, m_authWidget->getTopSpacing());
 
     m_authWidget->syncResetPasswordUI();
 }
@@ -264,17 +264,14 @@ void LockContent::pushUserFrame()
 
 void LockContent::pushConfirmFrame()
 {
-    setCenterContent(m_authWidget, Qt::AlignTop, m_authWidget->getTopSpacing());
+    setCenterContent(m_authWidget, 0, Qt::AlignTop, m_authWidget->getTopSpacing());
 }
 
 void LockContent::pushShutdownFrame()
 {
     //设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
-    QSize size = getCenterContentSize();
-    m_shutdownFrame->setFixedSize(size);
-    m_shutdownFrame->move(0, 0);
     m_shutdownFrame->onStatusChanged(m_model->currentModeState());
-    setCenterContent(m_shutdownFrame);
+    setCenterContent(m_shutdownFrame, 2);
 }
 
 void LockContent::setMPRISEnable(const bool state)
@@ -392,7 +389,13 @@ void LockContent::resizeEvent(QResizeEvent *event)
         m_centerVLayout->update();
     }
 
-    return SessionBaseWindow::resizeEvent(event);
+    SessionBaseWindow::resizeEvent(event);
+
+    // 在SessionBaseWindow中重新计算上下边距后，需要重新设置关机界面大小，避免显示时自动调整大小造成界面移动
+    if (m_shutdownFrame == m_centerWidget) {
+        const QSize size = getCenterContentSize();
+        m_shutdownFrame->setFixedSize(size);
+    }
 }
 
 void LockContent::restoreMode()

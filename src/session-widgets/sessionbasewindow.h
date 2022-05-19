@@ -14,7 +14,7 @@ public:
     virtual void setLeftBottomWidget(QWidget *const widget) final;
     virtual void setCenterBottomWidget(QWidget *const widget) final;
     virtual void setRightBottomWidget(QWidget *const widget) final;
-    virtual void setCenterContent(QWidget *const widget, Qt::AlignmentFlag align = Qt::AlignCenter, int spacerHeight = 0) final;
+    virtual void setCenterContent(QWidget *const widget, int stretch = 0, Qt::Alignment align = Qt::Alignment(), int spacerHeight = 0) final;
     virtual void setCenterTopWidget(QWidget *const widget) final;
     QSize getCenterContentSize();
 
