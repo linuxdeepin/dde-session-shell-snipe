@@ -206,6 +206,8 @@ void ShutdownWidget::enableSleepBtn(bool enable)
 void ShutdownWidget::initUI()
 {
     setFocusPolicy(Qt::StrongFocus);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
     m_requireShutdownButton = new RoundItemButton(this);
     m_requireShutdownButton->setFocusPolicy(Qt::NoFocus);
     m_requireShutdownButton->setObjectName("RequireShutDownButton");
@@ -300,13 +302,13 @@ void ShutdownWidget::initUI()
     m_shutdownFrame = new QFrame;
     m_shutdownFrame->setAccessibleName("ShutdownFrame");
     m_shutdownFrame->setLayout(m_shutdownLayout);
+    m_shutdownFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     m_actionLayout = new QVBoxLayout;
     m_actionLayout->setMargin(0);
     m_actionLayout->setSpacing(10);
     m_actionLayout->addStretch();
     m_actionLayout->addWidget(m_shutdownFrame);
-    m_actionLayout->setAlignment(m_shutdownFrame, Qt::AlignCenter);
     m_actionLayout->addStretch();
 
     if (findValueByQSettings<bool>(DDESESSIONCC::session_ui_configs, "Shutdown", "enableSystemMonitor", true)) {
@@ -322,9 +324,9 @@ void ShutdownWidget::initUI()
         }
     }
 
-    m_actionFrame = new QFrame;
+    m_actionFrame = new QFrame(this);
     m_actionFrame->setAccessibleName("ActionFrame");
-    m_actionFrame->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_actionFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_actionFrame->setFocusPolicy(Qt::NoFocus);
     m_actionFrame->setLayout(m_actionLayout);
 
@@ -332,7 +334,6 @@ void ShutdownWidget::initUI()
     m_mainLayout->setMargin(0);
     m_mainLayout->setSpacing(0);
     m_mainLayout->addWidget(m_actionFrame);
-    m_mainLayout->setAlignment(m_actionFrame, Qt::AlignCenter);
     setLayout(m_mainLayout);
 
     updateStyle(":/skin/requireshutdown.qss", this);
