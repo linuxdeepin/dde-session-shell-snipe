@@ -503,7 +503,7 @@ void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
 void LockContent::tryGrabKeyboard()
 {
 #ifndef QT_DEBUG
-    if (m_model->isUseWayland()) {
+    if (m_model->isUseWayland() || !isVisible()) {
         return;
     }
 
