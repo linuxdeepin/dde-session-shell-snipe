@@ -271,6 +271,8 @@ void LockContent::pushShutdownFrame()
 {
     //设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
     m_shutdownFrame->onStatusChanged(m_model->currentModeState());
+    const QSize size = getCenterContentSize();
+    m_shutdownFrame->setFixedSize(size);
     setCenterContent(m_shutdownFrame, 2);
 }
 
