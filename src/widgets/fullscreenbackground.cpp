@@ -301,11 +301,13 @@ void FullscreenBackground::enterEvent(QEvent *event)
     if (m_primaryShowFinished && m_enableEnterEvent && m_model->visible()) {
         m_content->show();
         emit contentVisibleChanged(true);
+        // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
+        activateWindow();
     }
 
     // 锁屏截图之后 activewindow 不是锁屏了，此时发现不是 activewindow 主动尝试激活
     if (!isActiveWindow() && m_content && m_content->isVisible())
-         tryActiveWindow();
+        tryActiveWindow();
 
     return QWidget::enterEvent(event);
 }
