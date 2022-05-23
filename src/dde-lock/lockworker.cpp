@@ -617,6 +617,14 @@ void LockWorker::endAuthentication(const QString &account, const int authType)
     }
 }
 
+void LockWorker::onEndAuthentication(const QString &account, const int authType)
+{
+    endAuthentication(account, authType);
+    if (AT_All == authType) {
+        destoryAuthentication(account);
+    }
+}
+
 void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message)
 {
     Q_UNUSED(pid)
