@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
         });
         QObject::connect(lockFrame, &LockFrame::requestStartAuthentication, worker, &LockWorker::startAuthentication);
         QObject::connect(lockFrame, &LockFrame::sendTokenToAuth, worker, &LockWorker::sendTokenToAuth);
-        QObject::connect(lockFrame, &LockFrame::requestEndAuthentication, worker, &LockWorker::endAuthentication);
+        QObject::connect(lockFrame, &LockFrame::requestEndAuthentication, worker, &LockWorker::onEndAuthentication);
         QObject::connect(lockFrame, &LockFrame::authFinished, worker, &LockWorker::onAuthFinished);
         if (model->isUseWayland()) {
             QObject::connect(lockFrame, &LockFrame::requestDisableGlobalShortcutsForWayland, worker, &LockWorker::disableGlobalShortcutsForWayland);
