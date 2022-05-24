@@ -55,6 +55,7 @@ target_link_libraries(${BIN_NAME} PRIVATE
     ${Qt5Concurrent_LIBRARIES}
     ${Qt5X11Extras_LIBRARIES}
     ${Qt5Network_LIBRARIES}
+    KF5::WaylandClient
     -lpthread
     -lm
 )

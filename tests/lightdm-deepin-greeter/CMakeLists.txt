@@ -60,6 +60,7 @@ target_link_libraries(${BIN_NAME} PRIVATE
     ${Greeter_LIBRARIES}
     ${Qt5Test_LIBRARIES}
     ${GTEST_LIBRARIES}
+    KF5::WaylandClient
     -lpthread
     -lm
 )

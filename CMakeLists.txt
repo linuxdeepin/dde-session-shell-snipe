@@ -45,6 +45,7 @@ find_package(PkgConfig REQUIRED)
 find_package(DtkWidget REQUIRED)
 find_package(DtkCMake  REQUIRED)
 find_package(DtkCore REQUIRED)
+find_package(KF5Wayland REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
     Widgets
@@ -169,6 +170,7 @@ target_link_libraries(dde-lock PRIVATE
     ${Qt5DBus_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
+    KF5::WaylandClient
 )
 
 set(GREETER_SRCS
@@ -230,6 +232,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
     ${Greeter_LIBRARIES}
+    KF5::WaylandClient
 )
 
 add_subdirectory(tests)

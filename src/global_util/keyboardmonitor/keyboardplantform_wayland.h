@@ -24,23 +24,45 @@
 
 #include "keyboardplatform.h"
 
+class QThread;
+
+namespace KWayland
+{
+namespace Client
+{
+    class Registry;
+    class ConnectionThread;
+    class DDEKeyboard;
+    class DDESeat;
+    class EventQueue;
+}
+}
+using namespace KWayland::Client;
 class KeyboardPlantformWayland : public KeyBoardPlatform
 {
     Q_OBJECT
 
 public:
     KeyboardPlantformWayland(QObject *parent = nullptr);
+    virtual ~KeyboardPlantformWayland();
 
     bool isCapslockOn() override;
     bool isNumlockOn() override;
     bool setNumlockStatus(const bool &on) override;
 
-signals:
-    void capslockStatusChanged(bool on);
-    void numlockStatusChanged(bool on);
-
 protected:
     void run() Q_DECL_OVERRIDE;
+
+private:
+    void setupRegistry(Registry *registry);
+
+private:
+    QThread *m_connectionThread;
+    ConnectionThread *m_connectionThreadObject;
+    DDEKeyboard *m_ddeKeyboard;
+    DDESeat *m_ddeSeat;
+    EventQueue *m_eventQueue;
+    bool m_capsLock;
 };
 
 #endif // KEYBOARDPLANTFORM_WAYLAND_H
