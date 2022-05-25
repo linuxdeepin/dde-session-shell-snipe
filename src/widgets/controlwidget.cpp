@@ -134,6 +134,7 @@ void ControlWidget::initKeyboardLayoutList()
     m_arrowRectWidget->setMaximumSize(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH, DDESESSIONCC::LAYOUTBUTTON_HEIGHT * 7);
     m_arrowRectWidget->setFocusPolicy(Qt::NoFocus);
     m_arrowRectWidget->setBackgroundColor(QColor(235, 235, 235, int(0.05 * 255)));
+    m_arrowRectWidget->installEventFilter(this);
 
     QPalette pal = m_arrowRectWidget->palette();
     pal.setColor(DPalette::Inactive, DPalette::Base, QColor(235, 235, 235, int(0.05 * 255)));
@@ -611,6 +612,11 @@ bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
             m_index = m_btnList.indexOf(btn);
         }
     }
+
+    if (watched == m_arrowRectWidget && event->type() == QEvent::Hide) {
+        emit notifyKeyboardLayoutHidden();
+    }
+
 #else
     Q_UNUSED(watched);
     Q_UNUSED(event);

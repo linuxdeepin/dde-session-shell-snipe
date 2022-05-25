@@ -116,6 +116,7 @@ signals:
     void requestSwitchVirtualKB();
     void requestKeyboardLayout(const QPoint &pos);
     void requestShowModule(const QString &name);
+    void notifyKeyboardLayoutHidden();
 
 public slots:
     void addModule(dss::module::BaseModuleInterface *module);

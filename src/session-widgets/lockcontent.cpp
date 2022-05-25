@@ -137,6 +137,12 @@ void LockContent::initConnections()
 
     connect(m_wmInter, &__wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
     connect(m_localServer, &QLocalServer::newConnection, this, &LockContent::onNewConnection);
+    connect(m_controlWidget, &ControlWidget::notifyKeyboardLayoutHidden, this, [this]{
+        if (!m_model->isUseWayland() && isVisible() && window()->windowHandle()) {
+            qDebug() << "Grab keyboard after keyboard layout hidden";
+            window()->windowHandle()->setKeyboardGrabEnabled(true);
+        }
+    });
 }
 
 /**
