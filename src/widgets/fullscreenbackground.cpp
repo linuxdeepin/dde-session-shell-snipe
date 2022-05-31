@@ -67,10 +67,10 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
     if (!m_model->isUseWayland()) {
         setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
     } else {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Window);
+        setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::Window);
 
         setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
-        windowHandle()->setProperty("_d_dwayland_window-type", "standAlone"); // 禁止移动
+        windowHandle()->setProperty("_d_dwayland_window-type", "override"); // 禁止移动
     }
 #endif
     frameList.append(this);
