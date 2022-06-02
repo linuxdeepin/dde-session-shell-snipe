@@ -93,6 +93,8 @@ void KeyboardPlantformWayland::setupRegistry(Registry *registry)
     connect(registry, &Registry::ddeSeatAnnounced, this, [this, registry](quint32 name, quint32 version) {
         m_ddeSeat = registry->createDDESeat(name, version, this);
         if (m_ddeSeat) {
+            // 先断开连接在重新连接，防止多次创建之后，导致重复连接
+            disconnect(m_ddeKeyboard, &DDEKeyboard::keyChanged, this, nullptr);
             m_ddeKeyboard = m_ddeSeat->createDDEKeyboard(this);
             connect(m_ddeKeyboard, &DDEKeyboard::keyChanged, this, [this] (quint32 key, KWayland::Client::DDEKeyboard::KeyState state, quint32 time) {
                 if (key == Key_CapsLock && int(state) == 1) {
