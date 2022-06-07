@@ -98,6 +98,7 @@ public:
 
     virtual void setKeyboardLayout(const QString &keyboard) { Q_UNUSED(keyboard) }
     virtual void updatePasswordExpiredInfo() { }
+    virtual void updatePasswordExpiredState(ExpiredState state, int dayLeft);
 
 signals:
     void avatarChanged(const QString &);

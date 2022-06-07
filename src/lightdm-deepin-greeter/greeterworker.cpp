@@ -10,6 +10,7 @@
 
 #include <com_deepin_system_systempower.h>
 #include <pwd.h>
+#include </usr/include/shadow.h>
 
 #define LOCKSERVICE_PATH "/com/deepin/dde/LockService"
 #define LOCKSERVICE_NAME "com.deepin.dde.LockService"
@@ -381,7 +382,49 @@ void GreeterWorker::createAuthentication(const QString &account)
     std::shared_ptr<User> user_ptr = m_model->findUserByName(account);
     if (user_ptr) {
         user_ptr->updatePasswordExpiredInfo();
+    } else {
+        // 域管账户第一次登录时，后端还未提供账户信息，获取不到用户密码过期数据
+        // 需要通过glibc接口读取
+        std::string str = account.toStdString();
+        spwd *pw = getspnam(str.c_str());
+
+        if (pw) {
+            const int secondsPerDay = 60 * 60 * 24;
+
+            long int spMax = pw->sp_max;
+            long int spWarn = pw->sp_warn;
+            long int spLastChg = pw->sp_lstchg;
+
+            User::ExpiredState state = User::ExpiredNormal;
+            int days = 0;
+
+            if (spLastChg == 0) {
+                // expired
+                state = User::ExpiredAlready;
+                days = 0;
+            }
+
+            if (spMax == -1) {
+                // never expired
+                state = User::ExpiredNormal;
+                days = -1;
+            }
+
+            int curDays = QDateTime::currentDateTime().time().msec() / secondsPerDay;
+            int daysLeft = spLastChg + spMax - curDays;
+
+            if (daysLeft < 0) {
+                state = User::ExpiredAlready;
+                days = daysLeft;
+            } else if (spWarn > daysLeft) {
+                state = User::ExpiredSoon;
+                days = daysLeft;
+            }
+
+            m_model->currentUser()->updatePasswordExpiredState(state, days);
+        }
     }
+
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
         m_authFramework->CreateAuthController(account, m_authFramework->GetSupportedMixAuthFlags(), Login);
