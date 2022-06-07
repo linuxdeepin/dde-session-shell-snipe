@@ -140,6 +140,13 @@ void User::setLastAuthType(const int type)
     m_lastAuthType = type;
 }
 
+void User::updatePasswordExpiredState(User::ExpiredState state, int dayLeft)
+{
+    m_expiredState = state;
+    m_expiredDayLeft = dayLeft;
+    emit passwordExpiredInfoChanged();
+}
+
 bool User::checkUserIsNoPWGrp(const User *user) const
 {
     if (user->type() == User::ADDomain) {
