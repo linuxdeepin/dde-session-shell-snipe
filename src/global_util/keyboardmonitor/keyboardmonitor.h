@@ -45,6 +45,7 @@ public:
 signals:
     void capslockStatusChanged(bool on);
     void numlockStatusChanged(bool on);
+    void initialized();
 
 protected:
     void run() Q_DECL_OVERRIDE;

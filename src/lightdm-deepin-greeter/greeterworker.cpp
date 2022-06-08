@@ -198,10 +198,17 @@ void GreeterWorker::initConnections()
             m_resetSessionTimer->stop();
         }
     });
-    /* others */
+    /* 数字键盘状态 */
     connect(KeyboardMonitor::instance(), &KeyboardMonitor::numlockStatusChanged, this, [=](bool on) {
         saveNumlockState(m_model->currentUser(), on);
     });
+
+    connect(KeyboardMonitor::instance(), &KeyboardMonitor::initialized, this, [this] {
+        if (m_model) {
+            recoveryUserKBState(m_model->currentUser());
+        }
+    });
+
     connect(m_limitsUpdateTimer, &QTimer::timeout, this, [this] {
         if (m_authFramework->isDeepinAuthValid())
             m_model->updateLimitedInfo(m_authFramework->GetLimitedInfo(m_account));
@@ -859,10 +866,6 @@ int GreeterWorker::getNumLockState(const QString &userName)
 
 void GreeterWorker::recoveryUserKBState(std::shared_ptr<User> user)
 {
-    //FIXME(lxz)
-    //    PowerInter powerInter("com.deepin.system.Power", "/com/deepin/system/Power", QDBusConnection::systemBus(), this);
-    //    const BatteryPresentInfo info = powerInter.batteryIsPresent();
-    //    const bool defaultValue = !info.values().first();
     if (user.get() == nullptr)
         return;
 
@@ -871,9 +874,11 @@ void GreeterWorker::recoveryUserKBState(std::shared_ptr<User> user)
     qWarning() << "restore numlock state to " << enabled;
 
     // Resync numlock light with numlock status
-    bool cur_numlock = KeyboardMonitor::instance()->isNumlockOn();
-    KeyboardMonitor::instance()->setNumlockStatus(!cur_numlock);
-    KeyboardMonitor::instance()->setNumlockStatus(cur_numlock);
+    if (!m_model->isUseWayland()) {
+        bool cur_numlock = KeyboardMonitor::instance()->isNumlockOn();
+        KeyboardMonitor::instance()->setNumlockStatus(!cur_numlock);
+        KeyboardMonitor::instance()->setNumlockStatus(cur_numlock);
+    }
 
     KeyboardMonitor::instance()->setNumlockStatus(enabled);
 }

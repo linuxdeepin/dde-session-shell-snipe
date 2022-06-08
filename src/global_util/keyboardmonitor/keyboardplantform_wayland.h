@@ -35,6 +35,7 @@ namespace Client
     class DDEKeyboard;
     class DDESeat;
     class EventQueue;
+    class FakeInput;
 }
 }
 using namespace KWayland::Client;
@@ -60,9 +61,11 @@ private:
     QThread *m_connectionThread;
     ConnectionThread *m_connectionThreadObject;
     DDEKeyboard *m_ddeKeyboard;
+    FakeInput *m_fakeInput;
     DDESeat *m_ddeSeat;
     EventQueue *m_eventQueue;
     bool m_capsLock;
+    bool m_numLockOn;
 };
 
 #endif // KEYBOARDPLANTFORM_WAYLAND_H

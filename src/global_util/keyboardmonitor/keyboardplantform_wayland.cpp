@@ -27,26 +27,28 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <linux/input-event-codes.h>
 
 #include <KF5/KWayland/Client/registry.h>
 #include <KF5/KWayland/Client/event_queue.h>
 #include <KF5/KWayland/Client/connection_thread.h>
 #include <KF5/KWayland/Client/ddeseat.h>
 #include <KF5/KWayland/Client/ddekeyboard.h>
+#include <KF5/KWayland/Client/fakeinput.h>
 
 #include <QThread>
 #include <QDebug>
-
-const quint32 Key_CapsLock = 58;
 
 KeyboardPlantformWayland::KeyboardPlantformWayland(QObject *parent)
     : KeyBoardPlatform(parent)
     , m_connectionThread(new QThread(this))
     , m_connectionThreadObject(new ConnectionThread())
     , m_ddeKeyboard(nullptr)
+    , m_fakeInput(nullptr)
     , m_ddeSeat(nullptr)
     , m_eventQueue(nullptr)
     , m_capsLock(false)
+    , m_numLockOn(false)
 {
 
 }
@@ -65,12 +67,20 @@ bool KeyboardPlantformWayland::isCapslockOn()
 
 bool KeyboardPlantformWayland::isNumlockOn()
 {
-    return false;
+    return m_numLockOn;
 }
 
 bool KeyboardPlantformWayland::setNumlockStatus(const bool &on)
 {
-    Q_UNUSED(on);
+    qDebug() << "Set num lock state: " << on << ", numlockon: " << m_numLockOn;
+    if (m_fakeInput && m_fakeInput->isValid() && on != m_numLockOn) {
+        m_fakeInput->authenticate(QStringLiteral("lightdm-deepin-greeter"), QStringLiteral("Set num lock state"));
+        m_fakeInput->requestKeyboardKeyPress(KEY_NUMLOCK);
+        m_fakeInput->requestKeyboardKeyRelease(KEY_NUMLOCK);
+        m_numLockOn = !m_numLockOn;
+        return true;
+    }
+    qDebug() << "Fake input is not ready";
     return false;
 }
 
@@ -97,14 +107,32 @@ void KeyboardPlantformWayland::setupRegistry(Registry *registry)
             disconnect(m_ddeKeyboard, &DDEKeyboard::keyChanged, this, nullptr);
             m_ddeKeyboard = m_ddeSeat->createDDEKeyboard(this);
             connect(m_ddeKeyboard, &DDEKeyboard::keyChanged, this, [this] (quint32 key, KWayland::Client::DDEKeyboard::KeyState state, quint32 time) {
-                if (key == Key_CapsLock && int(state) == 1) {
-                    m_capsLock = !m_capsLock;
-                    qDebug() << "m_capsLock：" << m_capsLock;
-                    Q_EMIT capslockStatusChanged(m_capsLock);
+                if (state == KWayland::Client::DDEKeyboard::KeyState::Pressed) {
+                    if (key == KEY_CAPSLOCK) {
+                        m_capsLock = !m_capsLock;
+                        qDebug() << "CapsLock state: " << m_capsLock;
+                        Q_EMIT capslockStatusChanged(m_capsLock);
+                    } else if (key == KEY_NUMLOCK) {
+                        m_numLockOn = !m_numLockOn;
+                        qDebug() << "NumLock state: " << m_numLockOn;
+                        Q_EMIT numlockStatusChanged(m_numLockOn);
+                    }
                 }
             });
         }
     });
+
+    connect(registry, &Registry::fakeInputAnnounced, this, [ this, registry ](quint32 name, quint32 version) {
+        qDebug() << "Create fakeinput.";
+        m_fakeInput = registry->createFakeInput(name, version, this);
+        if (!m_fakeInput->isValid()) {
+            qWarning() << "Create fakeinput failed.";
+            return;
+        }
+
+        Q_EMIT initialized();
+    });
+
     registry->setEventQueue(m_eventQueue);
     registry->create(m_connectionThreadObject);
     registry->setup();

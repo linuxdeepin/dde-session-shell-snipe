@@ -39,6 +39,7 @@ public:
 signals:
     void capslockStatusChanged(bool on);
     void numlockStatusChanged(bool on);
+    void initialized();
 };
 
 #endif // KEYBOARDPLATFORM_H

@@ -39,6 +39,7 @@ KeyboardMonitor::KeyboardMonitor() : QThread()
     }
     connect(keyBoardPlatform, &KeyBoardPlatform::capslockStatusChanged, this, &KeyboardMonitor::capslockStatusChanged);
     connect(keyBoardPlatform, &KeyBoardPlatform::numlockStatusChanged, this, &KeyboardMonitor::numlockStatusChanged);
+    connect(keyBoardPlatform, &KeyBoardPlatform::initialized, this, &KeyboardMonitor::initialized);
 }
 
 KeyboardMonitor *KeyboardMonitor::instance()
