@@ -72,6 +72,7 @@ void AuthUKey::initUI()
     UKeyLayout->addWidget(m_capsLock, 0, Qt::AlignRight | Qt::AlignVCenter);
     /* 认证状态 */
     m_authStateLabel = new DLabel(m_lineEdit);
+    m_authStateLabel->setVisible(false);
     setAuthStateStyle(LOGIN_WAIT);
     UKeyLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
 
@@ -346,4 +347,9 @@ void AuthUKey::hide()
     m_lineEdit->hideAlertMessage();
     setLineEditInfo(tr("Enter your PIN"), PlaceHolderText);
     AuthModule::hide();
+}
+
+void AuthUKey::setAuthStatueVisible(bool visible)
+{
+    m_authStateLabel->setVisible(visible && !hasFocus());
 }

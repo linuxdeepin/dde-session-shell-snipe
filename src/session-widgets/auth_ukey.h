@@ -27,6 +27,7 @@ public:
     void setLineEditEnabled(const bool enable);
     void setLineEditInfo(const QString &text, const TextType type);
     void hide();
+    void setAuthStatueVisible(bool visible);
 
 signals:
     void focusChanged(const bool);

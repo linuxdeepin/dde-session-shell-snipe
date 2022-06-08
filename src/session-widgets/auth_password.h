@@ -56,6 +56,7 @@ public:
     void setCurrentUid(uid_t uid);
     void showResetPasswordMessage();
     void closeResetPasswordMessage();
+    void setAuthStatueVisible(bool visible);
 
 signals:
     void focusChanged(const bool);

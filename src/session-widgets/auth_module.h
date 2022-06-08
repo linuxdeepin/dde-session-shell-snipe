@@ -88,7 +88,6 @@ public:
     virtual void setAuthState(const int state, const QString &result);
     void setAuthStateStyle(const QString &path);
     virtual void setLimitsInfo(const LimitsInfo &info);
-    void setShowAuthState(bool showAuthState);
     void setAuthStatueVisible(bool visible);
     void setAuthStateLabel(DLabel *label);
     virtual void setAuthFactorType(AuthFactorType authFactorType);
@@ -118,7 +117,6 @@ protected:
     QPointer<DLabel> m_authStateLabel; // 认证状态图标
     QTimer *m_aniTimer;       // 动画执行定时器
     QTimer *m_unlockTimer;    // 认证解锁定时器
-    bool m_showAuthState;     // 是否显示认证状态
     bool m_isAuthing;         // 是否正在验证
     AuthFactorType m_authFactorType;    // 验证因子类型
 };

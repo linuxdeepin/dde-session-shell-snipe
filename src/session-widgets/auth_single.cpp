@@ -108,6 +108,7 @@ void AuthSingle::initUI()
     m_passwordHintBtn->setFlat(true);
     m_passwordHintBtn->setIcon(QIcon(PASSWORD_HINT));
     m_passwordHintBtn->setIconSize(QSize(16, 16));
+    m_passwordHintBtn->setVisible(false);
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);

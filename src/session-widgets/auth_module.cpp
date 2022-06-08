@@ -46,7 +46,6 @@ AuthModule::AuthModule(const AuthCommon::AuthType type, QWidget *parent)
     , m_limitsInfo(new LimitsInfo())
     , m_aniTimer(new QTimer(this))
     , m_unlockTimer(new QTimer(this))
-    , m_showAuthState(true)
     , m_isAuthing(false)
     , m_authFactorType(DDESESSIONCC::SingleAuthFactor)
 {
@@ -135,15 +134,11 @@ void AuthModule::setLimitsInfo(const LimitsInfo &info)
     updateUnlockTime();
 }
 
-void AuthModule::setShowAuthState(bool showAuthState)
-{
-    m_showAuthState = showAuthState;
-}
-
 void AuthModule::setAuthStatueVisible(bool visible)
 {
-    if (m_authStateLabel)
+    if (m_authStateLabel) {
         m_authStateLabel->setVisible(visible);
+    }
 }
 
 /**

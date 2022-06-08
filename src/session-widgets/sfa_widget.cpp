@@ -398,7 +398,6 @@ void SFAWidget::initPasswdAuth()
     m_passwordAuth = new AuthPassword(this);
     m_passwordAuth->setCurrentUid(m_model->currentUser()->uid());
     m_passwordAuth->hide();
-    m_passwordAuth->setShowAuthState(false);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {
         emit requestStartAuthentication(m_user->name(), AT_Password);

@@ -252,6 +252,7 @@ void MFAWidget::initPasswdAuth()
     m_passwordAuth->setCurrentUid(m_model->currentUser()->uid());
     m_passwordAuth->setCapsLockVisible(m_capslockMonitor->isCapslockOn());
     m_passwordAuth->setPasswordHint(m_user->passwordHint());
+    m_passwordAuth->setAuthStatueVisible(true);
     m_mainLayout->insertWidget(m_index, m_passwordAuth);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {
@@ -325,6 +326,7 @@ void MFAWidget::initUKeyAuth()
     }
     m_ukeyAuth = new AuthUKey(this);
     m_ukeyAuth->setCapsLockVisible(m_capslockMonitor->isCapslockOn());
+    m_ukeyAuth->setAuthStatueVisible(true);
     m_mainLayout->insertWidget(m_index, m_ukeyAuth);
 
     connect(m_ukeyAuth, &AuthUKey::activeAuth, this, [this] {

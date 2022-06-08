@@ -99,6 +99,7 @@ void AuthPassword::initUI()
 
     /* 认证状态 */
     m_authStateLabel = new DLabel(this);
+    m_authStateLabel->setVisible(false);
     setAuthStateStyle(LOGIN_WAIT);
     passwordLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
     /* 密码提示 */
@@ -109,6 +110,7 @@ void AuthPassword::initUI()
     m_passwordHintBtn->setFlat(true);
     m_passwordHintBtn->setIcon(QIcon(PASSWORD_HINT));
     m_passwordHintBtn->setIconSize(QSize(16, 16));
+    m_passwordHintBtn->setVisible(false);
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
@@ -125,7 +127,7 @@ void AuthPassword::initConnections()
     /* 密码输入框 */
     connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
         if (!focus) m_lineEdit->setAlert(false);
-        m_authStateLabel->setVisible(!focus && m_showAuthState);
+        m_authStateLabel->setVisible(!focus);
         emit focusChanged(focus);
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
@@ -600,4 +602,9 @@ void AuthPassword::hideEvent(QHideEvent *event)
     setLineEditInfo(tr("Password"), PlaceHolderText);
     closeResetPasswordMessage();
     AuthModule::hideEvent(event);
+}
+
+void AuthPassword::setAuthStatueVisible(bool visible)
+{
+    m_authStateLabel->setVisible(visible && !hasFocus());
 }
