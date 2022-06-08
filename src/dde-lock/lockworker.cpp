@@ -447,13 +447,7 @@ void LockWorker::switchToUser(std::shared_ptr<User> user)
     qDebug() << "LockWorker::switchToUser:" << m_account << user->name();
     if (user->name() == m_account || *user == *m_model->currentUser()) {
         qInfo() << "switch to current user:" << user->name() << user->isLogin();
-        if (!m_authFramework->authSessionExist(m_account)) {
-            createAuthentication(user->name());
-        } else {
-            endAuthentication(m_account, AT_All);
-            destoryAuthentication(m_account);
-            createAuthentication(m_account);
-        }
+        createAuthentication(user->name());
         return;
     } else {
         qInfo() << "switch user from" << m_account << "to" << user->name() << user->isLogin();
@@ -519,6 +513,12 @@ void LockWorker::createAuthentication(const QString &account)
     if (!userPath.startsWith("/")) {
         qWarning() << userPath;
         return;
+    }
+
+    // 如果验证会话已经存在，销毁后重新开启验证
+    if (m_authFramework->authSessionExist(account)) {
+        endAuthentication(account, AT_All);
+        destoryAuthentication(account);
     }
 
     // 同步密码过期的信息
