@@ -311,6 +311,10 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
 
     connect(button, &FlotingButton::requestShowTips, this, [ = ] {
         if (trayModule->itemTipsWidget()) {
+            if (m_model->isUseWayland() && m_tipsWidget->parent() != topLevelWidget()) {
+                // 顶层对象的窗口是override级别，需要将其设置为弹窗的父对象，否则无法显示出来。
+                m_tipsWidget->setParent(topLevelWidget());
+            }
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             m_tipsWidget->show(mapToGlobal(button->pos()).x() + button->width() / 2,mapToGlobal(button->pos()).y());
         }
@@ -543,7 +547,10 @@ void ControlWidget::setKBLayoutVisible()
     if (!m_arrowRectWidget->getContent()) {
         m_arrowRectWidget->setContent(m_kbLayoutListView);
     }
-
+    if (m_model->isUseWayland() && m_arrowRectWidget->parent() != topLevelWidget()) {
+        // 顶层对象的窗口是override级别，需要将其设置为弹窗的父对象，否则无法显示出来。
+        m_arrowRectWidget->setParent(topLevelWidget());
+    }
     m_arrowRectWidget->resize(m_kbLayoutListView->size() + QSize(0, 10));
 
     QPoint pos = QPoint(mapToGlobal(layoutButton->pos()).x() + layoutButton->width() / 2, mapToGlobal(layoutButton->pos()).y());
