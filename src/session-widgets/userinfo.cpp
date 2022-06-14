@@ -281,9 +281,11 @@ void NativeUser::initData()
         m_avatar = avatarPath;
     }
     m_fullName = m_userInter->fullName();
-    const QString backgroundPath = toLocalFile(m_userInter->greeterBackground());
+    const QString backgroundPath = findSymLinTarget(toLocalFile(m_userInter->greeterBackground()));
     if (!backgroundPath.isEmpty() && QFile(backgroundPath).exists() && QFile(backgroundPath).size() && QImageReader(backgroundPath).canRead()) {
         m_greeterBackground = backgroundPath;
+    } else {
+        qWarning() << "Path of background image is invalid, " << QImageReader(backgroundPath).canRead();
     }
     m_keyboardLayout = m_userInter->layout();
     m_locale = m_userInter->locale();
