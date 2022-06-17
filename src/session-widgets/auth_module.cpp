@@ -48,6 +48,7 @@ AuthModule::AuthModule(const AuthCommon::AuthType type, QWidget *parent)
     , m_unlockTimer(new QTimer(this))
     , m_isAuthing(false)
     , m_authFactorType(DDESESSIONCC::SingleAuthFactor)
+    , m_showAuthState(false)
 {
     setMinimumHeight(37);
 

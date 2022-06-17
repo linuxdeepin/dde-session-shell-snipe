@@ -119,6 +119,7 @@ protected:
     QTimer *m_unlockTimer;    // 认证解锁定时器
     bool m_isAuthing;         // 是否正在验证
     AuthFactorType m_authFactorType;    // 验证因子类型
+    bool m_showAuthState;     // 是否显示验证状态控件
 };
 
 #endif // AUTHMODULE_H

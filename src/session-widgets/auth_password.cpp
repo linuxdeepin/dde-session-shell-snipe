@@ -126,8 +126,9 @@ void AuthPassword::initConnections()
     connect(m_passwordHintBtn, &DIconButton::clicked, this, &AuthPassword::showPasswordHint);
     /* 密码输入框 */
     connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
-        if (!focus) m_lineEdit->setAlert(false);
-        m_authStateLabel->setVisible(!focus);
+        if (!focus)
+            m_lineEdit->setAlert(false);
+        m_authStateLabel->setVisible(!focus && m_showAuthState);
         emit focusChanged(focus);
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
@@ -606,5 +607,6 @@ void AuthPassword::hideEvent(QHideEvent *event)
 
 void AuthPassword::setAuthStatueVisible(bool visible)
 {
+    m_showAuthState = visible;
     m_authStateLabel->setVisible(visible && !hasFocus());
 }

@@ -88,7 +88,7 @@ void AuthUKey::initConnections()
     /* PIN 码输入框 */
     connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
         if (!focus) m_lineEdit->setAlert(false);
-        m_authStateLabel->setVisible(!focus);
+        m_authStateLabel->setVisible(!focus && m_showAuthState);
         emit focusChanged(focus);
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
@@ -351,5 +351,6 @@ void AuthUKey::hide()
 
 void AuthUKey::setAuthStatueVisible(bool visible)
 {
+    m_showAuthState = visible;
     m_authStateLabel->setVisible(visible && !hasFocus());
 }
