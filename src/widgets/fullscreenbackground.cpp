@@ -369,6 +369,7 @@ void FullscreenBackground::showEvent(QShowEvent *event)
     }
 
     updateGeometry();
+    raise();
     return QWidget::showEvent(event);
 }
 
