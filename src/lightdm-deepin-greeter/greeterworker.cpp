@@ -236,15 +236,11 @@ void GreeterWorker::initData()
 
     /* init current user */
     if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
+        // 如果是服务器版本或者loginPromptInput配置为true，默认显示空用户
         std::shared_ptr<User> user(new User());
         m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
         m_model->addUser(user);
-        if (DSysInfo::deepinType() == DSysInfo::DeepinServer) {
-            m_model->updateCurrentUser(user);
-        } else {
-            /* com.deepin.dde.LockService */
-            m_model->updateCurrentUser(m_lockInter->CurrentUser());
-        }
+        m_model->updateCurrentUser(user);
     } else {
         /* com.deepin.dde.LockService */
         m_model->updateCurrentUser(m_lockInter->CurrentUser());
