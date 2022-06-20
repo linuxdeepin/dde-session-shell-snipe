@@ -240,7 +240,12 @@ void GreeterWorker::initData()
         std::shared_ptr<User> user(new User());
         m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
         m_model->addUser(user);
-        m_model->updateCurrentUser(user);
+        if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false)) {
+            m_model->updateCurrentUser(user);
+        } else {
+            /* com.deepin.dde.LockService */
+            m_model->updateCurrentUser(m_lockInter->CurrentUser());
+        }
     } else {
         /* com.deepin.dde.LockService */
         m_model->updateCurrentUser(m_lockInter->CurrentUser());
