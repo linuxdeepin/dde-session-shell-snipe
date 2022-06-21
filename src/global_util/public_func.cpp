@@ -62,6 +62,7 @@ QPixmap loadPixmap(const QString &file, const QSize& size)
 
     if (!qFuzzyCompare(ratio, devicePixel) || size.isValid()) {
         QImageReader reader;
+        reader.setDecideFormatFromContent(true);
         reader.setFileName(qt_findAtNxFile(file, devicePixel, &ratio));
         if (reader.canRead()) {
             reader.setScaledSize((size.isNull() ? reader.size() : reader.size().scaled(size, Qt::KeepAspectRatio)) * (devicePixel / ratio));
@@ -73,6 +74,24 @@ QPixmap loadPixmap(const QString &file, const QSize& size)
     }
 
     return pixmap;
+}
+
+void loadPixmap(const QString &fileName, QPixmap &pixmap)
+{
+    if (!pixmap.load(fileName)) {
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadOnly)) {
+            pixmap.loadFromData(file.readAll());
+        }
+    }
+}
+
+bool checkPictureCanRead(const QString &fileName)
+{
+    QImageReader reader;
+    reader.setDecideFormatFromContent(true);
+    reader.setFileName(fileName);
+    return reader.canRead();
 }
 
 /**

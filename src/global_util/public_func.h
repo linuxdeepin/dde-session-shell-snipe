@@ -41,6 +41,8 @@ static const int APP_TYPE_LOCK = 0;
 static const int APP_TYPE_LOGIN = 1;
 
 QPixmap loadPixmap(const QString &file, const QSize& size = QSize());
+void loadPixmap(const QString &fileName, QPixmap &pixmap);
+bool checkPictureCanRead(const QString &fileName);
 
 template <typename T>
 T findValueByQSettings(const QStringList &configFiles,

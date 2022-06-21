@@ -277,12 +277,12 @@ void NativeUser::initData()
     m_weekdayFormat = m_userInter->weekdayFormat();
 
     const QString avatarPath = toLocalFile(m_userInter->iconFile());
-    if (!avatarPath.isEmpty() && QFile(avatarPath).exists() && QFile(avatarPath).size() && QImageReader(avatarPath).canRead()) {
+    if (!avatarPath.isEmpty() && QFile(avatarPath).exists() && QFile(avatarPath).size() && checkPictureCanRead(avatarPath)) {
         m_avatar = avatarPath;
     }
     m_fullName = m_userInter->fullName();
     const QString backgroundPath = toLocalFile(m_userInter->greeterBackground());
-    if (!backgroundPath.isEmpty() && QFile(backgroundPath).exists() && QFile(backgroundPath).size() && QImageReader(backgroundPath).canRead()) {
+    if (!backgroundPath.isEmpty() && QFile(backgroundPath).exists() && QFile(backgroundPath).size() && checkPictureCanRead(backgroundPath)) {
         m_greeterBackground = backgroundPath;
     }
     m_keyboardLayout = m_userInter->layout();
@@ -339,7 +339,7 @@ void NativeUser::updateAvatar(const QString &path)
         return;
     }
 
-    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && QImageReader(pathTmp).canRead()) {
+    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(path)) {
         m_avatar = pathTmp;
     } else {
         m_avatar = DEFAULT_AVATAR;

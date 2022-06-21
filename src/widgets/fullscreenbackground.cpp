@@ -119,7 +119,10 @@ void FullscreenBackground::updateBackground(const QString &path)
         // 动画播放完毕不再需要清晰的背景图片
         if (!m_fadeOutAniFinished && !(backgroundPath == path && contains(PIXMAP_TYPE_BACKGROUND))) {
             backgroundPath = path;
-            addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BACKGROUND);
+
+            QPixmap pixmap;
+            loadPixmap(backgroundPath, pixmap);
+            addPixmap(pixmapHandle(pixmap), PIXMAP_TYPE_BACKGROUND);
         }
 
         // 需要播放动画的时候才更新模糊壁纸
@@ -143,7 +146,10 @@ void FullscreenBackground::updateBlurBackground(const QString &path)
 
             if (blurBackgroundPath != blurPath || !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
                 blurBackgroundPath = blurPath;
-                addPixmap(pixmapHandle(QPixmap(blurPath)), PIXMAP_TYPE_BLUR_BACKGROUND);
+
+                QPixmap pixmap;
+                loadPixmap(blurBackgroundPath, pixmap);
+                addPixmap(pixmapHandle(pixmap), PIXMAP_TYPE_BLUR_BACKGROUND);
             }
 
             // 只播放一次动画，后续背景图片变更直接更新模糊壁纸即可
@@ -227,7 +233,7 @@ void FullscreenBackground::setIsHibernateMode()
 
 bool FullscreenBackground::isPicture(const QString &file)
 {
-    return QFile::exists(file) && QFile(file).size() && QImageReader(file).canRead();
+    return QFile::exists(file) && QFile(file).size() && checkPictureCanRead(file);
 }
 
 QString FullscreenBackground::getLocalFile(const QString &file)
@@ -321,10 +327,16 @@ void FullscreenBackground::resizeEvent(QResizeEvent *event)
 {
     m_blackWidget->resize(size());
     m_content->resize(size());
-    if (isPicture(backgroundPath) && !contains(PIXMAP_TYPE_BACKGROUND))
-        addPixmap(pixmapHandle(QPixmap(backgroundPath)), PIXMAP_TYPE_BACKGROUND);
-    if (isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND))
+    if (isPicture(backgroundPath) && !contains(PIXMAP_TYPE_BACKGROUND)) {
+        QPixmap pixmap;
+        loadPixmap(backgroundPath, pixmap);
+        addPixmap(pixmapHandle(pixmap), PIXMAP_TYPE_BACKGROUND);
+    }
+    if (isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
+        QPixmap pixmap;
+        loadPixmap(blurBackgroundPath, pixmap);
         addPixmap(pixmapHandle(QPixmap(blurBackgroundPath)), PIXMAP_TYPE_BLUR_BACKGROUND);
+    }
 
     updatePixmap();
     QWidget::resizeEvent(event);
