@@ -93,6 +93,4 @@ QString getDefaultConfigFileName();
 
 void loadTranslation(const QString &locale);
 
-QString findSymLinTarget(const QString &symLink);
-
 #endif // PUBLIC_FUNC_H

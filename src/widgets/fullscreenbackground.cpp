@@ -115,18 +115,16 @@ void FullscreenBackground::updateBackground(const QString &path)
     if (m_useSolidBackground)
         return;
 
-    // 在mips架构中不能通过软连接获取图片，需要找到链接最终指向的文件然后再读取
-    const QString &targetPath = findSymLinTarget(path);
-    if (isPicture(targetPath)) {
+    if (isPicture(path)) {
         // 动画播放完毕不再需要清晰的背景图片
-        if (!m_fadeOutAniFinished && !(backgroundPath == targetPath && contains(PIXMAP_TYPE_BACKGROUND))) {
-            backgroundPath = targetPath;
-            addPixmap(pixmapHandle(QPixmap(targetPath)), PIXMAP_TYPE_BACKGROUND);
+        if (!m_fadeOutAniFinished && !(backgroundPath == path && contains(PIXMAP_TYPE_BACKGROUND))) {
+            backgroundPath = path;
+            addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BACKGROUND);
         }
 
         // 需要播放动画的时候才更新模糊壁纸
         if (m_enableAnimation)
-            updateBlurBackground(targetPath);
+            updateBlurBackground(path);
     }
 }
 
@@ -140,7 +138,7 @@ void FullscreenBackground::updateBlurBackground(const QString &path)
             QString blurPath = reply.value();
 
             if (!isPicture(blurPath)) {
-                blurPath = findSymLinTarget("/usr/share/backgrounds/default_background.jpg");
+                blurPath = "/usr/share/backgrounds/default_background.jpg";
             }
 
             if (blurBackgroundPath != blurPath || !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
