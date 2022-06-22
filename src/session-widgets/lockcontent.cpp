@@ -296,6 +296,11 @@ void LockContent::setMPRISEnable(const bool state)
 
 void LockContent::onNewConnection()
 {
+    // 重置密码程序启动连接成功锁屏界面才释放键盘，避免点击重置密码过程中使用快捷键切走锁屏
+    if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
+        qDebug() << "setKeyboardGrabEnabled(false) success！";
+    }
+
     if (m_localServer->hasPendingConnections()) {
         QLocalSocket *socket = m_localServer->nextPendingConnection();
         connect(socket, &QLocalSocket::disconnected, this, &LockContent::onDisConnect);

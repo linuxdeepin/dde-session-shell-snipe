@@ -466,9 +466,6 @@ void AuthPassword::showResetPasswordMessage()
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [ this ] {
-        if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
-            qDebug() << "setKeyboardGrabEnabled(false) success!";
-        }
         const QString AccountsService("com.deepin.daemon.Accounts");
         const QString path = QString("/com/deepin/daemon/Accounts/User%1").arg(m_currentUid);
         com::deepin::daemon::accounts::User user(AccountsService, path, QDBusConnection::systemBus());
