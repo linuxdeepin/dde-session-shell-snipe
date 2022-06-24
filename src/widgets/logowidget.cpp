@@ -29,24 +29,36 @@
 #include <QPalette>
 #include <QDebug>
 #include <QSettings>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusPendingCall>
+#include <QDBusReply>
+
 #include <DSysInfo>
+
 #include "public_func.h"
 #include "util_updateui.h"
-
 #include "logowidget.h"
 
 DCORE_USE_NAMESPACE
 
 #define PIXMAP_WIDTH 128
+#define PIXMAP_WIDTH_EXT 188
 #define PIXMAP_HEIGHT 132 /* SessionBaseWindow */
 
-const QPixmap systemLogo(const QSize &size)
+const QPixmap systemLogo(const QString &file, const QSize &size, bool loadFromDTK)
 {
-    return loadPixmap(DSysInfo::distributionOrgLogo(DSysInfo::Distribution, DSysInfo::Transparent, ":img/logo.svg"), size);
+    if (loadFromDTK) {
+        return loadPixmap(DSysInfo::distributionOrgLogo(DSysInfo::Distribution, DSysInfo::Transparent, file), size);
+    } else {
+        return loadPixmap(file, size);
+    }
 }
 
 LogoWidget::LogoWidget(QWidget *parent)
     : QFrame(parent)
+    , m_licenseState(Unauthorized)
+    , m_authorizationProperty(Default)
     , m_logoLabel(new QLabel(this))
     , m_logoVersionLabel(new DLabel(this))
 {
@@ -57,6 +69,21 @@ LogoWidget::LogoWidget(QWidget *parent)
     m_locale = QLocale::system().name();
 
     initUI();
+
+    QDBusConnection::systemBus().connect("com.deepin.license",
+                                         "/com/deepin/license/Info",
+                                         "com.deepin.license.Info",
+                                         "LicenseStateChange",
+                                         this, SLOT(updateLicenseState()));
+
+    QDBusConnection::systemBus().connect("com.deepin.license",
+                                         "/com/deepin/license/Info",
+                                         "com.deepin.license.Info",
+                                         "AuthorizationPropertyChange",
+                                         this, SLOT(updateLicenseAuthorizationProperty()));
+
+    updateLicenseState();
+    updateLicenseAuthorizationProperty();
 }
 
 LogoWidget::~LogoWidget()
@@ -71,8 +98,7 @@ void LogoWidget::initUI()
 
     /* logo */
     m_logoLabel->setObjectName("Logo");
-    QPixmap pixmap = loadSystemLogo();
-    m_logoLabel->setPixmap(pixmap);
+    updateLogoPixmap();
     logoLayout->addWidget(m_logoLabel, 0, Qt::AlignBottom | Qt::AlignLeft);
 
     /* version */
@@ -94,35 +120,83 @@ void LogoWidget::initUI()
     font.setPixelSize(m_logoLabel->height() / 2);
     m_logoVersionLabel->setFont(font);
 
-    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
-      //systemVersion = "";
-      return;
+    if (DSysInfo::UosEdition::UosEducation != DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
+        logoLayout->addWidget(m_logoVersionLabel);;
     }
-
-    m_logoVersionLabel->setText(getVersion());
-    logoLayout->addWidget(m_logoVersionLabel);
 
     updateStyle(":/skin/login.qss", m_logoVersionLabel);
 }
 
-QPixmap LogoWidget::loadSystemLogo()
+QPixmap LogoWidget::loadSystemLogo(const QString &file, bool loadFromDTK)
 {
-    const QPixmap &p = systemLogo(QSize());
-    const bool result = p.width() < PIXMAP_WIDTH && p.height() < PIXMAP_HEIGHT;
-    return result ? p : systemLogo(QSize(PIXMAP_WIDTH, PIXMAP_HEIGHT));
+    QPixmap p = systemLogo(file, QSize(), loadFromDTK);
+
+    QSize size(PIXMAP_WIDTH_EXT, PIXMAP_HEIGHT);
+    if (loadFromDTK) {
+        size.setWidth(PIXMAP_WIDTH);
+        size.setHeight(PIXMAP_HEIGHT);
+    }
+
+    const bool result = p.width() < size.width() && p.height() < size.height();
+    return result ? p : systemLogo(file, size, loadFromDTK);
 }
 
 QString LogoWidget::getVersion()
 {
     QString version;
+
     if (DSysInfo::uosType() == DSysInfo::UosServer) {
         version = QString("%1").arg(DSysInfo::majorVersion());
     } else if (DSysInfo::isDeepin()) {
+        // 获取系统版本，例如20专业版
         version = QString("%1 %2").arg(DSysInfo::majorVersion()).arg(DSysInfo::uosEditionName(m_locale));
+
+        // 如果已经授权，并且是政务授权或企业授权，则不显示文案
+        if (m_licenseState == Authorized &&
+            (m_authorizationProperty == AuthorizationProperty::Government ||
+             m_authorizationProperty == AuthorizationProperty::Enterprise)) {
+                version = "";
+        }
     } else {
         version = QString("%1 %2").arg(DSysInfo::productVersion()).arg(DSysInfo::productTypeString());
     }
+
     return version;
+}
+
+void LogoWidget::updateLogoPixmap()
+{
+    QString logo = ":img/logo.svg";
+    bool loadFromDTK = true;
+
+    // 专业版需要区分授权类型
+    if (DSysInfo::isDeepin()) {
+        if (m_licenseState == Authorized) {
+
+            QLocale::Language language = QLocale::system().language();
+            QString lang = "-EN";
+            // 简体、繁体、正体中文和藏语、维语均显示中文，其他显示英文
+            if (language == QLocale::Chinese ||
+                language == QLocale::Tibetan ||
+                language == QLocale::Uighur) {
+                lang = "-ZH";
+            }
+
+            // 根据授权类型不同显示不同的LOGO图片，其他按原来的方式显示
+            if (m_authorizationProperty == Enterprise) {
+                logo =  QString(":img/enterprise%1.svg").arg(lang);
+                loadFromDTK = false;
+            } else if (m_authorizationProperty == Government) {
+                logo =  QString(":img/government%1.svg").arg(lang);
+                loadFromDTK = false;
+            }
+        }
+    }
+
+    QPixmap pixmap = loadSystemLogo(logo, loadFromDTK);
+    m_logoLabel->setPixmap(pixmap);
+
+    m_logoVersionLabel->setText(getVersion());
 }
 
 /**
@@ -133,7 +207,51 @@ QString LogoWidget::getVersion()
 void LogoWidget::updateLocale(const QString &locale)
 {
     m_locale = locale;
-    m_logoVersionLabel->setText(getVersion());
+    updateLogoPixmap();
+}
+
+void LogoWidget::updateLicenseState()
+{
+    QDBusInterface licenseInfo("com.deepin.license",
+                               "/com/deepin/license/Info",
+                               "org.freedesktop.DBus.Properties",
+                               QDBusConnection::systemBus());
+
+    QDBusPendingCall call = licenseInfo.asyncCall("Get",  "com.deepin.license.Info", "LicenseState");
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, [this, call, watcher] {
+        if (!call.isError()) {
+            QDBusReply<QDBusVariant> reply = call.reply();
+            m_licenseState = reply.value().variant().toInt();
+            updateLogoPixmap();
+            update();
+        } else {
+            qDebug() << "Failed to get license state: " << call.error().message();
+        }
+        watcher->deleteLater();
+    });
+}
+
+void LogoWidget::updateLicenseAuthorizationProperty()
+{
+    QDBusInterface licenseInfo("com.deepin.license",
+                               "/com/deepin/license/Info",
+                               "org.freedesktop.DBus.Properties",
+                               QDBusConnection::systemBus());
+
+    QDBusPendingCall call = licenseInfo.asyncCall("Get",  "com.deepin.license.Info", "AuthorizationProperty");
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, [this, call, watcher] {
+        if (!call.isError()) {
+            QDBusReply<QDBusVariant> reply = call.reply();
+            m_authorizationProperty = reply.value().variant().toInt();
+            updateLogoPixmap();
+            update();
+        } else {
+            qDebug() << "Failed to get authorization property: " << call.error().message();
+        }
+        watcher->deleteLater();
+    });
 }
 
 void LogoWidget::resizeEvent(QResizeEvent *event)

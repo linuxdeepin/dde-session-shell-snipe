@@ -183,5 +183,9 @@
         <file>img/list_actions/userswitch_normal.svg</file>
         <file>img/list_actions/userswitch_press.svg</file>
         <file>img/deepin-system-monitor.svg</file>
+        <file>img/enterprise-EN.svg</file>
+        <file>img/enterprise-ZH.svg</file>
+        <file>img/government-EN.svg</file>
+        <file>img/government-ZH.svg</file>
     </qresource>
 </RCC>
