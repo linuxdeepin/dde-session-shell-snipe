@@ -195,6 +195,11 @@ bool LockFrame::event(QEvent *event)
             keyValue = "mon-brightness-down";
             break;
         }
+        // 锁屏时会独占键盘，需要单独处理F1待机事件
+        case Qt::Key_Sleep: {
+             m_model->setPowerAction(SessionBaseModel::RequireSuspend);
+             break;
+        }
         }
 
         if (keyValue != "") {
