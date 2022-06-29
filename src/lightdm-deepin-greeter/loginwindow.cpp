@@ -28,6 +28,7 @@
 #include "userinfo.h"
 
 #include <QWindow>
+#include <QKeyEvent>
 
 LoginWindow::LoginWindow(SessionBaseModel *const model, QWidget *parent)
     : FullscreenBackground(model, parent)
@@ -85,4 +86,20 @@ void LoginWindow::hideEvent(QHideEvent *event)
 
     //greeter界面隐藏时，需要结束虚拟键盘
     m_model->setHasVirtualKB(false);
+}
+
+bool LoginWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::KeyRelease) {
+        switch (static_cast<QKeyEvent *>(event)->key()) {
+        // startdde屏蔽了systemd的待机，由greeter处理待机流程
+        case Qt::Key_Sleep: {
+             m_model->setPowerAction(SessionBaseModel::RequireSuspend);
+             break;
+        }
+        default:
+            break;
+        }
+    }
+    return FullscreenBackground::event(event);
 }

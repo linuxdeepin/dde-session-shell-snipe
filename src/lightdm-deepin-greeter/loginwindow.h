@@ -56,6 +56,7 @@ signals:
 protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
+    bool event(QEvent *event) override;
 
 private:
     LoginContent *m_loginContent;
