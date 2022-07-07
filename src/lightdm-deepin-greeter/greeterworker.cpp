@@ -5,6 +5,7 @@
 #include "userinfo.h"
 
 #include <DSysInfo>
+#include <DGuiApplicationHelper>
 
 #include <QGSettings>
 
@@ -21,6 +22,7 @@ using PowerInter = com::deepin::system::Power;
 using namespace Auth;
 using namespace AuthCommon;
 DCORE_USE_NAMESPACE
+DGUI_USE_NAMESPACE
 
 const int NUM_LOCKED = 0;   // 禁用小键盘
 const int NUM_UNLOCKED = 1; // 启用小键盘
@@ -32,6 +34,7 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     , m_authFramework(new DeepinAuthFramework(this))
     , m_lockInter(new DBusLockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
     , m_soundPlayerInter(new SoundThemePlayerInter("com.deepin.api.SoundThemePlayer", "/com/deepin/api/SoundThemePlayer", QDBusConnection::systemBus(), this))
+    , m_greeterDisplayWayland(nullptr)
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
     , m_retryAuth(false)
@@ -42,6 +45,11 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
         exit(1);
     }
 #endif
+
+    if (!DGuiApplicationHelper::isXWindowPlatform()) {
+        m_greeterDisplayWayland = new GreeterDisplayWayland();
+        m_greeterDisplayWayland->start();
+    }
 
     checkDBusServer(m_accountsInter->isValid());
 
@@ -74,6 +82,9 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
 GreeterWorker::~GreeterWorker()
 {
+    if(m_greeterDisplayWayland) {
+       m_greeterDisplayWayland->deleteLater();
+    }
 }
 
 void GreeterWorker::initConnections()

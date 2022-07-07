@@ -190,6 +190,7 @@ set(GREETER_SRCS
     src/lightdm-deepin-greeter/logincontent.cpp
     src/lightdm-deepin-greeter/logintipswindow.cpp
     src/lightdm-deepin-greeter/sessionwidget.cpp
+    src/lightdm-deepin-greeter/greeter_display_wayland.cpp
 )
 add_executable(lightdm-deepin-greeter
     ${GREETER_SRCS}

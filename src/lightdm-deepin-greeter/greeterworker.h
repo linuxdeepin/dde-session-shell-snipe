@@ -6,6 +6,7 @@
 #include "dbuslogin1manager.h"
 #include "deepinauthframework.h"
 #include "sessionbasemodel.h"
+#include "greeter_display_wayland.h"
 
 #include <QLightDM/Greeter>
 #include <QLightDM/SessionsModel>
@@ -77,6 +78,7 @@ private:
     DeepinAuthFramework *m_authFramework;
     DBusLockService *m_lockInter;
     SoundThemePlayerInter *m_soundPlayerInter;
+    GreeterDisplayWayland *m_greeterDisplayWayland;
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;
