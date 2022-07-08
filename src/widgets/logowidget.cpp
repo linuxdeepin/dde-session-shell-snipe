@@ -172,13 +172,11 @@ void LogoWidget::updateLogoPixmap()
     // 专业版需要区分授权类型
     if (DSysInfo::isDeepin()) {
         if (m_licenseState == Authorized) {
-
-            QLocale::Language language = QLocale::system().language();
+            // 根据用户设置的系统语言显示LOGO,简体、繁体、正体中文和藏语、维语均显示中文，其他显示英文
             QString lang = "-EN";
-            // 简体、繁体、正体中文和藏语、维语均显示中文，其他显示英文
-            if (language == QLocale::Chinese ||
-                language == QLocale::Tibetan ||
-                language == QLocale::Uighur) {
+            if (m_locale.contains("zh_") ||
+                m_locale.contains("ug_") ||
+                m_locale.contains("bo_")) {
                 lang = "-ZH";
             }
 
