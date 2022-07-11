@@ -72,6 +72,7 @@ private:
     void recoveryUserKBState(std::shared_ptr<User> user);
     void startGreeterAuth(const QString &account = QString());
     void changePasswd();
+    void screenSwitchByWldpms(bool active);
 
 private:
     QLightDM::Greeter *m_greeter;

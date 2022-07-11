@@ -144,6 +144,12 @@ void GreeterWorker::initConnections()
             destoryAuthentication(m_account);
         }
     });
+
+    connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [ = ](bool active) {
+        qDebug() << "set dpms: " << (!active ? "on" : "off");
+        screenSwitchByWldpms(!active);
+    });
+
     /* org.freedesktop.login1.Manager */
     connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [=](bool isSleep) {
         qInfo() << "DBusLogin1Manager::PrepareForSleep:" << isSleep;
@@ -911,4 +917,17 @@ void GreeterWorker::changePasswd()
 {
     m_model->updateMFAFlag(false);
     m_model->setAuthType(AT_PAM);
+}
+
+void GreeterWorker::screenSwitchByWldpms(bool active)
+{
+    qDebug() << "GreeterWorker::screenSwitchByWldpms:" << active;
+    QStringList arguments;
+    arguments << "-s";
+    if (active) {
+        arguments << "on";
+    } else {
+        arguments << "off";
+    }
+    QProcess::startDetached("dde_wldpms", arguments);
 }
