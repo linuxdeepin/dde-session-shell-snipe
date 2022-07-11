@@ -24,6 +24,8 @@
 
 #include <QtCore>
 
+const QString BASE_API_VERSION = "1.1.0";
+
 namespace dss {
 namespace module {
 
@@ -37,6 +39,15 @@ public:
     enum ModuleType {
         LoginType,
         TrayType
+    };
+
+    /**
+    * @brief The LoadType enum
+    * 模块加载的类型
+    */
+    enum LoadType{
+        Load,
+        Notload
     };
 
     virtual ~BaseModuleInterface() = default;
@@ -65,6 +76,12 @@ public:
      * @return ModuleType
      */
     virtual ModuleType type() const = 0;
+
+    /**
+    * @brief 模块加载类型
+    * @return loadPluginType
+    */
+    virtual LoadType loadPluginType() const { return Load; }
 };
 
 } // namespace module

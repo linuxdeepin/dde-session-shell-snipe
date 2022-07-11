@@ -461,7 +461,7 @@ void DeepinAuthFramework::SendTokenToAuth(const QString &account, const int auth
     if (!m_authenticateControllers->contains(account)) {
         return;
     }
-    qInfo() << "Send token to authentication:" << account << authType;
+    qInfo() << "Send token to authentication:" << account << ", authType" << authType;
 
     const int tokenSize = token.size();
     const int padding = AES_BLOCK_SIZE - tokenSize % AES_BLOCK_SIZE;

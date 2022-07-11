@@ -19,47 +19,39 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MFAWIDGET_H
-#define MFAWIDGET_H
+#ifndef LOGIN_MODULE_H
+#define LOGIN_MODULE_H
 
-#include "auth_widget.h"
+#include "tray_module_interface.h"
+#include "webview_content.h"
 
-#include <QWidget>
+namespace dss {
+namespace module {
 
-class MFAWidget : public AuthWidget
+class WebviewModule : public QObject
+    , public TrayModuleInterface
 {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules.Tray" FILE "webview.json")
+    Q_INTERFACES(dss::module::TrayModuleInterface)
 
 public:
-    explicit MFAWidget(QWidget *parent = nullptr);
+    explicit WebviewModule(QObject *parent = nullptr);
+    ~WebviewModule() override;
 
-    void setModel(const SessionBaseModel *model) override;
-    void setAuthType(const int type) override;
-    void setAuthState(const int type, const int state, const QString &message) override;
-    void autoUnlock();
-    int getTopSpacing() const override;
+    void init() override;
 
-protected:
-    void resizeEvent(QResizeEvent *event);
+    inline QString key() const override { return objectName(); }
+    QWidget *content() override { return m_webviewContent; }
+    inline QString icon() const override { return ":/img/deepin-system-monitor.svg"; }
 
 private:
     void initUI();
-    void initConnections();
-
-    void initPasswdAuth();
-    void initFingerprintAuth();
-    void initUKeyAuth();
-    void initFaceAuth();
-    void initIrisAuth();
-
-    void checkAuthResult(const int type, const int state) override;
-
-    void updateFocusPosition();
 
 private:
-    int m_index;
-    QVBoxLayout *m_mainLayout;
-    QList<QWidget *> m_widgetList;
+    WebviewContent *m_webviewContent;
 };
 
-#endif // MFAWIDGET_H
+} // namespace module
+} // namespace dss
+#endif // LOGIN_MODULE_H

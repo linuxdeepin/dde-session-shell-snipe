@@ -237,6 +237,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
 )
 
 add_subdirectory(tests)
+add_subdirectory(plugins)
 
 # Install settings
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

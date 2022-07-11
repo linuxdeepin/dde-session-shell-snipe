@@ -40,6 +40,7 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QTranslator>
+#include <QJsonDocument>
 
 #include <execinfo.h>
 #include <signal.h>
@@ -195,4 +196,33 @@ void loadTranslation(const QString &locale)
     qApp->removeTranslator(&translator);
     translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first());
     qApp->installTranslator(&translator);
+}
+
+/**
+ * @brief findSymLinTarget 查找软连接最终链接到的文件，如果不是软连接，直接返回原始路径
+ * @param symLink 文件路径
+ * @return 最终链接到的文件路径
+ */
+QString findSymLinTarget(const QString &symLink)
+{
+    QString file = symLink;
+    QString tmpFile = symLink;
+    while(!tmpFile.isEmpty()) {
+        file = tmpFile;
+        tmpFile = QFile::symLinkTarget(tmpFile);
+    }
+
+    return file;
+}
+
+/**
+ * @brief json对象转为json字符串
+ *
+ * @param QJsonObject对象
+ */
+QString toJson(const QJsonObject &jsonObj)
+{
+    QJsonDocument doc;
+    doc.setObject(jsonObj);
+    return doc.toJson();
 }

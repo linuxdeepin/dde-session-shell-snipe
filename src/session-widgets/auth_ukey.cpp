@@ -250,7 +250,7 @@ void AuthUKey::setCapsLockVisible(const bool on)
  */
 void AuthUKey::setLimitsInfo(const LimitsInfo &info)
 {
-    qDebug() << "AuthUKey::setLimitsInfo" << info.unlockTime;
+    qDebug() << "AuthUKey::setLimitsInfo" << info.numFailures;
     AuthModule::setLimitsInfo(info);
 }
 

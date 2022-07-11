@@ -35,6 +35,8 @@
 #include <QSettings>
 #include <QString>
 
+class QJsonDocument;
+
 #define ACCOUNTS_DBUS_PREFIX "/com/deepin/daemon/Accounts/User"
 
 static const int APP_TYPE_LOCK = 0;
@@ -94,5 +96,7 @@ void setAppType(int type);
 QString getDefaultConfigFileName();
 
 void loadTranslation(const QString &locale);
+QString findSymLinTarget(const QString &symLink);
 
+QString toJson(const QJsonObject &jsonObj);
 #endif // PUBLIC_FUNC_H

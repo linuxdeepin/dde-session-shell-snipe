@@ -481,3 +481,10 @@ int MFAWidget::getTopSpacing() const
 
     return qMax(15, deltaY);
 }
+
+void MFAWidget::resizeEvent(QResizeEvent *event)
+{
+    updateBlurEffectGeometry();
+
+    AuthWidget::resizeEvent(event);
+}

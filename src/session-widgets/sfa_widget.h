@@ -24,6 +24,7 @@
 
 #include "auth_widget.h"
 #include "userinfo.h"
+#include "authcommon.h"
 
 #include <DArrowRectangle>
 #include <DBlurEffectWidget>
@@ -57,10 +58,14 @@ public:
 
 public slots:
     void onRetryButtonVisibleChanged(bool visible);
+    void onRequestChangeAuth(const int authType);
 
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
+
+protected Q_SLOTS:
+    void updateBlurEffectGeometry();
 
 private:
     void initUI();
@@ -81,6 +86,7 @@ private:
     void setBioAuthStateVisible(AuthModule *authModule, bool visible);
     void updateSpaceItem();
     void updateFocus();
+    void initAccount();
 
 private:
     QVBoxLayout *m_mainLayout;
@@ -93,6 +99,7 @@ private:
     QSpacerItem *m_bioAuthStatePlaceHolder;
     QSpacerItem *m_bioBottomSpacingHolder;
     QSpacerItem *m_authTypeBottomSpacingHolder;
+    AuthCommon::AuthType m_currentAuthType;
 };
 
 #endif // SFAWIDGET_H

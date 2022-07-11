@@ -245,7 +245,7 @@ void SessionBaseModel::setAuthType(const int type)
 {
     qDebug("set auth type: %d", type);
 
-    if (type == m_authProperty.AuthType) {
+    if (type == m_authProperty.AuthType && type != AT_None) {
         return;
     }
     if (m_currentUser->type() == User::Default) {

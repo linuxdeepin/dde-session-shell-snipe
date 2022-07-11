@@ -65,7 +65,7 @@ public:
     void syncPasswordResetPasswordVisibleChanged(const QVariant &value);
     void syncResetPasswordUI();
 
-signals:
+Q_SIGNALS:
     void requestCheckAccount(const QString &account);
     void requestSetKeyboardType(const QString &key);
     void requestStartAuthentication(const QString &account, const int authType);
@@ -75,7 +75,6 @@ signals:
     void updateParentLayout();
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
 
 protected:
@@ -91,7 +90,6 @@ protected:
     void setPasswordHint(const QString &hint);
     void setLockButtonType(const int type);
 
-    void updateBlurEffectGeometry();
     void updatePasswordExpiredState();
     void updateExpiredState();
 
@@ -103,6 +101,9 @@ protected:
     void syncUKey(const QVariant &value);
     int calcCurrentHeight(const int height) const;
     int getAuthWidgetHeight();
+
+protected Q_SLOTS:
+    void updateBlurEffectGeometry();
 
 protected:
     const SessionBaseModel *m_model;

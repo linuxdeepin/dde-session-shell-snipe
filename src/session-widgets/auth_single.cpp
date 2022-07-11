@@ -268,7 +268,7 @@ void AuthSingle::setAnimationState(const bool start)
  */
 void AuthSingle::setLimitsInfo(const LimitsInfo &info)
 {
-    qDebug() << "AuthSingle::setLimitsInfo" << info.unlockTime;
+    qDebug() << "AuthSingle::setLimitsInfo" << info.numFailures;
     const bool lockStateChanged = (info.locked != m_limitsInfo->locked);
     AuthModule::setLimitsInfo(info);
     setPasswordHintBtnVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());

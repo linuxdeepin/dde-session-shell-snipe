@@ -228,8 +228,6 @@ int main(int argc, char* argv[])
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     qApp->setOrganizationName("deepin");
     qApp->setApplicationName("org.deepin.dde.lightdm-deepin-greeter");
-    qApp->setApplicationVersion("2015.1.0");
-    qApp->setAttribute(Qt::AA_ForceRasterWidgets);
 
     set_pointer();
 

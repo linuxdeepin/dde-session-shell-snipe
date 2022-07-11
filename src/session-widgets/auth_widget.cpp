@@ -504,12 +504,6 @@ void AuthWidget::syncUKey(const QVariant &value)
         m_ukeyAuth->setLineEditInfo(value.toString(), AuthUKey::InputText);
 }
 
-void AuthWidget::resizeEvent(QResizeEvent *event)
-{
-    updateBlurEffectGeometry();
-    QWidget::resizeEvent(event);
-}
-
 void AuthWidget::showEvent(QShowEvent *event)
 {
     activateWindow();

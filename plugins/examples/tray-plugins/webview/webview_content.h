@@ -19,47 +19,32 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MFAWIDGET_H
-#define MFAWIDGET_H
-
-#include "auth_widget.h"
+#ifndef WEBVIEWCONTENT_H
+#define WEBVIEWCONTENT_H
 
 #include <QWidget>
+#include <QtWebEngineWidgets/qwebengineview.h>
 
-class MFAWidget : public AuthWidget
+class QVBoxLayout;
+
+namespace dss {
+namespace module {
+
+class WebviewContent : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MFAWidget(QWidget *parent = nullptr);
-
-    void setModel(const SessionBaseModel *model) override;
-    void setAuthType(const int type) override;
-    void setAuthState(const int type, const int state, const QString &message) override;
-    void autoUnlock();
-    int getTopSpacing() const override;
-
-protected:
-    void resizeEvent(QResizeEvent *event);
+    explicit WebviewContent(QWidget *parent = nullptr);
 
 private:
     void initUI();
-    void initConnections();
-
-    void initPasswdAuth();
-    void initFingerprintAuth();
-    void initUKeyAuth();
-    void initFaceAuth();
-    void initIrisAuth();
-
-    void checkAuthResult(const int type, const int state) override;
-
-    void updateFocusPosition();
 
 private:
-    int m_index;
     QVBoxLayout *m_mainLayout;
-    QList<QWidget *> m_widgetList;
+    QWebEngineView *m_webview;
 };
 
-#endif // MFAWIDGET_H
+} // namespace module
+} // namespace dss
+#endif // WEBVIEWCONTENT_H

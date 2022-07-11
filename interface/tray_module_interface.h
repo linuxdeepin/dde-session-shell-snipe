@@ -26,6 +26,8 @@
 
 #include <QWidget>
 
+const QString TRAY_API_VERSION = "1.1.0";
+
 namespace dss {
 namespace module {
 
@@ -37,6 +39,12 @@ public:
      * @return ModuleType
      */
     ModuleType type() const override { return TrayType; }
+
+    /**
+    * @brief 模块加载的类型
+    * @return LoadType
+    */
+    LoadType loadPluginType()  const override { return Load; }
 
     virtual QString icon() const = 0;
 
