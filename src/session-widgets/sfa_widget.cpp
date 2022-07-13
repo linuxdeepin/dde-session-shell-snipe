@@ -339,6 +339,17 @@ void SFAWidget::setAuthState(const int type, const int state, const QString &mes
             m_frameDataBind->updateValue("SFSingleAuthState", state);
             m_frameDataBind->updateValue("SFSingleAuthMsg", message);
         }
+
+        // 这里是为了让自定义登陆知道ligthdm已经开启验证了
+        qInfo() << "Current auth type is: " << m_currentAuthType;
+        if (m_customAuth && state == AS_Prompt && m_currentAuthType == AT_Custom) {
+            // 有可能DA发送了验证开始，但是lightdm的验证还未开始，此时发送token的话lightdm无法验证通过。
+            // ligthdm的pam发送prompt后则认为lightdm的pam已经开启验证
+            qInfo() << "Greeter is in authentication";
+            if (m_model->appType() == AuthCommon::AppType::Login) {
+                m_customAuth->sendAuthToken();
+            }
+        }
         break;
     case AT_Custom:
         if (m_customAuth) {
@@ -758,7 +769,6 @@ void SFAWidget::initCustomAuth()
     connect(m_customAuth, &AuthCustom::authFinished, this, [ this ] (const int authStatus) {
         if (authStatus == AS_Success) {
             m_lockButton->setEnabled(true);
-            //emit authFinished();
         }
     });
     connect(m_customAuth, &AuthCustom::requestCheckAccount, this, [this] (const QString &account) {

@@ -244,7 +244,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
     m_isAcceptSignal = true;
 
     if (errorCode == 0) {
-        QTimer::singleShot(1000, this, [this, name] {
+        QTimer::singleShot(500, this, [this, name] {
             qInfo() << Q_FUNC_INFO << "singleShot verify";
             AuthCallbackData data;
             data.account = name.toStdString();

@@ -121,17 +121,9 @@ void AuthCustom::setAuthState(const int state, const QString &result)
     m_state = state;
     switch (state) {
     case AuthCommon::AS_Started:
-        if (m_currentAuthData.result == AuthResult::Success) {
-            // 有可能DA发送了验证开始，但是lightdm的验证还未开始，此时发送token的话lightdm无法验证通过。
-            QTimer::singleShot(100, this, [this] {
-                emit requestSendToken(QString::fromStdString(m_currentAuthData.token));
-            });
-        } else {
-            qWarning() << "Current validation is not successfully";
+        if (m_model->appType() == AuthCommon::AppType::Lock) {
+            sendAuthToken();
         }
-
-        if (m_currentAuthData.result != AuthResult::None)
-            reset();
         break;
     case AuthCommon::AS_Success:
         emit authFinished(state);
@@ -296,4 +288,14 @@ QSize AuthCustom::contentSize() const
         return QSize();
 
     return m_module->content()->size();
+}
+
+void AuthCustom::sendAuthToken()
+{
+    if (m_currentAuthData.result == AuthResult::Success) {
+        Q_EMIT requestSendToken(QString::fromStdString(m_currentAuthData.token));
+    } else {
+        qWarning() << "Current validation is not successfully";
+    }
+    reset();
 }

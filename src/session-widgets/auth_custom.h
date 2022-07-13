@@ -54,6 +54,7 @@ public:
     inline bool showLockButton() const { return m_showLockButton; }
     inline AuthCommon::DefaultAuthLevel defaultAuthLevel() const { return m_defaultAuthLevel; }
     inline AuthCommon::AuthType authType() const { return m_authType; }
+    void sendAuthToken();
 
 protected:
     bool event(QEvent *e);
