@@ -463,6 +463,7 @@ void AuthPassword::showResetPasswordMessage()
     m_resetPasswordFloatingMessage->setPalette(pa);
     m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("dialog-warning"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
+    suggestButton->setAutoDefault(true);
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [ this ] {
