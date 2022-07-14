@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
  *
- * Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
+ * Author:     Fang Shichao <fangshichao@uniontech.com>
  *
- * Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
+ * Maintainer: Fang Shichao <fangshichao@uniontech.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #ifndef LOGIN_MODULE_H
 #define LOGIN_MODULE_H
 
-#include <QGSettings/qgsettings.h>
+#include <QLabel>
 
 #include "login_module_interface.h"
 
@@ -74,7 +74,6 @@ private:
     AppType m_appType;
     LoadType m_loadPluginType;
     bool m_isAcceptSignal;
-
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
 };
 

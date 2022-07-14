@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
  *
- * Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
+ * Author:     Fang Shichao <fangshichao@uniontech.com>
  *
- * Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
+ * Maintainer: Fang Shichao <fangshichao@uniontech.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,8 +104,9 @@ void LoginModule::initConnect()
         QTimer *m_timer = new QTimer(this);
         connect(m_timer, &QTimer::timeout, this, [this] {
             qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptSignal" << m_isAcceptSignal;
-            if (!m_isAcceptSignal)
+            if (!m_isAcceptSignal) {
                 sendAuthTypeToSession();
+            }
         }, Qt::DirectConnection);
         m_timer->setInterval(2500);
         m_timer->setSingleShot(true);
@@ -134,10 +135,10 @@ void LoginModule::initUI()
     m_loginWidget->setMinimumSize(260, 100);
 
     m_loginWidget->setLayout(new QHBoxLayout);
-    QLabel *lab = new QLabel("oenkey login", m_loginWidget);
-    lab->setFixedSize(160, 40);
-    lab->setAlignment(Qt::AlignCenter);
-    m_loginWidget->layout()->addWidget(lab);
+    QLabel *showMsglab = new QLabel(m_loginWidget);
+    showMsglab->setFixedSize(160, 40);
+    showMsglab->setAlignment(Qt::AlignCenter);
+    m_loginWidget->layout()->addWidget(showMsglab);
 
 }
 
