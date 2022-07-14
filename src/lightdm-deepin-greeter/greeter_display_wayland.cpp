@@ -252,7 +252,7 @@ void GreeterDisplayWayland::setOutputs()
                     }
                     do {
                         QString uuidKeyTmp;
-                        for(int i = 0; i < uuidArry->length(); i++) {
+                        for(int i = 0; i < sizeof(uuidArry) / sizeof(*uuidArry); i++) {
                             uuidKeyTmp = uuidKeyTmp + uuidArry[i] + ",";
                         }
                         uuidKeyTmp.remove(uuidKeyTmp.length() - 1, 1);
@@ -322,17 +322,66 @@ void GreeterDisplayWayland::setOutputs()
     }
 }
 
+QSize GreeterDisplayWayland::commonSizeForMirrorMode()
+{
+    QVector<QVector<QSize>> modesVec;
+    // 对所有分辨率组合去重
+    foreach (MonitorConfig cfg, MonitorConfigsForUuid_v1) {
+        QVector<QSize> modeVecTmp;
+        auto mode = cfg.dev->modes();
+        for (int i = 0; i < mode.size(); i++)
+        {
+            if (!modeVecTmp.contains(mode[i].size)) {
+                modeVecTmp.push_back(mode[i].size);
+            }
+        }
+        modesVec.push_back(modeVecTmp);
+    }
+    // 找出相同分辨率的所有组合
+    QVector<QSize> commonModeVec;
+    for (int i = 0; i < modesVec[0].size(); i++)
+    {
+        bool isContain = true;
+        foreach (QVector<QSize> vec, modesVec) {
+            if (!vec.contains(modesVec[0][i])) {
+                isContain = false;
+                break;
+            }
+        }
+        if (isContain) {
+            commonModeVec.push_back(modesVec[0][i]);
+        }
+    }
+    // 没有配置文件，默认找出共同最高分辨率
+    int product = 0;
+    int index = 0;
+    for (int i = 0; i < commonModeVec.size(); i++) {
+        int tmp = commonModeVec[i].width() * commonModeVec[i].height();
+        if (tmp > product) {
+            product = tmp;
+            index = i;
+        }
+    }
+    return commonModeVec[index];
+}
+
 void GreeterDisplayWayland::applyDefault()
 {
     qDebug() << "applyDefault ...";
+    QSize commonSize = commonSizeForMirrorMode();
+    qDebug() << "commonSize--->" << commonSize;
     QPoint o(0, 0);
     bool enabled = true;
     foreach (MonitorConfig cfg, MonitorConfigsForUuid_v1) {
         auto dev = cfg.dev;
         qDebug() << "applyDefault uuid--->" << dev->uuid();
-        auto m = dev->modes()[0];
-        qDebug() << "set output mode :" << m.size.width() << "x" << m.size.height() << "and refreshRate :" << m.refreshRate;
-        m_pConf->setMode(dev, m.id);
+        for (auto m : dev->modes()) {
+            if (m.size.width() == commonSize.width() && m.size.height() == commonSize.height()) {
+                qDebug() << "set output mode :" << m.size.width() << "x" << m.size.height() << "and refreshRate :" << m.refreshRate;
+                m_pConf->setMode(dev, m.id);
+                break;
+            }
+        }
         qDebug() << "set output setPosition to " << o.x() << o.y();
         m_pConf->setPosition(dev, o);
         qDebug() << "set output setEnabled to " << enabled;
@@ -358,7 +407,7 @@ void GreeterDisplayWayland::applyConfig(QString uuid)
     auto monitor = MonitorConfigsForUuid_v1[uuid];
     auto dev = monitor.dev;
     for (auto m : dev->modes()) {
-        if (m.size.width() == monitor.width && m.size.height() == monitor.height && m.refreshRate == monitor.refresh_rate) {
+        if (m.size.width() == monitor.width && m.size.height() == monitor.height && m.refreshRate == monitor.refresh_rate * 1000) {
             qDebug() << "set output mode :" << monitor.width << "x" << monitor.height << "and refreshRate :" << monitor.refresh_rate;
             m_pConf->setMode(dev, m.id);
             break;

@@ -86,6 +86,7 @@ private:
     QString getOutputUuid(QString name, QString stdName, QByteArray edid);
     QString getOutputDeviceName(const QString& model, const QString& make);
     void setOutputs();
+    QSize commonSizeForMirrorMode();
 
 private:
     QThread *m_connectionThread;
