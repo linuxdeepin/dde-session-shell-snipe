@@ -453,12 +453,12 @@ void GreeterWorker::createAuthentication(const QString &account)
 
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
-        startGreeterAuth(account);
         m_authFramework->CreateAuthController(account, m_authFramework->GetSupportedMixAuthFlags(), Login);
         m_authFramework->SetAuthQuitFlag(account, DeepinAuthFramework::ManualQuit);
         if (!m_authFramework->SetPrivilegesEnable(account, QString("/usr/sbin/lightdm"))) {
             qWarning() << "Failed to set privileges!";
         }
+        startGreeterAuth(account);
         break;
     default:
         startGreeterAuth(account);
