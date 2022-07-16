@@ -73,7 +73,7 @@ protected:
     void showModule(const QString &name);
     void updateVirtualKBPosition();
     void onUserListChanged(QList<std::shared_ptr<User>> list);
-    void tryGrabKeyboard();
+    void tryGrabKeyboard(bool exitIfFalied = true);
     void currentWorkspaceChanged();
     void updateWallpaper(const QString &path);
     void refreshBackground(SessionBaseModel::ModeStatus status);

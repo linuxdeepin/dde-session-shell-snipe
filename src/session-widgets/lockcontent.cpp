@@ -318,7 +318,8 @@ void LockContent::onNewConnection()
 
 void LockContent::onDisConnect()
 {
-    tryGrabKeyboard();
+    // 这种情况下不必强制要求可以抓取到键盘，因为可能是网络弹窗抓取了键盘
+    tryGrabKeyboard(false);
 }
 
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
@@ -513,7 +514,12 @@ void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
     m_shutdownFrame->setUserSwitchEnable(enable);
 }
 
-void LockContent::tryGrabKeyboard()
+/**
+ * @brief 抓取键盘,失败后继续抓取,最多尝试15次.
+ *
+ * @param exitIfFalied true: 发送失败通知，并隐藏锁屏。 false：不做任何处理。
+ */
+void LockContent::tryGrabKeyboard(bool exitIfFalied)
 {
 #ifndef QT_DEBUG
     if (m_model->isUseWayland() || !isVisible()) {
@@ -531,6 +537,10 @@ void LockContent::tryGrabKeyboard()
         qWarning() << "Trying grabkeyboard has exceeded the upper limit. dde-lock will quit.";
 
         m_failures = 0;
+
+        if (!exitIfFalied) {
+            return;
+        }
 
         DDBusSender()
             .service("org.freedesktop.Notifications")
@@ -551,7 +561,9 @@ void LockContent::tryGrabKeyboard()
         return;
     }
 
-    QTimer::singleShot(100, this, &LockContent::tryGrabKeyboard);
+    QTimer::singleShot(100, this, [this, exitIfFalied] {
+        tryGrabKeyboard(exitIfFalied);
+    });
 #endif
 }
 
