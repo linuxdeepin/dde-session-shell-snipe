@@ -71,6 +71,7 @@ LoginModule::LoginModule(QObject *parent)
     } else {
         qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
         m_isAcceptSignal = false;
+        //FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
         sendAuthTypeToSession();
     }
 
@@ -277,6 +278,9 @@ void LoginModule::slotPrepareForSleep(bool active)
 void LoginModule::sendAuthTypeToSession()
 {
     qInfo() << Q_FUNC_INFO << "sendAuthTypeToSession";
+    if (!m_messageCallbackFunc)
+        return;
+
     QJsonObject message;
     message.insert("CmdType", "setAuthTypeInfo");
     QJsonObject retDataObj;
