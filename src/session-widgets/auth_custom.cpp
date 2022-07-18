@@ -51,6 +51,12 @@ AuthCustom::~AuthCustom()
     if (m_module && m_module->content() && m_module->content()->parent() == this) {
         m_module->content()->setParent(nullptr);
     }
+
+    if (m_module) {
+        delete m_module;
+        m_module = nullptr;
+    }
+
 }
 
 void AuthCustom::setModule(dss::module::LoginModuleInterface *module)
