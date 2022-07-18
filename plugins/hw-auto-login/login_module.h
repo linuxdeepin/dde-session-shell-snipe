@@ -64,6 +64,7 @@ private:
     void updateInfo();
     void initConnect();
     void sendAuthTypeToSession();
+    void messageCallback(AuthCallbackData& data);
 
 private:
     LoginCallBack *m_callback;

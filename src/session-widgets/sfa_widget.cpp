@@ -132,7 +132,8 @@ void SFAWidget::setAuthType(const int type)
 {
     qDebug() << Q_FUNC_INFO << "SFAWidget::setAuthType:" << type;
     int authType = type;
-    if (dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).size() > 0) {
+    if (dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).size() > 0
+            && !m_model->currentUser()->isNoPasswordLogin() && !m_model->currentUser()->isAutomaticLogin()) {
         authType |= AT_Custom;
         initCustomAuth();
         qInfo() << Q_FUNC_INFO << "m_customAuth->authType()" << m_customAuth->authType();
@@ -1052,7 +1053,7 @@ void SFAWidget::onRequestChangeAuth(const int authType)
     if (!m_authButtons.contains(authType)) {
         qDebug() << "onRequestChangeAuth no contain";
         m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
-        return;
+        return ;
     }
 
     QAbstractButton *btn = m_chooseAuthButtonBox->button(authType);

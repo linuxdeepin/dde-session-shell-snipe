@@ -41,6 +41,16 @@
             "description": "锁屏界面隐藏屏幕键盘；false：不隐藏，true：隐藏。默认值为false，修改后即时生效。",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "enableOneKeylogin":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "EnableOneKeylogin",
+            "name[zh_CN]": "是否加载华为自动登录插件",
+            "description": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

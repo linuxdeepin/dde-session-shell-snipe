@@ -28,6 +28,9 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QTimer>
+#include <QDBusInterface>
+#include <QDBusPendingCall>
+#include <QDBusReply>
 
 #include <DConfig>
 
@@ -64,17 +67,37 @@ LoginModule::LoginModule(QObject *parent)
                                                                              "com.deepin.daemon.Authenticate.Fingerprint",
                                                                              "IdentifyWithMultipleUser");
     // 将消息发送到Dbus
-    QDBusMessage response = QDBusConnection::systemBus().call(m);
-    //判断Method是否被正确返回
-    if (response.type()== QDBusMessage::ReplyMessage) {
-        qDebug() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call success";
-    } else {
-        qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
-        m_isAcceptSignal = false;
-        //FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
-        sendAuthTypeToSession();
-    }
+    QDBusPendingCall identifyCall = QDBusConnection::systemBus().asyncCall(m);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(identifyCall, this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, [this, identifyCall, watcher] {
+        qDebug() << Q_FUNC_INFO << "Get license state:" << identifyCall.error().message();
+        if (!identifyCall.isError()) {
+            QDBusMessage response = identifyCall.reply();
+            //判断Method是否被正确返回
+            if (response.type()== QDBusMessage::ReplyMessage) {
+                qDebug() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call success";
+            } else {
+                qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
+                m_isAcceptSignal = false;
+                //FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
+                sendAuthTypeToSession();
+            }
+        }
+        watcher->deleteLater();
+    });
 
+
+    //在2.5秒内没接收到一键登录信号，视为失败
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, [this] {
+        qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptSignal" << m_isAcceptSignal;
+        if (!m_isAcceptSignal) {
+            sendAuthTypeToSession();
+        }
+    }, Qt::DirectConnection);
+    timer->setInterval(2500);
+    timer->setSingleShot(true);
+    timer->start();
 }
 
 LoginModule::~LoginModule()
@@ -98,24 +121,6 @@ void LoginModule::initConnect()
     bool isConnectSuccess = QDBusConnection::systemBus().connect("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint","com.deepin.daemon.Authenticate.Fingerprint",
                                                     "VerifyStatus", this, SLOT(slotIdentifyStatus(const QString &, const int, const QString &)));
     qInfo() << Q_FUNC_INFO << "isconnectsuccess: " << isConnectSuccess;
-
-
-    if (isConnectSuccess) {
-        //在2.5秒内没接收到一键登录信号，视为失败
-        QTimer *m_timer = new QTimer(this);
-        connect(m_timer, &QTimer::timeout, this, [this] {
-            qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptSignal" << m_isAcceptSignal;
-            if (!m_isAcceptSignal) {
-                sendAuthTypeToSession();
-            }
-        }, Qt::DirectConnection);
-        m_timer->setInterval(2500);
-        m_timer->setSingleShot(true);
-        m_timer->start();
-    } else {
-        m_isAcceptSignal = false;
-        sendAuthTypeToSession();
-    }
 
 }
 
@@ -252,7 +257,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
             data.account = name.toStdString();
             data.token = "";
             data.result = AuthResult::Success;
-            m_callbackFun(&data, m_callback->app_data);
+            messageCallback(data);
         });
     } else {
         // 发送一键登录失败的信息
@@ -262,8 +267,17 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
         AuthCallbackData data;
         data.result = AuthResult::Failure;
         data.message = QString::number(errorCode).toStdString();
-        m_callbackFun(&data, m_callback->app_data);
+        messageCallback(data);
     }
+}
+
+void LoginModule::messageCallback(AuthCallbackData& data)
+{
+    if (!m_callbackFun) {
+        qDebug() << Q_FUNC_INFO << "m_callbackFun is null";
+        return;
+    }
+    m_callbackFun(&data, m_callback->app_data);
 }
 
 void LoginModule::slotPrepareForSleep(bool active)
