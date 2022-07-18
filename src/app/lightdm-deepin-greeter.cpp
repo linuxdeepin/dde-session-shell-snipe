@@ -170,8 +170,38 @@ static double get_scale_ratio() {
     return scaleRatio;
 }
 
+// 读取系统配置文件的缩放比，如果是null，默认返回1
+double getScaleFormConfig()
+{
+    QDBusInterface configInter("com.deepin.system.Display",
+                                                     "/com/deepin/system/Display",
+                                                     "com.deepin.system.Display",
+                                                    QDBusConnection::systemBus());
+    if (!configInter.isValid()) {
+        return 1;
+    }
+    QDBusReply<QString> configReply = configInter.call("GetConfig");
+    if (configReply.error().message().isEmpty()) {
+        QString config = configReply.value();
+        QJsonParseError jsonError;
+        QJsonDocument jsonDoc(QJsonDocument::fromJson(config.toStdString().data(), &jsonError));
+        if (jsonError.error == QJsonParseError::NoError) {
+            QJsonObject rootObj = jsonDoc.object();
+            QJsonObject Config = rootObj.value("Config").toObject();
+            double scaleFactors = Config.value("ScaleFactors").toObject().value("ALL").toDouble();
+            qDebug() << "scaleFactors :" << scaleFactors;
+            return scaleFactors;
+        } else {
+            return 1;
+        }
+    } else {
+        qWarning() << configReply.error().message();
+        return 1;
+    }
+}
+
 static void set_auto_QT_SCALE_FACTOR() {
-    const double ratio = get_scale_ratio();
+    const double ratio = DGuiApplicationHelper::isXWindowPlatform() ? get_scale_ratio() : getScaleFormConfig();
     if (ratio > 0.0) {
         setenv("QT_SCALE_FACTOR", QByteArray::number(ratio).constData(), 1);
     }
@@ -220,7 +250,7 @@ int main(int argc, char* argv[])
 
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
     // 设置缩放，文件存在的情况下，由后端去设置，否则前端自行设置
-    if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf")) {
+    if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf") || !DGuiApplicationHelper::isXWindowPlatform()) {
         set_auto_QT_SCALE_FACTOR();
     }
 

@@ -95,7 +95,6 @@ private:
     OutputConfiguration *m_pConf;
     OutputManagement *m_pManager;
     int m_displayMode;
-    double m_scaleFactors;
     QJsonObject m_screensObj;
     QString m_removeUuid; // 防止多次移除事件
 };

@@ -60,7 +60,6 @@ GreeterDisplayWayland::GreeterDisplayWayland(QObject *parent)
     , m_pConf(nullptr)
     , m_pManager(nullptr)
     , m_displayMode(Extend_Mode)
-    , m_scaleFactors(1)
 {
     QDBusInterface displayConfig("com.deepin.system.Display",
                                                  "/com/deepin/system/Display",
@@ -79,9 +78,8 @@ GreeterDisplayWayland::GreeterDisplayWayland(QObject *parent)
                     QJsonObject rootObj = jsonDoc.object();
                     QJsonObject Config = rootObj.value("Config").toObject();
                     m_screensObj = Config.value("Screens").toObject();
-                    m_scaleFactors = Config.value("ScaleFactors").toObject().value("ALL").toDouble();
                     m_displayMode = Config.value("DisplayMode").toInt();
-                    qDebug() << "m_displayMode :" << m_displayMode << "m_scaleFactors" << m_scaleFactors;
+                    qDebug() << "m_displayMode :" << m_displayMode;
                 }
         } else {
             qDebug() << "Failed to get license state: " << configReply.error().message();
@@ -196,7 +194,7 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
         qDebug() << "OutputDevice::changed ..." << uuid;
         if (MonitorConfigsForUuid_v1[uuid].hasCof) {
             bool enabled = OutputDevice::Enablement::Enabled == dev->enabled();
-            if (MonitorConfigsForUuid_v1[uuid].x != point.x() && MonitorConfigsForUuid_v1[uuid].y != point.y() ||
+            if ((MonitorConfigsForUuid_v1[uuid].x != point.x() && MonitorConfigsForUuid_v1[uuid].y != point.y()) ||
                 MonitorConfigsForUuid_v1[uuid].enabled != enabled) {
                 qWarning() << "apply do not work...";
             }
@@ -307,7 +305,6 @@ void GreeterDisplayWayland::setOutputs()
             MonitorConfigsForUuid_v1[id].transform = qLn(jsonMonitorConfig.value("Rotation").toInt()) / qLn(2);
             MonitorConfigsForUuid_v1[id].brightness = jsonMonitorConfig.value("Brightness").toDouble();
             MonitorConfigsForUuid_v1[id].primary = jsonMonitorConfig.value("Primary").toBool();
-            MonitorConfigsForUuid_v1[id].scale = m_scaleFactors;
             // 根据是否是仅单屏显示，决定是否从配置文件中读取enable属性
             if (m_displayMode == Single_Mode && i > 0) {
                 MonitorConfigsForUuid_v1[id].enabled = false;
@@ -368,15 +365,21 @@ QSize GreeterDisplayWayland::commonSizeForMirrorMode()
 void GreeterDisplayWayland::applyDefault()
 {
     qDebug() << "applyDefault ...";
-    QSize commonSize = commonSizeForMirrorMode();
-    qDebug() << "commonSize--->" << commonSize;
+    QSize applySize;
+    if (m_displayMode == Mirror_Mode) {
+       applySize = commonSizeForMirrorMode();
+    }
+    qDebug() << "applySize--->" << applySize;
     QPoint o(0, 0);
     bool enabled = true;
     foreach (MonitorConfig cfg, MonitorConfigsForUuid_v1) {
         auto dev = cfg.dev;
+        if (m_displayMode != Mirror_Mode) {
+            applySize = dev->geometry().size();
+        }
         qDebug() << "applyDefault uuid--->" << dev->uuid();
         for (auto m : dev->modes()) {
-            if (m.size.width() == commonSize.width() && m.size.height() == commonSize.height()) {
+            if (m.size.width() == applySize.width() && m.size.height() == applySize.height()) {
                 qDebug() << "set output mode :" << m.size.width() << "x" << m.size.height() << "and refreshRate :" << m.refreshRate;
                 m_pConf->setMode(dev, m.id);
                 break;
@@ -388,12 +391,10 @@ void GreeterDisplayWayland::applyDefault()
         m_pConf->setEnabled(dev, OutputDevice::Enablement(enabled));
         qDebug() << "set output transform to 0";
         m_pConf->setTransform(dev, OutputDevice::Transform(0));
-        qDebug() << "set output scale to " << m_scaleFactors;
-        m_pConf->setScaleF(dev, m_scaleFactors);
         m_pConf->apply();
         // 找不到配置文件，如果是扩展模式，默认横向扩展，如果是仅单屏默认点亮第一个屏幕
         if (m_displayMode == Extend_Mode) {
-            o += QPoint(dev->geometry().width() / m_scaleFactors, 0);
+            o += QPoint(dev->geometry().width(), 0);
         }
         if (m_displayMode == Single_Mode) {
             enabled = false;
@@ -413,14 +414,12 @@ void GreeterDisplayWayland::applyConfig(QString uuid)
             break;
         }
     }
-    qDebug() << "set output setPosition to " << monitor.x / monitor.scale << monitor.y / monitor.scale;
-    m_pConf->setPosition(dev, QPoint(monitor.x / monitor.scale, monitor.y / monitor.scale));
+    qDebug() << "set output setPosition to " << monitor.x << monitor.y;
+    m_pConf->setPosition(dev, QPoint(monitor.x, monitor.y));
     qDebug() << "set output setEnabled to " << monitor.enabled;
     m_pConf->setEnabled(dev, OutputDevice::Enablement(monitor.enabled));
     qDebug() << "set output transform to " << monitor.transform;
     m_pConf->setTransform(dev, OutputDevice::Transform(monitor.transform));
-    qDebug() << "set output scale to " << monitor.scale;
-    m_pConf->setScaleF(dev, monitor.scale);
     m_pConf->apply();
     MonitorConfigsForUuid_v1[uuid].hasCof = true;
 }
