@@ -388,6 +388,9 @@ void FullscreenBackground::hideEvent(QHideEvent *event)
     if (m_model->isUseWayland()) {
         Q_EMIT requestDisableGlobalShortcutsForWayland(false);
     }
+
+    // 将content隐藏起来，下次锁屏拉起的时候显示鼠标所在屏幕，这样可以避免多屏显示认证界面（如果时序有问题的话）和 屏幕闪现认证界面的问题
+    m_content->hide();
     QWidget::hideEvent(event);
 }
 
