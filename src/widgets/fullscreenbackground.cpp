@@ -70,7 +70,8 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
         setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::Window);
 
         setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
-        windowHandle()->setProperty("_d_dwayland_window-type", "override"); // 禁止移动
+        // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
+        windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
     }
 #endif
     frameList.append(this);
