@@ -1,2 +1,2 @@
-add_subdirectory(hw-auto-login)
+add_subdirectory(one-key-login)
 #add_subdirectory(examples)

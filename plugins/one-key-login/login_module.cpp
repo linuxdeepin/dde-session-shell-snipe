@@ -49,6 +49,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_loadPluginType(Notload)
     , m_isAcceptSignal(false)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
+    , m_spinner(nullptr)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -109,6 +110,11 @@ LoginModule::~LoginModule()
     if (m_dconfig) {
         delete m_dconfig;
     }
+
+    if (m_spinner) {
+        m_spinner->stop();
+        delete m_spinner;
+    }
 }
 
 void LoginModule::initConnect()
@@ -141,10 +147,10 @@ void LoginModule::initUI()
     m_loginWidget->setMinimumSize(260, 100);
 
     m_loginWidget->setLayout(new QHBoxLayout);
-    QLabel *showMsglab = new QLabel(m_loginWidget);
-    showMsglab->setFixedSize(160, 40);
-    showMsglab->setAlignment(Qt::AlignCenter);
-    m_loginWidget->layout()->addWidget(showMsglab);
+    m_spinner = new DTK_WIDGET_NAMESPACE::DSpinner(m_loginWidget);
+    m_spinner->setFixedSize(40, 40);
+    m_loginWidget->layout()->addWidget(m_spinner);
+    m_spinner->start();
 
 }
 
@@ -277,6 +283,10 @@ void LoginModule::messageCallback(AuthCallbackData& data)
         qDebug() << Q_FUNC_INFO << "m_callbackFun is null";
         return;
     }
+
+    if (m_spinner) {
+        m_spinner->stop();
+    }
     m_callbackFun(&data, m_callback->app_data);
 }
 
@@ -295,6 +305,9 @@ void LoginModule::sendAuthTypeToSession()
     if (!m_messageCallbackFunc)
         return;
 
+    if (m_spinner) {
+        m_spinner->stop();
+    }
     QJsonObject message;
     message.insert("CmdType", "setAuthTypeInfo");
     QJsonObject retDataObj;

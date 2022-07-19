@@ -28,6 +28,7 @@
 
 #include "dtkcore_global.h"
 #include "public_func.h"
+#include <DSpinner>
 
 DCORE_BEGIN_NAMESPACE
 class DConfig;
@@ -76,6 +77,7 @@ private:
     LoadType m_loadPluginType;
     bool m_isAcceptSignal;
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
+    DTK_WIDGET_NAMESPACE::DSpinner *m_spinner;
 };
 
 } // namespace module

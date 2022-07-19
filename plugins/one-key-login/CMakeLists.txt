@@ -6,7 +6,7 @@ link_libraries(
     Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-set(LIB_NAME hw-auto-login)
+set(LIB_NAME one-key-login)
 
 aux_source_directory(. SRCS)
 
