@@ -48,6 +48,10 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
     if (!DGuiApplicationHelper::isXWindowPlatform()) {
         m_greeterDisplayWayland = new GreeterDisplayWayland();
+        connect(m_greeterDisplayWayland, &GreeterDisplayWayland::setOutputFinished, this, [=] {
+            Q_EMIT showLoginWindow();
+            model->setVisible(true);
+        });
         m_greeterDisplayWayland->start();
     }
 

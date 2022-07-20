@@ -342,7 +342,11 @@ int main(int argc, char* argv[])
         QObject::connect(loginFrame, &LoginWindow::requestEndAuthentication, worker, &GreeterWorker::endAuthentication);
         QObject::connect(loginFrame, &LoginWindow::authFinished, worker, &GreeterWorker::onAuthFinished);
         QObject::connect(worker, &GreeterWorker::requestUpdateBackground, loginFrame, &LoginWindow::updateBackground);
-        loginFrame->show();
+        if (DGuiApplicationHelper::isXWindowPlatform()) {
+            loginFrame->show();
+        } else {
+            QObject::connect(worker, &GreeterWorker::showLoginWindow, loginFrame, &LoginWindow::show);
+        }
         return loginFrame;
     };
 
@@ -358,7 +362,9 @@ int main(int argc, char* argv[])
     checker.start();
 #endif
 
-    model->setVisible(true);
+    if (DGuiApplicationHelper::isXWindowPlatform()) {
+        model->setVisible(true);
+    }
 
     return a.exec();
 }

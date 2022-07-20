@@ -26,6 +26,7 @@
 #include <QJsonObject>
 
 class QThread;
+class QTimer;
 
 namespace KWayland
 {
@@ -76,6 +77,9 @@ public:
 
     void start();
 
+signals:
+    void setOutputFinished();
+
 private:
     void setupRegistry(Registry *registry);
     void onDeviceChanged(OutputDevice *dev);
@@ -97,6 +101,7 @@ private:
     int m_displayMode;
     QJsonObject m_screensObj;
     QString m_removeUuid; // 防止多次移除事件
+    QTimer *m_setOutputTimer;
 };
 
 #endif // GREETER_DISPLAY_WAYLAND_H

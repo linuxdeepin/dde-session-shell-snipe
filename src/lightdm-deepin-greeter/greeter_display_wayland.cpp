@@ -49,6 +49,7 @@
 #include <QRegularExpressionMatch>
 #include <QCryptographicHash>
 #include <QtCore/qmath.h>
+#include <QTimer>
 
 static QMap<QString, MonitorConfig> MonitorConfigsForUuid_v1;
 
@@ -60,6 +61,7 @@ GreeterDisplayWayland::GreeterDisplayWayland(QObject *parent)
     , m_pConf(nullptr)
     , m_pManager(nullptr)
     , m_displayMode(Extend_Mode)
+    , m_setOutputTimer(new QTimer(this))
 {
     QDBusInterface displayConfig("com.deepin.system.Display",
                                                  "/com/deepin/system/Display",
@@ -85,6 +87,11 @@ GreeterDisplayWayland::GreeterDisplayWayland(QObject *parent)
             qDebug() << "Failed to get license state: " << configReply.error().message();
         }
         watcher->deleteLater();
+    });
+    // 加延时为了等待窗管发送完所有屏幕添加或移除信号
+    m_setOutputTimer->setInterval(100);
+    connect(m_setOutputTimer, &QTimer::timeout, this, [this] {
+        setOutputs();
     });
 }
 
@@ -130,9 +137,11 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
                 disconnect(m_pConf, &OutputConfiguration::failed, this, nullptr);
                 connect(m_pConf, &OutputConfiguration::applied, [this] {
                     qDebug() << "Configuration applied!";
+                    Q_EMIT setOutputFinished();
                 });
                 connect(m_pConf, &OutputConfiguration::failed, [this] {
                     qDebug() << "Configuration failed!";
+                    Q_EMIT setOutputFinished();
                 });
             }
         } 
@@ -157,7 +166,9 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
             MonitorConfigsForUuid_v1.remove(dev->uuid());
             // 登录界面只有插拔需要处理
             if (m_removeUuid != dev->uuid()) {
-                setOutputs();
+                if (!m_setOutputTimer->isActive()) {
+                    m_setOutputTimer->start();
+                }
                 m_removeUuid = dev->uuid();
                 qDebug() << "update m_removeUuid--->" << m_removeUuid;
             }
@@ -184,7 +195,9 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
         cfg.dev = dev;
         MonitorConfigsForUuid_v1.insert(uuid, cfg);
         // 登录界面只有插拔需要处理
-        setOutputs();
+        if (!m_setOutputTimer->isActive()) {
+            m_setOutputTimer->start();
+        }
         if (dev->uuid() == m_removeUuid) {
             qDebug() << "reset removeUuid ...";
             m_removeUuid = "";
@@ -204,6 +217,9 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
 
 void GreeterDisplayWayland::setOutputs()
 {
+    if (m_setOutputTimer->isActive()) {
+        m_setOutputTimer->stop();
+    }
     if (MonitorConfigsForUuid_v1.size() == 0) {
         qDebug() << "has no monitors ...";
         return;
