@@ -29,7 +29,6 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-
 #include <DLabel>
 
 DWIDGET_USE_NAMESPACE
@@ -38,42 +37,20 @@ class LogoWidget : public QFrame
 {
     Q_OBJECT
 public:
-    enum ActiveState {
-        Unauthorized = 0,  //未授权
-        Authorized,  //已授权
-        AuthorizedLapse,  //授权失效
-        TrialAuthorized, //试用期已授权
-        TrialExpired //试用期已过期
-    };
-
-    enum AuthorizationProperty {
-        Default = 0,  //默认
-        Government,  //政务
-        Enterprise  //企业
-    };
-
-public:
     LogoWidget(QWidget *parent = nullptr);
     ~LogoWidget() override;
 
     void updateLocale(const QString &locale);
-
-public Q_SLOTS:
-    void updateLicenseState();
-    void updateLicenseAuthorizationProperty();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
     void initUI();
-    QPixmap loadSystemLogo(const QString &file, bool loadFromDTK);
+    QPixmap loadSystemLogo();
     QString getVersion();
-    void updateLogoPixmap();
 
 private:
-    int m_licenseState;
-    int m_authorizationProperty;
     QLabel *m_logoLabel;
     DLabel *m_logoVersionLabel;
     QString m_locale;
