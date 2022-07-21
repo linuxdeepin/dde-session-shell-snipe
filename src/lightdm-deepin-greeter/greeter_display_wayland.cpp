@@ -163,6 +163,9 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
 
         connect(dev, &OutputDevice::removed, this, [dev, this] {
             qDebug() << "OutputDevice::removed ...";
+            if (m_displayMode == Mirror_Mode) {
+                Q_EMIT setOutputStart();
+            }
             MonitorConfigsForUuid_v1.remove(dev->uuid());
             // 登录界面只有插拔需要处理
             if (m_removeUuid != dev->uuid()) {
@@ -188,6 +191,9 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
     QPoint point = dev->globalPosition();
     if (MonitorConfigsForUuid_v1.find(uuid) == MonitorConfigsForUuid_v1.end()) {
         qDebug() << "OutputDevice::Added uuid --->" << uuid;
+        if (m_displayMode == Mirror_Mode) {
+            Q_EMIT setOutputStart();
+        }
         QString name = getOutputDeviceName(dev->model(), dev->manufacturer());
         QString stdName = getStdMonitorName(QByteArray(dev->edid(), dev->edid().size()));
         MonitorConfig cfg;

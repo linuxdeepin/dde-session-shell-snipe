@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
         if (DGuiApplicationHelper::isXWindowPlatform()) {
             loginFrame->show();
         } else {
-            QObject::connect(worker, &GreeterWorker::showLoginWindow, loginFrame, &LoginWindow::show);
+            QObject::connect(worker, &GreeterWorker::showLoginWindow, loginFrame, &LoginWindow::setVisible);
         }
         return loginFrame;
     };

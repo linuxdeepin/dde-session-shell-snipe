@@ -37,7 +37,7 @@ signals:
     void requestUpdateBackground(const QString &path);
     void requestShowPrompt(const QString &prompt);
     void requestShowMessage(const QString &message);
-    void showLoginWindow();
+    void showLoginWindow(bool isShow);
 
 public slots:
     /* New authentication framework */
