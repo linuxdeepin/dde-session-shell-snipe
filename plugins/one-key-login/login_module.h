@@ -64,7 +64,8 @@ private:
     void initUI();
     void updateInfo();
     void initConnect();
-    void sendAuthTypeToSession();
+    void startCallHuaweiFingerprint();
+    void sendAuthTypeToSession(AuthType type);
     void messageCallback(AuthCallbackData& data);
 
 private:
@@ -75,9 +76,11 @@ private:
     QString m_userName;
     AppType m_appType;
     LoadType m_loadPluginType;
-    bool m_isAcceptSignal;
+    bool m_isAcceptFingerprintSignal;
+    QTimer *m_waitAcceptSignalTimer;
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
     DTK_WIDGET_NAMESPACE::DSpinner *m_spinner;
+    bool m_acceptSleepSignal;
 };
 
 } // namespace module

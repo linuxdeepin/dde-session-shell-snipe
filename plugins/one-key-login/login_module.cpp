@@ -47,9 +47,11 @@ LoginModule::LoginModule(QObject *parent)
     , m_loginWidget(nullptr)
     , m_appType(AppType::Login)
     , m_loadPluginType(Notload)
-    , m_isAcceptSignal(false)
+    , m_isAcceptFingerprintSignal(false)
+    , m_waitAcceptSignalTimer(nullptr)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
     , m_spinner(nullptr)
+    , m_acceptSleepSignal(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -63,48 +65,30 @@ LoginModule::LoginModule(QObject *parent)
 
 
     initConnect();
-
-    QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
-                                                                             "com.deepin.daemon.Authenticate.Fingerprint",
-                                                                             "IdentifyWithMultipleUser");
-    // 将消息发送到Dbus
-    QDBusPendingCall identifyCall = QDBusConnection::systemBus().asyncCall(m);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(identifyCall, this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, [this, identifyCall, watcher] {
-        qDebug() << Q_FUNC_INFO << "Get license state:" << identifyCall.error().message();
-        if (!identifyCall.isError()) {
-            QDBusMessage response = identifyCall.reply();
-            //判断Method是否被正确返回
-            if (response.type()== QDBusMessage::ReplyMessage) {
-                qDebug() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call success";
-            } else {
-                qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
-                m_isAcceptSignal = false;
-                //FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
-                sendAuthTypeToSession();
-            }
-        }
-        watcher->deleteLater();
-    });
-
+    startCallHuaweiFingerprint();
 
     //在2.5秒内没接收到一键登录信号，视为失败
-    QTimer *timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, [this] {
-        qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptSignal" << m_isAcceptSignal;
-        if (!m_isAcceptSignal) {
-            sendAuthTypeToSession();
+    m_waitAcceptSignalTimer = new QTimer(this);
+    connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
+        qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
+        m_waitAcceptSignalTimer->stop();
+        if (!m_isAcceptFingerprintSignal) {
+            sendAuthTypeToSession(AuthType::AT_Fingerprint);
         }
     }, Qt::DirectConnection);
-    timer->setInterval(2500);
-    timer->setSingleShot(true);
-    timer->start();
+    m_waitAcceptSignalTimer->setInterval(2500);
+    m_waitAcceptSignalTimer->start();
 }
 
 LoginModule::~LoginModule()
 {
     if (m_loginWidget) {
         delete m_loginWidget;
+    }
+
+    if (m_waitAcceptSignalTimer) {
+        m_waitAcceptSignalTimer->stop();
+        delete m_waitAcceptSignalTimer;
     }
 
     if (m_dconfig) {
@@ -130,16 +114,50 @@ void LoginModule::initConnect()
 
 }
 
+void LoginModule::startCallHuaweiFingerprint()
+{
+    QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
+                                                                             "com.deepin.daemon.Authenticate.Fingerprint",
+                                                                             "IdentifyWithMultipleUser");
+    // 将消息发送到Dbus
+    QDBusPendingCall identifyCall = QDBusConnection::systemBus().asyncCall(m);
+    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(identifyCall, this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, [this, identifyCall, watcher] {
+        qDebug() << Q_FUNC_INFO << "Get license state:" << identifyCall.error().message();
+        if (!identifyCall.isError()) {
+            QDBusMessage response = identifyCall.reply();
+            //判断Method是否被正确返回
+            if (response.type()== QDBusMessage::ReplyMessage) {
+                qDebug() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call success";
+            } else {
+                qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
+                m_isAcceptFingerprintSignal = false;
+                //FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
+                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            }
+        }
+        watcher->deleteLater();
+    });
+}
+
 void LoginModule::init()
 {
     initUI();
     updateInfo();
+
+    if (m_appType == AppType::Lock && !m_acceptSleepSignal) {
+        //此处延迟0.5s发送，是需要等待dde-session-shell认证方式创建完成
+        QTimer::singleShot(500, this, [this] {
+            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+        });
+    }
 }
 
 void LoginModule::initUI()
 {
     qInfo() << Q_FUNC_INFO;
     if (m_loginWidget) {
+        qInfo() << Q_FUNC_INFO << "m_loginWidget is exist";
         return;
     }
     m_loginWidget = new QWidget;
@@ -236,12 +254,7 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["ShowSwitchButton"] = false;
         retDataObj["ShowLockButton"] = false;
         retDataObj["DefaultAuthLevel"] = DefaultAuthLevel::StrongDefault;
-        qInfo() << Q_FUNC_INFO << "m_appType " << m_appType;
-        if(m_appType == AppType::Lock){
-            retDataObj["AuthType"] = AuthType::AT_Fingerprint;
-        }else if (m_appType == AppType::Login){
-            retDataObj["AuthType"] = AuthType::AT_Custom;
-        }
+        retDataObj["AuthType"] = AuthType::AT_Custom;
 
         retObj["Data"] = retDataObj;
     }
@@ -254,9 +267,18 @@ std::string LoginModule::onMessage(const std::string &message)
 void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg)
 {
     qDebug() << Q_FUNC_INFO << "LoginModule name :" << name << "\n error code:" << errorCode << " \n error msg:" << msg;
-    m_isAcceptSignal = true;
+    m_isAcceptFingerprintSignal = true;
+
+    m_waitAcceptSignalTimer->stop();
 
     if (errorCode == 0) {
+        m_acceptSleepSignal = false;
+
+        if (m_appType == AppType::Lock && m_userName != name) {
+            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            return ;
+        }
+
         QTimer::singleShot(500, this, [this, name] {
             qInfo() << Q_FUNC_INFO << "singleShot verify";
             AuthCallbackData data;
@@ -268,7 +290,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
     } else {
         // 发送一键登录失败的信息
         qWarning() << Q_FUNC_INFO << "slotIdentifyStatus recive failed";
-        sendAuthTypeToSession();
+        sendAuthTypeToSession(AuthType::AT_Fingerprint);
 
         AuthCallbackData data;
         data.result = AuthResult::Failure;
@@ -294,24 +316,36 @@ void LoginModule::slotPrepareForSleep(bool active)
 {
     qInfo() << Q_FUNC_INFO << active;
 
-    // 发送是否休眠待机的信息
-    if (active)
-        sendAuthTypeToSession();
+    m_acceptSleepSignal = true;
+
+    // 休眠待机时,开始调用一键登录指纹
+    if (active) {
+        AuthCallbackData data;
+        data.result = AuthResult::Failure;
+        messageCallback(data);
+        sendAuthTypeToSession(AuthType::AT_Custom);
+    } else {
+       m_isAcceptFingerprintSignal = false;
+       startCallHuaweiFingerprint();
+       m_spinner->start();
+       m_waitAcceptSignalTimer->start();
+    }
 }
 
-void LoginModule::sendAuthTypeToSession()
+void LoginModule::sendAuthTypeToSession(AuthType type)
 {
-    qInfo() << Q_FUNC_INFO << "sendAuthTypeToSession";
+    qInfo() << Q_FUNC_INFO << "sendAuthTypeToSession" << type;
     if (!m_messageCallbackFunc)
         return;
 
-    if (m_spinner) {
+    if (m_spinner && type != AuthType::AT_Custom) {
+        m_acceptSleepSignal = false;
         m_spinner->stop();
     }
     QJsonObject message;
     message.insert("CmdType", "setAuthTypeInfo");
     QJsonObject retDataObj;
-    retDataObj["AuthType"] = AuthType::AT_Fingerprint;
+    retDataObj["AuthType"] = type;
     message["Data"] = retDataObj;
     QJsonDocument doc;
     doc.setObject(message);
