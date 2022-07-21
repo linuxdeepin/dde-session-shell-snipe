@@ -105,11 +105,13 @@ void AuthCustom::initUi()
         return;
 
     if (!m_module->content() || m_module->content()->parent() == nullptr) {
+        qInfo() << Q_FUNC_INFO << "m_module->init()";
         m_module->init();
-        updateConfig();
         m_mainLayout->addWidget(m_module->content());
         setFocusProxy(m_module->content());
     }
+
+    updateConfig();
 }
 
 void AuthCustom::reset()

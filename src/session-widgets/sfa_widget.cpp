@@ -869,9 +869,16 @@ void SFAWidget::checkAuthResult(const int type, const int state)
  */
 void SFAWidget::syncAuthType(const QVariant &value)
 {
+    qDebug() << Q_FUNC_INFO << value;
+    int authType = value.toInt();
+
     QAbstractButton *btn = m_chooseAuthButtonBox->button(value.toInt());
-    if (btn)
+    if (btn) {
         btn->setChecked(true);
+        if (authType == AT_Custom && m_customAuth && !m_customAuth->showSwithButton()) {
+            btn->setVisible(false);
+        }
+    }
 }
 
 void SFAWidget::replaceWidget(AuthModule *authModule)

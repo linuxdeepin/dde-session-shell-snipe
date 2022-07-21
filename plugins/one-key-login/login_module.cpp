@@ -94,11 +94,6 @@ LoginModule::~LoginModule()
     if (m_dconfig) {
         delete m_dconfig;
     }
-
-    if (m_spinner) {
-        m_spinner->stop();
-        delete m_spinner;
-    }
 }
 
 void LoginModule::initConnect()
