@@ -81,7 +81,6 @@ ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
     , m_keyboardBtn(nullptr)
     , m_onboardBtnVisible(true)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
-    , m_regionInter(nullptr)
 {
     setModel(model);
     initUI();
@@ -252,10 +251,6 @@ void ControlWidget::initConnect()
 
     if (m_model->isUseWayland()) {
         installEventFilter(this);
-        m_regionInter = new DRegionMonitor(this);
-        connect(m_regionInter, &DRegionMonitor::buttonRelease, this, [this] {
-            hideMenu();
-        });
     }
 }
 
@@ -327,12 +322,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         }
 
         m_contextMenu->popup(QCursor::pos());
-        if (m_regionInter) {
-            // 放入事件循环处理，否则会立马收到鼠标右键点击事件
-            QTimer::singleShot(0, this, [this] {
-                m_regionInter->registerRegion();
-            });
-        }
+        qApp->installEventFilter(this);
     });
 
     connect(button, &FlotingButton::requestShowTips, this, [ = ] {
@@ -643,8 +633,8 @@ bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
-    DFloatingButton *btn = dynamic_cast<DFloatingButton *>(watched);
-    if (m_btnList.contains(btn)) {
+    DFloatingButton *btn = qobject_cast<DFloatingButton *>(watched);
+    if (btn && m_btnList.contains(btn)) {
         if (event->type() == QEvent::Enter) {
             m_index = m_btnList.indexOf(btn);
         }
@@ -658,6 +648,10 @@ bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
         if (m_model->isUseWayland()) {
             hideMenu();
         }
+    }
+
+    if (event->type() == QEvent::MouseButtonPress) {
+        hideMenu();
     }
 
 #else
@@ -705,6 +699,5 @@ void ControlWidget::updateTapOrder()
 void ControlWidget::hideMenu()
 {
     m_contextMenu->hide();
-    if (m_regionInter)
-        m_regionInter->unregisterRegion();
+    qApp->removeEventFilter(this);
 }

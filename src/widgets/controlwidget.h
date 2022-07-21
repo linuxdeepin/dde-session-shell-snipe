@@ -53,10 +53,6 @@ DCORE_BEGIN_NAMESPACE
 class DConfig;
 DCORE_END_NAMESPACE
 
-DGUI_BEGIN_NAMESPACE
-class DRegionMonitor;
-DGUI_END_NAMESPACE
-
 class MediaWidget;
 class QHBoxLayout;
 class QPropertyAnimation;
@@ -175,7 +171,6 @@ private:
     QList<QMetaObject::Connection> m_connectionList;
     bool m_onboardBtnVisible;
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
-    DTK_GUI_NAMESPACE::DRegionMonitor *m_regionInter;
 };
 
 #endif // CONTROLWIDGET_H
