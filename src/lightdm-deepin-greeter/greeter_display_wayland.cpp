@@ -266,14 +266,14 @@ void GreeterDisplayWayland::setOutputs()
                 QStringList uuidList = uuidKey.split(",");
                 if (uuidList.size() > 1) {
                     // 遍历所有组合，找到系统配置文件中对应组合的key
-                    QString uuidArry[uuidList.size()];
+                    int uuidIndexArry[uuidList.size()];
                     for(int i = 0; i < uuidList.size(); i++) {
-                        uuidArry[i] = uuidList[i];
+                        uuidIndexArry[i] = i;
                     }
                     do {
                         QString uuidKeyTmp;
-                        for(int i = 0; i < sizeof(uuidArry) / sizeof(*uuidArry); i++) {
-                            uuidKeyTmp = uuidKeyTmp + uuidArry[i] + ",";
+                        for(int i = 0; i < uuidList.size(); i++) {
+                            uuidKeyTmp = uuidKeyTmp + uuidList[uuidIndexArry[i]] + ",";
                         }
                         uuidKeyTmp.remove(uuidKeyTmp.length() - 1, 1);
                         monitorsArr = m_screensObj.value(uuidKeyTmp).toObject().value(displayMode).toObject().value("Monitors").toArray();
@@ -281,7 +281,7 @@ void GreeterDisplayWayland::setOutputs()
                             qDebug() << "uuidKey update--->" << uuidKeyTmp;
                             break;
                         }
-                    } while (std::next_permutation(uuidArry, uuidArry + uuidList.size()));
+                    } while (std::next_permutation(uuidIndexArry, uuidIndexArry + uuidList.size()));
                 }
             }
         } else {
