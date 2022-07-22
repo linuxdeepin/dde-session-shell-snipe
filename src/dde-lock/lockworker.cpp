@@ -3,6 +3,7 @@
 #include "authcommon.h"
 #include "sessionbasemodel.h"
 #include "userinfo.h"
+#include "public_func.h"
 
 #include <DSysInfo>
 
@@ -744,8 +745,15 @@ void LockWorker::disableGlobalShortcutsForWayland(const bool enable)
         qWarning() << "kglobalaccelInter is not valid";
         return;
     }
-    reply = m_kglobalaccelInter->call("setActiveByUniqueName", "Screenshot", true);
-    if (!reply.isValid()) {
-        qWarning() << "call setActiveByUniqueName failed" << reply.error();
+    const QStringList& shortCutlist = getDConfigValue(getDefaultConfigFileName(), "enableShortcutForLock", QStringList()).toStringList();
+    if (!shortCutlist.isEmpty()) {
+        foreach (const QString& shortcut, shortCutlist) {
+            reply = m_kglobalaccelInter->call("setActiveByUniqueName", shortcut, true);
+            if (!reply.isValid()) {
+                qWarning() << "call setActiveByUniqueName failed" << reply.error();
+            }
+        }
+    } else {
+        qWarning() << "there is no shortcut should be enabled!";
     }
 }

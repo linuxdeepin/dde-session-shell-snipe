@@ -51,6 +51,16 @@
             "description": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "enableShortcutForLock":{
+            "value": ["Screenshot","Screen Recorder"],
+            "serial": 0,
+            "flags": [],
+            "name": "enableShortcutForLock",
+            "name[zh_CN]": "锁屏下启用的快捷键",
+            "description": "锁屏下需要启用一些快捷键，修改后非即时生效",
+            "permissions": "readonly",
+            "visibility": "private"
         }
     }
 }
