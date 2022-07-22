@@ -33,6 +33,11 @@ class AuthCustom : public AuthModule
 {
     Q_OBJECT
 
+    enum AuthObjectType {
+        LightDM,
+        DeepinAuthenticate
+    };
+
 public:
 
     explicit AuthCustom(QWidget *parent = nullptr);
@@ -55,6 +60,7 @@ public:
     inline AuthCommon::DefaultAuthLevel defaultAuthLevel() const { return m_defaultAuthLevel; }
     inline AuthCommon::AuthType authType() const { return m_authType; }
     void sendAuthToken();
+    void lightdmAuthStarted();
 
 protected:
     bool event(QEvent *e);

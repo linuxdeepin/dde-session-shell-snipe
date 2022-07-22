@@ -44,6 +44,17 @@ class LoginModule : public QObject
     Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules.Login" FILE "login.json")
     Q_INTERFACES(dss::module::LoginModuleInterface)
 
+    enum AuthStatus {
+        None,
+        Start,
+        Finish
+    };
+
+    enum AuthObjectType {
+        LightDM,
+        DeepinAuthenticate
+    };
+
 public:
     explicit LoginModule(QObject *parent = nullptr);
     ~LoginModule() override;
@@ -66,7 +77,7 @@ private:
     void initConnect();
     void startCallHuaweiFingerprint();
     void sendAuthTypeToSession(AuthType type);
-    void messageCallback(AuthCallbackData& data);
+    void sendAuthData(AuthCallbackData& data);
 
 private:
     LoginCallBack *m_callback;
@@ -81,6 +92,8 @@ private:
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
     DTK_WIDGET_NAMESPACE::DSpinner *m_spinner;
     bool m_acceptSleepSignal;
+    AuthCallbackData m_lastAuthResult;
+    AuthStatus m_authStatus;
 };
 
 } // namespace module

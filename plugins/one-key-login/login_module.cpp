@@ -52,6 +52,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
     , m_spinner(nullptr)
     , m_acceptSleepSignal(false)
+    , m_authStatus(AuthStatus::None)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -252,6 +253,13 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["AuthType"] = AuthType::AT_Custom;
 
         retObj["Data"] = retDataObj;
+    } else if (cmdType == "StartAuth"){
+        qDebug() << Q_FUNC_INFO << "startAuth" << m_lastAuthResult.result << QString::fromStdString(m_lastAuthResult.account);
+        m_authStatus = AuthStatus::Start;
+        int type = data.value("AuthObjectType").toInt();
+        if(type == AuthObjectType::LightDM && m_isAcceptFingerprintSignal){
+            sendAuthData(m_lastAuthResult);
+        }
     }
 
     QJsonDocument doc;
@@ -263,9 +271,9 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
 {
     qDebug() << Q_FUNC_INFO << "LoginModule name :" << name << "\n error code:" << errorCode << " \n error msg:" << msg;
     m_isAcceptFingerprintSignal = true;
-
     m_waitAcceptSignalTimer->stop();
 
+    m_lastAuthResult = AuthCallbackData();
     if (errorCode == 0) {
         m_acceptSleepSignal = false;
 
@@ -274,27 +282,25 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
             return ;
         }
 
-        QTimer::singleShot(500, this, [this, name] {
-            qInfo() << Q_FUNC_INFO << "singleShot verify";
-            AuthCallbackData data;
-            data.account = name.toStdString();
-            data.token = "";
-            data.result = AuthResult::Success;
-            messageCallback(data);
-        });
+        qInfo() << Q_FUNC_INFO << "singleShot verify";
+        m_lastAuthResult.account = name.toStdString();
+        m_lastAuthResult.result = AuthResult::Success;
+        if(m_authStatus == AuthStatus::Start || m_appType == AppType::Lock){
+            sendAuthData(m_lastAuthResult);
+        }
     } else {
         // 发送一键登录失败的信息
         qWarning() << Q_FUNC_INFO << "slotIdentifyStatus recive failed";
         sendAuthTypeToSession(AuthType::AT_Fingerprint);
 
-        AuthCallbackData data;
-        data.result = AuthResult::Failure;
-        data.message = QString::number(errorCode).toStdString();
-        messageCallback(data);
+        m_lastAuthResult.result = AuthResult::Failure;
+        m_lastAuthResult.message = QString::number(errorCode).toStdString();
+        m_lastAuthResult.account = name.toStdString();
+        sendAuthData(m_lastAuthResult);
     }
 }
 
-void LoginModule::messageCallback(AuthCallbackData& data)
+void LoginModule::sendAuthData(AuthCallbackData& data)
 {
     if (!m_callbackFun) {
         qDebug() << Q_FUNC_INFO << "m_callbackFun is null";
@@ -305,6 +311,7 @@ void LoginModule::messageCallback(AuthCallbackData& data)
         m_spinner->stop();
     }
     m_callbackFun(&data, m_callback->app_data);
+    m_authStatus = AuthStatus::Finish;
 }
 
 void LoginModule::slotPrepareForSleep(bool active)
@@ -313,11 +320,11 @@ void LoginModule::slotPrepareForSleep(bool active)
 
     m_acceptSleepSignal = true;
 
+    m_lastAuthResult = AuthCallbackData();
     // 休眠待机时,开始调用一键登录指纹
     if (active) {
-        AuthCallbackData data;
-        data.result = AuthResult::Failure;
-        messageCallback(data);
+        m_lastAuthResult.result = AuthResult::Failure;
+        sendAuthData(m_lastAuthResult);
         sendAuthTypeToSession(AuthType::AT_Custom);
     } else {
        m_isAcceptFingerprintSignal = false;
@@ -352,6 +359,5 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
         qWarning() << Q_FUNC_INFO << "Failed to analysis SlotPrepareForSleep info from shell!: " << QString::fromStdString(ret);
     }
 }
-
 } // namespace module
 } // namespace dss

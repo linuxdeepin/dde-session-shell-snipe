@@ -307,3 +307,15 @@ void AuthCustom::sendAuthToken()
     }
     reset();
 }
+
+void AuthCustom::lightdmAuthStarted()
+{
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "StartAuth";
+    message["AuthObjectType"] = AuthObjectType::LightDM;
+    std::string result = m_module->onMessage(toJson(message).toStdString());
+    qInfo() << "Plugin result: " << QString::fromStdString(result);
+}

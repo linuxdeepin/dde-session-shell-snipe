@@ -347,9 +347,7 @@ void SFAWidget::setAuthState(const int type, const int state, const QString &mes
             // 有可能DA发送了验证开始，但是lightdm的验证还未开始，此时发送token的话lightdm无法验证通过。
             // ligthdm的pam发送prompt后则认为lightdm的pam已经开启验证
             qInfo() << "Greeter is in authentication";
-            if (m_model->appType() == AuthCommon::AppType::Login) {
-                m_customAuth->sendAuthToken();
-            }
+            m_customAuth->lightdmAuthStarted();
         }
         break;
     case AT_Custom:
