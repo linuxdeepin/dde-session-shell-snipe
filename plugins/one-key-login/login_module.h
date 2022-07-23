@@ -94,6 +94,7 @@ private:
     bool m_acceptSleepSignal;
     AuthCallbackData m_lastAuthResult;
     AuthStatus m_authStatus;
+    bool m_needSendAuthType;
 };
 
 } // namespace module

@@ -53,6 +53,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_spinner(nullptr)
     , m_acceptSleepSignal(false)
     , m_authStatus(AuthStatus::None)
+    , m_needSendAuthType(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -257,8 +258,13 @@ std::string LoginModule::onMessage(const std::string &message)
         qDebug() << Q_FUNC_INFO << "startAuth" << m_lastAuthResult.result << QString::fromStdString(m_lastAuthResult.account);
         m_authStatus = AuthStatus::Start;
         int type = data.value("AuthObjectType").toInt();
-        if(type == AuthObjectType::LightDM && m_isAcceptFingerprintSignal){
-            sendAuthData(m_lastAuthResult);
+        if(type == AuthObjectType::LightDM ){
+            if (m_isAcceptFingerprintSignal){
+                sendAuthData(m_lastAuthResult);
+            }
+            if (m_needSendAuthType) {
+                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            }
         }
     }
 
@@ -340,6 +346,11 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
     if (!m_messageCallbackFunc)
         return;
 
+    // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
+    if (m_authStatus == AuthStatus::None && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
+        m_needSendAuthType = true;
+        return;
+    }
     if (m_spinner && type != AuthType::AT_Custom) {
         m_acceptSleepSignal = false;
         m_spinner->stop();
@@ -358,6 +369,7 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
     if (jsonParseError.error != QJsonParseError::NoError || retDoc.isEmpty()) {
         qWarning() << Q_FUNC_INFO << "Failed to analysis SlotPrepareForSleep info from shell!: " << QString::fromStdString(ret);
     }
+    m_needSendAuthType = false;
 }
 } // namespace module
 } // namespace dss
