@@ -294,7 +294,19 @@ void GreeterDisplayWayland::setOutputs()
                 // disable屏幕的属性在下面初始化配置时修改
                 foreach(QString uuid, uuidList) {
                     if(uuid != enableUuid) {
-                        monitorsArr.append(m_screensObj.value(uuidKey).toObject().value(displayMode).toObject().value(uuid).toObject().value("Monitors").toArray()[0]);
+                        QJsonValue valueTmp = m_screensObj.value(uuidKey).toObject().value(displayMode).toObject().value(uuid).toObject().value("Monitors").toArray()[0];
+                        if (valueTmp.toObject().isEmpty()) {
+                            qDebug() << "valueTmp is null";
+                            // 仅单屏，若另一个屏幕没有配置，给个默认配置
+                            QJsonObject obj;
+                            obj["UUID"] = uuid;
+                            obj["Enabled"] = false;
+                            obj["X"] = 0;
+                            obj["Y"] = 0;
+                            obj["Rotation"] = 1;
+                            valueTmp = obj;
+                        }
+                        monitorsArr.append(valueTmp);
                         qDebug() << "disableUuid--->" << uuid;
                     }
                 }
@@ -314,9 +326,8 @@ void GreeterDisplayWayland::setOutputs()
                 }
             }
             if (id.isEmpty()) {
-                qDebug() << "new monitor ...";
-                applyDefault();
-                return;
+                qDebug() << "invalid monitor ...";
+                break;
             }
             MonitorConfigsForUuid_v1[id].x = jsonMonitorConfig.value("X").toInt();
             MonitorConfigsForUuid_v1[id].y = jsonMonitorConfig.value("Y").toInt();
@@ -391,7 +402,6 @@ void GreeterDisplayWayland::applyDefault()
     if (m_displayMode == Mirror_Mode) {
        applySize = commonSizeForMirrorMode();
     }
-    qDebug() << "applySize--->" << applySize;
     QPoint o(0, 0);
     bool enabled = true;
     foreach (MonitorConfig cfg, MonitorConfigsForUuid_v1) {
@@ -399,7 +409,7 @@ void GreeterDisplayWayland::applyDefault()
         if (m_displayMode != Mirror_Mode) {
             applySize = dev->geometry().size();
         }
-        qDebug() << "applyDefault uuid--->" << dev->uuid();
+        qDebug() << "applyDefault uuid--->" << dev->uuid() << "applySize--->" << applySize;
         for (auto m : dev->modes()) {
             if (m.size.width() == applySize.width() && m.size.height() == applySize.height()) {
                 qDebug() << "set output mode :" << m.size.width() << "x" << m.size.height() << "and refreshRate :" << m.refreshRate;
@@ -429,12 +439,18 @@ void GreeterDisplayWayland::applyConfig(QString uuid)
     qDebug() << "applyConfig ...";
     auto monitor = MonitorConfigsForUuid_v1[uuid];
     auto dev = monitor.dev;
+    bool modeSet = false;
     for (auto m : dev->modes()) {
         if (m.size.width() == monitor.width && m.size.height() == monitor.height && m.refreshRate == monitor.refresh_rate * 1000) {
             qDebug() << "set output mode :" << monitor.width << "x" << monitor.height << "and refreshRate :" << monitor.refresh_rate;
             m_pConf->setMode(dev, m.id);
+            modeSet = true;
             break;
         }
+    }
+    // 如果没有对应的组合，则设置第一个
+    if (!modeSet) {
+        m_pConf->setMode(dev, dev->modes()[0].id);
     }
     qDebug() << "set output setPosition to " << monitor.x << monitor.y;
     m_pConf->setPosition(dev, QPoint(monitor.x, monitor.y));
