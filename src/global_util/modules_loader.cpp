@@ -54,15 +54,19 @@ ModulesLoader &ModulesLoader::instance()
 
 BaseModuleInterface *ModulesLoader::findModuleByName(const QString &name) const
 {
-    return m_modules.value(name, nullptr);
+    return m_modules.value(name, nullptr).data();
 }
 
 QHash<QString, BaseModuleInterface *> ModulesLoader::findModulesByType(const int type) const
 {
     QHash<QString, BaseModuleInterface *> modules;
-    for (BaseModuleInterface *module : m_modules.values()) {
+    for (QSharedPointer<BaseModuleInterface> module : m_modules.values()) {
+        if (module.isNull()) {
+            continue;
+        }
+
         if (module->type() == type) {
-            modules.insert(module->key(), module);
+            modules.insert(module->key(), module.data());
         }
     }
     return modules;
@@ -140,7 +144,7 @@ void ModulesLoader::findModule(const QString &path)
         if (obj)
             obj->moveToThread(qApp->thread());
 
-        m_modules.insert(moduleInstance->key(), moduleInstance);
+        m_modules.insert(moduleInstance->key(), QSharedPointer<BaseModuleInterface>(moduleInstance));
         emit moduleFound(moduleInstance);
     }
 }

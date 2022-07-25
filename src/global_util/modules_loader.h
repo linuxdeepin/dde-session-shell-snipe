@@ -24,6 +24,7 @@
 
 #include <QHash>
 #include <QThread>
+#include <QSharedPointer>
 
 namespace dss {
 namespace module {
@@ -35,7 +36,7 @@ class ModulesLoader : public QThread
 public:
     static ModulesLoader &instance();
 
-    inline QHash<QString, BaseModuleInterface *> moduleList() { return m_modules; }
+    inline QHash<QString, QSharedPointer<BaseModuleInterface>> moduleList() { return m_modules; }
     BaseModuleInterface *findModuleByName(const QString &name) const;
     QHash<QString, BaseModuleInterface *> findModulesByType(const int type) const;
 
@@ -55,7 +56,7 @@ private:
     void findModule(const QString &path);
 
 private:
-    QHash<QString, BaseModuleInterface *> m_modules;
+    QHash<QString, QSharedPointer<BaseModuleInterface>> m_modules;
 };
 
 } // namespace module

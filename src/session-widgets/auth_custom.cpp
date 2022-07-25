@@ -28,6 +28,8 @@
 
 using namespace dss::module;
 
+QList<AuthCustom*> AuthCustom::AuthCustomObjs = {};
+
 AuthCustom::AuthCustom(QWidget *parent)
     : AuthModule(AuthCommon::AT_Custom, parent)
     , m_mainLayout(new QVBoxLayout(this))
@@ -44,6 +46,8 @@ AuthCustom::AuthCustom(QWidget *parent)
 
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
+
+    AuthCustomObjs.append(this);
 }
 
 AuthCustom::~AuthCustom()
@@ -52,11 +56,14 @@ AuthCustom::~AuthCustom()
         m_module->content()->setParent(nullptr);
     }
 
-    if (m_module) {
-        delete m_module;
-        m_module = nullptr;
-    }
+    AuthCustomObjs.removeAll(this);
 
+    if (AuthCustomObjs.isEmpty()) {
+        if (m_module) {
+            delete m_module;
+            m_module = nullptr;
+        }
+    }
 }
 
 void AuthCustom::setModule(dss::module::LoginModuleInterface *module)
@@ -66,7 +73,7 @@ void AuthCustom::setModule(dss::module::LoginModuleInterface *module)
     }
     m_module = module;
 
-    init();
+    setCallback();
 }
 
 void AuthCustom::setModel(const SessionBaseModel *model)
@@ -90,12 +97,13 @@ void AuthCustom::setModel(const SessionBaseModel *model)
     });
 }
 
-void AuthCustom::init()
+void AuthCustom::setCallback()
 {
-    m_callback.app_data = this;
-    m_callback.authCallbackFun = AuthCustom::authCallBack;
-    m_callback.messageCallbackFunc = AuthCustom::messageCallback;
-    m_module->setCallback(&m_callback);
+    dss::module::LoginCallBack callback;
+    callback.app_data = this;
+    callback.authCallbackFun = AuthCustom::authCallBack;
+    callback.messageCallbackFunc = AuthCustom::messageCallback;
+    m_module->setCallback(&callback);
 }
 
 void AuthCustom::initUi()
@@ -161,7 +169,7 @@ void AuthCustom::setAuthData(const AuthCallbackData &callbackData)
 void AuthCustom::authCallBack(const AuthCallbackData *callbackData, void *app_data)
 {
     qInfo() << Q_FUNC_INFO << "AuthCustom::authCallBack";
-    AuthCustom *authCustom = static_cast<AuthCustom *>(app_data);
+    AuthCustom *authCustom = getAuthCustomObj(app_data);
     if (callbackData && authCustom) {
         authCustom->setAuthData(*callbackData);
     }
@@ -185,7 +193,7 @@ std::string AuthCustom::messageCallback(const std::string &message, void *app_da
     }
 
     QJsonObject messageObj = messageDoc.object();
-    AuthCustom *authCustom = static_cast<AuthCustom *>(app_data);
+    AuthCustom *authCustom = getAuthCustomObj(app_data);
     if (!authCustom) {
         retObj["Code"] = -1;
         retObj["Message"] = "App data is nullptr!";
@@ -218,19 +226,38 @@ std::string AuthCustom::messageCallback(const std::string &message, void *app_da
                 retObj["Message"] = "Current user is null!";
             }
         }
-    }
-    else if (cmdType == "setAuthTypeInfo")
-    {
+    } else if (cmdType == "setAuthTypeInfo") {
         QJsonObject dataObj = messageObj.value("Data").toObject();
         AuthCommon::AuthType type = (AuthCommon::AuthType)dataObj["AuthType"].toInt();
-        AuthCustom *authCustom = static_cast<AuthCustom *>(app_data);
-        if (authCustom) {
-            authCustom->changeAuthType(type);
-        }
+        authCustom->changeAuthType(type);
     }
 
     retObj["Data"] = dataObj;
     return toJson(retObj).toStdString();
+}
+
+/**
+ * @brief 将插件回传的void对象指针转换为AuthCustom指针
+ *
+ * 这样做的原因在于，如果存在屏幕插拔的情况，那么AuthCustom *会被释放掉，但是插件是不知道的（也不能依赖插件去做这个处理）
+ * 后面插件把这个app_data回传到登录器，需要与AuthCustomObjs中保存的指针对比，判断app_data指针是否可用。
+ *
+ * @param app_data 从插件回传的AuthCustom对象指针
+ * @return AuthCustom* AuthCustom对象指针
+ */
+// TODO 考虑多屏使用一个不会释放的对象管理插件
+AuthCustom *AuthCustom::getAuthCustomObj(void *app_data)
+{
+    AuthCustom *authCustom = static_cast<AuthCustom *>(app_data);
+    if (AuthCustomObjs.contains(authCustom)) {
+        return authCustom;
+    }
+
+    if (AuthCustomObjs.size() > 0) {
+        return AuthCustomObjs.first();
+    }
+
+    return nullptr;
 }
 
 void AuthCustom::changeAuthType(AuthCommon::AuthType type)
@@ -252,6 +279,8 @@ bool AuthCustom::event(QEvent *e)
             if (m_module->content()->parent() != this) {
                 m_mainLayout->addWidget(m_module->content());
                 setFocusProxy(m_module->content());
+                // 重新设置传给插件的appData
+                setCallback();
             }
         }
     }

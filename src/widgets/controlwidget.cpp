@@ -223,9 +223,11 @@ void ControlWidget::initUI()
     m_mainLayout->addWidget(m_switchUserBtn);
     m_mainLayout->addWidget(m_powerBtn);
 
-    QHash<QString, module::BaseModuleInterface *> modules = module::ModulesLoader::instance().moduleList();
-    for (module::BaseModuleInterface *module : modules.values()) {
-        addModule(module);
+    for (QSharedPointer<module::BaseModuleInterface> module : module::ModulesLoader::instance().moduleList()) {
+        if (module.isNull())
+            continue;
+
+        addModule(module.data());
     }
 
     updateLayout();

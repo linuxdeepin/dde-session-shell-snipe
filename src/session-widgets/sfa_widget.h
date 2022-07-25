@@ -50,6 +50,7 @@ class SFAWidget : public AuthWidget
 
 public:
     explicit SFAWidget(QWidget *parent = nullptr);
+    ~SFAWidget();
 
     void setModel(const SessionBaseModel *model) override;
     void setAuthType(const int type) override;
@@ -100,6 +101,8 @@ private:
     QSpacerItem *m_bioBottomSpacingHolder;
     QSpacerItem *m_authTypeBottomSpacingHolder;
     AuthCommon::AuthType m_currentAuthType;
+    static QList<SFAWidget*> SFAWidgetObjs;
+    bool m_inited;
 };
 
 #endif // SFAWIDGET_H
