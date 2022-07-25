@@ -143,7 +143,6 @@ private:
     void hideTips();
     void updateLayout();
     void updateTapOrder();
-    void hideMenu();
 
 private:
     int m_index = 0;

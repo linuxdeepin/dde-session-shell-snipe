@@ -248,10 +248,6 @@ void ControlWidget::initConnect()
             m_virtualKBBtn->setVisible(m_onboardBtnVisible && !m_dconfig->value("hideOnboard", false).toBool());
         }
     });
-
-    if (m_model->isUseWayland()) {
-        installEventFilter(this);
-    }
 }
 
 void ControlWidget::addModule(module::BaseModuleInterface *module)
@@ -308,33 +304,15 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
             action->setData(itemObj.value("itemId").toString());
             action->setEnabled(itemObj.value("isActive").toBool());
             m_contextMenu->addAction(action);
-
-            connect(action, &QAction::triggered, this, [this, trayModule, action] {
-                if (action)
-                    trayModule->invokedMenuItem(action->data().toString(), true);
-            });
         }
 
-        if (m_model->isUseWayland()) {
-            // 顶层对象的窗口是override级别，需要将其设置为弹窗的父对象，否则无法显示出来。
-            // FIXME: 这样处理后在wayland环境下菜单会丢失圆角
-            m_contextMenu->setParent(topLevelWidget());
-        }
-
-        m_contextMenu->popup(QCursor::pos());
-        qApp->installEventFilter(this);
+        QAction *action = m_contextMenu->exec(QCursor::pos());
+        if (action)
+            trayModule->invokedMenuItem(action->data().toString(), true);
     });
 
     connect(button, &FlotingButton::requestShowTips, this, [ = ] {
         if (trayModule->itemTipsWidget()) {
-            if (m_model->isUseWayland()) {
-                // 如果菜单处于显示状态则不显示提示
-                if (m_contextMenu->isVisible())
-                    return;
-
-                // 顶层对象的窗口是override级别，需要将其设置为弹窗的父对象，否则无法显示出来。
-                m_tipsWidget->setParent(topLevelWidget());
-            }
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             m_tipsWidget->show(mapToGlobal(button->pos()).x() + button->width() / 2,mapToGlobal(button->pos()).y());
         }
@@ -567,10 +545,6 @@ void ControlWidget::setKBLayoutVisible()
     if (!m_arrowRectWidget->getContent()) {
         m_arrowRectWidget->setContent(m_kbLayoutListView);
     }
-    if (m_model->isUseWayland()) {
-        // 顶层对象的窗口是override级别，需要将其设置为弹窗的父对象，否则无法显示出来。
-        m_arrowRectWidget->setParent(topLevelWidget());
-    }
     m_arrowRectWidget->resize(m_kbLayoutListView->size() + QSize(0, 10));
 
     QPoint pos = QPoint(mapToGlobal(layoutButton->pos()).x() + layoutButton->width() / 2, mapToGlobal(layoutButton->pos()).y());
@@ -644,16 +618,6 @@ bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
         emit notifyKeyboardLayoutHidden();
     }
 
-    if (watched == this && event->type() == QEvent::Hide) {
-        if (m_model->isUseWayland()) {
-            hideMenu();
-        }
-    }
-
-    if (event->type() == QEvent::MouseButtonPress) {
-        hideMenu();
-    }
-
 #else
     Q_UNUSED(watched);
     Q_UNUSED(event);
@@ -693,11 +657,4 @@ void ControlWidget::updateTapOrder()
         if ((i + 1) < buttons.size())
             setTabOrder(buttons[i], buttons[i + 1]);
     }
-}
-
-
-void ControlWidget::hideMenu()
-{
-    m_contextMenu->hide();
-    qApp->removeEventFilter(this);
 }
