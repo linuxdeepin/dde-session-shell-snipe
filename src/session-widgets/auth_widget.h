@@ -99,7 +99,6 @@ protected:
 
     void setUser(std::shared_ptr<User> user);
     void setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo);
-    void setLimitsInfoString(const QString &limitsInfoStr);
     void setAvatar(const QString &avatar);
     void updateUserDisplayNameLabel();
     void setPasswordHint(const QString &hint);

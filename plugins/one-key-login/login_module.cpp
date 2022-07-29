@@ -14,6 +14,11 @@
 #include <QDBusInterface>
 #include <QDBusPendingCall>
 #include <QDBusReply>
+#include <QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QApplication>
 
 #include <DConfig>
 
@@ -24,12 +29,12 @@ namespace module {
 
 LoginModule::LoginModule(QObject *parent)
     : QObject(parent)
-    , m_callback(nullptr)
-    , m_callbackFun(nullptr)
-    , m_messageCallbackFunc(nullptr)
+    , m_appData(nullptr)
+    , m_authCallback(nullptr)
+    , m_messageCallback(nullptr)
     , m_loginWidget(nullptr)
     , m_appType(AppType::Login)
-    , m_loadPluginType(Notload)
+    , m_loadPluginType(NotLoad)
     , m_isAcceptFingerprintSignal(false)
     , m_waitAcceptSignalTimer(nullptr)
     , m_dconfig(nullptr)
@@ -50,7 +55,7 @@ LoginModule::LoginModule(QObject *parent)
     //华为机型,从override配置中获取是否加载插件
     if (m_dconfig) {
         bool showPlugin = m_dconfig->value("enableOneKeylogin", false).toBool();
-        m_loadPluginType = showPlugin ? Load : Notload;
+        m_loadPluginType = showPlugin ? Load : NotLoad;
         if (!showPlugin)
             return;
     }
@@ -199,7 +204,7 @@ void LoginModule::initUI()
 void LoginModule::updateInfo()
 {
     qInfo() << Q_FUNC_INFO;
-    if (!m_messageCallbackFunc) {
+    if (!m_messageCallback) {
         qWarning() << Q_FUNC_INFO << "message callback func is nullptr";
         return;
     }
@@ -213,13 +218,13 @@ void LoginModule::updateInfo()
     message["Data"] = array;
     QJsonDocument doc;
     doc.setObject(message);
-    std::string ret = m_messageCallbackFunc(doc.toJson().toStdString(), m_callback->app_data);
+    QString ret = m_messageCallback(doc.toJson(), m_appData);
 
     // 解析返回值
     QJsonParseError jsonParseError;
-    const QJsonDocument retDoc = QJsonDocument::fromJson(QByteArray::fromStdString(ret), &jsonParseError);
+    const QJsonDocument retDoc = QJsonDocument::fromJson(ret.toLatin1(), &jsonParseError);
     if (jsonParseError.error != QJsonParseError::NoError || retDoc.isEmpty()) {
-        qWarning() << Q_FUNC_INFO << "Failed to analysis AppType info from shell!: " << QString::fromStdString(ret);
+        qWarning() << Q_FUNC_INFO << "Failed to analysis AppType info from shell!: " << ret;
         return ;
     }
 
@@ -242,21 +247,28 @@ void LoginModule::updateInfo()
     }
 }
 
-void LoginModule::setCallback(LoginCallBack *callback)
+void LoginModule::setAppData(AppDataPtr appData)
 {
-    qInfo() << Q_FUNC_INFO;
-    m_callback = callback;
-    m_callbackFun = callback->authCallbackFun;
-    m_messageCallbackFunc = callback->messageCallbackFunc;
+    m_appData = appData;
 }
 
-std::string LoginModule::onMessage(const std::string &message)
+void LoginModule::setAuthCallback(AuthCallbackFunc authCallback)
+{
+    m_authCallback = authCallback;
+}
+
+void LoginModule::setMessageCallback(MessageCallbackFunc messageCallback)
+{
+    m_messageCallback = messageCallback;
+}
+
+QString LoginModule::message(const QString &message)
 {
     qInfo() << Q_FUNC_INFO;
     QJsonParseError jsonParseError;
-    const QJsonDocument messageDoc = QJsonDocument::fromJson(QByteArray::fromStdString(message), &jsonParseError);
+    const QJsonDocument messageDoc = QJsonDocument::fromJson(message.toLatin1(), &jsonParseError);
     if (jsonParseError.error != QJsonParseError::NoError || messageDoc.isEmpty()) {
-        qWarning() << Q_FUNC_INFO << "Failed to obtain message from shell!: " << QString::fromStdString(message);
+        qWarning() << Q_FUNC_INFO << "Failed to obtain message from shell!: " << message;
         return "";
     }
 
@@ -266,9 +278,9 @@ std::string LoginModule::onMessage(const std::string &message)
 
     QJsonObject msgObj = messageDoc.object();
     QString cmdType = msgObj.value("CmdType").toString();
-    QJsonObject data = msgObj.value("Data").toObject();
     qInfo() << "Cmd type: " << cmdType;
     if (cmdType == "CurrentUserChanged") {
+        QJsonObject data = msgObj.value("Data").toObject();
         m_userName = data.value("Name").toString();
         qDebug() << "Current user changed, user name: " << m_userName;
     } else if (cmdType == "GetConfigs") {
@@ -283,7 +295,8 @@ std::string LoginModule::onMessage(const std::string &message)
 
         retObj["Data"] = retDataObj;
     } else if (cmdType == "StartAuth"){
-        qDebug() << Q_FUNC_INFO << "startAuth" << m_lastAuthResult.result << QString::fromStdString(m_lastAuthResult.account);
+        qDebug() << Q_FUNC_INFO << "startAuth" << m_lastAuthResult.result << m_lastAuthResult.account;
+        QJsonObject data = msgObj.value("Data").toObject();
         m_authStatus = AuthStatus::Start;
         int type = data.value("AuthObjectType").toInt();
         if(type == AuthObjectType::LightDM ){
@@ -295,6 +308,7 @@ std::string LoginModule::onMessage(const std::string &message)
             }
         }
     } else if (cmdType == "AuthState") {
+        QJsonObject data = msgObj.value("Data").toObject();
         int authType = data.value("AuthType").toInt();
         int authState = data.value("AuthState").toInt();
         // 所有类型验证成功，重置插件状态
@@ -302,21 +316,21 @@ std::string LoginModule::onMessage(const std::string &message)
             init();
         }
     } else if (cmdType == "LimitsInfo") {
-        QString info = data.value("LimitsInfoStr").toString();
-        qDebug() << Q_FUNC_INFO << "LimitsInfoStr" << info;
-        const QJsonDocument limitsInfoDoc = QJsonDocument::fromJson(info.toUtf8());
-        const QJsonArray limitsInfoArr = limitsInfoDoc.array();
-        for (const QJsonValue &limitsInfoStr : limitsInfoArr) {
+        QJsonArray data = msgObj.value("Data").toArray();
+        for (const QJsonValue &limitsInfoStr : data) {
             const QJsonObject limitsInfoObj = limitsInfoStr.toObject();
             if (limitsInfoObj["flag"].toInt() == AT_Password)
                 m_isLocked = limitsInfoObj["locked"].toBool();
         }
-
+    } else if (cmdType == "IsPluginEnabled") {
+        QJsonObject retDataObj;
+        retDataObj["IsPluginEnabled"] = m_appType != AppType::Lock || m_acceptSleepSignal;
+        retObj["Data"] = retDataObj;
     }
 
     QJsonDocument doc;
     doc.setObject(retObj);
-    return doc.toJson().toStdString();
+    return doc.toJson();
 }
 
 void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg)
@@ -346,7 +360,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
         }
 
         qInfo() << Q_FUNC_INFO << "singleShot verify";
-        m_lastAuthResult.account = name == "" ? m_userName.toStdString() : name.toStdString();
+        m_lastAuthResult.account = name.isEmpty() ? m_userName : name;
         m_lastAuthResult.result = AuthResult::Success;
         if(m_authStatus == AuthStatus::Start || m_appType == AppType::Lock){
             sendAuthData(m_lastAuthResult);
@@ -359,15 +373,15 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
         });
 
         m_lastAuthResult.result = AuthResult::Failure;
-        m_lastAuthResult.message = QString::number(errorCode).toStdString();
-        m_lastAuthResult.account = name.toStdString();
+        m_lastAuthResult.message = QString::number(errorCode);
+        m_lastAuthResult.account = name;
         sendAuthData(m_lastAuthResult);
     }
 }
 
 void LoginModule::sendAuthData(AuthCallbackData& data)
 {
-    if (!m_callbackFun) {
+    if (!m_authCallback) {
         qDebug() << Q_FUNC_INFO << "m_callbackFun is null";
         return;
     }
@@ -375,7 +389,7 @@ void LoginModule::sendAuthData(AuthCallbackData& data)
     if (m_spinner) {
         m_spinner->stop();
     }
-    m_callbackFun(&data, m_callback->app_data);
+    m_authCallback(&data, m_appData);
     m_authStatus = AuthStatus::Finish;
 }
 
@@ -425,7 +439,7 @@ void LoginModule::slotPrepareForSleep(bool active)
 void LoginModule::sendAuthTypeToSession(AuthType type)
 {
     qInfo() << Q_FUNC_INFO << "sendAuthTypeToSession" << type;
-    if (!m_messageCallbackFunc){
+    if (!m_messageCallback){
         m_needSendAuthType = true;
         return;
     }
@@ -445,12 +459,12 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
     message["Data"] = retDataObj;
     QJsonDocument doc;
     doc.setObject(message);
-    std::string ret = m_messageCallbackFunc(doc.toJson().toStdString(), m_callback->app_data);
+    QString ret = m_messageCallback(doc.toJson(), m_appData);
     // 解析返回值
     QJsonParseError jsonParseError;
-    const QJsonDocument retDoc = QJsonDocument::fromJson(QByteArray::fromStdString(ret), &jsonParseError);
+    const QJsonDocument retDoc = QJsonDocument::fromJson(ret.toLatin1(), &jsonParseError);
     if (jsonParseError.error != QJsonParseError::NoError || retDoc.isEmpty()) {
-        qWarning() << Q_FUNC_INFO << "Failed to analysis SlotPrepareForSleep info from shell!: " << QString::fromStdString(ret);
+        qWarning() << Q_FUNC_INFO << "Failed to analysis SlotPrepareForSleep info from shell!: " << ret;
     }
     m_needSendAuthType = false;
 }

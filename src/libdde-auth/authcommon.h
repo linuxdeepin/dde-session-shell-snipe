@@ -43,18 +43,18 @@ enum InputType {
  * 认证类型
  */
 enum AuthType {
-    AT_None = 0,                 // none
-    AT_Password = 1 << 0,        // 密码
-    AT_Fingerprint = 1 << 1,     // 指纹
-    AT_Face = 1 << 2,            // 人脸
-    AT_ActiveDirectory = 1 << 3, // AD域
-    AT_Ukey = 1 << 4,            // ukey
-    AT_FingerVein = 1 << 5,      // 指静脉
-    AT_Iris = 1 << 6,            // 虹膜
-    AT_PIN = 1 << 7,             // PIN
-    AT_PAM = 1 << 29,            // PAM
-    AT_Custom = 1 << 30,         // 自定义
-    AT_All = -1                  // all
+    AT_None            = 0,         // none
+    AT_Password        = 1 << 0,    // 密码
+    AT_Fingerprint     = 1 << 1,    // 指纹
+    AT_Face            = 1 << 2,    // 人脸
+    AT_ActiveDirectory = 1 << 3,    // AD域
+    AT_Ukey            = 1 << 4,    // ukey
+    AT_FingerVein      = 1 << 5,    // 指静脉
+    AT_Iris            = 1 << 6,    // 虹膜
+    AT_PIN             = 1 << 7,    // PIN
+    AT_PAM             = 1 << 29,   // PAM
+    AT_Custom          = 1 << 30,   // 自定义
+    AT_All             = -1         // all
 };
 
 /**

@@ -18,11 +18,6 @@ AuthCustom::AuthCustom(QWidget *parent)
     , m_mainLayout(new QVBoxLayout(this))
     , m_module(nullptr)
     , m_model(nullptr)
-    , m_showAvatar(true)
-    , m_showUserName(true)
-    , m_showSwitchButton(true)
-    , m_showLockButton(false)
-    , m_defaultAuthLevel(AuthCommon::DefaultAuthLevel::Default)
 {
     setObjectName(QStringLiteral("AuthCutom"));
     setAccessibleName(QStringLiteral("AuthCutom"));
@@ -41,11 +36,6 @@ AuthCustom::~AuthCustom()
 
     // FIXME 这种处理方式不通用，应该由插件请求登陆器把自己卸载掉
     AuthCustomObjs.removeAll(this);
-    if (AuthCustomObjs.isEmpty()) {
-        if (m_module) {
-            ModulesLoader::instance().removeModule(m_module->key());
-        }
-    }
 }
 
 void AuthCustom::setModule(dss::module::LoginModuleInterface *module)
@@ -75,24 +65,24 @@ void AuthCustom::setModel(const SessionBaseModel *model)
         user["Name"] = currentUser->name();
         message["Data"] = user;
 
-        m_module->onMessage(toJson(message).toStdString());
+        m_module->message(toJson(message));
     });
 }
 
 void AuthCustom::setCallback()
 {
-    dss::module::LoginCallBack callback;
-    callback.app_data = this;
-    callback.authCallbackFun = AuthCustom::authCallBack;
-    callback.messageCallbackFunc = AuthCustom::messageCallback;
-    if (m_module) {
-        m_module->setCallback(&callback);
+    if (!m_module) {
+        qWarning() << "Plugin module is null";
+        return;
     }
+    m_module->setAuthCallback(&AuthCustom::authCallback);
+    m_module->setMessageCallback(&AuthCustom::messageCallback);
+    m_module->setAppData(this);
 }
 
 void AuthCustom::initUi()
 {
-    qInfo() << Q_FUNC_INFO << "AuthCustom initUi";
+    qInfo() << Q_FUNC_INFO;
     if (!m_module)
         return;
 
@@ -108,12 +98,13 @@ void AuthCustom::initUi()
 
 void AuthCustom::resetAuth()
 {
-    qInfo() << Q_FUNC_INFO << "Reset custom auth";
+    qInfo() << Q_FUNC_INFO;
     m_currentAuthData = AuthCallbackData();
 }
 
 void AuthCustom::reset()
 {
+    qInfo() << Q_FUNC_INFO;
     if (m_module)
         m_module->reset();
 }
@@ -124,6 +115,7 @@ void AuthCustom::setAuthState(const int state, const QString &result)
     m_state = state;
     switch (state) {
     case AuthCommon::AS_Started:
+        // greeter需要等lightdm开启验证后再发送认证信息
         if (m_model->appType() == AuthCommon::AppType::Lock) {
             sendAuthToken();
         }
@@ -144,7 +136,7 @@ void AuthCustom::setAuthData(const AuthCallbackData &callbackData)
         return;
     }
 
-    const QString &account = QString::fromStdString(callbackData.account);
+    const QString &account = callbackData.account;
     if (!account.isEmpty()) {
         qInfo() << Q_FUNC_INFO << "Request check account: " << account;
         emit requestCheckAccount(account);
@@ -153,20 +145,20 @@ void AuthCustom::setAuthData(const AuthCallbackData &callbackData)
     }
 }
 
-void AuthCustom::authCallBack(const AuthCallbackData *callbackData, void *app_data)
+void AuthCustom::authCallback(const AuthCallbackData *callbackData, void *app_data)
 {
-    qInfo() << Q_FUNC_INFO << "AuthCustom::authCallBack";
+    qInfo() << Q_FUNC_INFO << "AuthCustom::authCallback";
     AuthCustom *authCustom = getAuthCustomObj(app_data);
     if (callbackData && authCustom) {
         authCustom->setAuthData(*callbackData);
     }
 }
 
-std::string AuthCustom::messageCallback(const std::string &message, void *app_data)
+QString AuthCustom::messageCallback(const QString &message, void *app_data)
 {
-    qDebug() << Q_FUNC_INFO << "Received message: " << QString::fromStdString(message);
+    qDebug() << Q_FUNC_INFO << "Received message: " << message;
     QJsonParseError jsonParseError;
-    const QJsonDocument messageDoc = QJsonDocument::fromJson(QByteArray::fromStdString(message), &jsonParseError);
+    const QJsonDocument messageDoc = QJsonDocument::fromJson(message.toLatin1(), &jsonParseError);
 
     QJsonObject retObj;
     QJsonObject dataObj;
@@ -175,8 +167,8 @@ std::string AuthCustom::messageCallback(const std::string &message, void *app_da
     if (jsonParseError.error != QJsonParseError::NoError || messageDoc.isEmpty()) {
         retObj["Code"] = -1;
         retObj["Message"] = "Failed to analysis message info";
-        qWarning() << "Failed to analysis message info from plugin!: " << QString::fromStdString(message);
-        return toJson(retObj).toStdString();
+        qWarning() << "Failed to analysis message info from plugin!: " << message;
+        return toJson(retObj);
     }
 
     QJsonObject messageObj = messageDoc.object();
@@ -184,13 +176,14 @@ std::string AuthCustom::messageCallback(const std::string &message, void *app_da
     if (!authCustom) {
         retObj["Code"] = -1;
         retObj["Message"] = "App data is nullptr!";
+        return toJson(retObj);
     }
 
     const SessionBaseModel *model = authCustom->getModel();
     if (!model) {
         retObj["Code"] = -1;
         retObj["Message"] = "Data model is nullptr!";
-        return toJson(retObj).toStdString();
+        return toJson(retObj);
     }
 
     QString cmdType = messageObj.value("CmdType").toString();
@@ -220,7 +213,7 @@ std::string AuthCustom::messageCallback(const std::string &message, void *app_da
     }
 
     retObj["Data"] = dataObj;
-    return toJson(retObj).toStdString();
+    return toJson(retObj);
 }
 
 /**
@@ -281,17 +274,28 @@ void AuthCustom::updateConfig()
 
     QJsonObject message;
     message["CmdType"] = "GetConfigs";
-    std::string result = m_module->onMessage(toJson(message).toStdString());
-    qInfo() << "Plugin result: " << QString::fromStdString(result);
-    QJsonObject dataObj = getDataObj(QString::fromStdString(result));
-    if (dataObj.isEmpty())
-        return;
+    QString result = m_module->message(toJson(message));
+    qInfo() << "Plugin result: " << result;
 
-    m_showAvatar = dataObj["ShowAvatar"].toBool(m_showAvatar);
-    m_showUserName = dataObj["ShowUserName"].toBool(m_showUserName);
-    m_showSwitchButton = dataObj["ShowSwitchButton"].toBool(m_showSwitchButton);
-    m_showLockButton = dataObj["ShowLockButton"].toBool(m_showLockButton);
-    m_defaultAuthLevel = (AuthCommon::DefaultAuthLevel)dataObj["DefaultAuthLevel"].toInt();
+    QJsonParseError jsonParseError;
+    const QJsonDocument resultDoc = QJsonDocument::fromJson(result.toLatin1(), &jsonParseError);
+    if (jsonParseError.error != QJsonParseError::NoError || resultDoc.isEmpty()) {
+        qWarning() << "Result json parse error";
+        return;
+    }
+
+    QJsonObject resultObj = resultDoc.object();
+    if (!resultObj.contains("Data")) {
+        qWarning() << "Result does't contains the 'data' field";
+        return;
+    }
+
+    QJsonObject dataObj = resultObj["Data"].toObject();
+    m_pluginConfig.showAvatar = dataObj["ShowAvatar"].toBool(m_pluginConfig.showAvatar);
+    m_pluginConfig.showUserName = dataObj["ShowUserName"].toBool(m_pluginConfig.showUserName);
+    m_pluginConfig.showSwitchButton = dataObj["ShowSwitchButton"].toBool(m_pluginConfig.showSwitchButton);
+    m_pluginConfig.showLockButton = dataObj["ShowLockButton"].toBool(m_pluginConfig.showLockButton);
+    m_pluginConfig.defaultAuthLevel = (AuthCommon::DefaultAuthLevel)dataObj["DefaultAuthLevel"].toInt();
     m_authType = (AuthCommon::AuthType)dataObj["AuthType"].toInt();
 }
 
@@ -305,8 +309,9 @@ QSize AuthCustom::contentSize() const
 
 void AuthCustom::sendAuthToken()
 {
+    qInfo() << "Send auth token";
     if (m_currentAuthData.result == AuthResult::Success) {
-        Q_EMIT requestSendToken(QString::fromStdString(m_currentAuthData.token));
+        Q_EMIT requestSendToken(m_currentAuthData.token);
     } else {
         qWarning() << "Current validation is not successfully";
     }
@@ -315,47 +320,63 @@ void AuthCustom::sendAuthToken()
 
 void AuthCustom::lightdmAuthStarted()
 {
+    qInfo() << Q_FUNC_INFO;
     if (!m_module)
         return;
 
+    // 在用户A的界面登陆用户B，将结果返回后，首先会进行一次用户切换
+    // 切换完成后把之前插件发送的验证结果进行一次验证
+    sendAuthToken();
+
+    // Tell plugin that lightdm authentication started
     QJsonObject message;
     message["CmdType"] = "StartAuth";
     QJsonObject retDataObj;
     retDataObj["AuthObjectType"] = AuthObjectType::LightDM;
     message["Data"] = retDataObj;
-    std::string result = m_module->onMessage(toJson(message).toStdString());
-    qInfo() << "Plugin result: " << QString::fromStdString(result);
+    QString result = m_module->message(toJson(message));
+    qInfo() << "Plugin result: " << result;
 }
-
 
 void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state)
 {
+    qInfo() << Q_FUNC_INFO << authType << ", auth state: " << state;
     if (!m_module)
         return;
 
     QJsonObject message;
     message["CmdType"] = "AuthState";
-    message["AuthType"] = authType;
-    message["AuthState"] = state;
-    m_module->onMessage(toJson(message).toStdString());
+    QJsonObject retDataObj;
+    retDataObj["AuthType"] = authType;
+    retDataObj["AuthState"] = state;
+    message["Data"] = retDataObj;
+    m_module->message(toJson(message));
 }
 
-void AuthCustom::setLimitsInfo(const QString limitsInfoStr)
+/**
+ * @brief 将限制信息发给插件
+ *
+ * @param limitsInfoStr 插件信息的json数据
+ */
+void AuthCustom::setLimitsInfo(const QMap<int, User::LimitsInfo> &limitsInfo)
 {
-    //把输密码错误五次后，是否锁定的信息传给插件
+    // 把输密码错误五次后，是否锁定的信息传给插件
     if (!m_module)
         return;
 
+    QJsonArray array;
+    auto it = limitsInfo.constBegin();
+    while (it != limitsInfo.end()) {
+        array.append(it.value().toJson());
+        ++it;
+    }
     QJsonObject message;
     message["CmdType"] = "LimitsInfo";
-    QJsonObject retDataObj;
-    retDataObj["LimitsInfoStr"] = limitsInfoStr;
-    message["Data"] = retDataObj;
-    std::string result = m_module->onMessage(toJson(message).toStdString());
-    qInfo() << "Plugin result: " << QString::fromStdString(result);
+    message["Data"] = array;
+    m_module->message(toJson(message));
 }
 
-QJsonObject AuthCustom::getDataObj(const QString &jsonStr)
+QJsonObject AuthCustom::getRootObj(const QString &jsonStr)
 {
     QJsonParseError jsonParseError;
     const QJsonDocument &resultDoc = QJsonDocument::fromJson(jsonStr.toLocal8Bit(), &jsonParseError);
@@ -364,7 +385,12 @@ QJsonObject AuthCustom::getDataObj(const QString &jsonStr)
         return QJsonObject();
     }
 
-    const QJsonObject &rootObj = resultDoc.object();
+    return resultDoc.object();
+}
+
+QJsonObject AuthCustom::getDataObj(const QString &jsonStr)
+{
+    const QJsonObject &rootObj = getRootObj(jsonStr);
     if (!rootObj.contains("Data")) {
         qWarning() << "Result doesn't contains the 'data' field";
         return QJsonObject();
@@ -381,11 +407,27 @@ bool AuthCustom::supportDefaultUser(dss::module::LoginModuleInterface *module)
     qInfo() << Q_FUNC_INFO;
     QJsonObject message;
     message["CmdType"] = "GetConfigs";
-    const std::string &result = module->onMessage(toJson(message).toStdString());
-    qInfo() << "Plugin result: " << QString::fromStdString(result);
-    const QJsonObject &dataObj = getDataObj(QString::fromStdString(result));
+    const QString &result = module->message(toJson(message));
+    const QJsonObject &dataObj = getDataObj(result);
     if (dataObj.isEmpty())
         return true;
 
     return dataObj["SupportDefaultUser"].toBool(true);
+}
+
+bool AuthCustom::isPluginEnabled(dss::module::LoginModuleInterface *module)
+{
+    if (!module)
+        return false;
+
+    qDebug() << Q_FUNC_INFO;
+    QJsonObject message;
+    message["CmdType"] = "IsPluginEnabled";
+    const QString &result = module->message(toJson(message));
+    qDebug() << "Result: " << result;
+    const QJsonObject &dataObj = getDataObj(result);
+    if (dataObj.isEmpty() || !dataObj.contains("IsPluginEnabled"))
+        return true;
+
+    return dataObj["IsPluginEnabled"].toBool(true);
 }

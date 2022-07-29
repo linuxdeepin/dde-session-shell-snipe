@@ -227,7 +227,7 @@ double getScaleFormConfig()
     if (configReply.isValid()) {
         QString config = configReply.value();
         QJsonParseError jsonError;
-        QJsonDocument jsonDoc(QJsonDocument::fromJson(config.toStdString().data(), &jsonError));
+        QJsonDocument jsonDoc(QJsonDocument::fromJson(config.toLatin1(), &jsonError));
         if (jsonError.error == QJsonParseError::NoError) {
             QJsonObject rootObj = jsonDoc.object();
             QJsonObject Config = rootObj.value("Config").toObject();

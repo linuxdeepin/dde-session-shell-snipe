@@ -138,13 +138,11 @@ void SFAWidget::setAuthType(const int type)
         // TODO 每个屏幕只创建一个LockContent，鼠标在屏幕间移动的时候重新设置LockContent的parent即可。
         qInfo() << "Sfa is inited: " << m_inited << ", sfa widgets size: " << SFAWidgetObjs.size();
         if (m_inited || SFAWidgetObjs.size() <= 1) {
-             qInfo() << Q_FUNC_INFO << "m_customAuth->authType()" << m_customAuth->authType();
-            if (m_customAuth->defaultAuthLevel() == AuthCommon::DefaultAuthLevel::Default) {
+            qInfo() << Q_FUNC_INFO << "m_customAuth->authType()" << m_customAuth->authType();
+            if (m_customAuth->pluginConfig().defaultAuthLevel == AuthCommon::DefaultAuthLevel::Default) {
                 m_currentAuthType = m_currentAuthType == AT_All ? AT_Custom : m_currentAuthType;
-            } else if (m_customAuth->defaultAuthLevel() == AuthCommon::DefaultAuthLevel::StrongDefault) {
-                if (m_currentAuthType == AT_All || m_currentAuthType == AT_Custom) {
-                    m_currentAuthType = m_customAuth->authType();
-                }
+            } else if (m_customAuth->pluginConfig().defaultAuthLevel == AuthCommon::DefaultAuthLevel::StrongDefault) {
+                m_currentAuthType = AT_Custom;
             }
         }
 
@@ -284,7 +282,7 @@ void SFAWidget::setAuthType(const int type)
         m_chooseAuthButtonBox->hide();
     }
 
-    if (m_customAuth && !m_customAuth->showSwithButton()) {
+    if (m_customAuth && !m_customAuth->pluginConfig().showSwitchButton) {
         m_chooseAuthButtonBox->button(AT_Custom)->hide();
         if (count <= 2)
             m_chooseAuthButtonBox->hide();
@@ -351,12 +349,12 @@ void SFAWidget::setAuthState(const int type, const int state, const QString &mes
             m_frameDataBind->updateValue("SFSingleAuthMsg", message);
         }
 
-        // 这里是为了让自定义登陆知道ligthdm已经开启验证了
+        // 这里是为了让自定义登陆知道lightdm已经开启验证了
         qInfo() << "Current auth type is: " << m_currentAuthType;
         if (m_customAuth && state == AS_Prompt && m_currentAuthType == AT_Custom) {
             // 有可能DA发送了验证开始，但是lightdm的验证还未开始，此时发送token的话lightdm无法验证通过。
-            // ligthdm的pam发送prompt后则认为lightdm的pam已经开启验证
-            qInfo() << "Greeter is in authentication";
+            // lightdm的pam发送prompt后则认为lightdm验证已经开始
+            qInfo() << "LightDM is in authentication right now";
             m_customAuth->lightdmAuthStarted();
         }
         break;
@@ -789,7 +787,7 @@ void SFAWidget::initCustomAuth()
         if (m_user && m_user->name() == account) {
             dss::module::AuthCallbackData data = m_customAuth->getCurrentAuthData();
             if (data.result == dss::module::Success)
-                Q_EMIT sendTokenToAuth(m_user->name(), AT_Custom, QString::fromStdString(data.token));
+                Q_EMIT sendTokenToAuth(m_user->name(), AT_Custom, data.token);
             else
                 qWarning() << Q_FUNC_INFO << "auth failed";
 
@@ -803,7 +801,7 @@ void SFAWidget::initCustomAuth()
 
     /* 认证选择按钮 */
     DButtonBoxButton *btn = new DButtonBoxButton(DStyle::SP_SelectElement, QString(), this);
-    const QString &iconStr = QString::fromStdString(module->icon());
+    const QString &iconStr = module->icon();
     const QIcon icon = QFile::exists(iconStr) ? QIcon(iconStr) : QIcon::fromTheme(iconStr);
     if (!icon.isNull()) {
         btn->setIcon(icon);
@@ -818,9 +816,9 @@ void SFAWidget::initCustomAuth()
             m_biometricAuthState->hide();
             setBioAuthStateVisible(nullptr, false);
             m_accountEdit->hide();
-            m_userAvatar->setVisible(m_customAuth->showAvatar());
-            m_userNameWidget->setVisible(m_customAuth->showUserName());
-            m_lockButton->setVisible(m_customAuth->showLockButton());
+            m_userAvatar->setVisible(m_customAuth->pluginConfig().showAvatar);
+            m_userNameWidget->setVisible(m_customAuth->pluginConfig().showUserName);
+            m_lockButton->setVisible(m_customAuth->pluginConfig().showLockButton);
             replaceWidget(m_customAuth);
             m_frameDataBind->updateValue("SFAType", AT_Custom);
             Q_EMIT requestStartAuthentication(m_user->name(), AT_Custom);
@@ -887,7 +885,7 @@ void SFAWidget::syncAuthType(const QVariant &value)
     QAbstractButton *btn = m_chooseAuthButtonBox->button(value.toInt());
     if (btn) {
         btn->setChecked(true);
-        if (authType == AT_Custom && m_customAuth && !m_customAuth->showSwithButton()) {
+        if (authType == AT_Custom && m_customAuth && !m_customAuth->pluginConfig().showSwitchButton) {
             btn->setVisible(false);
         }
     }
@@ -926,7 +924,7 @@ void SFAWidget::replaceWidget(AuthModule *authModule)
 
 void SFAWidget::onRetryButtonVisibleChanged(bool visible)
 {
-    m_lockButton->setVisible(!visible && !(m_customAuth && AT_Custom == m_currentAuthType && !m_customAuth->showLockButton()));
+    m_lockButton->setVisible(!visible && !(m_customAuth && AT_Custom == m_currentAuthType && !m_customAuth->pluginConfig().showLockButton));
     m_retryButton->setVisible(visible);
 }
 
@@ -954,9 +952,9 @@ int SFAWidget::getTopSpacing() const
         // 一般自定义的类型控件尺寸都会比较大，尽量保证能够居中显示。
         // 根据头像、用户名、锁屏以及插件自身的高度来计算居中时顶部间隔
         // 这是一个相对比较严格的高度，如果插件还是无法显示完整，或者界面偏下的话，只能插件调整content界面的大小了
-        int height = m_customAuth->showAvatar() ? m_userAvatar->height() + 10 : 0;
-        height += m_customAuth->showUserName() ? m_userNameWidget->height() + 10 : 0;
-        height += m_customAuth->showLockButton() ? m_lockButton->height() + 10 : 0;
+        int height = m_customAuth->pluginConfig().showAvatar ? m_userAvatar->height() + 10 : 0;
+        height += m_customAuth->pluginConfig().showUserName ? m_userNameWidget->height() + 10 : 0;
+        height += m_customAuth->pluginConfig().showLockButton ? m_lockButton->height() + 10 : 0;
 
         centerTop = static_cast<int>((topLevelWidget()->geometry().height() - height - m_customAuth->contentSize().height()) / 2);
     }
@@ -1006,7 +1004,7 @@ void SFAWidget::updateFocus()
     for (int i = 0; i < m_mainLayout->layout()->count(); ++i) {
         AuthModule *authModule = qobject_cast<AuthModule *>(m_mainLayout->layout()->itemAt(i)->widget());
         if (authModule && authModule->authType() == m_chooseAuthButtonBox->checkedId()) {
-            if (authModule->authType() == AT_Custom && m_customAuth && !m_customAuth->showSwithButton()) {
+            if (authModule->authType() == AT_Custom && m_customAuth && !m_customAuth->pluginConfig().showSwitchButton) {
                 return;
             }
             setFocus();
@@ -1032,8 +1030,8 @@ void SFAWidget::updateBlurEffectGeometry()
     if (m_customAuth && AT_Custom == m_currentAuthType) {
         QRect rect = this->rect();
         // top
-        if (!m_customAuth->showAvatar()) {
-            if (m_customAuth->showUserName()) {
+        if (!m_customAuth->pluginConfig().showAvatar) {
+            if (m_customAuth->pluginConfig().showUserName) {
                 rect.setTop(m_userNameWidget->geometry().top() - 10);
             } else {
                 rect.setTop(m_customAuth->geometry().top() - 10);
@@ -1043,7 +1041,7 @@ void SFAWidget::updateBlurEffectGeometry()
         }
         // bottom
         if (m_user->expiredState() == User::ExpiredNormal) {
-            if (!m_customAuth->showLockButton()) {
+            if (!m_customAuth->pluginConfig().showLockButton) {
                 rect.setBottom(m_customAuth->geometry().bottom() + 10);
             } else {
                 rect.setBottom(m_lockButton->geometry().top() - 10);
@@ -1060,8 +1058,7 @@ void SFAWidget::updateBlurEffectGeometry()
 
 void SFAWidget::initAccount()
 {
-    qDebug() << "Init switch button of account ";
-
+    qDebug() << "Init switch button of account";
     /* 认证选择按钮 */
     if (m_authButtons.contains(AT_None)) {
         return;
@@ -1088,22 +1085,27 @@ void SFAWidget::onRequestChangeAuth(const int authType)
 {
     qInfo() << Q_FUNC_INFO
             << ", authType" << authType
-            << ", curren auth type: " << m_currentAuthType;
+            << ", chooseAuthButtonBox is enabled" << m_chooseAuthButtonBox->isEnabled()
+            << ", current authentication type" << m_currentAuthType;
 
     if (!m_chooseAuthButtonBox->isEnabled()) {
-        qWarning() << "Choose auth button box is disenabled";
+        qWarning() << "Authentication button box is disabled";
         return;
     }
 
     if (!m_authButtons.contains(authType)) {
-        qWarning() << "Auth type is invalid";
+        qWarning() << "Authentication buttons do not contain the type";
         m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
         return ;
     }
 
     QAbstractButton *btn = m_chooseAuthButtonBox->button(authType);
-    if (btn)
-        emit btn->toggled(true);
+    if (!btn) {
+        qWarning() << "The button of authentication is null";
+        return;
+    }
+
+    emit btn->toggled(true);
 }
 
 bool SFAWidget::useCustomAuth() const
@@ -1125,9 +1127,17 @@ bool SFAWidget::useCustomAuth() const
         return false;
     }
 
+    dss::module::LoginModuleInterface * const module = dynamic_cast<dss::module::LoginModuleInterface *>(interfaces.first());
+
+    // 当前插件是否启动，由插件自己决定
+    if (!AuthCustom::isPluginEnabled(module)) {
+        qInfo() << "Plugin is disabled";
+        return false;
+    }
+
     // 判断认证插件是否支持"..."用户
     if (m_user && m_user->type() == User::Default) {
-        const bool supportDefaultUser = AuthCustom::supportDefaultUser(dynamic_cast<dss::module::LoginModuleInterface *>(interfaces.first()));
+        const bool supportDefaultUser = AuthCustom::supportDefaultUser(module);
         if (!supportDefaultUser) {
             qInfo() << "Do not support default user";
             return false;

@@ -30,12 +30,13 @@ public:
     ~LoginModule() override;
 
     void init() override;
-    ModuleType type() const override { return LoginType;     }
     inline QString key() const override { return objectName();  }
     inline QWidget *content() override { return m_loginWidget; }
-    inline std::string icon() const override { return "code-block"; }
-    void setCallback(LoginCallBack *callback) override;
-    std::string onMessage(const std::string &) override;
+    inline QString icon() const override { return "code-block"; }
+    void setAppData(AppDataPtr) override;
+    void setAuthCallback(AuthCallbackFunc) override;
+    void setMessageCallback(MessageCallbackFunc) override;
+    QString message(const QString&) override;
     void reset() override;
 
 private:
@@ -43,9 +44,9 @@ private:
     void updateInfo();
 
 private:
-    LoginCallBack *m_callback;
-    AuthCallbackFun m_authCallbackFun;
-    MessageCallbackFun m_messageCallbackFunc;
+    AppDataPtr m_appData;
+    AuthCallbackFunc m_authCallback;
+    MessageCallbackFunc m_messageCallback;
     LoginWidget *m_loginWidget;
     QString m_userName;
     int m_appType;

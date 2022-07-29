@@ -35,11 +35,6 @@ class LoginModule : public QObject
         Finish
     };
 
-    enum AuthObjectType {
-        LightDM,
-        DeepinAuthenticate
-    };
-
 public:
     explicit LoginModule(QObject *parent = nullptr);
     ~LoginModule() override;
@@ -49,9 +44,11 @@ public:
     inline QString key() const override { return objectName(); }
     inline QWidget *content() override { return m_loginWidget; }
     inline LoadType loadPluginType() const override { return  m_loadPluginType;}
-    void setCallback(LoginCallBack *callback) override;
-    std::string onMessage(const std::string &) override;
     void reset() override;
+    void setAppData(AppDataPtr) override;
+    void setAuthCallback(AuthCallbackFunc) override;
+    void setMessageCallback(MessageCallbackFunc) override;
+    QString message(const QString&) override;
 
 public Q_SLOTS:
     void slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg);
@@ -66,9 +63,9 @@ private:
     void sendAuthData(AuthCallbackData& data);
 
 private:
-    LoginCallBack *m_callback;
-    AuthCallbackFun m_callbackFun;
-    MessageCallbackFun m_messageCallbackFunc;
+    AppDataPtr m_appData;
+    AuthCallbackFunc m_authCallback;
+    MessageCallbackFunc m_messageCallback;
     QWidget *m_loginWidget;
     QString m_userName;
     AppType m_appType;

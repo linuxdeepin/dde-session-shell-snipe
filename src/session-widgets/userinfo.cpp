@@ -105,10 +105,10 @@ void User::updateLimitsInfo(const QString &info)
         limitsInfoTmp.numFailures = limitsInfoObj["numFailures"].toVariant().toUInt();
         limitsInfoTmp.locked = limitsInfoObj["locked"].toBool();
         limitsInfoTmp.unlockTime = limitsInfoObj["unlockTime"].toString();
+        limitsInfoTmp.flag = limitsInfoObj["flag"].toInt();
         m_limitsInfo->insert(limitsInfoObj["flag"].toInt(), limitsInfoTmp);
     }
     emit limitsInfoChanged(m_limitsInfo);
-    Q_EMIT limitsInfoChangedString(info);
 }
 
 /**

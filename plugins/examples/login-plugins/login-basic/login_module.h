@@ -25,16 +25,16 @@ public:
 
     inline QString key() const override { return objectName(); }
     inline QWidget *content() override { return m_loginWidget; }
-    void setCallback(LoginCallBack *callback) override;
     void reset() override;
+    void setAppData(AppDataPtr) override;
+    void setAuthCallback(AuthCallbackFunc) override;
 
 private:
     void initUI();
 
 private:
-    LoginCallBack *m_callback;
-    AuthCallbackFun m_callbackFun;
-    AuthCallbackData *m_callbackData;
+    AppDataPtr m_appData;
+    AuthCallbackFunc m_authCallback;
     QWidget *m_loginWidget;
 };
 

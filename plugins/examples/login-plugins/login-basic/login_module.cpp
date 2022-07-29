@@ -16,24 +16,18 @@ namespace module {
 
 LoginModule::LoginModule(QObject *parent)
     : QObject(parent)
-    , m_callbackFun(nullptr)
-    , m_callbackData(new AuthCallbackData)
+    , m_appData(nullptr)
+    , m_authCallback(nullptr)
     , m_loginWidget(nullptr)
 {
     setObjectName(QStringLiteral("LoginModule"));
-
-    m_callbackData->account = "uos";
-    m_callbackData->token = "1";
-    m_callbackData->result = 0;
 }
 
 LoginModule::~LoginModule()
 {
     if (m_loginWidget) {
         delete m_loginWidget;
-    }
-    if (m_callbackData) {
-        delete m_callbackData;
+        m_loginWidget = nullptr;
     }
 }
 
@@ -45,6 +39,16 @@ void LoginModule::init()
 void LoginModule::reset()
 {
     init();
+}
+
+void LoginModule::setAppData(AppDataPtr appData)
+{
+    m_appData = appData;
+}
+
+void LoginModule::setAuthCallback(AuthCallbackFunc authCallback)
+{
+    m_authCallback = authCallback;
 }
 
 void LoginModule::initUI()
@@ -66,15 +70,8 @@ void LoginModule::initUI()
         data.account = "uos";
         data.token = "1";
         data.result = AuthResult::Success;
-        m_callbackFun(&data, m_callback->app_data);
+        m_authCallback(&data, m_appData);
     }, Qt::DirectConnection);
-
-}
-
-void LoginModule::setCallback(LoginCallBack *callback)
-{
-    m_callback = callback;
-    m_callbackFun = callback->authCallbackFun;
 }
 
 } // namespace module

@@ -9,6 +9,7 @@
 #include "public_func.h"
 
 #include <QObject>
+#include <QJsonObject>
 
 #include <com_deepin_daemon_accounts_user.h>
 
@@ -33,10 +34,23 @@ public:
     struct LimitsInfo {
         bool reserved[3];   // 用于内存对齐
         bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁
+        int flag;           // 认证类型
         uint maxTries;      // 最大重试次数
         uint numFailures;   // 失败次数，一直累加
         uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少
         QString unlockTime; // 解锁时间（本地时间）
+
+        inline QJsonObject toJson() const
+        {
+            QJsonObject obj;
+            obj["Locked"] = locked;
+            obj["Flag"] = flag;
+            obj["MaxTries"] = static_cast<int>(maxTries);
+            obj["NumFailures"] = static_cast<int>(numFailures);
+            obj["UnlockSecs"] = static_cast<int>(unlockSecs);;
+            obj["UnlockTime"] = unlockTime;
+            return obj;
+        }
     };
 
     explicit User(QObject *parent = nullptr);
@@ -92,7 +106,6 @@ signals:
     void keyboardLayoutChanged(const QString &);
     void keyboardLayoutListChanged(const QStringList &);
     void limitsInfoChanged(const QMap<int, LimitsInfo> *);
-    void limitsInfoChangedString(const QString &);
     void localeChanged(const QString &locale);
     void loginStateChanged(const bool);
     void noPasswordLoginChanged(const bool);

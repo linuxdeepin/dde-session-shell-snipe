@@ -8,15 +8,17 @@
 #include <QWidget>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QDebug>
+#include <QJsonArray>
 
 namespace dss {
 namespace module {
 
 LoginModule::LoginModule(QObject *parent)
     : QObject(parent)
-    , m_callback(nullptr)
-    , m_authCallbackFun(nullptr)
-    , m_messageCallbackFunc(nullptr)
+    , m_appData(nullptr)
+    , m_authCallback(nullptr)
+    , m_messageCallback(nullptr)
     , m_loginWidget(nullptr)
     , m_appType(AppType::Lock)
 {
@@ -51,23 +53,41 @@ void LoginModule::initUI()
     m_loginWidget = new LoginWidget();
     m_loginWidget->setFixedSize(362, 420);
     QObject::connect(m_loginWidget, &LoginWidget::sendAuthToken, this, [this] (const QString &account, const QString &token) {
+#if 0
+        // 通常需要判断一下登录器当前的用户和插件正在验证的用户是否相同，具体根据需求而定。
         if (m_userName != account && m_userName != "...") {
             qDebug() << "User name mismatch, user name: " << m_userName;
             m_loginWidget->showMessage("The user name does not match the current user, please check and re verify");
             return;
         }
-        qDebug() << "send Auth Token: " << account;
+#endif
+        qDebug() << "Send auth token: " << account;
         AuthCallbackData data;
-        data.account = account.toStdString();
-        data.token = token.toStdString();
+        data.account = account;
+        data.token = token;
         data.result = 1;
-        m_authCallbackFun(&data, m_callback->app_data);
+        m_authCallback(&data, m_appData);
     }, Qt::DirectConnection);
+}
+
+void LoginModule::setAppData(AppDataPtr appData)
+{
+    m_appData = appData;
+}
+
+void LoginModule::setAuthCallback(AuthCallbackFunc authCallback)
+{
+    m_authCallback = authCallback;
+}
+
+void LoginModule::setMessageCallback(MessageCallbackFunc messageCallback)
+{
+    m_messageCallback = messageCallback;
 }
 
 void LoginModule::updateInfo()
 {
-    if (!m_messageCallbackFunc) {
+    if (!m_messageCallback) {
         qWarning() << "message callback func is nullptr";
         return;
     }
@@ -81,13 +101,13 @@ void LoginModule::updateInfo()
     message["Data"] = array;
     QJsonDocument doc;
     doc.setObject(message);
-    std::string ret = m_messageCallbackFunc(doc.toJson().toStdString(), m_callback->app_data);
+    QString ret = m_messageCallback(doc.toJson(), m_appData);
 
     // 解析返回值
     QJsonParseError jsonParseError;
-    const QJsonDocument retDoc = QJsonDocument::fromJson(QByteArray::fromStdString(ret), &jsonParseError);
+    const QJsonDocument retDoc = QJsonDocument::fromJson(ret.toLatin1(), &jsonParseError);
     if (jsonParseError.error != QJsonParseError::NoError || retDoc.isEmpty()) {
-        qWarning() << "Failed to analysis AppType info from shell!: " << QString::fromStdString(ret);
+        qWarning() << "Failed to analysis AppType info from shell!: " << ret;
         return ;
     }
 
@@ -110,19 +130,12 @@ void LoginModule::updateInfo()
     }
 }
 
-void LoginModule::setCallback(LoginCallBack *callback)
-{
-    m_callback = callback;
-    m_authCallbackFun = callback->authCallbackFun;
-    m_messageCallbackFunc = callback->messageCallbackFunc;
-}
-
-std::string LoginModule::onMessage(const std::string &message)
+QString LoginModule::message(const QString &message)
 {
     QJsonParseError jsonParseError;
-    const QJsonDocument messageDoc = QJsonDocument::fromJson(QByteArray::fromStdString(message), &jsonParseError);
+    const QJsonDocument messageDoc = QJsonDocument::fromJson(message.toLatin1(), &jsonParseError);
     if (jsonParseError.error != QJsonParseError::NoError || messageDoc.isEmpty()) {
-        qWarning() << "Failed to obtain message from shell!: " << QString::fromStdString(message);
+        qWarning() << "Failed to obtain message from shell!: " << message;
         return "";
     }
 
@@ -144,6 +157,7 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["ShowSwitchButton"] = true;
         retDataObj["ShowLockButton"] = false;
         retDataObj["DefaultAuthLevel"] = DefaultAuthLevel::Default;
+        retDataObj["DisableOtherAuthentications"] = true;
         retObj["Data"] = retDataObj;
     } else if (cmdType == "AuthState") {
         int authType = data.value("AuthType").toInt();
@@ -156,7 +170,7 @@ std::string LoginModule::onMessage(const std::string &message)
 
     QJsonDocument doc;
     doc.setObject(retObj);
-    return doc.toJson().toStdString();
+    return doc.toJson();
 }
 
 } // namespace module

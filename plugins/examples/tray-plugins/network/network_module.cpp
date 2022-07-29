@@ -7,6 +7,9 @@
 #include <QWidget>
 #include <QLabel>
 #include <QIcon>
+#include <QVariantMap>
+#include <QJsonDocument>
+#include <QDebug>
 
 namespace dss {
 namespace module {

@@ -23,6 +23,7 @@ public:
     BaseModuleInterface *findModuleByName(const QString &name) const;
     QHash<QString, BaseModuleInterface *> findModulesByType(const int type) const;
     void removeModule(const QString &moduleKey);
+    bool moduleExists(const int type) const { return findModulesByType(type).size() > 0; }
 
 signals:
     void moduleFound(BaseModuleInterface *);

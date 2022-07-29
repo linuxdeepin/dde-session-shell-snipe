@@ -65,7 +65,7 @@ void LoginWidget::init()
     layout->addWidget(m_messageLabel);
     layout->addStretch(1);
     layout->addWidget(sendButton, 0, Qt::AlignCenter);
-    layout->addSpacing(15);
+    layout->addSpacing(35);
 
     // init connections
     auto setButtonEnabledFunc = [sendButton, userNameEdit, tokenEdit] {

@@ -148,8 +148,7 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
                      << connect(user.get(), &User::displayNameChanged, this, &AuthWidget::updateUserDisplayNameLabel)
                      << connect(user.get(), &User::passwordHintChanged, this, &AuthWidget::setPasswordHint)
                      << connect(user.get(), &User::limitsInfoChanged, this, &AuthWidget::setLimitsInfo)
-                     << connect(user.get(), &User::passwordExpiredInfoChanged, this, &AuthWidget::updatePasswordExpiredState)
-                     << connect(user.get(), &User::limitsInfoChangedString, this, &AuthWidget::setLimitsInfoString);
+                     << connect(user.get(), &User::passwordExpiredInfoChanged, this, &AuthWidget::updatePasswordExpiredState);
 
     setAvatar(user->avatar());
     setPasswordHint(user->passwordHint());
@@ -271,16 +270,9 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
         }
         ++i;
     }
-}
 
-/**
- * @brief 认证设置信息发给插件
- * @param limitsInfoStr
- */
-void AuthWidget::setLimitsInfoString(const QString &limitsInfoStr)
-{
     if (m_customAuth) {
-        m_customAuth->setLimitsInfo(limitsInfoStr);
+        m_customAuth->setLimitsInfo(*limitsInfo);
     }
 }
 

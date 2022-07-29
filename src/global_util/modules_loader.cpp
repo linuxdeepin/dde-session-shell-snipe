@@ -13,6 +13,7 @@
 #include <QLibrary>
 #include <QPluginLoader>
 #include <QGSettings/qgsettings.h>
+#include <QApplication>
 
 namespace dss {
 namespace module {
@@ -100,7 +101,7 @@ void ModulesLoader::findModule(const QString &path)
         const QJsonObject &meta = loader.metaData().value("MetaData").toObject();
         if (meta.value("pluginType").toString() == "Login") {
             baseVersion = LOGIN_API_VERSION;
-        } else if(meta.value("pluginType").toString() == "tray") {
+        } else if(meta.value("pluginType").toString() == "Tray") {
             baseVersion = TRAY_API_VERSION;
         }
         // 版本过低则不加载，可能会导致登录器崩溃
