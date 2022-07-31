@@ -46,6 +46,7 @@
 #include <QPainter>
 #include <QWheelEvent>
 #include <QMenu>
+#include <QWindow>
 
 #define BUTTON_ICON_SIZE QSize(26,26)
 #define BUTTON_SIZE QSize(52,52)
@@ -311,6 +312,14 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         QAction *action = m_contextMenu->exec(QCursor::pos());
         if (action)
             trayModule->invokedMenuItem(action->data().toString(), true);
+
+        // 右键菜单隐藏后需要重新grab键盘，否则会导致快捷键重新生效
+        if (!m_model->isUseWayland()) {
+            QWindow *winHandle = topLevelWidget()->windowHandle();
+            if (!winHandle || !winHandle->setKeyboardGrabEnabled(true)) {
+                qWarning() << "Grab keyboard failed";
+            }
+        }
     });
 
     connect(button, &FlotingButton::requestShowTips, this, [ = ] {
