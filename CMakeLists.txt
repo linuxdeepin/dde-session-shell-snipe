@@ -281,6 +281,7 @@ install(FILES qt-theme.ini DESTINATION /etc/lightdm/deepin)
 
 install(FILES files/lightdm-deepin-greeter.desktop DESTINATION share/xgreeters/)
 install(FILES files/dde-lock.desktop DESTINATION share/applications/)
+install(FILES files/dde-lock.desktop DESTINATION /etc/xdg/autostart/)
 install(FILES files/dde-session-shell.conf DESTINATION share/dde-session-shell/)
 install(FILES files/lightdm-deepin-greeter.conf DESTINATION share/deepin-authentication/privileges/)
 

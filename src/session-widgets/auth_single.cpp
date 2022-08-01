@@ -71,7 +71,7 @@ AuthSingle::AuthSingle(QWidget *parent)
  */
 void AuthSingle::initUI()
 {
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    auto *mainLayout = new QHBoxLayout(this);
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -80,9 +80,9 @@ void AuthSingle::initUI()
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
-    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$"), this));
 
-    QHBoxLayout *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
+    auto *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
     passwordLayout->setContentsMargins(0, 0, 10, 0);
     passwordLayout->setSpacing(0);
     /* 键盘布局按钮 */
