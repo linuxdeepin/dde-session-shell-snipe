@@ -343,9 +343,10 @@ void LoginModule::slotPrepareForSleep(bool active)
 void LoginModule::sendAuthTypeToSession(AuthType type)
 {
     qInfo() << Q_FUNC_INFO << "sendAuthTypeToSession" << type;
-    if (!m_messageCallbackFunc)
+    if (!m_messageCallbackFunc){
+        m_needSendAuthType = true;
         return;
-
+    }
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
     if (m_authStatus == AuthStatus::None && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;
