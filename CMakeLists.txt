@@ -5,15 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -g -Wall -pthread -Wl,--as-need -fPIE -Wl,-E")
-SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 -ggdb")
-SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -g -Wall")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
-
-# 增加安全编译参数
-set(SECURITY_COMPILE, "-fstack-protector-all -fPIC")
-set(CMAKE_CXX_FLAGS, "${CMAKE_CXX_FLAGS} ${SECURITY_COMPILE}")
-set(CMAKE_C_FLAGS, "${CMAKE_C_FLAGS} ${SECURITY_COMPILE}")
 
 # coverage option
 # cmake -DENABLE_COVERAGE=ON ..
@@ -29,7 +22,7 @@ if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "mips64")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ftree-vectorize -march=loongson3a -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions -mloongson-ext2 -mloongson-mmi")
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z relro -z now -z noexecstack -pie")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -z relro -z now -z noexecstack -pie")
 
 if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
@@ -72,6 +65,22 @@ set(Qt_LIBS
     Qt5::Svg
 )
 
+try_compile(USE_DEEPIN_WAYLAND
+              ${CMAKE_CURRENT_BINARY_DIR}/try_compile
+            SOURCES
+              ${CMAKE_CURRENT_SOURCE_DIR}/tests/wayland_test.cc
+            LINK_LIBRARIES
+              ${Qt_LIBS}
+              ${Qt5Widgets_LIBRARIES}
+              KF5::WaylandClient
+)
+
+message(STATUS "USE_DEEPIN_WAYLAND ${USE_DEEPIN_WAYLAND}")
+
+if(USE_DEEPIN_WAYLAND)
+  add_definitions(-DUSE_DEEPIN_WAYLAND)
+endif()
+
 function(generation_dbus_interface xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -p ${class_file} -c ${class_name} ${xml}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -109,10 +118,10 @@ include_directories(${PROJECT_SOURCE_DIR}/interface)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util GLOBAL_UTILS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/dbus GLOBAL_UTILS_DBUS)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor GLOBAL_UTILS_KEYBOARDMONITOR)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/widgets WIDGETS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/session-widgets SESSION_WIDGETS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/libdde-auth AUTHENTICATE)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor GLOBAL_UTILS_KEYBOARDMONITOR)
 aux_source_directory(${PROJECT_SOURCE_DIR}/interface INTERFACE)
 
 set(QRCS
@@ -140,6 +149,11 @@ set(LOCK_SRCS
     src/dde-lock/dbus/dbusshutdownagent.cpp
     src/dde-lock/dbus/dbusshutdownfrontservice.cpp
 )
+
+link_libraries(
+    pthread
+)
+
 add_executable(dde-lock
     ${LOCK_SRCS}
     ${QRCS}
@@ -190,8 +204,15 @@ set(GREETER_SRCS
     src/lightdm-deepin-greeter/logincontent.cpp
     src/lightdm-deepin-greeter/logintipswindow.cpp
     src/lightdm-deepin-greeter/sessionwidget.cpp
-    src/lightdm-deepin-greeter/greeter_display_wayland.cpp
 )
+
+if (USE_DEEPIN_WAYLAND)
+  set(GREETER_SRCS
+    ${GREETER_SRCS}
+    src/lightdm-deepin-greeter/greeter_display_wayland.cpp
+  )
+endif(USE_DEEPIN_WAYLAND)
+
 add_executable(lightdm-deepin-greeter
     ${GREETER_SRCS}
     ${QRCS}

@@ -80,7 +80,9 @@ private:
     DeepinAuthFramework *m_authFramework;
     DBusLockService *m_lockInter;
     SoundThemePlayerInter *m_soundPlayerInter;
+#ifdef USE_DEEPIN_WAYLAND
     GreeterDisplayWayland *m_greeterDisplayWayland;
+#endif
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;

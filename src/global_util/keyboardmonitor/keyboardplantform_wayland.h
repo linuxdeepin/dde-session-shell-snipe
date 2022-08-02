@@ -22,6 +22,8 @@
 #ifndef KEYBOARDPLANTFORM_WAYLAND_H
 #define KEYBOARDPLANTFORM_WAYLAND_H
 
+#ifdef USE_DEEPIN_WAYLAND
+
 #include "keyboardplatform.h"
 
 class QThread;
@@ -67,5 +69,7 @@ private:
     bool m_capsLock;
     bool m_numLockOn;
 };
+
+#endif
 
 #endif // KEYBOARDPLANTFORM_WAYLAND_H
