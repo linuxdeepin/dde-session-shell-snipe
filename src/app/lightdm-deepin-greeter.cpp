@@ -201,7 +201,7 @@ double getScaleFormConfig()
 }
 
 static void set_auto_QT_SCALE_FACTOR() {
-    const double ratio = DGuiApplicationHelper::isXWindowPlatform() ? get_scale_ratio() : getScaleFormConfig();
+    const double ratio = qgetenv("XDG_SESSION_TYPE").contains("wayland") ? getScaleFormConfig() : get_scale_ratio();
     if (ratio > 0.0) {
         setenv("QT_SCALE_FACTOR", QByteArray::number(ratio).constData(), 1);
     }
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
 
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
     // 设置缩放，文件存在的情况下，由后端去设置，否则前端自行设置
-    if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf") || !DGuiApplicationHelper::isXWindowPlatform()) {
+    if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf") || qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
         set_auto_QT_SCALE_FACTOR();
     }
 
@@ -342,7 +342,7 @@ int main(int argc, char* argv[])
         QObject::connect(loginFrame, &LoginWindow::requestEndAuthentication, worker, &GreeterWorker::endAuthentication);
         QObject::connect(loginFrame, &LoginWindow::authFinished, worker, &GreeterWorker::onAuthFinished);
         QObject::connect(worker, &GreeterWorker::requestUpdateBackground, loginFrame, &LoginWindow::updateBackground);
-        if (DGuiApplicationHelper::isXWindowPlatform()) {
+        if (!qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
             loginFrame->show();
         } else {
             QObject::connect(worker, &GreeterWorker::showLoginWindow, loginFrame, &LoginWindow::setVisible);
@@ -362,7 +362,7 @@ int main(int argc, char* argv[])
     checker.start();
 #endif
 
-    if (DGuiApplicationHelper::isXWindowPlatform()) {
+    if (!qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
         model->setVisible(true);
     }
 
