@@ -1075,7 +1075,11 @@ void SFAWidget::initAccount()
 
 void SFAWidget::onRequestChangeAuth(const int authType)
 {
-    qInfo() << Q_FUNC_INFO <<  "onRequestChangeAuth no contain";
+    qInfo() << Q_FUNC_INFO <<  authType;
+    if(!m_chooseAuthButtonBox->isEnabled() || m_currentAuthType != AT_Custom){
+        return;
+    }
+
     if (!m_authButtons.contains(authType)) {
         qDebug() << "onRequestChangeAuth no contain";
         m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
