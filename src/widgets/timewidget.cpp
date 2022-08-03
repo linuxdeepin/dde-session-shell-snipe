@@ -33,7 +33,8 @@
 const QStringList weekdayFormat = {"dddd", "ddd"};
 const QStringList shortDateFormat = { "yyyy/M/d", "yyyy-M-d", "yyyy.M.d",
                                       "yyyy/MM/dd", "yyyy-MM-dd", "yyyy.MM.dd",
-                                      "yy/M/d", "yy-M-d", "yy.M.d" };
+                                      "MM.dd.yyyy", "dd.MM.yyyy", "yy/M/d",
+                                      "yy-M-d", "yy.M.d" };
 const QStringList shortTimeFormat = { "h:mm", "hh:mm"};
 
 TimeWidget::TimeWidget(QWidget *parent)
