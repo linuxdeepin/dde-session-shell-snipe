@@ -255,6 +255,29 @@ void GreeterDisplayWayland::setOutputs()
             displayMode = "OnlyOneMap";
             break;
     }
+    // 先找到uuidkey
+    if (m_screensObj.value(uuidKey).toObject().value(displayMode).toObject().isEmpty()) {
+        QStringList uuidList = uuidKey.split(",");
+        if (uuidList.size() > 1) {
+            // 遍历所有组合，找到系统配置文件中对应组合的key
+            int uuidIndexArry[uuidList.size()];
+            for(int i = 0; i < uuidList.size(); i++) {
+                uuidIndexArry[i] = i;
+            }
+            do {
+                QString uuidKeyTmp;
+                for(int i = 0; i < uuidList.size(); i++) {
+                    uuidKeyTmp = uuidKeyTmp + uuidList[uuidIndexArry[i]] + ",";
+                }
+                uuidKeyTmp.remove(uuidKeyTmp.length() - 1, 1);
+                if (!m_screensObj.value(uuidKeyTmp).toObject().value(displayMode).toObject().isEmpty()) {
+                    qDebug() << "uuidKey update--->" << uuidKeyTmp;
+                    uuidKey = uuidKeyTmp;
+                    break;
+                }
+            } while (std::next_permutation(uuidIndexArry, uuidIndexArry + uuidList.size()));
+        }
+    }
     QJsonArray monitorsArr;
     if (MonitorConfigsForUuid_v1.size() == 1) {
         qDebug() << "Single mode ...";
@@ -262,28 +285,6 @@ void GreeterDisplayWayland::setOutputs()
     } else {
         if (m_displayMode != Single_Mode) {
             monitorsArr = m_screensObj.value(uuidKey).toObject().value(displayMode).toObject().value("Monitors").toArray();
-            if (monitorsArr.isEmpty()) {
-                QStringList uuidList = uuidKey.split(",");
-                if (uuidList.size() > 1) {
-                    // 遍历所有组合，找到系统配置文件中对应组合的key
-                    int uuidIndexArry[uuidList.size()];
-                    for(int i = 0; i < uuidList.size(); i++) {
-                        uuidIndexArry[i] = i;
-                    }
-                    do {
-                        QString uuidKeyTmp;
-                        for(int i = 0; i < uuidList.size(); i++) {
-                            uuidKeyTmp = uuidKeyTmp + uuidList[uuidIndexArry[i]] + ",";
-                        }
-                        uuidKeyTmp.remove(uuidKeyTmp.length() - 1, 1);
-                        monitorsArr = m_screensObj.value(uuidKeyTmp).toObject().value(displayMode).toObject().value("Monitors").toArray();
-                        if (!monitorsArr.isEmpty()) {
-                            qDebug() << "uuidKey update--->" << uuidKeyTmp;
-                            break;
-                        }
-                    } while (std::next_permutation(uuidIndexArry, uuidIndexArry + uuidList.size()));
-                }
-            }
         } else {
             QString enableUuid = m_screensObj.value(uuidKey).toObject().value("OnlyOneUuid").toString();
             qDebug() << "enableUuid--->" << enableUuid;
@@ -296,7 +297,7 @@ void GreeterDisplayWayland::setOutputs()
                     if(uuid != enableUuid) {
                         QJsonValue valueTmp = m_screensObj.value(uuidKey).toObject().value(displayMode).toObject().value(uuid).toObject().value("Monitors").toArray()[0];
                         if (valueTmp.toObject().isEmpty()) {
-                            qDebug() << "valueTmp is null";
+                            qDebug() << uuid << ":valueTmp is null";
                             // 仅单屏，若另一个屏幕没有配置，给个默认配置
                             QJsonObject obj;
                             obj["UUID"] = uuid;
