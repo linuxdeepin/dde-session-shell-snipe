@@ -39,6 +39,7 @@ find_package(DtkWidget REQUIRED)
 find_package(DtkCMake  REQUIRED)
 find_package(DtkCore REQUIRED)
 find_package(KF5Wayland REQUIRED)
+find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS
     Core
     Widgets
@@ -151,7 +152,7 @@ set(LOCK_SRCS
 )
 
 link_libraries(
-    pthread
+    Threads::Threads
 )
 
 add_executable(dde-lock
