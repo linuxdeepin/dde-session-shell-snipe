@@ -42,7 +42,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  deepin-authenticate(>=1.2.27),
  xsettingsd,
  libssl-dev,
- libxcb-util0
+ libxcb-util0 | libxcb-util1
 Provides: lightdm-greeter
 Recommends: onboard,
  dss-network-plugin,
