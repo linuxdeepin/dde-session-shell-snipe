@@ -68,7 +68,7 @@ public slots:
     void showLockScreen();
     void showShutdown();
     void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
-    void cancelShutdownInhibit();
+    void cancelShutdownInhibit(bool hideFrame);
 
 protected:
     void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;

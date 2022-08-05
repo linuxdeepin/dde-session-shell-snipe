@@ -35,7 +35,7 @@ TEST_F(UT_LockFrame, frame)
     m_lockFrame->showUserList();
     m_lockFrame->showLockScreen();
     m_lockFrame->showShutdown();
-    m_lockFrame->cancelShutdownInhibit();
+    m_lockFrame->cancelShutdownInhibit(false);
     m_lockFrame->shutdownInhibit(SessionBaseModel::PowerAction::RequireNormal, false);
     m_lockFrame->handlePoweroffKey();
 }

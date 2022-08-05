@@ -34,7 +34,9 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     , m_authFramework(new DeepinAuthFramework(this))
     , m_lockInter(new DBusLockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
     , m_soundPlayerInter(new SoundThemePlayerInter("com.deepin.api.SoundThemePlayer", "/com/deepin/api/SoundThemePlayer", QDBusConnection::systemBus(), this))
+#ifdef USE_DEEPIN_WAYLAND
     , m_greeterDisplayWayland(nullptr)
+#endif
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
     , m_retryAuth(false)
@@ -46,6 +48,7 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     }
 #endif
 
+#ifdef USE_DEEPIN_WAYLAND
     if (!DGuiApplicationHelper::isXWindowPlatform()) {
         m_greeterDisplayWayland = new GreeterDisplayWayland();
         connect(m_greeterDisplayWayland, &GreeterDisplayWayland::setOutputStart, this, [=] {
@@ -60,6 +63,7 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
         });
         m_greeterDisplayWayland->start();
     }
+#endif
 
     checkDBusServer(m_accountsInter->isValid());
 
@@ -92,9 +96,11 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
 GreeterWorker::~GreeterWorker()
 {
+#ifdef USE_DEEPIN_WAYLAND
     if(m_greeterDisplayWayland) {
        m_greeterDisplayWayland->deleteLater();
     }
+#endif
 }
 
 void GreeterWorker::initConnections()

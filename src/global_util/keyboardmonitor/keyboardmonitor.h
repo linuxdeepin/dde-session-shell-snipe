@@ -30,7 +30,9 @@
 
 #include <QThread>
 #include "keyboardplantform_x11.h"
+#ifdef USE_DEEPIN_WAYLAND
 #include "keyboardplantform_wayland.h"
+#endif
 
 class KeyboardMonitor : public QThread
 {

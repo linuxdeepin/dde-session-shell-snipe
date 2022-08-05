@@ -23,6 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef USE_DEEPIN_WAYLAND
 #include "keyboardplantform_wayland.h"
 
 #include <stdio.h>
@@ -137,3 +138,4 @@ void KeyboardPlantformWayland::setupRegistry(Registry *registry)
     registry->create(m_connectionThreadObject);
     registry->setup();
 }
+#endif

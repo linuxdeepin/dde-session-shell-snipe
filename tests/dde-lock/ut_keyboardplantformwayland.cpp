@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#ifdef USE_DEEPIN_WAYLAND
 class UT_KeyboardPlantformWayland : public testing::Test
 {
 protected:
@@ -27,3 +28,4 @@ TEST_F(UT_KeyboardPlantformWayland, basic)
     m_keyboard->isNumlockOn();
     m_keyboard->setNumlockStatus(false);
 }
+#endif
