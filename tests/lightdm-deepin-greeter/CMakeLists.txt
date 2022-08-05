@@ -18,8 +18,13 @@ set(GREETER_TEST_SRCS
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/logincontent.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/logintipswindow.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/sessionwidget.cpp
-    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/greeter_display_wayland.cpp
 )
+if (USE_DEEPIN_WAYLAND)
+  set(GREETER_TEST_SRCS
+    ${GREETER_TEST_SRCS}
+    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/greeter_display_wayland.cpp
+  )
+endif(USE_DEEPIN_WAYLAND)
 
 add_executable(${BIN_NAME}
     ${GREETER_TEST_SRCS}

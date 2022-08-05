@@ -292,7 +292,7 @@ void LockFrame::shutdownInhibit(const SessionBaseModel::PowerAction action, bool
     m_warningContent->beforeInvokeAction(needConfirm);
 }
 
-void LockFrame::cancelShutdownInhibit()
+void LockFrame::cancelShutdownInhibit(bool hideFrame)
 {
     //允许关机检查结束后切换界面
     //记录多屏状态下当前显示屏是否显示内容
@@ -308,6 +308,11 @@ void LockFrame::cancelShutdownInhibit()
     //多屏状态下，当前界面显示内容时才显示
     if (old_visible) {
         setContentVisible(true);
+    }
+
+    if (hideFrame) {
+        m_model->setVisible(false);
+        m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
     }
 }
 

@@ -35,7 +35,9 @@ KeyboardMonitor::KeyboardMonitor() : QThread()
     if (DGuiApplicationHelper::isXWindowPlatform()) {
         keyBoardPlatform = new KeyboardPlantformX11();
     } else {
+#ifdef USE_DEEPIN_WAYLAND
         keyBoardPlatform = new KeyboardPlantformWayland();
+#endif
     }
     connect(keyBoardPlatform, &KeyBoardPlatform::capslockStatusChanged, this, &KeyboardMonitor::capslockStatusChanged);
     connect(keyBoardPlatform, &KeyBoardPlatform::numlockStatusChanged, this, &KeyboardMonitor::numlockStatusChanged);
