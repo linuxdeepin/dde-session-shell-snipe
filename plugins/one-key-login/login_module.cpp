@@ -49,7 +49,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_loadPluginType(Notload)
     , m_isAcceptFingerprintSignal(false)
     , m_waitAcceptSignalTimer(nullptr)
-    , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
+    , m_dconfig(nullptr)
     , m_spinner(nullptr)
     , m_acceptSleepSignal(false)
     , m_authStatus(AuthStatus::None)
@@ -57,6 +57,10 @@ LoginModule::LoginModule(QObject *parent)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
+    const bool isLock = qApp->applicationName().toLower().contains("lock");
+    qDebug() << "Is lock application: " << isLock << ", application name: "<< qApp->applicationName();
+    const QString &dconfigFile = isLock ? "org.deepin.dde.lock" : "org.deepin.dde.lightdm-deepin-greeter";
+    m_dconfig = DConfig::create(dconfigFile, dconfigFile, QString(), this);
     //华为机型,从override配置中获取是否加载插件
     if (m_dconfig) {
         bool showPlugin = m_dconfig->value("enableOneKeylogin", false).toBool();
@@ -64,7 +68,6 @@ LoginModule::LoginModule(QObject *parent)
         if (!showPlugin)
             return;
     }
-
 
     initConnect();
     startCallHuaweiFingerprint();
