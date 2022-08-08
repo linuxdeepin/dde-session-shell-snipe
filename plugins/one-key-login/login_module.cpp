@@ -335,7 +335,8 @@ void LoginModule::slotPrepareForSleep(bool active)
     } else {
        m_isAcceptFingerprintSignal = false;
        startCallHuaweiFingerprint();
-       m_spinner->start();
+       if(m_spinner)
+           m_spinner->start();
        m_waitAcceptSignalTimer->start();
     }
 }
