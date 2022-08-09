@@ -1,4 +1,4 @@
-#include <KF5/KWayland/KWayland/Client/ddeseat.h>
+#include <KF5/KWayland/Client/ddeseat.h>
 
 int main(int argc, char *argv[])
 {

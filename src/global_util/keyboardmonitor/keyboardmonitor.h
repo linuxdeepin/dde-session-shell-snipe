@@ -54,7 +54,7 @@ protected:
 
 private:
     KeyboardMonitor();
-    KeyBoardPlatform* keyBoardPlatform = nullptr;
+    KeyBoardPlatform* m_keyBoardPlatform;
 };
 
 #endif // KEYBOARDMONITOR_H

@@ -30,18 +30,23 @@
 
 DGUI_USE_NAMESPACE
 
-KeyboardMonitor::KeyboardMonitor() : QThread()
+KeyboardMonitor::KeyboardMonitor()
+    : QThread()
+    , m_keyBoardPlatform(nullptr)
 {
     if (DGuiApplicationHelper::isXWindowPlatform()) {
-        keyBoardPlatform = new KeyboardPlantformX11();
+        m_keyBoardPlatform = new KeyboardPlantformX11();
     } else {
 #ifdef USE_DEEPIN_WAYLAND
-        keyBoardPlatform = new KeyboardPlantformWayland();
+        m_keyBoardPlatform = new KeyboardPlantformWayland();
 #endif
     }
-    connect(keyBoardPlatform, &KeyBoardPlatform::capslockStatusChanged, this, &KeyboardMonitor::capslockStatusChanged);
-    connect(keyBoardPlatform, &KeyBoardPlatform::numlockStatusChanged, this, &KeyboardMonitor::numlockStatusChanged);
-    connect(keyBoardPlatform, &KeyBoardPlatform::initialized, this, &KeyboardMonitor::initialized);
+
+    if (m_keyBoardPlatform) {
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::capslockStatusChanged, this, &KeyboardMonitor::capslockStatusChanged);
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::numlockStatusChanged, this, &KeyboardMonitor::numlockStatusChanged);
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::initialized, this, &KeyboardMonitor::initialized);
+    }
 }
 
 KeyboardMonitor *KeyboardMonitor::instance()
@@ -57,20 +62,32 @@ KeyboardMonitor *KeyboardMonitor::instance()
 
 bool KeyboardMonitor::isCapslockOn()
 {
-    return keyBoardPlatform->isCapslockOn();
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->isCapslockOn();
 }
 
 bool KeyboardMonitor::isNumlockOn()
 {
-    return keyBoardPlatform->isNumlockOn();
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->isNumlockOn();
 }
 
 bool KeyboardMonitor::setNumlockStatus(const bool &on)
 {
-    return keyBoardPlatform->setNumlockStatus(on);
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->setNumlockStatus(on);
 }
 
 void KeyboardMonitor::run()
 {
-    keyBoardPlatform->run();
+    if (!m_keyBoardPlatform)
+        return;
+
+    m_keyBoardPlatform->run();
 }
