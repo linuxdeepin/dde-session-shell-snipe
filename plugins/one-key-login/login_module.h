@@ -27,7 +27,6 @@
 #include "login_module_interface.h"
 
 #include "dtkcore_global.h"
-#include "public_func.h"
 #include <DSpinner>
 
 DCORE_BEGIN_NAMESPACE
