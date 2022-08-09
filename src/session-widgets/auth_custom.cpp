@@ -103,7 +103,9 @@ void AuthCustom::setCallback()
     callback.app_data = this;
     callback.authCallbackFun = AuthCustom::authCallBack;
     callback.messageCallbackFunc = AuthCustom::messageCallback;
-    m_module->setCallback(&callback);
+    if (m_module) {
+        m_module->setCallback(&callback);
+    }
 }
 
 void AuthCustom::initUi()
@@ -276,7 +278,7 @@ bool AuthCustom::event(QEvent *e)
         emit notifyResizeEvent();
 
         if (e->type() == QEvent::Show) {
-            if (m_module->content()->parent() != this) {
+            if (m_module && m_module->content() && m_module->content()->parent() != this) {
                 m_mainLayout->addWidget(m_module->content());
                 setFocusProxy(m_module->content());
                 // 重新设置传给插件的appData
