@@ -370,6 +370,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const int
         }
     });
 
+    emit SessionCreated();
     emit MFAFlagChanged(authControllerInter->isMFA());
     emit FactorsInfoChanged(authControllerInter->factorsInfo());
     emit FuzzyMFAChanged(authControllerInter->isFuzzyMFA());
@@ -622,7 +623,13 @@ bool DeepinAuthFramework::SetPrivilegesEnable(const QString &account, const QStr
     if (!m_authenticateControllers->contains(account)) {
         return false;
     }
-    return m_authenticateControllers->value(account)->PrivilegesEnable(path);
+
+    QDBusPendingReply<bool> reply = m_authenticateControllers->value(account)->PrivilegesEnable(path);
+    reply.waitForFinished();
+    if(reply.isError()) {
+        return false;
+    }
+    return reply.value();
 }
 
 /**

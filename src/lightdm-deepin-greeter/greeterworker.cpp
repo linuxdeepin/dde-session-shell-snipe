@@ -145,6 +145,7 @@ void GreeterWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, m_model, &SessionBaseModel::updateMFAFlag);
     connect(m_authFramework, &DeepinAuthFramework::PINLenChanged, m_model, &SessionBaseModel::updatePINLen);
     connect(m_authFramework, &DeepinAuthFramework::PromptChanged, m_model, &SessionBaseModel::updatePrompt);
+    connect(m_authFramework, &DeepinAuthFramework::SessionCreated, this, &GreeterWorker::onSessionCreated);
 
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [=](bool active) {
@@ -471,9 +472,6 @@ void GreeterWorker::createAuthentication(const QString &account)
     case Available:
         m_authFramework->CreateAuthController(account, m_authFramework->GetSupportedMixAuthFlags(), Login);
         m_authFramework->SetAuthQuitFlag(account, DeepinAuthFramework::ManualQuit);
-        if (!m_authFramework->SetPrivilegesEnable(account, QString("/usr/sbin/lightdm"))) {
-            qWarning() << "Failed to set privileges!";
-        }
         startGreeterAuth(account);
         break;
     default:
@@ -864,6 +862,13 @@ void GreeterWorker::onCurrentUserChanged(const std::shared_ptr<User> &user)
     recoveryUserKBState(user);
     loadTranslation(user->locale());
     emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
+}
+
+void GreeterWorker::onSessionCreated()
+{
+    if (!m_authFramework->SetPrivilegesEnable(m_account, QString("/usr/sbin/lightdm"))) {
+        qWarning() << "Failed to set privileges!";
+    }
 }
 
 void GreeterWorker::saveNumlockState(std::shared_ptr<User> user, bool on)

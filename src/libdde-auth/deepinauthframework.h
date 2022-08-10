@@ -78,6 +78,7 @@ signals:
     void FactorsInfoChanged(const MFAInfoList &);
     void PINLenChanged(const int);
     void AuthStateChanged(const int, const int, const QString &);
+    void SessionCreated();
 
 public slots:
     /* New authentication framework */
