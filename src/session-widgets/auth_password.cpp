@@ -603,6 +603,24 @@ void AuthPassword::hideEvent(QHideEvent *event)
     AuthModule::hideEvent(event);
 }
 
+void AuthPassword::showEvent(QShowEvent *event)
+{
+    m_passwordHintBtn->setVisible(m_limitsInfo->numFailures > 0 && !m_passwordHint.isEmpty());
+    if (m_limitsInfo->locked) {
+        setAuthState(AS_Locked, "Locked");
+        if (QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
+            qDebug() << "begin reset passoword";
+            setResetPasswordMessageVisible(true);
+            updateResetPasswordUI();
+        }
+    } else {
+        setResetPasswordMessageVisible(false);
+        updateResetPasswordUI();
+    }
+
+    AuthModule::showEvent(event);
+}
+
 void AuthPassword::setAuthStatueVisible(bool visible)
 {
     m_showAuthState = visible;
