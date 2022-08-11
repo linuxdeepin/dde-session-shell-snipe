@@ -11,7 +11,7 @@
 
 #include <com_deepin_system_systempower.h>
 #include <pwd.h>
-#include </usr/include/shadow.h>
+#include <shadow.h>
 
 #define LOCKSERVICE_PATH "/com/deepin/dde/LockService"
 #define LOCKSERVICE_NAME "com.deepin.dde.LockService"

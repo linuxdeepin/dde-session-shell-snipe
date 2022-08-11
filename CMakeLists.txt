@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.13.4)
 project(dde-session-shell C CXX)
 
 include(GNUInstallDirs)
+include(CheckIncludeFile)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -58,6 +59,9 @@ pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
 pkg_check_modules(QGSettings REQUIRED gsettings-qt)
 pkg_check_modules(Greeter REQUIRED liblightdm-qt5-3)
 pkg_check_modules(SSL REQUIRED IMPORTED_TARGET libcrypto libssl openssl)
+
+# header file compatibility - shadow.h
+check_include_file("shadow.h" HAVE_SHADOW)
 
 set(Qt_LIBS
     Qt5::Core
