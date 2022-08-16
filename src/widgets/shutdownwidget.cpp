@@ -312,8 +312,7 @@ void ShutdownWidget::initUI()
     m_actionLayout->addStretch();
 
     if (findValueByQSettings<bool>(DDESESSIONCC::session_ui_configs, "Shutdown", "enableSystemMonitor", true)) {
-        QFile file("/usr/bin/deepin-system-monitor");
-        if (file.exists()) {
+        if (!QStandardPaths::findExecutable("deepin-system-monitor").isEmpty()) {
             m_systemMonitor = new SystemMonitor;
             m_systemMonitor->setAccessibleName("SystemMonitor");
             m_systemMonitor->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -433,7 +432,7 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 
 void ShutdownWidget::runSystemMonitor()
 {
-    QProcess::startDetached("/usr/bin/deepin-system-monitor");
+    QProcess::startDetached("deepin-system-monitor", {});
 
     if (m_systemMonitor) {
         m_systemMonitor->clearFocus();
