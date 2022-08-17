@@ -144,7 +144,7 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
                     Q_EMIT setOutputFinished();
                 });
             }
-        } 
+        }
     });
 
     connect(registry, &Registry::outputDeviceAnnounced, this, [ this, registry ](quint32 name, quint32 version) {
@@ -550,7 +550,7 @@ QString GreeterDisplayWayland::getOutputDeviceName(const QString& model, const Q
     // 找到第一个纯数字部分
     for (int i = 0; i < nameList.size(); ++i) {
         bool ok = false;
-        int num = nameList[i].toInt(&ok, 10);
+        nameList[i].toInt(&ok, 10);
         if (ok && i >= 1) {
             // name 是数字
             // 比如 model 为 HDMI-A-2-VA2430-H-3/W72211325199

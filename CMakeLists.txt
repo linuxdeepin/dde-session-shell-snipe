@@ -83,6 +83,8 @@ message(STATUS "USE_DEEPIN_WAYLAND ${USE_DEEPIN_WAYLAND}")
 if(USE_DEEPIN_WAYLAND)
   add_definitions(-DUSE_DEEPIN_WAYLAND)
 endif()
+# 优先使用国密
+add_definitions(-DPREFER_USING_GM)
 
 function(generation_dbus_interface xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -p ${class_file} -c ${class_name} ${xml}
@@ -188,6 +190,7 @@ target_link_libraries(dde-lock PRIVATE
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
     KF5::WaylandClient
+    -lcrypto
 )
 
 set(GREETER_SRCS
@@ -258,6 +261,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${QGSettings_LIBRARIES}
     ${Greeter_LIBRARIES}
     KF5::WaylandClient
+    -lcrypto
 )
 
 add_subdirectory(tests)

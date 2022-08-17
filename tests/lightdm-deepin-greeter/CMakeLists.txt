@@ -2,6 +2,9 @@ set(BIN_NAME lightdm-deepin-greeter-test)
 
 aux_source_directory(. GREETER_TEST)
 
+# 优先使用国密
+add_definitions(-DPREFER_USING_GM)
+
 set(GREETER_TEST_SRCS
     ${GREETER_TEST}
     ${authority_DBUS_SCRS}
@@ -69,4 +72,5 @@ target_link_libraries(${BIN_NAME} PRIVATE
     KF5::WaylandClient
     -lpthread
     -lm
+    -lcrypto
 )

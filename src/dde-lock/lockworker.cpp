@@ -552,10 +552,10 @@ void LockWorker::destoryAuthentication(const QString &account)
     qInfo() << "LockWorker::destoryAuthentication:" << account;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
-        m_authFramework->DestoryAuthController(account);
+        m_authFramework->DestroyAuthController(account);
         break;
     default:
-        m_authFramework->DestoryAuthenticate();
+        m_authFramework->DestroyAuthenticate();
         break;
     }
 }

@@ -491,7 +491,7 @@ void GreeterWorker::destoryAuthentication(const QString &account)
     qDebug() << "GreeterWorker::destoryAuthentication:" << account;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
-        m_authFramework->DestoryAuthController(account);
+        m_authFramework->DestroyAuthController(account);
         break;
     default:
         break;

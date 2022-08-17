@@ -1,3 +1,23 @@
+/*
+* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
+*
+* Author:     Yin Jie <yinjie@uniontech.com>
+*
+* Maintainer: Yin Jie <yinjie@uniontech.com>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 #ifndef DEEPINAUTHFRAMEWORK_H
 #define DEEPINAUTHFRAMEWORK_H
 
@@ -8,23 +28,18 @@
 #include <com_deepin_daemon_authenticate_session2.h>
 #include <memory>
 #include <openssl/aes.h>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
+#include <openssl/sm2.h>
+#include <openssl/sm4.h>
+#include <openssl/evp.h>
 
-#define AUTHRNTICATESERVICE "com.deepin.daemon.Authenticate"
-#define AUTHRNTICATEINTERFACE "com.deepin.daemon.Authenticate.Session"
+#define AUTHENTICATE_SERVICE "com.deepin.daemon.Authenticate"
 
 using AuthInter = com::deepin::daemon::Authenticate;
 using AuthControllerInter = com::deepin::daemon::authenticate::Session;
 
-using FUNC_AES_CBC_ENCRYPT = void (*)(const unsigned char *in, unsigned char *out, size_t length, const void *aes, unsigned char *ivec, const int enc);
-using FUNC_AES_SET_ENCRYPT_KEY = int (*)(const unsigned char *userKey, const int bits, void *aes);
-using FUNC_BIO_S_MEM = void *(*)();
-using FUNC_BIO_NEW = void *(*)(void *);
-using FUNC_BIO_PUTS = int (*)(void *, const char *);
-using FUNC_PEM_READ_BIO_RSA_PUBKEY = void *(*)(void *, void *, void *, void *);
-using FUNC_PEM_READ_BIO_RSAPUBLICKEY = void *(*)(void *, void *, void *, void *);
-using FUNC_RSA_PUBLIC_ENCRYPT = void *(*)(int flen, const unsigned char *from, unsigned char *to, void *rsa, int padding);
-using FUNC_RSA_SIZE = int (*)(void *);
-using FUNC_RSA_FREE = void (*)(void *);
 
 class DeepinAuthFramework : public QObject
 {
@@ -43,7 +58,7 @@ public:
     /* Compatible with old authentication methods */
     void CreateAuthenticate(const QString &account);
     void SendToken(const QString &token);
-    void DestoryAuthenticate();
+    void DestroyAuthenticate();
 
     /* com.deepin.daemon.Authenticate */
     int GetFrameworkState() const;
@@ -83,7 +98,7 @@ signals:
 public slots:
     /* New authentication framework */
     void CreateAuthController(const QString &account, const int authType, const int appType);
-    void DestoryAuthController(const QString &account);
+    void DestroyAuthController(const QString &account);
     void StartAuthentication(const QString &account, const int authType, const int timeout);
     void EndAuthentication(const QString &account, const int authType);
     void SendTokenToAuth(const QString &account, const int authType, const QString &token);
@@ -95,9 +110,6 @@ private:
     void PAMAuthentication(const QString &account);
     static int PAMConversation(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *app_data);
     void UpdateAuthState(const int state, const QString &message);
-
-    void initEncryptionService();
-    void encryptSymmtricKey(const QString &account);
 
 private:
     AuthInter *m_authenticateInter;
@@ -112,22 +124,6 @@ private:
     QMap<QString, AuthControllerInter *> *m_authenticateControllers;
     bool m_cancelAuth;
     bool m_waitToken;
-
-    void *m_encryptionHandle;
-    FUNC_AES_CBC_ENCRYPT m_F_AES_cbc_encrypt;
-    FUNC_AES_SET_ENCRYPT_KEY m_F_AES_set_encrypt_key;
-    FUNC_BIO_NEW m_F_BIO_new;
-    FUNC_BIO_PUTS m_F_BIO_puts;
-    FUNC_BIO_S_MEM m_F_BIO_s_mem;
-    FUNC_PEM_READ_BIO_RSAPUBLICKEY m_F_PEM_read_bio_RSAPublicKey;
-    FUNC_PEM_READ_BIO_RSA_PUBKEY m_F_PEM_read_bio_RSA_PUBKEY;
-    FUNC_RSA_FREE m_F_RSA_free;
-    FUNC_RSA_FREE m_F_BIO_free;
-    FUNC_RSA_PUBLIC_ENCRYPT m_F_RSA_public_encrypt;
-    FUNC_RSA_SIZE m_F_RSA_size;
-    AES_KEY *m_AES;
-    void *m_BIO;
-    void *m_RSA;
 };
 
 #endif // DEEPINAUTHFRAMEWORK_H

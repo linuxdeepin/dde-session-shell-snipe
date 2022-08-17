@@ -2,6 +2,9 @@ set(BIN_NAME dde-lock-test)
 
 aux_source_directory(. LOCK_TEST)
 
+# 优先使用国密
+add_definitions(-DPREFER_USING_GM)
+
 set(LOCK_TEST_SRCS
     ${LOCK_TEST}
     ${authority_DBUS_SCRS}
@@ -58,4 +61,5 @@ target_link_libraries(${BIN_NAME} PRIVATE
     KF5::WaylandClient
     -lpthread
     -lm
+    -lcrypto
 )
