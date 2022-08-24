@@ -49,6 +49,7 @@
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/Xrandr.h>
 #include <cstdlib>
+#include <DConfig>
 
 DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
@@ -175,12 +176,25 @@ static double get_scale_ratio() {
 // 读取系统配置文件的缩放比，如果是null，默认返回1
 double getScaleFormConfig()
 {
+    double defaultScaleFactors = 1.0;
+    DTK_CORE_NAMESPACE::DConfig * dconfig = DConfig::create("org.deepin.dde.lightdm-deepin-greeter", "org.deepin.dde.lightdm-deepin-greeter", QString(), nullptr);
+    //华为机型,从override配置中获取默认缩放比
+    if (dconfig) {
+        defaultScaleFactors = dconfig->value("defaultScaleFactors", 1.0).toDouble() ;
+        if(defaultScaleFactors < 1.0){
+            defaultScaleFactors = 1.0;
+        }
+    }
+
+    delete dconfig;
+    dconfig = nullptr;
+
     QDBusInterface configInter("com.deepin.system.Display",
                                                      "/com/deepin/system/Display",
                                                      "com.deepin.system.Display",
                                                     QDBusConnection::systemBus());
     if (!configInter.isValid()) {
-        return 1;
+        return defaultScaleFactors;
     }
     QDBusReply<QString> configReply = configInter.call("GetConfig");
     if (configReply.error().message().isEmpty()) {
@@ -194,11 +208,11 @@ double getScaleFormConfig()
             qDebug() << "scaleFactors :" << scaleFactors;
             return scaleFactors;
         } else {
-            return 1;
+            return defaultScaleFactors;
         }
     } else {
         qWarning() << configReply.error().message();
-        return 1;
+        return defaultScaleFactors;
     }
 }
 
