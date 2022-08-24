@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13.4)
 project(dde-session-shell C CXX)
 
 include(GNUInstallDirs)
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX /usr)
+endif ()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -289,37 +292,34 @@ add_subdirectory(tests)
 add_subdirectory(plugins)
 
 # Install settings
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX /usr)
-endif ()
 
 # bin
-install(TARGETS dde-lock lightdm-deepin-greeter DESTINATION bin)
-install(FILES files/deepin-greeter DESTINATION bin)
+install(TARGETS dde-lock lightdm-deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES files/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 file(GLOB SCRIPTS  scripts/*)
-install(PROGRAMS ${SCRIPTS} DESTINATION /etc/deepin/greeters.d)
+install(PROGRAMS ${SCRIPTS} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/deepin/greeters.d)
 
 file(GLOB QM_FILES "translations/*.qm")
-install(FILES ${QM_FILES} DESTINATION share/dde-session-shell/translations)
-install(FILES qt-theme.ini DESTINATION /etc/lightdm/deepin)
+install(FILES ${QM_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/translations)
+install(FILES qt-theme.ini DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/lightdm/deepin)
 
-install(FILES files/lightdm-deepin-greeter.desktop DESTINATION share/xgreeters/)
-install(FILES files/dde-lock.desktop DESTINATION share/applications/)
-install(FILES files/dde-lock.desktop DESTINATION /etc/xdg/autostart/)
-install(FILES files/dde-session-shell.conf DESTINATION share/dde-session-shell/)
-install(FILES files/lightdm-deepin-greeter.conf DESTINATION share/deepin-authentication/privileges/)
+install(FILES files/lightdm-deepin-greeter.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/xgreeters/)
+install(FILES files/dde-lock.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/applications/)
+install(FILES files/dde-lock.desktop DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/xdg/autostart/)
+install(FILES files/dde-session-shell.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/)
+install(FILES files/lightdm-deepin-greeter.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/deepin-authentication/privileges/)
 
 # services
 file(GLOB SERVICES files/*.service)
-install(FILES ${SERVICES} DESTINATION share/dbus-1/services)
+install(FILES ${SERVICES} DESTINATION ${CMAKE_INSTALL_DATADIR}/dbus-1/services)
 
 #schemas
-install(FILES xml/com.deepin.dde.session-shell.gschema.xml DESTINATION share/glib-2.0/schemas)
+install(FILES xml/com.deepin.dde.session-shell.gschema.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas)
 
 # dev
 file(GLOB INTERFACE interface/*.h)
-install(FILES ${INTERFACE} DESTINATION include/dde-session-shell)
+install(FILES ${INTERFACE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dde-session-shell)
 
 file(GLOB CMAKE_CONFIG cmake/*.cmake)
 install(FILES ${CMAKE_CONFIG} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/DdeSessionShell)
