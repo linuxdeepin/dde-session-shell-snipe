@@ -311,7 +311,6 @@ void LockFrame::cancelShutdownInhibit(bool hideFrame)
     }
 
     if (hideFrame) {
-        m_model->setVisible(false);
         m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
     }
 }
