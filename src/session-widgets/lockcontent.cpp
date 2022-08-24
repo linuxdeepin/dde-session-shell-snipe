@@ -31,7 +31,10 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_userListWidget(nullptr)
     , m_localServer(new QLocalServer(this))
 {
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    // 在已显示关机或用户列表界面时，再插入另外一个显示器，会新构建一个LockContent，此时会设置为PasswordMode造成界面状态异常
+    if (!m_model->visible()) {
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    }
 
     initUI();
     initConnections();
