@@ -149,5 +149,13 @@ void ModulesLoader::findModule(const QString &path)
     }
 }
 
+void ModulesLoader::removeModule(const QString &moduleKey)
+{
+    if (!m_modules.contains(moduleKey))
+        return;
+
+    m_modules.remove(moduleKey);
+}
+
 } // namespace module
 } // namespace dss

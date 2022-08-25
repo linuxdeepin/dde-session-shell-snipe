@@ -39,6 +39,7 @@ public:
     inline QHash<QString, QSharedPointer<BaseModuleInterface>> moduleList() { return m_modules; }
     BaseModuleInterface *findModuleByName(const QString &name) const;
     QHash<QString, BaseModuleInterface *> findModulesByType(const int type) const;
+    void removeModule(const QString &moduleKey);
 
 signals:
     void moduleFound(BaseModuleInterface *);
