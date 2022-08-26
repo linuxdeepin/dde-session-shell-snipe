@@ -58,6 +58,7 @@ public:
     void closeResetPasswordMessage();
     void setAuthStatueVisible(bool visible);
 
+    bool isShowResetPasswordMessage();
 signals:
     void focusChanged(const bool);
     void lineEditTextChanged(const QString &); // 数据同步

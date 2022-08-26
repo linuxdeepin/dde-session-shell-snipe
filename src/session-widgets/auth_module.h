@@ -41,6 +41,7 @@
 #define AUTH_LOCK QStringLiteral(":/misc/images/unlock/unlock_1.svg")
 #define UnionID_Auth QStringLiteral(":/misc/images/auth/UnionID.svg")
 #define ResetPassword_Exe_Path QStringLiteral("/usr/lib/dde-control-center/reset-password-dialog")
+#define DEEPIN_DEEPINID_DAEMON_PATH QStringLiteral("/usr/lib/deepin-deepinid-daemon/deepin-deepinid-daemon")
 
 DWIDGET_USE_NAMESPACE
 using namespace DDESESSIONCC;
