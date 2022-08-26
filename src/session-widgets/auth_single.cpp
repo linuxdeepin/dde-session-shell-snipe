@@ -493,7 +493,7 @@ bool AuthSingle::isUserAccountBinded()
         return false;
     }
     QString uosid;
-    if (retUOSID.error().message().isEmpty()) {
+    if (retUOSID.isValid()) {
         uosid = retUOSID.value();
     } else {
         qWarning() << retUOSID.error().message();
@@ -515,7 +515,7 @@ bool AuthSingle::isUserAccountBinded()
         return false;
     }
     QString ubid;
-    if (retLocalBindCheck.error().message().isEmpty()) {
+    if (retLocalBindCheck.isValid()) {
         ubid = retLocalBindCheck.value();
         if (m_bindCheckTimer) {
             m_bindCheckTimer->stop();
