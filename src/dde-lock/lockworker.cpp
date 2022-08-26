@@ -369,6 +369,8 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
             delayTime = 500;
         }
         QTimer::singleShot(delayTime, this, [=] {
+            // 待机休眠前设置Locked为true,避免刚唤醒时locked状态不对
+            setLocked(true);
             m_sessionManagerInter->RequestSuspend();
         });
     }
@@ -386,6 +388,8 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
             delayTime = 500;
         }
         QTimer::singleShot(delayTime, this, [=] {
+            // 待机休眠前设置Locked为true,避免刚唤醒时locked状态不对
+            setLocked(true);
             m_sessionManagerInter->RequestHibernate();
         });
     }
@@ -695,13 +699,6 @@ void LockWorker::onUnlockFinished(bool unlocked)
     //To Do: 最好的方案是修改同步后端认证信息的代码设计
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::UserMode)
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-
-    //    if (!unlocked && m_authFramework->GetAuthType() == AuthFlag::Password) {
-    //        qWarning() << "Authorization password failed!";
-    //        emit m_model->authFailedTipsMessage(tr("Wrong Password"));
-    //        return;
-    //    }
-
     switch (m_model->powerAction()) {
     case SessionBaseModel::PowerAction::RequireRestart:
         if (unlocked) {
