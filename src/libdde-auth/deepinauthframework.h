@@ -27,13 +27,6 @@
 #include <com_deepin_daemon_authenticate.h>
 #include <com_deepin_daemon_authenticate_session2.h>
 #include <memory>
-#include <openssl/aes.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
-#include <openssl/sm2.h>
-#include <openssl/sm4.h>
-#include <openssl/evp.h>
 
 #define AUTHENTICATE_SERVICE "com.deepin.daemon.Authenticate"
 
