@@ -232,8 +232,11 @@ bool LockFrame::handlePoweroffKey()
     qDebug() << "battery is: " << isBattery << "," << action;
     // 需要特殊处理：关机(0)和无任何操作(4)
     if (action == 0) {
-        //锁屏时或显示关机界面时，需要确认是否关机
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        // 待机刚唤醒一段时间内不响应电源按键事件
+        if (m_enablePowerOffKey) {
+            //锁屏时或显示关机界面时，需要确认是否关机
+            emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        }
         return true;
     } else if (action == 4) {
         // 先检查当前是否允许响应电源按键
