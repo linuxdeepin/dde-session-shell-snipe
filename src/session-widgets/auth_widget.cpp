@@ -199,6 +199,11 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
     if (m_passwordAuth) {
         m_passwordAuth->setCurrentUid(user->uid());
     }
+
+    // A账户为无密码登录，B账户有密码；在登录界面的时候，B账户输入密码不登录，切换到A，再切换到B，发现B的密码输入框还有密码。
+    if (m_passwordAuth) {
+        m_passwordAuth->reset();
+    }
 }
 
 /**
