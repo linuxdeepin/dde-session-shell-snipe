@@ -273,8 +273,9 @@ void AuthSingle::setLimitsInfo(const LimitsInfo &info)
     AuthModule::setLimitsInfo(info);
     setPasswordHintBtnVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
-        if (lockStateChanged && this->isVisible() && QFile::exists(ResetPassword_Exe_Path) &&
-            m_currentUid <= 9999 && !IsCommunitySystem ) {
+        bool isShow = lockStateChanged && this->isVisible() && QFile::exists(DEEPIN_DEEPINID_DAEMON_PATH) &&
+                QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem;
+        if (isShow) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();

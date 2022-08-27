@@ -91,7 +91,9 @@ void EncryptHelper::setEncryption(const int type, ArrayInt method)
 QByteArray EncryptHelper::encryptSymmetricalKey()
 {
     if (ET_SM2 == m_encryptType) {
+#ifdef PREFER_USING_GM
         return SM2EncryptSymmetricalKey();
+#endif
     }
 
     return RSAEncryptSymmetricalKey();
@@ -109,6 +111,7 @@ QByteArray EncryptHelper::RSAEncryptSymmetricalKey()
 }
 
 
+#ifdef PREFER_USING_GM
 QByteArray EncryptHelper::SM2EncryptSymmetricalKey()
 {
     size_t csize = 0;
@@ -129,6 +132,7 @@ QByteArray EncryptHelper::SM2EncryptSymmetricalKey()
     delete[] cipherText;
     return ba;
 }
+#endif
 
 QByteArray EncryptHelper::getEncryptedToken(const QString &token)
 {
@@ -141,11 +145,15 @@ QByteArray EncryptHelper::getEncryptedToken(const QString &token)
     memcpy(tokenBuffer, token.toLatin1().data(), static_cast<size_t>(tokenSize));
     char *ciphertext = new char[static_cast<size_t>(bufferSize)];
     memset(ciphertext, 0, static_cast<size_t>(bufferSize));
+#ifdef PREFER_USING_GM
     SM4_KEY sm4;
+#endif
     AES_KEY aes;
     int ret = 0;
     if (ET_SM2 == m_encryptType) {
+#ifdef PREFER_USING_GM
         SM4_set_key(reinterpret_cast<uint8_t *>(m_symmetricKey.toLatin1().data()), &sm4);
+#endif
     } else {
         AES_set_encrypt_key(reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), m_symmetricKey.length() * 8, &aes);
     }
@@ -158,7 +166,9 @@ QByteArray EncryptHelper::getEncryptedToken(const QString &token)
     unsigned char *iv = new unsigned char[AES_BLOCK_SIZE];
     memset(iv, 0, AES_BLOCK_SIZE);
     if (ET_SM2 == m_encryptType) {
+#ifdef PREFER_USING_GM
         SM4_encrypt(reinterpret_cast<uint8_t *>(tokenBuffer), reinterpret_cast<uint8_t *>(ciphertext), &sm4);
+#endif
     } else {
         AES_cbc_encrypt(reinterpret_cast<unsigned char *>(tokenBuffer), reinterpret_cast<unsigned char *>(ciphertext), static_cast<size_t>(bufferSize), &aes, iv, AES_ENCRYPT);
     }

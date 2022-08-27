@@ -301,7 +301,7 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
     m_passwordHintBtn->setVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
         setAuthState(AS_Locked, "Locked");
-        if (this->isVisible() && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
+        if (this->isVisible() && isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();
@@ -581,6 +581,11 @@ void AuthPassword::updateResetPasswordUI()
     }
 }
 
+bool AuthPassword::isShowResetPasswordMessage()
+{
+    return QFile::exists(DEEPIN_DEEPINID_DAEMON_PATH) && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem;
+}
+
 bool AuthPassword::eventFilter(QObject *watched, QEvent *event)
 {
     if (qobject_cast<DLineEditEx *>(watched) == m_lineEdit && event->type() == QEvent::KeyPress) {
@@ -608,7 +613,7 @@ void AuthPassword::showEvent(QShowEvent *event)
     m_passwordHintBtn->setVisible(m_limitsInfo->numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
         setAuthState(AS_Locked, "Locked");
-        if (QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
+        if (isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();

@@ -57,6 +57,7 @@ pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext x
 pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
 pkg_check_modules(QGSettings REQUIRED gsettings-qt)
 pkg_check_modules(Greeter REQUIRED liblightdm-qt5-3)
+pkg_check_modules(SSL REQUIRED IMPORTED_TARGET libcrypto libssl openssl)
 
 set(Qt_LIBS
     Qt5::Core
@@ -83,8 +84,28 @@ message(STATUS "USE_DEEPIN_WAYLAND ${USE_DEEPIN_WAYLAND}")
 if(USE_DEEPIN_WAYLAND)
   add_definitions(-DUSE_DEEPIN_WAYLAND)
 endif()
-# 优先使用国密
-add_definitions(-DPREFER_USING_GM)
+
+
+try_compile(USE_GM
+              ${CMAKE_CURRENT_BINARY_DIR}/try_compile
+            SOURCES
+              ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gm.cc
+            LINK_LIBRARIES
+	      PkgConfig::SSL
+	    OUTPUT_VARIABLE
+	      GM_MESSAGE
+)
+
+message(STATUS "check GM: ${USE_GM}")
+
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    message(${GM_MESSAGE})
+endif()
+
+if(USE_GM)
+  # 优先使用国密
+  add_definitions(-DPREFER_USING_GM)
+endif()
 
 function(generation_dbus_interface xml class_name class_file option)
     execute_process(COMMAND qdbusxml2cpp ${option} -p ${class_file} -c ${class_name} ${xml}
@@ -190,7 +211,7 @@ target_link_libraries(dde-lock PRIVATE
     ${Qt5Network_LIBRARIES}
     ${QGSettings_LIBRARIES}
     KF5::WaylandClient
-    -lcrypto
+    PkgConfig::SSL
 )
 
 set(GREETER_SRCS
@@ -261,7 +282,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${QGSettings_LIBRARIES}
     ${Greeter_LIBRARIES}
     KF5::WaylandClient
-    -lcrypto
+    PkgConfig::SSL
 )
 
 add_subdirectory(tests)

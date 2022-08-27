@@ -56,12 +56,11 @@ AuthCustom::~AuthCustom()
         m_module->content()->setParent(nullptr);
     }
 
+    // FIXME 这种处理方式不通用，应该由插件请求登陆器把自己卸载掉
     AuthCustomObjs.removeAll(this);
-
     if (AuthCustomObjs.isEmpty()) {
         if (m_module) {
-            delete m_module;
-            m_module = nullptr;
+            ModulesLoader::instance().removeModule(m_module->key());
         }
     }
 }

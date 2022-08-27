@@ -95,12 +95,6 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
         });
     }
 
-    connect(qApp, &QGuiApplication::primaryScreenChanged, this, [this](QScreen *screen) {
-        qDebug() << "QGuiApplication::primaryScreenChanged:" << m_screen << screen << m_content;
-        if (!m_screen.isNull() && m_screen == screen && m_content) {
-            m_primaryShowFinished = true;
-        }
-    });
 
     m_blackWidget->setBlackMode(m_model->isBlackMode());
     connect(m_model, &SessionBaseModel::blackModeChanged, m_blackWidget, &BlackWidget::setBlackMode);
@@ -180,16 +174,16 @@ void FullscreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
     if (screen.isNull())
         return;
 
-    qInfo() << Q_FUNC_INFO << ", init screen:" << screen << " screen geometry:"
-            << screen->geometry() << " lockframe:" << this;
-    QScreen *primary_screen = QGuiApplication::primaryScreen();
-    if (primary_screen == screen && isVisible) {
+    qInfo() << Q_FUNC_INFO
+            << " screen info: " << screen
+            << " screen geometry: " << screen->geometry()
+            << " lock frame object:" << this;
+    if (isVisible) {
         m_content->show();
-        m_primaryShowFinished = true;
         emit contentVisibleChanged(true);
     } else {
-        QTimer::singleShot(1000, this, [=] {
-            m_primaryShowFinished = true;
+        // 如果有多个屏幕则根据鼠标所在的屏幕来显示
+        QTimer::singleShot(1000, this, [this] {
             setMouseTracking(true);
         });
     }
@@ -305,7 +299,7 @@ void FullscreenBackground::tryActiveWindow(int count/* = 9*/)
 
 void FullscreenBackground::enterEvent(QEvent *event)
 {
-    if (m_primaryShowFinished && m_enableEnterEvent && m_model->visible()) {
+    if (m_enableEnterEvent && m_model->visible()) {
         m_content->show();
         emit contentVisibleChanged(true);
         // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）

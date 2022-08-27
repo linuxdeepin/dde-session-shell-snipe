@@ -30,8 +30,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#ifdef PREFER_USING_GM
 #include <openssl/sm2.h>
 #include <openssl/sm4.h>
+#endif
 #ifdef __cplusplus
 }
 #endif
@@ -63,7 +65,9 @@ private:
     ~EncryptHelper();
 
     QByteArray RSAEncryptSymmetricalKey();
+#ifdef PREFER_USING_GM
     QByteArray SM2EncryptSymmetricalKey();
+#endif
 
 private:
     BIO *m_BIO;
