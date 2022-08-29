@@ -129,6 +129,10 @@ public:
     inline bool allowShowCustomUser() const { return m_allowShowCustomUser; }
     void setAllowShowCustomUser(const bool allowShowCustomUser);
 
+    inline bool isPressedPowerBtnFromLock() const { return m_pressedPowerBtnFromLock; }
+    void powerBtnPressedFromLock();
+    void resetPowerBtnPressedFromLock();
+
     inline const QList<std::shared_ptr<User>> getUserList() const { return m_users->values(); }
 
     inline const AuthProperty &getAuthProperty() const { return m_authProperty; }
@@ -220,6 +224,7 @@ private:
     bool m_allowShowCustomUser;
     bool m_SEOpen; // 保存等保开启、关闭的状态
     bool m_isUseWayland;
+    bool m_pressedPowerBtnFromLock; // 从lock界面点的power按键
     int m_userListSize = 0;
     AppType m_appType;
     QList<std::shared_ptr<User>> m_userList;
