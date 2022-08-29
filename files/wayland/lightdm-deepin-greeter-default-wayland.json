@@ -61,6 +61,16 @@
             "description": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
             "permissions": "readwrite",
             "visibility": "private"
+        },        
+	 "defaultScaleFactors":{
+            "value": 1,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "DefaultScaleFactors",
+            "name[zh_CN]": "登录页面默认缩放",
+            "description": "配置greeter界面默认的缩放比例",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

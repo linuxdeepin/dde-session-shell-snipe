@@ -181,6 +181,7 @@ double getScaleFormConfig()
     //华为机型,从override配置中获取默认缩放比
     if (dconfig) {
         defaultScaleFactors = dconfig->value("defaultScaleFactors", 1.0).toDouble() ;
+        qDebug() << Q_FUNC_INFO <<"defaultScaleFactors :" << defaultScaleFactors;
         if(defaultScaleFactors < 1.0){
             defaultScaleFactors = 1.0;
         }
@@ -206,6 +207,9 @@ double getScaleFormConfig()
             QJsonObject Config = rootObj.value("Config").toObject();
             double scaleFactors = Config.value("ScaleFactors").toObject().value("ALL").toDouble();
             qDebug() << "scaleFactors :" << scaleFactors;
+            if(scaleFactors == 0.0) {
+                scaleFactors = defaultScaleFactors;
+            }
             return scaleFactors;
         } else {
             return defaultScaleFactors;
@@ -218,6 +222,7 @@ double getScaleFormConfig()
 
 static void set_auto_QT_SCALE_FACTOR() {
     const double ratio = IsWayland ? getScaleFormConfig() : get_scale_ratio();
+    qDebug() << Q_FUNC_INFO << "ratio" << ratio;
     if (ratio > 0.0) {
         setenv("QT_SCALE_FACTOR", QByteArray::number(ratio).constData(), 1);
     }
