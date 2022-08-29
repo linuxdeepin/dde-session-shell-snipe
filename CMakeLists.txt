@@ -321,6 +321,10 @@ install(FILES xml/com.deepin.dde.session-shell.gschema.xml DESTINATION ${CMAKE_I
 file(GLOB INTERFACE interface/*.h)
 install(FILES ${INTERFACE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dde-session-shell)
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/DdeSessionShellConfig.cmake.in
+    ${CMAKE_SOURCE_DIR}/cmake/DdeSessionShellConfig.cmake
+    @ONLY)
 file(GLOB CMAKE_CONFIG cmake/*.cmake)
 install(FILES ${CMAKE_CONFIG} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/DdeSessionShell)
 
