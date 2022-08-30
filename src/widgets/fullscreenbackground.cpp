@@ -395,10 +395,10 @@ void FullscreenBackground::updateScreen(QPointer<QScreen> screen)
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
 
     if (!screen.isNull()) {
-        connect(screen, &QScreen::geometryChanged, [=](){
+        connect(screen, &QScreen::geometryChanged, this, [=](){
             qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
-        });
-        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+        }, Qt::ConnectionType::QueuedConnection);
+        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry, Qt::ConnectionType::QueuedConnection);
     }
 
     m_screen = screen;
