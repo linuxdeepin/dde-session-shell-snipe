@@ -562,7 +562,7 @@ bool ShutdownWidget::event(QEvent *e)
     } else if (e->type() == QEvent::FocusOut) {
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
             // 丢失焦点后，获取焦点。双屏拔掉主屏显示器会导致副屏关机页面焦点丢失
-            if (this->isVisible() && !this->hasFocus())
+            if (this->isVisible())
                 this->activateWindow();
         } else {
             if (m_index < 0 || m_index >= m_btnList.size()) {
