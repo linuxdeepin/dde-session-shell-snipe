@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "sessionbasemodel.h"
 
 #include <DSysInfo>
@@ -25,6 +29,7 @@ SessionBaseModel::SessionBaseModel(QObject *parent)
     , m_allowShowCustomUser(false)
     , m_SEOpen(false)
     , m_isUseWayland(QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive))
+    , m_pressedPowerBtnFromLock(false)
     , m_appType(AuthCommon::None)
     , m_currentUser(nullptr)
     , m_lastLogoutUser(nullptr)
@@ -234,6 +239,16 @@ void SessionBaseModel::setAllowShowCustomUser(const bool allowShowCustomUser)
         return;
 
     m_allowShowCustomUser = allowShowCustomUser;
+}
+
+void SessionBaseModel::powerBtnPressedFromLock()
+{
+    m_pressedPowerBtnFromLock = true;
+}
+
+void SessionBaseModel::resetPowerBtnPressedFromLock()
+{
+    m_pressedPowerBtnFromLock = false;
 }
 
 /**
