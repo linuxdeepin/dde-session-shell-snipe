@@ -140,6 +140,13 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["ShowLockButton"] = false;
         retDataObj["DefaultAuthLevel"] = DefaultAuthLevel::Default;
         retObj["Data"] = retDataObj;
+    } else if (cmdType == "AuthState") {
+        int authType = data.value("AuthType").toInt();
+        int authState = data.value("AuthState").toInt();
+        // 所有类型验证成功，重置插件状态
+        if (authType == AuthType::AT_All && authState == AuthState::AS_Success) {
+            init();
+        }
     }
 
     QJsonDocument doc;

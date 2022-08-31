@@ -11,6 +11,7 @@
 #include "auth_password.h"
 #include "auth_single.h"
 #include "auth_ukey.h"
+#include "authcommon.h"
 #include "dlineeditex.h"
 #include "framedatabind.h"
 #include "keyboardmonitor.h"
@@ -363,6 +364,11 @@ void SFAWidget::setAuthState(const int type, const int state, const QString &mes
         break;
     default:
         break;
+    }
+
+    // 同步验证状态给插件
+    if (m_customAuth) {
+        m_customAuth->notifyAuthState(static_cast<AuthCommon::AuthType>(type) , static_cast<AuthCommon::AuthState>(state));
     }
 }
 
