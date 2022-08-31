@@ -328,7 +328,25 @@ void AuthCustom::lightdmAuthStarted()
 
     QJsonObject message;
     message["CmdType"] = "StartAuth";
-    message["AuthObjectType"] = AuthObjectType::LightDM;
+    QJsonObject retDataObj;
+    retDataObj["AuthObjectType"] = AuthObjectType::LightDM;
+    message["Data"] = retDataObj;
+    std::string result = m_module->onMessage(toJson(message).toStdString());
+    qInfo() << "Plugin result: " << QString::fromStdString(result);
+}
+
+void AuthCustom::setIsPwdLocked(const bool isPwdLocked)
+{
+    qDebug() << Q_FUNC_INFO << isPwdLocked;
+    //把输密码错误五次后，是否锁定的信息传给插件
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "LimitsInfoIsLocked";
+    QJsonObject retDataObj;
+    retDataObj["IsPwdLocked"] = isPwdLocked;
+    message["Data"] = retDataObj;
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
 }

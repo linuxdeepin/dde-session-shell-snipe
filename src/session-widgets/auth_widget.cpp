@@ -10,6 +10,7 @@
 #include "auth_password.h"
 #include "auth_single.h"
 #include "auth_ukey.h"
+#include "auth_custom.h"
 #include "dlineeditex.h"
 #include "framedatabind.h"
 #include "keyboardmonitor.h"
@@ -231,6 +232,8 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
     User::LimitsInfo limitsInfoTmpU;
     LimitsInfo limitsInfoTmp;
 
+    bool isPwdLocked = false;
+
     QMap<int, User::LimitsInfo>::const_iterator i = limitsInfo->constBegin();
     while (i != limitsInfo->end()) {
         limitsInfoTmpU = i.value();
@@ -246,6 +249,7 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
             }
             break;
         case AT_Password:
+            isPwdLocked = limitsInfoTmp.locked;
             if (m_passwordAuth) {
                 m_passwordAuth->setLimitsInfo(limitsInfoTmp);
             }
@@ -278,6 +282,10 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
             break;
         }
         ++i;
+    }
+
+    if (m_customAuth) {
+        m_customAuth->setIsPwdLocked(isPwdLocked);
     }
 }
 

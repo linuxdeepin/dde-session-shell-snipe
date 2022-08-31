@@ -77,6 +77,7 @@ private:
     AuthCallbackData m_lastAuthResult;
     AuthStatus m_authStatus;
     bool m_needSendAuthType;
+    bool m_isLocked;
 };
 
 } // namespace module
