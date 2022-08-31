@@ -137,9 +137,12 @@ int main(int argc, char *argv[])
         lockFrame->setScreen(screen, count <= 0);
         property_group->addObject(lockFrame);
         QObject::connect(lockFrame, &LockFrame::requestSwitchToUser, worker, &LockWorker::switchToUser);
-        QTimer::singleShot(300, [=]() {
-            qInfo() << "lockFrame setVisible true, update.";
-            lockFrame->update();
+        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, [=](const bool visible) {
+            lockFrame->setVisible(visible);
+            QTimer::singleShot(300, [=]() {
+                qInfo() << "lockFrame setVisible true, update.";
+                lockFrame->update();
+            });
         });
         QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame,[&](bool visible) {
             emit lockService.Visible(visible);
