@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "lockcontent.h"
 
 #include "base_module_interface.h"
@@ -31,7 +35,10 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_userListWidget(nullptr)
     , m_localServer(new QLocalServer(this))
 {
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    // 在已显示关机或用户列表界面时，再插入另外一个显示器，会新构建一个LockContent，此时会设置为PasswordMode造成界面状态异常
+    if (!m_model->visible()) {
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    }
 
     initUI();
     initConnections();
@@ -101,6 +108,9 @@ void LockContent::initConnections()
         emit requestEndAuthentication(m_model->currentUser()->name(), AT_All);
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
+        if (m_model->appType() == AuthCommon::Lock)
+            m_model->powerBtnPressedFromLock();
+
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
@@ -372,6 +382,11 @@ void LockContent::mouseReleaseEvent(QMouseEvent *event)
         emit requestSwitchToUser(m_model->currentUser());
     }
 
+    if (m_model->currentModeState() == SessionBaseModel::ShutDownMode
+        || m_model->currentModeState() == SessionBaseModel::PowerMode) {
+        m_model->resetPowerBtnPressedFromLock();
+    }
+
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 
     SessionBaseWindow::mouseReleaseEvent(event);
@@ -624,6 +639,11 @@ void LockContent::keyPressEvent(QKeyEvent *event)
         }
         break;
     case Qt::Key_Escape:
+        if (m_model->currentModeState() == SessionBaseModel::ShutDownMode
+            || m_model->currentModeState() == SessionBaseModel::PowerMode) {
+            m_model->resetPowerBtnPressedFromLock();
+        }
+
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ConfirmPasswordMode) {
             m_model->setAbortConfirm(false);
             m_model->setPowerAction(SessionBaseModel::PowerAction::None);

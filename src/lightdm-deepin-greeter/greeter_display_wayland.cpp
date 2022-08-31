@@ -1,23 +1,6 @@
-/*
- * Copyright (C) 2022 ~ 2022 Deepin Technology Co., Ltd.
- *
- * Author:     chenbin <chenbina@uniontech.com>
- *
- * Maintainer: chenbin <chenbina@uniontech.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "greeter_display_wayland.h"
 
@@ -144,7 +127,7 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
                     Q_EMIT setOutputFinished();
                 });
             }
-        } 
+        }
     });
 
     connect(registry, &Registry::outputDeviceAnnounced, this, [ this, registry ](quint32 name, quint32 version) {
@@ -550,7 +533,7 @@ QString GreeterDisplayWayland::getOutputDeviceName(const QString& model, const Q
     // 找到第一个纯数字部分
     for (int i = 0; i < nameList.size(); ++i) {
         bool ok = false;
-        int num = nameList[i].toInt(&ok, 10);
+        nameList[i].toInt(&ok, 10);
         if (ok && i >= 1) {
             // name 是数字
             // 比如 model 为 HDMI-A-2-VA2430-H-3/W72211325199

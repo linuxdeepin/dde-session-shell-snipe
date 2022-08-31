@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "greeterworker.h"
 
 #include "authcommon.h"
@@ -491,7 +495,7 @@ void GreeterWorker::destoryAuthentication(const QString &account)
     qDebug() << "GreeterWorker::destoryAuthentication:" << account;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
-        m_authFramework->DestoryAuthController(account);
+        m_authFramework->DestroyAuthController(account);
         break;
     default:
         break;

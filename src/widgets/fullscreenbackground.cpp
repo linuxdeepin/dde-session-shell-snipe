@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "fullscreenbackground.h"
 
@@ -95,12 +74,6 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
         });
     }
 
-    connect(qApp, &QGuiApplication::primaryScreenChanged, this, [this](QScreen *screen) {
-        qDebug() << "QGuiApplication::primaryScreenChanged:" << m_screen << screen << m_content;
-        if (!m_screen.isNull() && m_screen == screen && m_content) {
-            m_primaryShowFinished = true;
-        }
-    });
 
     m_blackWidget->setBlackMode(m_model->isBlackMode());
     connect(m_model, &SessionBaseModel::blackModeChanged, m_blackWidget, &BlackWidget::setBlackMode);
@@ -180,16 +153,16 @@ void FullscreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
     if (screen.isNull())
         return;
 
-    qInfo() << Q_FUNC_INFO << ", init screen:" << screen << " screen geometry:"
-            << screen->geometry() << " lockframe:" << this;
-    QScreen *primary_screen = QGuiApplication::primaryScreen();
-    if (primary_screen == screen && isVisible) {
+    qInfo() << Q_FUNC_INFO
+            << " screen info: " << screen
+            << " screen geometry: " << screen->geometry()
+            << " lock frame object:" << this;
+    if (isVisible) {
         m_content->show();
-        m_primaryShowFinished = true;
         emit contentVisibleChanged(true);
     } else {
-        QTimer::singleShot(1000, this, [=] {
-            m_primaryShowFinished = true;
+        // 如果有多个屏幕则根据鼠标所在的屏幕来显示
+        QTimer::singleShot(1000, this, [this] {
             setMouseTracking(true);
         });
     }
@@ -305,7 +278,7 @@ void FullscreenBackground::tryActiveWindow(int count/* = 9*/)
 
 void FullscreenBackground::enterEvent(QEvent *event)
 {
-    if (m_primaryShowFinished && m_enableEnterEvent && m_model->visible()) {
+    if (m_enableEnterEvent && m_model->visible()) {
         m_content->show();
         emit contentVisibleChanged(true);
         // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
@@ -422,10 +395,10 @@ void FullscreenBackground::updateScreen(QPointer<QScreen> screen)
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
 
     if (!screen.isNull()) {
-        connect(screen, &QScreen::geometryChanged, [=](){
+        connect(screen, &QScreen::geometryChanged, this, [=](){
             qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
-        });
-        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+        }, Qt::ConnectionType::QueuedConnection);
+        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry, Qt::ConnectionType::QueuedConnection);
     }
 
     m_screen = screen;

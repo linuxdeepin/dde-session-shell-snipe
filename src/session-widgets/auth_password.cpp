@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "auth_password.h"
 
@@ -301,7 +284,7 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
     m_passwordHintBtn->setVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
         setAuthState(AS_Locked, "Locked");
-        if (this->isVisible() && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
+        if (this->isVisible() && isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();
@@ -513,7 +496,7 @@ bool AuthPassword::isUserAccountBinded()
         return false;
     }
     QString uosid;
-    if (retUOSID.error().message().isEmpty()) {
+    if (retUOSID.isValid()) {
         uosid = retUOSID.value();
     } else {
         qWarning() << retUOSID.error().message();
@@ -535,7 +518,7 @@ bool AuthPassword::isUserAccountBinded()
         return false;
     }
     QString ubid;
-    if (retLocalBindCheck.error().message().isEmpty()) {
+    if (retLocalBindCheck.isValid()) {
         ubid = retLocalBindCheck.value();
         if (m_bindCheckTimer) {
             m_bindCheckTimer->stop();
@@ -581,6 +564,11 @@ void AuthPassword::updateResetPasswordUI()
     }
 }
 
+bool AuthPassword::isShowResetPasswordMessage()
+{
+    return QFile::exists(DEEPIN_DEEPINID_DAEMON_PATH) && QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem;
+}
+
 bool AuthPassword::eventFilter(QObject *watched, QEvent *event)
 {
     if (qobject_cast<DLineEditEx *>(watched) == m_lineEdit && event->type() == QEvent::KeyPress) {
@@ -608,7 +596,7 @@ void AuthPassword::showEvent(QShowEvent *event)
     m_passwordHintBtn->setVisible(m_limitsInfo->numFailures > 0 && !m_passwordHint.isEmpty());
     if (m_limitsInfo->locked) {
         setAuthState(AS_Locked, "Locked");
-        if (QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem ) {
+        if (isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "authcommon.h"
 #include "deepinauthframework.h"
 
@@ -26,7 +30,7 @@ TEST_F(UT_DeepinAuthFramework, PAMTest)
 {
     // m_authFramework->CreateAuthenticate("uos");
 //    m_authFramework->SendToken("123");
-//    m_authFramework->DestoryAuthenticate();
+//    m_authFramework->DestroyAuthenticate();
 }
 
 TEST_F(UT_DeepinAuthFramework, DATest)
@@ -42,7 +46,7 @@ TEST_F(UT_DeepinAuthFramework, DATest)
 //    m_authFramework->StartAuthentication(UserName, 19, -1);
 //    m_authFramework->SendTokenToAuth(UserName, 1, "123");
 //    m_authFramework->EndAuthentication(UserName, 19);
-//    m_authFramework->DestoryAuthController(UserName);
+//    m_authFramework->DestroyAuthController(UserName);
 
 //    m_authFramework->GetFuzzyMFA(UserName);
 //    m_authFramework->GetMFAFlag(UserName);

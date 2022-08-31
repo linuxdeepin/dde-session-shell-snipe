@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef AUTHMODULE_H
 #define AUTHMODULE_H
@@ -41,6 +24,7 @@
 #define AUTH_LOCK QStringLiteral(":/misc/images/unlock/unlock_1.svg")
 #define UnionID_Auth QStringLiteral(":/misc/images/auth/UnionID.svg")
 #define ResetPassword_Exe_Path QStringLiteral("/usr/lib/dde-control-center/reset-password-dialog")
+#define DEEPIN_DEEPINID_DAEMON_PATH QStringLiteral("/usr/lib/deepin-deepinid-daemon/deepin-deepinid-daemon")
 
 DWIDGET_USE_NAMESPACE
 using namespace DDESESSIONCC;

@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2015 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "accessibilitycheckerex.h"
 #include "appeventfilter.h"
@@ -158,7 +137,10 @@ int main(int argc, char *argv[])
         lockFrame->setScreen(screen, count <= 0);
         property_group->addObject(lockFrame);
         QObject::connect(lockFrame, &LockFrame::requestSwitchToUser, worker, &LockWorker::switchToUser);
-        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, &LockFrame::setVisible);
+        QTimer::singleShot(300, [=]() {
+            qInfo() << "lockFrame setVisible true, update.";
+            lockFrame->update();
+        });
         QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame,[&](bool visible) {
             emit lockService.Visible(visible);
         });
@@ -177,7 +159,7 @@ int main(int argc, char *argv[])
         }
 
         lockFrame->setVisible(model->visible());
-        emit lockService.Visible(true);
+        emit lockService.Visible(model->visible());
         return lockFrame;
     };
 

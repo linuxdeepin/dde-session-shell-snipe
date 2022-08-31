@@ -28,3 +28,4 @@ build*/
 *.vscode
 tests/report/*
 .transifexrc
+.cache/

@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2015 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "shutdownwidget.h"
 #include "multiuserswarningview.h"
@@ -421,7 +400,15 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
         roundItemButton = m_requireShutdownButton;
     }
 
-    int index = m_btnList.indexOf(roundItemButton);
+    // 同步显示另一个显示器关机界面上当前选中的按钮，若还未同步则显示关机或锁屏默认按钮
+    if (m_index >= 0 && m_index < m_btnList.size()) {
+        RoundItemButton * tmpBtn = m_btnList.at(m_index);
+        if (tmpBtn && tmpBtn->isVisible()) {
+            roundItemButton = tmpBtn;
+        }
+    }
+
+    int index =  m_btnList.indexOf(roundItemButton);
     roundItemButton->updateState(RoundItemButton::Checked);
     m_frameDataBind->updateValue("ShutdownWidget", index);
 
@@ -546,12 +533,15 @@ bool ShutdownWidget::event(QEvent *e)
     }
 
     if (e->type() == QEvent::FocusIn) {
-        if (m_index < 0) {
+        if (m_index < 0 || m_index >= m_btnList.size()) {
             m_index = 0;
         }
         m_frameDataBind->updateValue("ShutdownWidget", m_index);
         m_btnList.at(m_index)->updateState(RoundItemButton::Checked);
     } else if (e->type() == QEvent::FocusOut) {
+        if (m_index < 0 || m_index >= m_btnList.size()) {
+            m_index = 0;
+        }
         m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
     }
 
@@ -562,6 +552,12 @@ void ShutdownWidget::showEvent(QShowEvent *event)
 {
     setFocus();
     QFrame::showEvent(event);
+}
+
+void ShutdownWidget::hideEvent(QHideEvent *event)
+{
+    m_index = -1;
+    QFrame::hideEvent(event);
 }
 
 void ShutdownWidget::updateLocale(std::shared_ptr<User> user)

@@ -69,4 +69,5 @@ target_link_libraries(${BIN_NAME} PRIVATE
     KF5::WaylandClient
     -lpthread
     -lm
+    -lcrypto
 )

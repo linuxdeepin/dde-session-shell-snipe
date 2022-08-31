@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2015 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "lockframe.h"
 
@@ -232,8 +211,11 @@ bool LockFrame::handlePoweroffKey()
     qDebug() << "battery is: " << isBattery << "," << action;
     // 需要特殊处理：关机(0)和无任何操作(4)
     if (action == 0) {
-        //锁屏时或显示关机界面时，需要确认是否关机
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        // 待机刚唤醒一段时间内不响应电源按键事件
+        if (m_enablePowerOffKey) {
+            //锁屏时或显示关机界面时，需要确认是否关机
+            emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        }
         return true;
     } else if (action == 4) {
         // 先检查当前是否允许响应电源按键
@@ -310,8 +292,13 @@ void LockFrame::cancelShutdownInhibit(bool hideFrame)
         setContentVisible(true);
     }
 
-    if (hideFrame) {
-        m_model->setVisible(false);
+    if (old_visible && hideFrame) {
+        // 从lock点的power btn，不能隐藏锁屏而进入桌面
+        if (!m_model->isPressedPowerBtnFromLock()) {
+            m_model->setVisible(false);
+        }
+
+        m_model->resetPowerBtnPressedFromLock();
         m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
     }
 }
