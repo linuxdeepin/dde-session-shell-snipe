@@ -45,6 +45,8 @@ public:
     void sendAuthToken();
     void lightdmAuthStarted();
 
+    void setIsPwdLocked(const bool isPwdLocked);
+
 protected:
     bool event(QEvent *e);
 

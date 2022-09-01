@@ -37,6 +37,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_acceptSleepSignal(false)
     , m_authStatus(AuthStatus::None)
     , m_needSendAuthType(false)
+    , m_isLocked(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -252,6 +253,10 @@ std::string LoginModule::onMessage(const std::string &message)
                 sendAuthTypeToSession(AuthType::AT_Fingerprint);
             }
         }
+    } else if (cmdType == "LimitsInfoIsLocked") {
+        qDebug() << Q_FUNC_INFO << "LimitsInfoIsLocked" << data.value("IsPwdLocked").toBool();
+        m_isLocked = data.value("IsPwdLocked").toBool();
+
     }
 
     QJsonDocument doc;
@@ -335,7 +340,7 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
         return;
     }
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
-    if (m_authStatus == AuthStatus::None && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
+    if (m_authStatus == AuthStatus::None && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;
         return;
     }
