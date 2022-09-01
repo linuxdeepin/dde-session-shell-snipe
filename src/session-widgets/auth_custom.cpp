@@ -110,8 +110,6 @@ void AuthCustom::reset()
 {
     qInfo() << Q_FUNC_INFO << "Reset custom auth";
     m_currentAuthData = AuthCallbackData();
-    if (m_module)
-        m_module->init();
 }
 
 
@@ -331,4 +329,16 @@ void AuthCustom::lightdmAuthStarted()
     message["AuthObjectType"] = AuthObjectType::LightDM;
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
+}
+
+void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state)
+{
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "AuthState";
+    message["AuthType"] = authType;
+    message["AuthState"] = state;
+    m_module->onMessage(toJson(message).toStdString());
 }

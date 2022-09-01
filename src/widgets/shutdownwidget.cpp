@@ -539,10 +539,16 @@ bool ShutdownWidget::event(QEvent *e)
         m_frameDataBind->updateValue("ShutdownWidget", m_index);
         m_btnList.at(m_index)->updateState(RoundItemButton::Checked);
     } else if (e->type() == QEvent::FocusOut) {
-        if (m_index < 0 || m_index >= m_btnList.size()) {
-            m_index = 0;
+        if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
+            // 丢失焦点后，获取焦点。双屏拔掉一个显示器会导致焦点丢失
+            if (this->isVisible())
+                this->activateWindow();
+        } else {
+            if (m_index < 0 || m_index >= m_btnList.size()) {
+                m_index = 0;
+            }
+            m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
         }
-        m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
     }
 
     return QFrame::event(e);

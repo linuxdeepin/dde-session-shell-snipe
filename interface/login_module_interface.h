@@ -67,6 +67,27 @@ enum AuthType {
 };
 
 /**
+ * @brief The AuthStatus enum
+ * 认证状态
+ */
+enum AuthState {
+    AS_None = -1,   // none
+    AS_Success,     // 成功，此次认证的最终结果
+    AS_Failure,     // 失败，此次认证的最终结果
+    AS_Cancel,      // 取消，当认证没有给出最终结果时，调用 End 会出发 Cancel 信号
+    AS_Timeout,     // 超时
+    AS_Error,       // 错误
+    AS_Verify,      // 验证中
+    AS_Exception,   // 设备异常，当前认证会被 End
+    AS_Prompt,      // 设备提示
+    AS_Started,     // 认证已启动，调用 Start 之后，每种成功开启都会发送此信号
+    AS_Ended,       // 认证已结束，调用 End 之后，每种成功关闭的都会发送此信号，当某种认证类型被锁定时，也会触发此信号
+    AS_Locked,      // 认证已锁定，当认证类型锁定时，触发此信号。该信号不会给出锁定等待时间信息
+    AS_Recover,     // 设备恢复，需要调用 Start 重新开启认证，对应 AS_Exception
+    AS_Unlocked     // 认证解锁，对应 AS_Locked
+};
+
+/**
  * @brief 验证回调函数
  * @param const AuthCallbackData * 需要传回的验证数据
  * @param void * 登录器回传指针
