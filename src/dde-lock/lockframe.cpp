@@ -81,13 +81,6 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
         //不管是待机还是唤醒均不响应电源按键信号
         m_enablePowerOffKey = false;
 
-        //唤醒1秒后才响应电源按键信号，避免待机唤醒时响应信号，将界面切换到关机选项
-        if (!isSleep) {
-            QTimer::singleShot(1000, this, [ = ] {
-                m_enablePowerOffKey = true;
-            });
-        }
-
         //待机时由锁屏提供假黑屏，唤醒时显示正常界面
         model->setIsBlackMode(isSleep);
         model->setVisible(true);
@@ -98,8 +91,18 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
                 QGSettings powerSettings("com.deepin.dde.power", QByteArray(), this);
                 if (!powerSettings.get("sleep-lock").toBool()) {
                     m_model->setVisible(false);
+                    return;
                 }
             }
+        }
+
+        // 此处逻辑放到下面，唤醒不需要密码时，在性能差的机器上可能会在1秒后才收到电源事件，依就会响应电源事件
+        // 或者将延时改的更长
+        //唤醒1秒后才响应电源按键信号，避免待机唤醒时响应信号，将界面切换到关机选项
+        if (!isSleep) {
+            QTimer::singleShot(1000, this, [ = ] {
+                m_enablePowerOffKey = true;
+            });
         }
     } );
 
