@@ -92,6 +92,7 @@ signals:
     void keyboardLayoutChanged(const QString &);
     void keyboardLayoutListChanged(const QStringList &);
     void limitsInfoChanged(const QMap<int, LimitsInfo> *);
+    void limitsInfoChangedString(const QString &);
     void localeChanged(const QString &locale);
     void loginStateChanged(const bool);
     void noPasswordLoginChanged(const bool);

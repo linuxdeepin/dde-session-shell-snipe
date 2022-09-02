@@ -326,10 +326,13 @@ void AuthCustom::lightdmAuthStarted()
 
     QJsonObject message;
     message["CmdType"] = "StartAuth";
-    message["AuthObjectType"] = AuthObjectType::LightDM;
+    QJsonObject retDataObj;
+    retDataObj["AuthObjectType"] = AuthObjectType::LightDM;
+    message["Data"] = retDataObj;
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
 }
+
 
 void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state)
 {
@@ -341,4 +344,20 @@ void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::Auth
     message["AuthType"] = authType;
     message["AuthState"] = state;
     m_module->onMessage(toJson(message).toStdString());
+
+}
+
+void AuthCustom::setLimitsInfo(const QString limitsInfoStr)
+{
+    //把输密码错误五次后，是否锁定的信息传给插件
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "LimitsInfo";
+    QJsonObject retDataObj;
+    retDataObj["LimitsInfoStr"] = limitsInfoStr;
+    message["Data"] = retDataObj;
+    std::string result = m_module->onMessage(toJson(message).toStdString());
+    qInfo() << "Plugin result: " << QString::fromStdString(result);
 }
