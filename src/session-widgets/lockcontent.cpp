@@ -12,7 +12,6 @@
 #include "sessionbasemodel.h"
 #include "sfa_widget.h"
 #include "shutdownwidget.h"
-#include "timewidget.h"
 #include "userframelist.h"
 #include "virtualkbinstance.h"
 
@@ -23,10 +22,13 @@
 
 using namespace dss;
 using namespace dss::module;
+DCORE_USE_NAMESPACE
 
 LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     : SessionBaseWindow(parent)
     , m_model(model)
+    , m_controlWidget(nullptr)
+    , m_centerTopWidget(nullptr)
     , m_virtualKB(nullptr)
     , m_wmInter(new com::deepin::wm("com.deepin.wm", "/com/deepin/wm", QDBusConnection::sessionBus(), this))
     , m_sfaWidget(nullptr)
@@ -72,11 +74,8 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
 void LockContent::initUI()
 {
-    m_timeWidget = new TimeWidget();
-    m_timeWidget->setAccessibleName("TimeWidget");
-    setCenterTopWidget(m_timeWidget);
-    // 处理时间制跳转策略，获取到时间制再显示时间窗口
-    m_timeWidget->setVisible(false);
+    m_centerTopWidget = new CenterTopWidget(this);
+    setCenterTopWidget(m_centerTopWidget);
 
     m_shutdownFrame = new ShutdownWidget;
     m_shutdownFrame->setAccessibleName("ShutdownFrame");
@@ -232,7 +231,6 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
     //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
     auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
     m_logoWidget->updateLocale(locale);
-    m_timeWidget->updateLocale(locale);
 
     for (auto connect : m_currentUserConnects) {
         m_user.get()->disconnect(connect);
@@ -242,23 +240,11 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
     m_user = user;
 
-    m_timeWidget->set24HourFormat(user->isUse24HourFormat());
-    m_timeWidget->setWeekdayFormatType(user->weekdayFormat());
-    m_timeWidget->setShortDateFormat(user->shortDateFormat());
-    m_timeWidget->setShortTimeFormat(user->shortTimeFormat());
-
     m_currentUserConnects << connect(user.get(), &User::greeterBackgroundChanged, this, &LockContent::updateGreeterBackgroundPath, Qt::UniqueConnection)
-                          << connect(user.get(), &User::desktopBackgroundChanged, this, &LockContent::updateDesktopBackgroundPath, Qt::UniqueConnection)
-                          << connect(user.get(), &User::use24HourFormatChanged, this, &LockContent::updateTimeFormat, Qt::UniqueConnection)
-                          << connect(user.get(), &User::weekdayFormatChanged, m_timeWidget, &TimeWidget::setWeekdayFormatType)
-                          << connect(user.get(), &User::shortDateFormatChanged, m_timeWidget, &TimeWidget::setShortDateFormat)
-                          << connect(user.get(), &User::shortTimeFormatChanged, m_timeWidget, &TimeWidget::setShortTimeFormat);
+                          << connect(user.get(), &User::desktopBackgroundChanged, this, &LockContent::updateDesktopBackgroundPath, Qt::UniqueConnection);
 
     //TODO: refresh blur image
-    QTimer::singleShot(0, this, [ = ] {
-        updateTimeFormat(user->isUse24HourFormat());
-    });
-
+    m_centerTopWidget->setCurrentUser(user.get());
     m_logoWidget->updateLocale(locale);
 }
 
@@ -454,16 +440,6 @@ void LockContent::updateDesktopBackgroundPath(const QString &path)
 
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
         emit requestBackground(path);
-    }
-}
-
-void LockContent::updateTimeFormat(bool use24)
-{
-    if (m_user != nullptr) {
-        auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : m_user->locale();
-        m_timeWidget->updateLocale(locale);
-        m_timeWidget->set24HourFormat(use24);
-        m_timeWidget->setVisible(true);
     }
 }
 

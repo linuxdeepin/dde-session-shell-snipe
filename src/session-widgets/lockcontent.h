@@ -5,17 +5,19 @@
 #ifndef LOCKCONTENT_H
 #define LOCKCONTENT_H
 
-#include <QWidget>
-#include <QLocalServer>
-
-#include <memory>
-
 #include "mediawidget.h"
 #include "sessionbasemodel.h"
 #include "sessionbasewindow.h"
 #include "systemmonitor.h"
+#include "centertopwidget.h"
+
+#include <DConfig>
+
+#include <QWidget>
+#include <QLocalServer>
 
 #include <com_deepin_wm.h>
+#include <memory>
 
 class AuthWidget;
 class MFAWidget;
@@ -26,7 +28,6 @@ class UserInputWidget;
 class User;
 class ShutdownWidget;
 class LogoWidget;
-class TimeWidget;
 
 class LockContent : public SessionBaseWindow
 {
@@ -72,7 +73,6 @@ protected:
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
 
 protected:
-    void updateTimeFormat(bool use24);
     void toggleVirtualKB();
     void showModule(const QString &name);
     void updateVirtualKBPosition();
@@ -92,6 +92,7 @@ protected:
 protected:
     SessionBaseModel *m_model;
     ControlWidget *m_controlWidget;
+    CenterTopWidget *m_centerTopWidget;
     ShutdownWidget *m_shutdownFrame;
     QWidget *m_virtualKB;
     std::shared_ptr<User> m_user;

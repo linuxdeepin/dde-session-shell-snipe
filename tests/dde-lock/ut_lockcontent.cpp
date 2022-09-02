@@ -59,7 +59,6 @@ TEST_F(UT_LockContent, ModeTest)
     m_content->onStatusChanged(SessionBaseModel::PowerMode);
     m_content->onStatusChanged(SessionBaseModel::ShutDownMode);
     m_content->restoreMode();
-    m_content->updateTimeFormat(true);
     m_content->toggleVirtualKB();
     m_content->tryGrabKeyboard();
     m_model->setVisible(false);
