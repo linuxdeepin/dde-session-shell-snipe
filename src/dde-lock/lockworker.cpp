@@ -132,7 +132,8 @@ void LockWorker::initConnections()
             endAuthentication(m_account, AT_All);
             destoryAuthentication(m_account);
         } else {
-            createAuthentication(m_model->currentUser()->name());
+            if(m_login1SessionSelf->active())
+                createAuthentication(m_model->currentUser()->name());
         }
         emit m_model->prepareForSleep(isSleep);
     });
