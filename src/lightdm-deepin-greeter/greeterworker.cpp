@@ -872,7 +872,7 @@ void GreeterWorker::onCurrentUserChanged(const std::shared_ptr<User> &user)
 
 void GreeterWorker::onSessionCreated()
 {
-    if (!m_authFramework->SetPrivilegesEnable(m_account, QString("/usr/sbin/lightdm"))) {
+    if (!m_authFramework->SetPrivilegesEnable(m_account, QStandardPaths::findExecutable("lightdm"))) {
         qWarning() << "Failed to set privileges!";
     }
 }
