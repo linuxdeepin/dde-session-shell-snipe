@@ -108,6 +108,7 @@ void User::updateLimitsInfo(const QString &info)
         m_limitsInfo->insert(limitsInfoObj["flag"].toInt(), limitsInfoTmp);
     }
     emit limitsInfoChanged(m_limitsInfo);
+    Q_EMIT limitsInfoChangedString(info);
 }
 
 /**

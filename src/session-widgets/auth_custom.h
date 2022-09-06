@@ -45,7 +45,9 @@ public:
     inline AuthCommon::AuthType authType() const { return m_authType; }
     void sendAuthToken();
     void lightdmAuthStarted();
+
     void notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state);
+    void setLimitsInfo(const QString limitsInfoStr);
 
 protected:
     bool event(QEvent *e) override;

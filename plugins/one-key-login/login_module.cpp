@@ -37,6 +37,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_acceptSleepSignal(false)
     , m_authStatus(AuthStatus::None)
     , m_needSendAuthType(false)
+    , m_isLocked(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -252,6 +253,24 @@ std::string LoginModule::onMessage(const std::string &message)
                 sendAuthTypeToSession(AuthType::AT_Fingerprint);
             }
         }
+    } else if (cmdType == "AuthState") {
+        int authType = data.value("AuthType").toInt();
+        int authState = data.value("AuthState").toInt();
+        // 所有类型验证成功，重置插件状态
+        if (authType == AuthType::AT_All && authState == AuthState::AS_Success) {
+            init();
+        }
+    } else if (cmdType == "LimitsInfo") {
+        QString info = data.value("LimitsInfoStr").toString();
+        qDebug() << Q_FUNC_INFO << "LimitsInfoStr" << info;
+        const QJsonDocument limitsInfoDoc = QJsonDocument::fromJson(info.toUtf8());
+        const QJsonArray limitsInfoArr = limitsInfoDoc.array();
+        for (const QJsonValue &limitsInfoStr : limitsInfoArr) {
+            const QJsonObject limitsInfoObj = limitsInfoStr.toObject();
+            if (limitsInfoObj["flag"].toInt() == AT_Password)
+                m_isLocked = limitsInfoObj["locked"].toBool();
+        }
+
     }
 
     QJsonDocument doc;
@@ -269,13 +288,13 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
     if (errorCode == 0) {
         m_acceptSleepSignal = false;
 
-        if (m_appType == AppType::Lock && m_userName != name) {
+        if (m_appType == AppType::Lock && m_userName != name && name != "") {
             sendAuthTypeToSession(AuthType::AT_Fingerprint);
             return ;
         }
 
         qInfo() << Q_FUNC_INFO << "singleShot verify";
-        m_lastAuthResult.account = name.toStdString();
+        m_lastAuthResult.account = name == "" ? m_userName.toStdString() : name.toStdString();
         m_lastAuthResult.result = AuthResult::Success;
         if(m_authStatus == AuthStatus::Start || m_appType == AppType::Lock){
             sendAuthData(m_lastAuthResult);
@@ -335,7 +354,7 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
         return;
     }
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
-    if (m_authStatus == AuthStatus::None && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
+    if (m_authStatus == AuthStatus::None && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;
         return;
     }

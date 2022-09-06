@@ -71,6 +71,7 @@ void ControlWidget::setModel(const SessionBaseModel *model)
 {
     m_model = model;
     setUser(model->currentUser());
+    connect(m_model, &SessionBaseModel::onStatusChanged, this, &ControlWidget::updateModuleVisible);
 }
 
 void ControlWidget::setUser(std::shared_ptr<User> user)
@@ -579,6 +580,13 @@ void ControlWidget::onItemClicked(const QString &str)
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
     m_arrowRectWidget->hide();
     m_curUser->setKeyboardLayout(str);
+}
+
+void ControlWidget::updateModuleVisible()
+{
+    for (QWidget *moduleWidget : m_modules.values()) {
+        moduleWidget->setVisible(m_model->currentModeState() == SessionBaseModel::ModeStatus::PasswordMode);
+    }
 }
 
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
