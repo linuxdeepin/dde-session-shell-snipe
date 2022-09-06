@@ -159,7 +159,7 @@ void SFAWidget::setAuthType(const int type)
         m_frameDataBind->clearValue("SFCustomAuthStatus");
         m_frameDataBind->clearValue("SFCustomAuthMsg");
 
-        // fix152437，初始化其他认证方式图像和nameLabel为影
+        // fix152437，初始化其他认证方式图像和nameLabel为隐藏
         if (!m_userAvatar->isVisible())
             m_userAvatar->setVisible(true);
         if (!m_nameLabel->isVisible())
