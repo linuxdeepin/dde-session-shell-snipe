@@ -38,6 +38,8 @@ LoginModule::LoginModule(QObject *parent)
     , m_authStatus(AuthStatus::None)
     , m_needSendAuthType(false)
     , m_isLocked(false)
+    , m_login1SessionSelf(nullptr)
+    , m_IdentifyWithMultipleUserStarted(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -53,6 +55,24 @@ LoginModule::LoginModule(QObject *parent)
             return;
     }
 
+    QDBusInterface login1Inter("org.freedesktop.login1", "/org/freedesktop/login1",
+                                   "org.freedesktop.login1.Manager",
+                                   QDBusConnection::systemBus());
+    if(login1Inter.isValid()){
+        QDBusPendingReply<QDBusObjectPath> reply = login1Inter.asyncCall("GetSessionByPID" , uint(0));
+        QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, &QDBusPendingCallWatcher::finished, [this, reply, watcher] {
+            if (!watcher->isError()) {
+               QString session_self = reply.value().path();
+               qDebug() << "session_self path" << session_self;
+               m_login1SessionSelf = new QDBusInterface("org.freedesktop.login1", session_self, "org.freedesktop.login1.Session", QDBusConnection::systemBus());
+            } else {
+                qWarning() << "m_login1Inter:" << watcher->error().message();
+            }
+            watcher->deleteLater();
+        });
+    }
+
     initConnect();
     startCallHuaweiFingerprint();
 
@@ -60,9 +80,18 @@ LoginModule::LoginModule(QObject *parent)
     m_waitAcceptSignalTimer = new QTimer(this);
     connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
         qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
+        QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
+                                                                                 "com.deepin.daemon.Authenticate.Fingerprint",
+                                                                                 "StopIdentifyWithMultipleUser");
+        // 将消息发送到Dbus
+        QDBusConnection::systemBus().call(m);
         m_waitAcceptSignalTimer->stop();
+        m_IdentifyWithMultipleUserStarted = false;
         if (!m_isAcceptFingerprintSignal) {
-            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            // 防止刚切换指纹认证stop还没结束。
+            QTimer::singleShot(30, this, [this] {
+                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            });
         }
     }, Qt::DirectConnection);
     m_waitAcceptSignalTimer->setInterval(2500);
@@ -73,6 +102,11 @@ LoginModule::~LoginModule()
 {
     if (m_loginWidget) {
         delete m_loginWidget;
+    }
+
+    if (m_login1SessionSelf) {
+        delete m_login1SessionSelf;
+        m_login1SessionSelf = nullptr;
     }
 
     if (m_waitAcceptSignalTimer) {
@@ -112,6 +146,7 @@ void LoginModule::startCallHuaweiFingerprint()
             QDBusMessage response = identifyCall.reply();
             //判断Method是否被正确返回
             if (response.type()== QDBusMessage::ReplyMessage) {
+                m_IdentifyWithMultipleUserStarted = true;
                 qDebug() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call success";
             } else {
                 qWarning() << Q_FUNC_INFO << "dbus IdentifyWithMultipleUser call failed";
@@ -281,15 +316,26 @@ std::string LoginModule::onMessage(const std::string &message)
 void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg)
 {
     qDebug() << Q_FUNC_INFO << "LoginModule name :" << name << "\n error code:" << errorCode << " \n error msg:" << msg;
-    m_isAcceptFingerprintSignal = true;
     m_waitAcceptSignalTimer->stop();
+    if(m_IdentifyWithMultipleUserStarted){
+        QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
+                                                                                 "com.deepin.daemon.Authenticate.Fingerprint",
+                                                                                 "StopIdentifyWithMultipleUser");
+        // 将消息发送到Dbus
+        QDBusConnection::systemBus().call(m);
+    }
 
+    m_IdentifyWithMultipleUserStarted = false;
+    m_isAcceptFingerprintSignal = true;
     m_lastAuthResult = AuthCallbackData();
     if (errorCode == 0) {
         m_acceptSleepSignal = false;
 
         if (m_appType == AppType::Lock && m_userName != name && name != "") {
-            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            // 防止stop还未完成就开启了指纹认证
+            QTimer::singleShot(30, this, [this] {
+                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            });
             return ;
         }
 
@@ -302,7 +348,9 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
     } else {
         // 发送一键登录失败的信息
         qWarning() << Q_FUNC_INFO << "slotIdentifyStatus recive failed";
-        sendAuthTypeToSession(AuthType::AT_Fingerprint);
+        QTimer::singleShot(30, this, [this] {
+            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+        });
 
         m_lastAuthResult.result = AuthResult::Failure;
         m_lastAuthResult.message = QString::number(errorCode).toStdString();
@@ -330,19 +378,33 @@ void LoginModule::slotPrepareForSleep(bool active)
     qInfo() << Q_FUNC_INFO << active;
 
     m_acceptSleepSignal = true;
+    if (m_login1SessionSelf == nullptr) {
+        qWarning()  << "m_login1SessionSelf is null";
+        return;
+    }
+
+    if (!m_login1SessionSelf->isValid()) {
+        qWarning()  << "m_login1SessionSelf is not Valid";
+        return;
+    }
+
+    bool isSessionAvtive = m_login1SessionSelf->property("Active").toBool();
 
     m_lastAuthResult = AuthCallbackData();
-    // 休眠待机时,开始调用一键登录指纹
+    // 休眠待机时,同时当前session被激活才开始调用一键登录指纹
     if (active) {
         m_lastAuthResult.result = AuthResult::Failure;
         sendAuthData(m_lastAuthResult);
         sendAuthTypeToSession(AuthType::AT_Custom);
-    } else {
-       m_isAcceptFingerprintSignal = false;
-       startCallHuaweiFingerprint();
-       if(m_spinner)
-           m_spinner->start();
-       m_waitAcceptSignalTimer->start();
+        return;
+    }
+
+    if (isSessionAvtive) {
+        m_isAcceptFingerprintSignal = false;
+        startCallHuaweiFingerprint();
+        if(m_spinner)
+            m_spinner->start();
+        m_waitAcceptSignalTimer->start();
     }
 }
 

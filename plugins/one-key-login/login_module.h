@@ -6,6 +6,9 @@
 #define LOGIN_MODULE_H
 
 #include <QLabel>
+#include <QDBusInterface>
+#include <QDBusConnection>
+#include <QDBusPendingReply>
 
 #include "login_module_interface.h"
 
@@ -78,6 +81,8 @@ private:
     AuthStatus m_authStatus;
     bool m_needSendAuthType;
     bool m_isLocked;
+    QDBusInterface*  m_login1SessionSelf;
+    bool m_IdentifyWithMultipleUserStarted;
 };
 
 } // namespace module
