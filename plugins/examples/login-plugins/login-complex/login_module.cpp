@@ -36,6 +36,11 @@ void LoginModule::init()
     updateInfo();
 }
 
+void LoginModule::reset()
+{
+    init();
+}
+
 void LoginModule::initUI()
 {
     if (m_loginWidget) {

@@ -34,6 +34,7 @@ public:
     void setModel(const SessionBaseModel *model);
     const SessionBaseModel *getModel() const { return m_model; }
     void initUi();
+    void resetAuth();
     void reset();
     QSize contentSize() const;
 

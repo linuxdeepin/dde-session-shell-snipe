@@ -51,6 +51,7 @@ public:
     inline LoadType loadPluginType() const override { return  m_loadPluginType;}
     void setCallback(LoginCallBack *callback) override;
     std::string onMessage(const std::string &) override;
+    void reset() override;
 
 public Q_SLOTS:
     void slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg);

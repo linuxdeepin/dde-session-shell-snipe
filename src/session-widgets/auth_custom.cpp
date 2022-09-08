@@ -106,12 +106,17 @@ void AuthCustom::initUi()
     updateConfig();
 }
 
-void AuthCustom::reset()
+void AuthCustom::resetAuth()
 {
     qInfo() << Q_FUNC_INFO << "Reset custom auth";
     m_currentAuthData = AuthCallbackData();
 }
 
+void AuthCustom::reset()
+{
+    if (m_module)
+        m_module->reset();
+}
 
 void AuthCustom::setAuthState(const int state, const QString &result)
 {
@@ -316,7 +321,7 @@ void AuthCustom::sendAuthToken()
     } else {
         qWarning() << "Current validation is not successfully";
     }
-    reset();
+    resetAuth();
 }
 
 void AuthCustom::lightdmAuthStarted()

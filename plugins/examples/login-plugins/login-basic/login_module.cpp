@@ -42,6 +42,11 @@ void LoginModule::init()
     initUI();
 }
 
+void LoginModule::reset()
+{
+    init();
+}
+
 void LoginModule::initUI()
 {
     if (m_loginWidget) {

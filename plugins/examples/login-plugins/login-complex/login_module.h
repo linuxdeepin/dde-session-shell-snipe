@@ -36,6 +36,7 @@ public:
     inline std::string icon() const override { return "code-block"; }
     void setCallback(LoginCallBack *callback) override;
     std::string onMessage(const std::string &) override;
+    void reset() override;
 
 private:
     void initUI();

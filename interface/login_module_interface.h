@@ -149,6 +149,11 @@ public:
      * @since 1.2.0
      */
     virtual std::string onMessage(const std::string &) { return "{}"; };
+
+    /**
+     * @brief 重置插件
+     */
+    virtual void reset() = 0;
 };
 
 } // namespace module

@@ -766,6 +766,7 @@ void SFAWidget::initCustomAuth()
 {
     qDebug() << Q_FUNC_INFO << "init custom auth";
     if (m_customAuth) {
+        m_customAuth->reset();
         return;
     }
 
@@ -864,7 +865,7 @@ void SFAWidget::checkAuthResult(const int type, const int state)
         }
 
         if (m_customAuth) {
-            m_customAuth->reset();
+            m_customAuth->resetAuth();
         }
     } else if (type != AT_All && state == AS_Success) {
         m_user->setLastAuthType(type);

@@ -172,6 +172,11 @@ void LoginModule::init()
     }
 }
 
+void LoginModule::reset()
+{
+    init();
+}
+
 void LoginModule::initUI()
 {
     qInfo() << Q_FUNC_INFO;

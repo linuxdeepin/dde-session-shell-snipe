@@ -26,6 +26,7 @@ public:
     inline QString key() const override { return objectName(); }
     inline QWidget *content() override { return m_loginWidget; }
     void setCallback(LoginCallBack *callback) override;
+    void reset() override;
 
 private:
     void initUI();
