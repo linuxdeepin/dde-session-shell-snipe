@@ -112,6 +112,11 @@ void AuthCustom::reset()
     m_currentAuthData = AuthCallbackData();
 }
 
+void AuthCustom::resetInit()
+{
+    if (m_module)
+        m_module->init();
+}
 
 void AuthCustom::setAuthState(const int state, const QString &result)
 {

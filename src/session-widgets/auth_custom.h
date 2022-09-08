@@ -35,6 +35,7 @@ public:
     const SessionBaseModel *getModel() const { return m_model; }
     void initUi();
     void reset();
+    void resetInit();
     QSize contentSize() const;
 
     inline bool showAvatar() const { return m_showAvatar; };

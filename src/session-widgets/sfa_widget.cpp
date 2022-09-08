@@ -766,6 +766,7 @@ void SFAWidget::initCustomAuth()
 {
     qDebug() << Q_FUNC_INFO << "init custom auth";
     if (m_customAuth) {
+        m_customAuth->resetInit();
         return;
     }
 
