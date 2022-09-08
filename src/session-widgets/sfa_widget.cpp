@@ -158,6 +158,14 @@ void SFAWidget::setAuthType(const int type)
         m_authButtons.remove(AT_Custom);
         m_frameDataBind->clearValue("SFCustomAuthStatus");
         m_frameDataBind->clearValue("SFCustomAuthMsg");
+
+        // fix152437，避免初始化其他认证方式图像和nameLabel为隐藏
+        if (!m_userAvatar->isVisible())
+            m_userAvatar->setVisible(true);
+        if (!m_nameLabel->isVisible())
+            m_nameLabel->setVisible(true);
+        if (!m_lockButton->isVisible())
+            m_lockButton->setVisible(true);
     }
 
     if (type != AT_None || !m_customAuth || m_user->type() != User::Default) {

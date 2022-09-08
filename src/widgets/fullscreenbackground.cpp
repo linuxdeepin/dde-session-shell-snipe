@@ -349,6 +349,15 @@ void FullscreenBackground::keyPressEvent(QKeyEvent *e)
 void FullscreenBackground::showEvent(QShowEvent *event)
 {
     if (m_model->isUseWayland()) {
+        // fix bug 155019 此处是针对wayland下屏保退出，因qt没有发送enterEvent事件，进而导致密码框没有显示的规避方案
+        // 如果鼠标的位置在当前屏幕内且锁屏状态为显示，将密码框显示出来
+        if (m_model->visible() && geometry().contains(QCursor::pos())) {
+            m_content->show();
+            emit contentVisibleChanged(true);
+            // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
+            activateWindow();
+        }
+
         Q_EMIT requestDisableGlobalShortcutsForWayland(true);
     }
 
