@@ -319,7 +319,9 @@ void GreeterDisplayWayland::setOutputs()
             MonitorConfigsForUuid_v1[id].width = jsonMonitorConfig.value("Width").toInt();
             MonitorConfigsForUuid_v1[id].height = jsonMonitorConfig.value("Height").toInt();
             MonitorConfigsForUuid_v1[id].refresh_rate = jsonMonitorConfig.value("RefreshRate").toDouble();
-            MonitorConfigsForUuid_v1[id].transform = qLn(jsonMonitorConfig.value("Rotation").toInt()) / qLn(2);
+            // 使用qRound四舍五入，在klv中greeter在计算旋转角度时，rotation=8时，使用double接收计算结果为3,用int接收计算结果为2
+            // 但是写demo计算并不会有问题，暂时找不到根因，详见bug158393
+            MonitorConfigsForUuid_v1[id].transform = qRound(qLn(jsonMonitorConfig.value("Rotation").toInt()) / qLn(2));
             MonitorConfigsForUuid_v1[id].brightness = jsonMonitorConfig.value("Brightness").toDouble();
             MonitorConfigsForUuid_v1[id].primary = jsonMonitorConfig.value("Primary").toBool();
             // 根据是否是仅单屏显示，决定是否从配置文件中读取enable属性
