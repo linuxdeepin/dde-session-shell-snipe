@@ -306,6 +306,9 @@ void LockContent::setMPRISEnable(const bool state)
 
 void LockContent::onNewConnection()
 {
+    // 重置密码界面显示前需要隐藏插件右键菜单，避免抢占键盘
+    Q_EMIT m_model->hidePluginMenu();
+
     // 重置密码程序启动连接成功锁屏界面才释放键盘，避免点击重置密码过程中使用快捷键切走锁屏
     if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
         qDebug() << "setKeyboardGrabEnabled(false) success！";

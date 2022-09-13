@@ -213,6 +213,9 @@ signals:
     void authStateChanged(const int, const int, const QString &);
     void authTypeChanged(const int type);
 
+    // 关闭插件右键菜单信号
+    void hidePluginMenu();
+
 private:
     bool m_hasSwap;
     bool m_visible;

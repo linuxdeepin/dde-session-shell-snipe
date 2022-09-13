@@ -231,6 +231,7 @@ void ControlWidget::initConnect()
             m_virtualKBBtn->setVisible(m_onboardBtnVisible && !m_dconfig->value("hideOnboard", false).toBool());
         }
     });
+    connect(m_model, &SessionBaseModel::hidePluginMenu, m_contextMenu, &QMenu::close);
 }
 
 void ControlWidget::addModule(module::BaseModuleInterface *module)
