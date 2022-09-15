@@ -373,6 +373,18 @@ std::shared_ptr<User> SessionBaseModel::json2User(const QString &userJson)
     return user_ptr;
 }
 
+void SessionBaseModel::setCurrentPowerBtnIndex(const int index)
+{
+    // 多屏显示时，需要记录当前屏幕选择的关机操作按键下标，并同步给另外一个屏幕
+    // 在插件新显示器时并创建界面时需要获取当前屏幕选择的按钮下标同步显示
+    if (m_currentPowerBntIndex == index) {
+        return;
+    }
+
+    m_currentPowerBntIndex = index;
+    Q_EMIT powerBtnIndexChanged(m_currentPowerBntIndex);
+}
+
 /**
  * @brief 保存当前用户信息
  *
