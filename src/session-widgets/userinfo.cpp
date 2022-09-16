@@ -323,7 +323,7 @@ void NativeUser::updateAvatar(const QString &path)
         return;
     }
 
-    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(path)) {
+    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(pathTmp)) {
         m_avatar = pathTmp;
     } else {
         m_avatar = DEFAULT_AVATAR;
