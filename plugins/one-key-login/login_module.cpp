@@ -94,7 +94,7 @@ LoginModule::LoginModule(QObject *parent)
             });
         }
     }, Qt::DirectConnection);
-    m_waitAcceptSignalTimer->setInterval(2500);
+    m_waitAcceptSignalTimer->setInterval(800);
     m_waitAcceptSignalTimer->start();
 }
 
