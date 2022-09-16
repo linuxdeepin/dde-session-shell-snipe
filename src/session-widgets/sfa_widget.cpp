@@ -1075,8 +1075,7 @@ void SFAWidget::onRequestChangeAuth(const int authType)
     qInfo() << Q_FUNC_INFO << "authType" << authType << "m_chooseAuthButtonBox->isEnabled()" << m_chooseAuthButtonBox->isEnabled()
                << "m_currentAuthType" << m_currentAuthType;
 
-    //当在S3/S4阶段时，会获取前一次认证的认证类型（不是AT_Custom），这时认证失败，也需要跳转到指纹认证
-    if(!m_chooseAuthButtonBox->isEnabled() || (m_currentAuthType != AT_Custom && m_model->appType() == AuthCommon::AppType::Login)) {
+    if (!m_chooseAuthButtonBox->isEnabled()) {
         return;
     }
 

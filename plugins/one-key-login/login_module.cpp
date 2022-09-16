@@ -406,7 +406,11 @@ void LoginModule::slotPrepareForSleep(bool active)
 
     if (isSessionAvtive) {
         m_isAcceptFingerprintSignal = false;
-        startCallHuaweiFingerprint();
+        sendAuthTypeToSession(AuthType::AT_Custom);
+        // 等待切换到插件认证完成后再发起多用户认证
+        QTimer::singleShot(300, this, [this] {
+            startCallHuaweiFingerprint();
+        });
         if(m_spinner)
             m_spinner->start();
         m_waitAcceptSignalTimer->start();
