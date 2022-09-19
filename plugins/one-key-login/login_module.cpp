@@ -411,9 +411,12 @@ void LoginModule::slotPrepareForSleep(bool active)
         QTimer::singleShot(300, this, [this] {
             startCallHuaweiFingerprint();
         });
-        if(m_spinner)
+        if (m_spinner)
             m_spinner->start();
         m_waitAcceptSignalTimer->start();
+    } else {
+        //fix: 多用户时，第一个用户直接锁屏，然后待机唤醒，在直接切换到另一个用户时，m_login1SessionSelf没有激活，见159949
+        sendAuthTypeToSession(AT_Fingerprint);
     }
 }
 
