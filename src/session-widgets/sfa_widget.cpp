@@ -1,24 +1,6 @@
-
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "sfa_widget.h"
 
@@ -29,6 +11,7 @@
 #include "auth_password.h"
 #include "auth_single.h"
 #include "auth_ukey.h"
+#include "authcommon.h"
 #include "dlineeditex.h"
 #include "framedatabind.h"
 #include "keyboardmonitor.h"
@@ -175,6 +158,14 @@ void SFAWidget::setAuthType(const int type)
         m_authButtons.remove(AT_Custom);
         m_frameDataBind->clearValue("SFCustomAuthStatus");
         m_frameDataBind->clearValue("SFCustomAuthMsg");
+
+        // fix152437，避免初始化其他认证方式图像和nameLabel为隐藏
+        if (!m_userAvatar->isVisible())
+            m_userAvatar->setVisible(true);
+        if (!m_nameLabel->isVisible())
+            m_nameLabel->setVisible(true);
+        if (!m_lockButton->isVisible())
+            m_lockButton->setVisible(true);
     }
 
     if (type != AT_None || !m_customAuth || m_user->type() != User::Default) {
@@ -381,6 +372,11 @@ void SFAWidget::setAuthState(const int type, const int state, const QString &mes
         break;
     default:
         break;
+    }
+
+    // 同步验证状态给插件
+    if (m_customAuth) {
+        m_customAuth->notifyAuthState(static_cast<AuthCommon::AuthType>(type) , static_cast<AuthCommon::AuthState>(state));
     }
 }
 
@@ -770,6 +766,7 @@ void SFAWidget::initCustomAuth()
 {
     qDebug() << Q_FUNC_INFO << "init custom auth";
     if (m_customAuth) {
+        m_customAuth->reset();
         return;
     }
 
@@ -868,7 +865,7 @@ void SFAWidget::checkAuthResult(const int type, const int state)
         }
 
         if (m_customAuth) {
-            m_customAuth->reset();
+            m_customAuth->resetAuth();
         }
     } else if (type != AT_All && state == AS_Success) {
         m_user->setLastAuthType(type);
@@ -1078,8 +1075,7 @@ void SFAWidget::onRequestChangeAuth(const int authType)
     qInfo() << Q_FUNC_INFO << "authType" << authType << "m_chooseAuthButtonBox->isEnabled()" << m_chooseAuthButtonBox->isEnabled()
                << "m_currentAuthType" << m_currentAuthType;
 
-    //当在S3/S4阶段时，会获取前一次认证的认证类型（不是AT_Custom），这时认证失败，也需要跳转到指纹认证
-    if(!m_chooseAuthButtonBox->isEnabled() || (m_currentAuthType != AT_Custom && m_model->appType() == AuthCommon::AppType::Login)) {
+    if (!m_chooseAuthButtonBox->isEnabled()) {
         return;
     }
 

@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "controlwidget.h"
 #include "sessionbasemodel.h"
@@ -92,6 +71,7 @@ void ControlWidget::setModel(const SessionBaseModel *model)
 {
     m_model = model;
     setUser(model->currentUser());
+    connect(m_model, &SessionBaseModel::onStatusChanged, this, &ControlWidget::updateModuleVisible);
 }
 
 void ControlWidget::setUser(std::shared_ptr<User> user)
@@ -251,6 +231,7 @@ void ControlWidget::initConnect()
             m_virtualKBBtn->setVisible(m_onboardBtnVisible && !m_dconfig->value("hideOnboard", false).toBool());
         }
     });
+    connect(m_model, &SessionBaseModel::hidePluginMenu, m_contextMenu, &QMenu::close);
 }
 
 void ControlWidget::addModule(module::BaseModuleInterface *module)
@@ -600,6 +581,13 @@ void ControlWidget::onItemClicked(const QString &str)
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
     m_arrowRectWidget->hide();
     m_curUser->setKeyboardLayout(str);
+}
+
+void ControlWidget::updateModuleVisible()
+{
+    for (QWidget *moduleWidget : m_modules.values()) {
+        moduleWidget->setVisible(m_model->currentModeState() == SessionBaseModel::ModeStatus::PasswordMode);
+    }
 }
 
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)

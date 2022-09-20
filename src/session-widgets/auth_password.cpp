@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "auth_password.h"
 
@@ -513,7 +496,7 @@ bool AuthPassword::isUserAccountBinded()
         return false;
     }
     QString uosid;
-    if (retUOSID.error().message().isEmpty()) {
+    if (retUOSID.isValid()) {
         uosid = retUOSID.value();
     } else {
         qWarning() << retUOSID.error().message();
@@ -535,7 +518,7 @@ bool AuthPassword::isUserAccountBinded()
         return false;
     }
     QString ubid;
-    if (retLocalBindCheck.error().message().isEmpty()) {
+    if (retLocalBindCheck.isValid()) {
         ubid = retLocalBindCheck.value();
         if (m_bindCheckTimer) {
             m_bindCheckTimer->stop();

@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "userinfo.h"
 
@@ -125,6 +108,7 @@ void User::updateLimitsInfo(const QString &info)
         m_limitsInfo->insert(limitsInfoObj["flag"].toInt(), limitsInfoTmp);
     }
     emit limitsInfoChanged(m_limitsInfo);
+    Q_EMIT limitsInfoChangedString(info);
 }
 
 /**
@@ -339,7 +323,7 @@ void NativeUser::updateAvatar(const QString &path)
         return;
     }
 
-    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(path)) {
+    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(pathTmp)) {
         m_avatar = pathTmp;
     } else {
         m_avatar = DEFAULT_AVATAR;

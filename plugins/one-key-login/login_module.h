@@ -1,28 +1,14 @@
-/*
- * Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
- *
- * Author:     Fang Shichao <fangshichao@uniontech.com>
- *
- * Maintainer: Fang Shichao <fangshichao@uniontech.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef LOGIN_MODULE_H
 #define LOGIN_MODULE_H
 
 #include <QLabel>
+#include <QDBusInterface>
+#include <QDBusConnection>
+#include <QDBusPendingReply>
 
 #include "login_module_interface.h"
 
@@ -65,6 +51,7 @@ public:
     inline LoadType loadPluginType() const override { return  m_loadPluginType;}
     void setCallback(LoginCallBack *callback) override;
     std::string onMessage(const std::string &) override;
+    void reset() override;
 
 public Q_SLOTS:
     void slotIdentifyStatus(const QString &name, const int errorCode, const QString &msg);
@@ -94,6 +81,9 @@ private:
     AuthCallbackData m_lastAuthResult;
     AuthStatus m_authStatus;
     bool m_needSendAuthType;
+    bool m_isLocked;
+    QDBusInterface*  m_login1SessionSelf;
+    bool m_IdentifyWithMultipleUserStarted;
 };
 
 } // namespace module

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifdef __cplusplus
 extern "C" {
 #endif

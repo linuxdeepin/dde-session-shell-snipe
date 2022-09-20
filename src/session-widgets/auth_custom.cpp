@@ -1,23 +1,6 @@
-/*
- * Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
- *
- * Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
- *
- * Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "auth_custom.h"
 
@@ -123,14 +106,17 @@ void AuthCustom::initUi()
     updateConfig();
 }
 
-void AuthCustom::reset()
+void AuthCustom::resetAuth()
 {
     qInfo() << Q_FUNC_INFO << "Reset custom auth";
     m_currentAuthData = AuthCallbackData();
-    if (m_module)
-        m_module->init();
 }
 
+void AuthCustom::reset()
+{
+    if (m_module)
+        m_module->reset();
+}
 
 void AuthCustom::setAuthState(const int state, const QString &result)
 {
@@ -335,7 +321,7 @@ void AuthCustom::sendAuthToken()
     } else {
         qWarning() << "Current validation is not successfully";
     }
-    reset();
+    resetAuth();
 }
 
 void AuthCustom::lightdmAuthStarted()
@@ -345,7 +331,38 @@ void AuthCustom::lightdmAuthStarted()
 
     QJsonObject message;
     message["CmdType"] = "StartAuth";
-    message["AuthObjectType"] = AuthObjectType::LightDM;
+    QJsonObject retDataObj;
+    retDataObj["AuthObjectType"] = AuthObjectType::LightDM;
+    message["Data"] = retDataObj;
+    std::string result = m_module->onMessage(toJson(message).toStdString());
+    qInfo() << "Plugin result: " << QString::fromStdString(result);
+}
+
+
+void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state)
+{
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "AuthState";
+    message["AuthType"] = authType;
+    message["AuthState"] = state;
+    m_module->onMessage(toJson(message).toStdString());
+
+}
+
+void AuthCustom::setLimitsInfo(const QString limitsInfoStr)
+{
+    //把输密码错误五次后，是否锁定的信息传给插件
+    if (!m_module)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "LimitsInfo";
+    QJsonObject retDataObj;
+    retDataObj["LimitsInfoStr"] = limitsInfoStr;
+    message["Data"] = retDataObj;
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
 }

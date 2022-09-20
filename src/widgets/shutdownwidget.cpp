@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2015 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "shutdownwidget.h"
 #include "multiuserswarningview.h"
@@ -42,6 +21,7 @@ DCORE_USE_NAMESPACE
 ShutdownWidget::ShutdownWidget(QWidget *parent)
     : QFrame(parent)
     , m_index(-1)
+    , m_status(SessionBaseModel::NoStatus)
     , m_model(nullptr)
     , m_systemMonitor(nullptr)
     , m_switchosInterface(new HuaWeiSwitchOSInterface("com.huawei", "/com/huawei/switchos", QDBusConnection::sessionBus(), this))
@@ -56,13 +36,6 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
     onEnable("systemHibernate", enableState(GSettingWatcher::instance()->getStatus("systemHibernate")));
     onEnable("systemLock", enableState(GSettingWatcher::instance()->getStatus("systemLock")));
-
-    std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
-    int index = m_frameDataBind->registerFunction("ShutdownWidget", function);
-
-    connect(this, &ShutdownWidget::destroyed, this, [this, index] {
-        m_frameDataBind->unRegisterFunction("ShutdownWidget", index);
-    });
     installEventFilter(this);
 }
 
@@ -75,6 +48,7 @@ ShutdownWidget::~ShutdownWidget()
 
 void ShutdownWidget::initConnect()
 {
+    connect(m_model, &SessionBaseModel::powerBtnIndexChanged, this, &ShutdownWidget::onPowerBtnIndexChanged);
     connect(m_requireRestartButton, &RoundItemButton::clicked, this, [ = ] {
         m_currentSelectedBtn = m_requireRestartButton;
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, false);
@@ -153,13 +127,17 @@ void ShutdownWidget::onEnable(const QString &gsettingsName, bool enable)
     }
 }
 
-void ShutdownWidget::onOtherPageChanged(const QVariant &value)
+void ShutdownWidget::onPowerBtnIndexChanged(const int index)
 {
-    m_index = value.toInt();
+    if (m_index == index)
+        return;
 
     for (auto it = m_btnList.constBegin(); it != m_btnList.constEnd(); ++it) {
         (*it)->updateState(RoundItemButton::Normal);
     }
+
+    if (m_index < 0)
+        return;
 
     m_currentSelectedBtn = m_btnList.at(m_index);
     m_currentSelectedBtn->updateState(RoundItemButton::Checked);
@@ -361,10 +339,10 @@ void ShutdownWidget::leftKeySwitch()
         }
     }
 
+    // 选择按钮变化时保存下标并同步给另一个屏幕上的界面
+    m_model->setCurrentPowerBtnIndex(m_index);
     m_currentSelectedBtn = m_btnList.at(m_index);
     m_currentSelectedBtn->updateState(RoundItemButton::Checked);
-
-    m_frameDataBind->updateValue("ShutdownWidget", m_index);
 
     if (m_systemMonitor && m_systemMonitor->isVisible()) {
         m_systemMonitor->setState(SystemMonitor::Leave);
@@ -390,10 +368,10 @@ void ShutdownWidget::rightKeySwitch()
         }
     }
 
+    // 选择按钮变化时保存下标并同步给另一个屏幕上的界面
+    m_model->setCurrentPowerBtnIndex(m_index);
     m_currentSelectedBtn = m_btnList.at(m_index);
     m_currentSelectedBtn->updateState(RoundItemButton::Checked);
-
-    m_frameDataBind->updateValue("ShutdownWidget", m_index);
 
     if (m_systemMonitor && m_systemMonitor->isVisible()) {
         m_systemMonitor->setState(SystemMonitor::Leave);
@@ -402,8 +380,10 @@ void ShutdownWidget::rightKeySwitch()
 
 void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
+    // 显示方式变化时初始化按钮是否可见和默认选择的按钮，关机界面默认为待机  锁屏界面为关机
+    m_status = status;
     RoundItemButton *roundItemButton;
-    if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
+    if (m_status == SessionBaseModel::ModeStatus::ShutDownMode) {
         m_requireLockButton->setVisible(GSettingWatcher::instance()->getStatus("systemLock") != "Hiden");
         m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
         if (m_requireSwitchSystemBtn) {
@@ -421,17 +401,21 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
         roundItemButton = m_requireShutdownButton;
     }
 
-    // 同步显示另一个显示器关机界面上当前选中的按钮，若还未同步则显示关机或锁屏默认按钮
-    if (m_index >= 0 && m_index < m_btnList.size()) {
-        RoundItemButton * tmpBtn = m_btnList.at(m_index);
-        if (tmpBtn && tmpBtn->isVisible()) {
-            roundItemButton = tmpBtn;
-        }
+    // 读取保存的按钮下标，同步选择的按钮
+    int tmpIndex = m_model->currentPowerBtnIndex();
+    if (m_index != tmpIndex) {
+        m_index = tmpIndex;
     }
 
-    int index =  m_btnList.indexOf(roundItemButton);
+    // 如果没有选择过按钮，则选择默认按钮
+    if (m_index < 0) {
+        m_index = m_btnList.indexOf(roundItemButton);
+    }
+
+    // 选择按钮变化时保存下标并同步给另一个屏幕上的界面
+    m_model->setCurrentPowerBtnIndex(m_index);
+    roundItemButton = m_btnList.at(m_index);
     roundItemButton->updateState(RoundItemButton::Checked);
-    m_frameDataBind->updateValue("ShutdownWidget", index);
 
     if (m_systemMonitor) {
         m_systemMonitor->setVisible(status == SessionBaseModel::ModeStatus::ShutDownMode);
@@ -557,13 +541,20 @@ bool ShutdownWidget::event(QEvent *e)
         if (m_index < 0 || m_index >= m_btnList.size()) {
             m_index = 0;
         }
-        m_frameDataBind->updateValue("ShutdownWidget", m_index);
+        m_model->setCurrentPowerBtnIndex(m_index);
         m_btnList.at(m_index)->updateState(RoundItemButton::Checked);
     } else if (e->type() == QEvent::FocusOut) {
-        if (m_index < 0 || m_index >= m_btnList.size()) {
-            m_index = 0;
+        if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
+            // 丢失焦点后，获取焦点。双屏拔掉一个显示器会导致焦点丢失
+            if (this->isVisible())
+                this->activateWindow();
+        } else {
+            if (m_index < 0 || m_index >= m_btnList.size()) {
+                m_index = 0;
+            }
+            m_model->setCurrentPowerBtnIndex(m_index);
+            m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
         }
-        m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
     }
 
     return QFrame::event(e);
@@ -578,6 +569,12 @@ void ShutdownWidget::showEvent(QShowEvent *event)
 void ShutdownWidget::hideEvent(QHideEvent *event)
 {
     m_index = -1;
+    // 多屏间移动鼠标时其中一个屏幕的界面会隐藏，此时需要根据条件是否初始化按钮下标
+    // 退出锁屏关机界面时，初始化当前按钮下标为-1
+    // 切换显示方式时，初始化当前按钮下标为-1
+    if (!m_model->visible() || m_status != m_model->currentModeState()) {
+        m_model->setCurrentPowerBtnIndex(-1);
+    }
     QFrame::hideEvent(event);
 }
 

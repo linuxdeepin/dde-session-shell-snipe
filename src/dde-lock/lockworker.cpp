@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "lockworker.h"
 
 #include "authcommon.h"
@@ -128,7 +132,8 @@ void LockWorker::initConnections()
             endAuthentication(m_account, AT_All);
             destoryAuthentication(m_account);
         } else {
-            createAuthentication(m_model->currentUser()->name());
+            if(m_login1SessionSelf->active())
+                createAuthentication(m_model->currentUser()->name());
         }
         emit m_model->prepareForSleep(isSleep);
     });

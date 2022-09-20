@@ -1,27 +1,6 @@
-/*
- * Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
- *
- * Author:     sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * Maintainer: sbw <sbw@sbw.so>
- *             kirigaya <kirigaya@mkacg.com>
- *             Hualet <mr.asianwang@gmail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "fullscreenbackground.h"
 
@@ -370,6 +349,15 @@ void FullscreenBackground::keyPressEvent(QKeyEvent *e)
 void FullscreenBackground::showEvent(QShowEvent *event)
 {
     if (m_model->isUseWayland()) {
+        // fix bug 155019 此处是针对wayland下屏保退出，因qt没有发送enterEvent事件，进而导致密码框没有显示的规避方案
+        // 如果鼠标的位置在当前屏幕内且锁屏状态为显示，将密码框显示出来
+        if (m_model->visible() && geometry().contains(QCursor::pos())) {
+            m_content->show();
+            emit contentVisibleChanged(true);
+            // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
+            activateWindow();
+        }
+
         Q_EMIT requestDisableGlobalShortcutsForWayland(true);
     }
 
@@ -416,10 +404,10 @@ void FullscreenBackground::updateScreen(QPointer<QScreen> screen)
         disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
 
     if (!screen.isNull()) {
-        connect(screen, &QScreen::geometryChanged, [=](){
+        connect(screen, &QScreen::geometryChanged, this, [=](){
             qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
-        });
-        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+        }, Qt::ConnectionType::QueuedConnection);
+        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry, Qt::ConnectionType::QueuedConnection);
     }
 
     m_screen = screen;

@@ -1,28 +1,12 @@
-/*
- * Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
- *
- * Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
- *
- * Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef AUTHCUTOM_H
 #define AUTHCUTOM_H
 
 #include "auth_module.h"
+#include "authcommon.h"
 #include "login_module_interface.h"
 
 #include <QVBoxLayout>
@@ -50,6 +34,7 @@ public:
     void setModel(const SessionBaseModel *model);
     const SessionBaseModel *getModel() const { return m_model; }
     void initUi();
+    void resetAuth();
     void reset();
     QSize contentSize() const;
 
@@ -62,8 +47,11 @@ public:
     void sendAuthToken();
     void lightdmAuthStarted();
 
+    void notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state);
+    void setLimitsInfo(const QString limitsInfoStr);
+
 protected:
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 
 private:
     void setCallback();

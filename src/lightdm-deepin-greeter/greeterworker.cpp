@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "greeterworker.h"
 
 #include "authcommon.h"
@@ -178,7 +182,9 @@ void GreeterWorker::initConnections()
             endAuthentication(m_account, AT_All);
             destoryAuthentication(m_account);
         } else {
-            createAuthentication(m_model->currentUser()->name());
+            if (!m_model->currentUser()->isNoPasswordLogin()) {
+                createAuthentication(m_model->currentUser()->name());
+            }
         }
     });
     connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [this] {

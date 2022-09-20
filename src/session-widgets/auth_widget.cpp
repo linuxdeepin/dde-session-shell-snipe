@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* Maintainer: Zhang Qipeng <zhangqipeng@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "auth_widget.h"
 
@@ -27,6 +10,7 @@
 #include "auth_password.h"
 #include "auth_single.h"
 #include "auth_ukey.h"
+#include "auth_custom.h"
 #include "dlineeditex.h"
 #include "framedatabind.h"
 #include "keyboardmonitor.h"
@@ -174,7 +158,7 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
                      << connect(user.get(), &User::passwordHintChanged, this, &AuthWidget::setPasswordHint)
                      << connect(user.get(), &User::limitsInfoChanged, this, &AuthWidget::setLimitsInfo)
                      << connect(user.get(), &User::passwordExpiredInfoChanged, this, &AuthWidget::updatePasswordExpiredState)
-                     << connect(user.get(), &User::limitsInfoChanged, this, &AuthWidget::setLimitsInfo);
+                     << connect(user.get(), &User::limitsInfoChangedString, this, &AuthWidget::setLimitsInfoString);
 
     setAvatar(user->avatar());
     setPasswordHint(user->passwordHint());
@@ -198,6 +182,11 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
     }
     if (m_passwordAuth) {
         m_passwordAuth->setCurrentUid(user->uid());
+    }
+
+    // A账户为无密码登录，B账户有密码；在登录界面的时候，B账户输入密码不登录，切换到A，再切换到B，发现B的密码输入框还有密码。
+    if (m_passwordAuth) {
+        m_passwordAuth->reset();
     }
 }
 
@@ -290,6 +279,17 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
             break;
         }
         ++i;
+    }
+}
+
+/**
+ * @brief 认证设置信息发给插件
+ * @param limitsInfoStr
+ */
+void AuthWidget::setLimitsInfoString(const QString &limitsInfoStr)
+{
+    if (m_customAuth) {
+        m_customAuth->setLimitsInfo(limitsInfoStr);
     }
 }
 

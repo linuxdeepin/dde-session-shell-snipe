@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2021 ~ 2021 Uniontech Software Technology Co.,Ltd.
-*
-* Author:     YinJie <yinjie@uniontech.com>
-*
-* Maintainer: YinJie <yinjie@uniontech.com>
-*
-* This program is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "login_module.h"
 
@@ -51,6 +34,11 @@ void LoginModule::init()
 {
     initUI();
     updateInfo();
+}
+
+void LoginModule::reset()
+{
+    init();
 }
 
 void LoginModule::initUI()
@@ -157,6 +145,13 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["ShowLockButton"] = false;
         retDataObj["DefaultAuthLevel"] = DefaultAuthLevel::Default;
         retObj["Data"] = retDataObj;
+    } else if (cmdType == "AuthState") {
+        int authType = data.value("AuthType").toInt();
+        int authState = data.value("AuthState").toInt();
+        // 所有类型验证成功，重置插件状态
+        if (authType == AuthType::AT_All && authState == AuthState::AS_Success) {
+            init();
+        }
     }
 
     QJsonDocument doc;
