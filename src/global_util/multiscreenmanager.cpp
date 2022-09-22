@@ -133,6 +133,7 @@ void MultiScreenManager::raiseContentFrame()
     for (auto it = m_frames.constBegin(); it != m_frames.constEnd(); ++it) {
         if (it.value()->property("contentVisible").toBool()) {
             it.value()->raise();
+            it.value()->setFocus();
             return;
         }
     }
