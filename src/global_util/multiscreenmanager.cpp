@@ -70,6 +70,12 @@ bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
 void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 {
     qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
+
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        return;
+    }
+
     if (!m_registerFunction) {
         return;
     }
@@ -99,6 +105,11 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
 {
     qDebug() << Q_FUNC_INFO << " is copy mode: " << m_isCopyMode << ", screen: " << screen;
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        return;
+    }
+
     if (!m_registerFunction) {
         return;
     }

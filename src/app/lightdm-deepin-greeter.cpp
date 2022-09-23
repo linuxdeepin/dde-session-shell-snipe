@@ -302,6 +302,8 @@ int main(int argc, char* argv[])
     }
 
     DApplication a(argc, argv);
+    // qt默认当最后一个窗口析构后，会自动退出程序，这里设置成false，防止插拔时，没有屏幕，导致进程退出
+    QApplication::setQuitOnLastWindowClosed(false);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     qApp->setOrganizationName("deepin");
     qApp->setApplicationName("org.deepin.dde.lightdm-deepin-greeter");

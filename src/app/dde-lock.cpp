@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     app = DApplication::globalApplication(argc, argv);
 #endif
 
+    // qt默认当最后一个窗口析构后，会自动退出程序，这里设置成false，防止插拔时，没有屏幕，导致进程退出
+    QApplication::setQuitOnLastWindowClosed(false);
     //解决Qt在Retina屏幕上图片模糊问题
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     app->setOrganizationName("deepin");
