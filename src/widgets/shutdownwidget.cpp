@@ -150,7 +150,8 @@ void ShutdownWidget::enterKeyPushed()
         return;
     }
 
-    if (!m_currentSelectedBtn->isEnabled())
+    // 在按回车键时，若m_currentSelectedBtn不存在，则退出
+    if (!m_currentSelectedBtn || !m_currentSelectedBtn->isEnabled())
         return;
 
     if (m_currentSelectedBtn == m_requireShutdownButton)
@@ -414,8 +415,8 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 
     // 选择按钮变化时保存下标并同步给另一个屏幕上的界面
     m_model->setCurrentPowerBtnIndex(m_index);
-    roundItemButton = m_btnList.at(m_index);
-    roundItemButton->updateState(RoundItemButton::Checked);
+    m_currentSelectedBtn = m_btnList.at(m_index);
+    m_currentSelectedBtn->updateState(RoundItemButton::Checked);
 
     if (m_systemMonitor) {
         m_systemMonitor->setVisible(status == SessionBaseModel::ModeStatus::ShutDownMode);
@@ -538,22 +539,23 @@ bool ShutdownWidget::event(QEvent *e)
     }
 
     if (e->type() == QEvent::FocusIn) {
-        if (m_index < 0 || m_index >= m_btnList.size()) {
-            m_index = 0;
-        }
-        m_model->setCurrentPowerBtnIndex(m_index);
-        m_btnList.at(m_index)->updateState(RoundItemButton::Checked);
-    } else if (e->type() == QEvent::FocusOut) {
-        if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-            // 丢失焦点后，获取焦点。双屏拔掉一个显示器会导致焦点丢失
-            if (this->isVisible())
-                this->activateWindow();
-        } else {
-            if (m_index < 0 || m_index >= m_btnList.size()) {
-                m_index = 0;
-            }
+        if (m_index >= 0 && m_index < m_btnList.size()) {
             m_model->setCurrentPowerBtnIndex(m_index);
-            m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
+            m_currentSelectedBtn =  m_btnList.at(m_index);
+            m_currentSelectedBtn->updateState(RoundItemButton::Checked);
+        }
+    } else if (e->type() == QEvent::FocusOut) {
+        // 界面在显示状态时丢失焦点后，需要重新获取焦点。双屏拔掉一个显示器会导致焦点丢失
+        if (this->isVisible()) {
+            this->activateWindow();
+
+            // 显示并点击屏幕键盘时，此时会失去焦点，但是还需要保持当前按钮选择状态，此时m_index选择的按钮是有效的。
+            // 如果是界面隐藏导致的失去焦点，m_index是无效的，不需要保持当前按钮选择状态
+            if (m_index >= 0 && m_index < m_btnList.size()) {
+                m_model->setCurrentPowerBtnIndex(m_index);
+                m_currentSelectedBtn = m_btnList.at(m_index);
+                m_currentSelectedBtn->updateState(RoundItemButton::Normal);
+            }
         }
     }
 
@@ -569,6 +571,7 @@ void ShutdownWidget::showEvent(QShowEvent *event)
 void ShutdownWidget::hideEvent(QHideEvent *event)
 {
     m_index = -1;
+    m_currentSelectedBtn = nullptr;
     // 多屏间移动鼠标时其中一个屏幕的界面会隐藏，此时需要根据条件是否初始化按钮下标
     // 退出锁屏关机界面时，初始化当前按钮下标为-1
     // 切换显示方式时，初始化当前按钮下标为-1
