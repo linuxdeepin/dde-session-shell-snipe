@@ -23,14 +23,6 @@ CenterTopWidget::CenterTopWidget(QWidget *parent)
     initUi();
 }
 
-CenterTopWidget::~CenterTopWidget()
-{
-    if (m_topTipSpacer) {
-        delete m_topTipSpacer;
-        m_topTipSpacer = nullptr;
-    }
-}
-
 void CenterTopWidget::initUi()
 {
     QVBoxLayout *layout = new QVBoxLayout;

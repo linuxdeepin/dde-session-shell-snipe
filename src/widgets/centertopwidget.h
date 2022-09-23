@@ -20,7 +20,6 @@ class CenterTopWidget : public QWidget
     Q_OBJECT
 public:
     explicit CenterTopWidget(QWidget *parent = nullptr);
-    ~CenterTopWidget();
     void setCurrentUser(User *user);
 
 signals:
