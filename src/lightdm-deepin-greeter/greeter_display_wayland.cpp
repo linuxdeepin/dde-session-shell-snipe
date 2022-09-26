@@ -146,7 +146,8 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
 
         connect(dev, &OutputDevice::removed, this, [dev, this] {
             qDebug() << "OutputDevice::removed ...";
-            if (m_displayMode == Mirror_Mode) {
+            // 仅HDMI屏幕显示时,拔掉HDMI后需要设置登录界面隐藏,待窗管设置完成后,再显示,否则登录界面会退出,原因尚未知晓
+            if (m_displayMode == Mirror_Mode  || m_displayMode == Single_Mode) {
                 Q_EMIT setOutputStart();
             }
             MonitorConfigsForUuid_v1.remove(dev->uuid());
@@ -174,7 +175,7 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
     QPoint point = dev->globalPosition();
     if (MonitorConfigsForUuid_v1.find(uuid) == MonitorConfigsForUuid_v1.end()) {
         qDebug() << "OutputDevice::Added uuid --->" << uuid;
-        if (m_displayMode == Mirror_Mode) {
+        if (m_displayMode == Mirror_Mode  || m_displayMode == Single_Mode) {
             Q_EMIT setOutputStart();
         }
         QString name = getOutputDeviceName(dev->model(), dev->manufacturer());
@@ -319,7 +320,9 @@ void GreeterDisplayWayland::setOutputs()
             MonitorConfigsForUuid_v1[id].width = jsonMonitorConfig.value("Width").toInt();
             MonitorConfigsForUuid_v1[id].height = jsonMonitorConfig.value("Height").toInt();
             MonitorConfigsForUuid_v1[id].refresh_rate = jsonMonitorConfig.value("RefreshRate").toDouble();
-            MonitorConfigsForUuid_v1[id].transform = qLn(jsonMonitorConfig.value("Rotation").toInt()) / qLn(2);
+            // 使用qRound四舍五入，在klv中greeter在计算旋转角度时，rotation=8时，使用double接收计算结果为3,用int接收计算结果为2
+            // 但是写demo计算并不会有问题，暂时找不到根因，详见bug158393
+            MonitorConfigsForUuid_v1[id].transform = qRound(qLn(jsonMonitorConfig.value("Rotation").toInt()) / qLn(2));
             MonitorConfigsForUuid_v1[id].brightness = jsonMonitorConfig.value("Brightness").toDouble();
             MonitorConfigsForUuid_v1[id].primary = jsonMonitorConfig.value("Primary").toBool();
             // 根据是否是仅单屏显示，决定是否从配置文件中读取enable属性

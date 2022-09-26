@@ -61,14 +61,34 @@
             "description": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
             "permissions": "readwrite",
             "visibility": "private"
-        },        
-	 "defaultScaleFactors":{
+        },
+        "defaultScaleFactors":{
             "value": 1,
             "serial": 0,
             "flags": ["global"],
             "name": "DefaultScaleFactors",
             "name[zh_CN]": "登录页面默认缩放",
             "description": "配置greeter界面默认的缩放比例",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showTopTip":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "showTopTip",
+            "name[zh_CN]": "是否显示顶部的提示信息，默认不开启",
+            "description": "顶部提示信息一般用于定制项目，主线默认不开启",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "topTipText":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "topTipText",
+            "name[zh_CN]": "顶部的提示信息的文案",
+            "description": "顶部的提示信息的文案，不支持多语言",
             "permissions": "readwrite",
             "visibility": "private"
         }
