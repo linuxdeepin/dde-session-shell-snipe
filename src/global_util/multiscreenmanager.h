@@ -31,10 +31,16 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
+    void dealScreenAdded(QPointer<QScreen> screen); // 添加自定义的信号和槽是为了规避直接处理qt信号导致的崩溃问题
+    void dealScreenRemoved(QPointer<QScreen> screen);
     void onScreenAdded(QPointer<QScreen> screen);
     void onScreenRemoved(QPointer<QScreen> screen);
     void raiseContentFrame();
     int getDisplayModeByConfig(const QString &config) const;
+
+signals:
+    void screenAddSignal(QPointer<QScreen> screen);
+    void screenRemoveSignal(QPointer<QScreen> screen);
 
 private slots:
     void onDisplayModeChanged(const QString &);
@@ -42,7 +48,7 @@ private slots:
 
 private:
     std::function<QWidget* (QPointer<QScreen> , int)> m_registerFunction;
-    QMap<QScreen*, QWidget*> m_frames;
+    QMap<QPointer<QScreen>, QPointer<QWidget>> m_frames;
     QTimer *m_raiseContentFrameTimer;
     SystemDisplayInter *m_systemDisplay;
     bool m_isCopyMode;

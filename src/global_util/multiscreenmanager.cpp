@@ -19,8 +19,13 @@ MultiScreenManager::MultiScreenManager(QObject *parent)
     , m_systemDisplay(new SystemDisplayInter("com.deepin.system.Display", "/com/deepin/system/Display", QDBusConnection::systemBus(), this))
     , m_isCopyMode(false)
 {
-    connect(qApp, &QGuiApplication::screenAdded, this, &MultiScreenManager::onScreenAdded, Qt::DirectConnection);
-    connect(qApp, &QGuiApplication::screenRemoved, this, &MultiScreenManager::onScreenRemoved, Qt::DirectConnection);
+    connect(qApp, &QGuiApplication::screenAdded, this, &MultiScreenManager::dealScreenAdded, Qt::DirectConnection);
+    connect(qApp, &QGuiApplication::screenRemoved, this, &MultiScreenManager::dealScreenRemoved, Qt::DirectConnection);
+
+    // 锁屏采用直接连接的方式处理屏幕插拔事件，会有一定耗时，当屏幕移除消息到来，屏幕被移除，而上层尚未处理完毕，导致 qtwayland 崩溃
+    // 此处为了规避qt的崩溃问题，实属无奈之举
+    connect(this, &MultiScreenManager::screenRemoveSignal, this, &MultiScreenManager::onScreenAdded, Qt::QueuedConnection);
+    connect(this, &MultiScreenManager::screenAddSignal, this, &MultiScreenManager::onScreenRemoved, Qt::QueuedConnection);
 
     // 在sw平台存在复制模式显示问题，使用延迟来置顶一个Frame
     m_raiseContentFrameTimer->setInterval(50);
@@ -31,6 +36,36 @@ MultiScreenManager::MultiScreenManager(QObject *parent)
     if (m_systemDisplay->isValid()) {
         m_isCopyMode = (COPY_MODE == getDisplayModeByConfig(m_systemDisplay->GetConfig()));
     }
+}
+
+void MultiScreenManager::dealScreenAdded(QPointer<QScreen> screen)
+{
+    qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
+
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        return;
+    }
+
+    if (!m_registerFunction) {
+        return;
+    }
+    Q_EMIT screenAddSignal(screen);
+}
+
+void MultiScreenManager::dealScreenRemoved(QPointer<QScreen> screen)
+{
+    qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
+
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        return;
+    }
+
+    if (!m_registerFunction) {
+        return;
+    }
+    Q_EMIT screenRemoveSignal(screen);
 }
 
 void MultiScreenManager::register_for_mutil_screen(std::function<QWidget *(QScreen *, int)> function)
@@ -69,17 +104,6 @@ bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
 
 void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 {
-    qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
-
-    // 虚拟屏幕不处理
-    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
-        return;
-    }
-
-    if (!m_registerFunction) {
-        return;
-    }
-
     QWidget* w = nullptr;
     if (m_isCopyMode) {
         // 如果m_frames不为空则直接退出
@@ -104,16 +128,6 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 
 void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
 {
-    qDebug() << Q_FUNC_INFO << " is copy mode: " << m_isCopyMode << ", screen: " << screen;
-    // 虚拟屏幕不处理
-    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
-        return;
-    }
-
-    if (!m_registerFunction) {
-        return;
-    }
-
     if (m_frames.contains(screen)) {
         if (m_isCopyMode) {
             QWidget *frame = m_frames[screen];
@@ -173,10 +187,14 @@ void MultiScreenManager::onDisplayModeChanged(const QString &)
 
 void MultiScreenManager::checkLockFrameLocation()
 {
-    for (QScreen *screen : m_frames.keys()) {
-        if (screen) {
+    for (QPointer<QScreen> screen : m_frames.keys()) {
+        if (!screen.isNull() && !m_frames.value(screen).isNull()) {
             qInfo() << Q_FUNC_INFO << ", screen:" << screen << " location:" << screen->geometry()
                        << " lockframe:" << m_frames.value(screen) << " location:" << m_frames.value(screen)->geometry();
+        } else {
+            delete m_frames[screen];
+            m_frames[screen] = nullptr;
+            m_frames.remove(screen);
         }
     }
 }
