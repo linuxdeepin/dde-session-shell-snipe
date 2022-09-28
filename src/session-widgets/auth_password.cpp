@@ -113,6 +113,9 @@ void AuthPassword::initConnections()
             m_lineEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
         emit focusChanged(focus);
+        if (focus) {
+            emit lineEditTextChanged(m_lineEdit->text());
+        }
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
         m_lineEdit->hideAlertMessage();

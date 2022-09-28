@@ -907,9 +907,23 @@ void SFAWidget::replaceWidget(AuthModule *authModule)
         authModule->clearFocus();
     else
         authModule->setFocus();
-    m_lockButton->setEnabled(false);
     onRetryButtonVisibleChanged(false);
     updateBlurEffectGeometry();
+    if (m_currentAuthType == AT_PAM) {
+        if (m_singleAuth && m_singleAuth->lineEditText() == "") {
+            m_lockButton->setEnabled(false);
+        }
+    } else if (m_currentAuthType == AT_Ukey) {
+        if (m_ukeyAuth && m_ukeyAuth->lineEditText() == "") {
+            m_lockButton->setEnabled(false);
+        }
+    } else if (m_currentAuthType == AT_Password) {
+        if (m_passwordAuth && m_passwordAuth->lineEditText() == "") {
+            m_lockButton->setEnabled(false);
+        }
+    } else {
+        m_lockButton->setEnabled(false);
+    }
 }
 
 void SFAWidget::onRetryButtonVisibleChanged(bool visible)
