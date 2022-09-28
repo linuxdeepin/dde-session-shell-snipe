@@ -60,10 +60,6 @@ public:
 
     void start();
 
-signals:
-    void setOutputFinished();
-    void setOutputStart(); // 复制模式下热插拔时隐藏greeter界面，避免闪屏，完成时显示
-
 private:
     void setupRegistry(Registry *registry);
     void onDeviceChanged(OutputDevice *dev);

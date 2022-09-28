@@ -120,11 +120,9 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
                 disconnect(m_pConf, &OutputConfiguration::failed, this, nullptr);
                 connect(m_pConf, &OutputConfiguration::applied, [this] {
                     qDebug() << "Configuration applied!";
-                    Q_EMIT setOutputFinished();
                 });
                 connect(m_pConf, &OutputConfiguration::failed, [this] {
                     qDebug() << "Configuration failed!";
-                    Q_EMIT setOutputFinished();
                 });
             }
         }
@@ -146,10 +144,6 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
 
         connect(dev, &OutputDevice::removed, this, [dev, this] {
             qDebug() << "OutputDevice::removed ...";
-            // 仅HDMI屏幕显示时,拔掉HDMI后需要设置登录界面隐藏,待窗管设置完成后,再显示,否则登录界面会退出,原因尚未知晓
-            if (m_displayMode == Mirror_Mode  || m_displayMode == Single_Mode) {
-                Q_EMIT setOutputStart();
-            }
             MonitorConfigsForUuid_v1.remove(dev->uuid());
             // 登录界面只有插拔需要处理
             if (m_removeUuid != dev->uuid()) {
@@ -175,9 +169,6 @@ void GreeterDisplayWayland::onDeviceChanged(OutputDevice *dev)
     QPoint point = dev->globalPosition();
     if (MonitorConfigsForUuid_v1.find(uuid) == MonitorConfigsForUuid_v1.end()) {
         qDebug() << "OutputDevice::Added uuid --->" << uuid;
-        if (m_displayMode == Mirror_Mode  || m_displayMode == Single_Mode) {
-            Q_EMIT setOutputStart();
-        }
         QString name = getOutputDeviceName(dev->model(), dev->manufacturer());
         QString stdName = getStdMonitorName(QByteArray(dev->edid(), dev->edid().size()));
         MonitorConfig cfg;

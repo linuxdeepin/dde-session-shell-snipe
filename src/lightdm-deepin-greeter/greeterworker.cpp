@@ -55,16 +55,6 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 #ifdef USE_DEEPIN_WAYLAND
     if (!DGuiApplicationHelper::isXWindowPlatform()) {
         m_greeterDisplayWayland = new GreeterDisplayWayland();
-        connect(m_greeterDisplayWayland, &GreeterDisplayWayland::setOutputStart, this, [=] {
-            Q_EMIT showLoginWindow(false);
-            model->setVisible(false);
-        });
-        connect(m_greeterDisplayWayland, &GreeterDisplayWayland::setOutputFinished, this, [=] {
-            QTimer::singleShot(100, this, [this, model] { // 延时显示是为了避免分辨率改变的过程被展示出来
-                Q_EMIT showLoginWindow(true);
-                model->setVisible(true);
-            });
-        });
         m_greeterDisplayWayland->start();
     }
 #endif

@@ -399,11 +399,7 @@ int main(int argc, char* argv[])
         QObject::connect(loginFrame, &LoginWindow::requestEndAuthentication, worker, &GreeterWorker::endAuthentication);
         QObject::connect(loginFrame, &LoginWindow::authFinished, worker, &GreeterWorker::onAuthFinished);
         QObject::connect(worker, &GreeterWorker::requestUpdateBackground, loginFrame, &LoginWindow::updateBackground);
-        if (!IsWayland) {
-            loginFrame->show();
-        } else {
-            QObject::connect(worker, &GreeterWorker::showLoginWindow, loginFrame, &LoginWindow::setVisible);
-        }
+        loginFrame->setVisible(model->visible());
         return loginFrame;
     };
 
@@ -418,10 +414,7 @@ int main(int argc, char* argv[])
     checker.setOutputFormat(DAccessibilityChecker::FullFormat);
     checker.start();
 #endif
-
-    if (!IsWayland) {
-        model->setVisible(true);
-    }
+    model->setVisible(true);
 
     return a.exec();
 }
