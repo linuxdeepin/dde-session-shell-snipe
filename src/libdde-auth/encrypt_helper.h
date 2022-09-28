@@ -15,7 +15,6 @@ extern "C" {
 #endif
 #ifdef PREFER_USING_GM
 #include <openssl/sm2.h>
-#include <openssl/sm4.h>
 #endif
 #ifdef __cplusplus
 }

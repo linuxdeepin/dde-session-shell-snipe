@@ -123,43 +123,72 @@ QByteArray EncryptHelper::getEncryptedToken(const QString &token)
     const int padding = AES_BLOCK_SIZE - tokenSize % AES_BLOCK_SIZE;
     const int blockCount = token.length() / AES_BLOCK_SIZE + 1;
     const int bufferSize = blockCount * AES_BLOCK_SIZE;
-    char *tokenBuffer = new char[static_cast<size_t>(bufferSize)];
+    char *tokenBuffer = nullptr;
+    char *ciphertext = nullptr;
+    unsigned char *iv = nullptr;
+    EVP_CIPHER_CTX *ctx = nullptr;
+    QByteArray ba;
+
+    tokenBuffer = new char[static_cast<size_t>(bufferSize)];
     memset(tokenBuffer, padding, static_cast<size_t>(bufferSize));
     memcpy(tokenBuffer, token.toLatin1().data(), static_cast<size_t>(tokenSize));
-    char *ciphertext = new char[static_cast<size_t>(bufferSize)];
+    ciphertext = new char[static_cast<size_t>(bufferSize)];
     memset(ciphertext, 0, static_cast<size_t>(bufferSize));
-#ifdef PREFER_USING_GM
-    SM4_KEY sm4;
-#endif
+
     AES_KEY aes;
     int ret = 0;
-    if (ET_SM2 == m_encryptType) {
+    do {
+        if (ET_SM2 == m_encryptType) {
 #ifdef PREFER_USING_GM
-        SM4_set_key(reinterpret_cast<uint8_t *>(m_symmetricKey.toLatin1().data()), &sm4);
+            qDebug()<<"PREFER_USING_GM";
+            ctx = EVP_CIPHER_CTX_new();
+            if (ctx == nullptr) {
+                break;
+            }
+            ret = EVP_CipherInit(ctx, EVP_sm4_ecb(), reinterpret_cast<unsigned char*>(m_symmetricKey.toLatin1().data()), nullptr, 1);
+            if (ret != 1) {
+                break;
+            }
 #endif
-    } else {
-        AES_set_encrypt_key(reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), m_symmetricKey.length() * 8, &aes);
-    }
-    if (ret < 0) {
-        qCritical() << "Failed to set symmetric key!";
-        delete[] tokenBuffer;
-        delete[] ciphertext;
-        return QByteArray();
-    }
-    unsigned char *iv = new unsigned char[AES_BLOCK_SIZE];
-    memset(iv, 0, AES_BLOCK_SIZE);
-    if (ET_SM2 == m_encryptType) {
+        } else {
+            AES_set_encrypt_key(reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), m_symmetricKey.length() * 8, &aes);
+        }
+        if (ret < 0) {
+            qCritical() << "Failed to set symmetric key!";
+            break;
+        }
+        iv = new unsigned char[AES_BLOCK_SIZE];
+        memset(iv, 0, AES_BLOCK_SIZE);
+        if (ET_SM2 == m_encryptType) {
 #ifdef PREFER_USING_GM
-        SM4_encrypt(reinterpret_cast<uint8_t *>(tokenBuffer), reinterpret_cast<uint8_t *>(ciphertext), &sm4);
+            ret = EVP_Cipher(ctx, reinterpret_cast<unsigned char *>(ciphertext),reinterpret_cast<unsigned char *>(tokenBuffer), static_cast<unsigned int>(bufferSize));
+            if (1 != ret) {
+                break;
+            }
+
 #endif
-    } else {
-        AES_cbc_encrypt(reinterpret_cast<unsigned char *>(tokenBuffer), reinterpret_cast<unsigned char *>(ciphertext), static_cast<size_t>(bufferSize), &aes, iv, AES_ENCRYPT);
+        } else {
+            AES_cbc_encrypt(reinterpret_cast<unsigned char *>(tokenBuffer), reinterpret_cast<unsigned char *>(ciphertext), static_cast<size_t>(bufferSize), &aes, iv, AES_ENCRYPT);
+        }
+
+        ba = QByteArray(ciphertext, bufferSize);
+    } while (0);
+
+    if(ctx){
+        EVP_CIPHER_CTX_free(ctx);
     }
 
-    QByteArray ba = QByteArray(ciphertext, bufferSize);
-    delete[] ciphertext;
-    delete[] tokenBuffer;
-    delete[] iv;
+    if(ciphertext){
+        delete[] ciphertext;
+    }
+
+    if(tokenBuffer){
+        delete[] tokenBuffer;
+    }
+
+    if(iv){
+        delete[] iv;
+    }
 
     return ba;
 }
