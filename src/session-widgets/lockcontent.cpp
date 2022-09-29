@@ -14,6 +14,7 @@
 #include "shutdownwidget.h"
 #include "userframelist.h"
 #include "virtualkbinstance.h"
+#include "fullscreenbackground.h"
 
 #include <DDBusSender>
 
@@ -317,8 +318,19 @@ void LockContent::onNewConnection()
 
 void LockContent::onDisConnect()
 {
-    // 这种情况下不必强制要求可以抓取到键盘，因为可能是网络弹窗抓取了键盘
-    tryGrabKeyboard(false);
+    for (auto w : FullscreenBackground::frames()) {
+        if (w->contentVisible()) {
+            // 由于socket连接只会创建一个，断开连接的时候并不一定是socket对象所在LockContent对象处于显示的状态
+            // 需要找出当前显示LockContent，让它抓取键盘
+            // TODO 只创建一个LockContent的话则无需这样处理了
+            LockContent* lockContent = qobject_cast<LockContent*>(w->content());
+            if (lockContent) {
+                // 这种情况下不必强制要求可以抓取到键盘，因为可能是网络弹窗抓取了键盘
+                lockContent->tryGrabKeyboard(false);
+            }
+            break;
+        }
+    }
 }
 
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)

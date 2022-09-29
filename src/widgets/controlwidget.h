@@ -150,6 +150,7 @@ private:
     QList<QMetaObject::Connection> m_connectionList;
     bool m_onboardBtnVisible;
     DTK_CORE_NAMESPACE::DConfig *m_dconfig;
+    bool m_doGrabKeyboard;
 };
 
 #endif // CONTROLWIDGET_H

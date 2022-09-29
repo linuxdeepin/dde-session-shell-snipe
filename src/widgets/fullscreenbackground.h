@@ -27,6 +27,8 @@ public:
 
     bool contentVisible() const;
     void setEnterEnable(bool enable);
+    static QList<FullscreenBackground*> frames() { return frameList; }
+    QWidget *content() { return m_content.data(); }
 
 public slots:
     void updateBackground(const QString &path);
@@ -38,6 +40,7 @@ public slots:
 signals:
     void contentVisibleChanged(bool contentVisible);
     void requestDisableGlobalShortcutsForWayland(bool enable);
+    void requestLockFrameHide();
 
 protected:
     void setContent(QWidget *const w);

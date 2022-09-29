@@ -61,6 +61,7 @@ ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
     , m_keyboardBtn(nullptr)
     , m_onboardBtnVisible(true)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
+    , m_doGrabKeyboard(true)
 {
     setModel(model);
     initUI();
@@ -231,7 +232,11 @@ void ControlWidget::initConnect()
             m_virtualKBBtn->setVisible(m_onboardBtnVisible && !m_dconfig->value("hideOnboard", false).toBool());
         }
     });
-    connect(m_model, &SessionBaseModel::hidePluginMenu, m_contextMenu, &QMenu::close);
+    connect(m_model, &SessionBaseModel::hidePluginMenu, m_contextMenu, [this] {
+        m_contextMenu->close();
+        // 重置密码弹窗弹出的时候不重新抓取键盘，否则会导致重置密码弹窗无法抓取键盘
+        m_doGrabKeyboard = false;
+    });
 }
 
 void ControlWidget::addModule(module::BaseModuleInterface *module)
@@ -289,13 +294,13 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
             action->setEnabled(itemObj.value("isActive").toBool());
             m_contextMenu->addAction(action);
         }
-
+        m_doGrabKeyboard = true;
         QAction *action = m_contextMenu->exec(QCursor::pos());
         if (action)
             trayModule->invokedMenuItem(action->data().toString(), true);
 
         // 右键菜单隐藏后需要重新grab键盘，否则会导致快捷键重新生效
-        if (!m_model->isUseWayland()) {
+        if (!m_model->isUseWayland() && m_doGrabKeyboard) {
             QWindow *winHandle = topLevelWidget()->windowHandle();
             if (!winHandle || !winHandle->setKeyboardGrabEnabled(true)) {
                 qWarning() << "Grab keyboard failed";
