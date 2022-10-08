@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     DBusShutdownFrontService shutdownServices(&shutdownAgent);
 
     auto createFrame = [&] (QPointer<QScreen> screen, int count) -> QWidget* {
-        QPointer<LockFrame> lockFrame = new LockFrame(model);
+        LockFrame *lockFrame = new LockFrame(model);
         // 创建Frame可能会花费数百毫秒，这个和机器性能有关，在此过程完成后，screen可能已经析构了
         // 在wayland的环境插拔屏幕或者显卡驱动有问题时可能会出现此类问题
         if (screen.isNull()) {
@@ -147,13 +147,11 @@ int main(int argc, char *argv[])
         lockFrame->setScreen(screen, count <= 0);
         property_group->addObject(lockFrame);
         QObject::connect(lockFrame, &LockFrame::requestSwitchToUser, worker, &LockWorker::switchToUser);
-        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, [lockFrame](const bool visible) {
+        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, [=](const bool visible) {
             lockFrame->setVisible(visible);
-            QTimer::singleShot(300, [lockFrame] {
-                if (!lockFrame.isNull()) {
-                    qInfo() << "lockFrame setVisible true, update.";
-                    lockFrame->update();
-                }
+            QTimer::singleShot(300, [=]() {
+                qInfo() << "lockFrame setVisible true, update.";
+                lockFrame->update();
             });
         });
         QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame,[&](bool visible) {
