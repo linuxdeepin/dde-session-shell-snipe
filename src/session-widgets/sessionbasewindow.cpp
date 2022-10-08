@@ -4,6 +4,7 @@
 
 #include "sessionbasewindow.h"
 #include "constants.h"
+#include "centertopwidget.h"
 
 #include <QDebug>
 #include <QResizeEvent>
@@ -73,6 +74,7 @@ void SessionBaseWindow::setCenterContent(QWidget * const widget, int stretch, Qt
     }
     m_centerLayout->addWidget(widget, stretch, align);
     m_centerSpacerItem->changeSize(0, spacerHeight);
+    m_centerVLayout->invalidate();
 
     m_centerWidget = widget;
     widget->show();
@@ -90,6 +92,9 @@ void SessionBaseWindow::setCenterTopWidget(QWidget *const widget)
     m_centerTopLayout->addWidget(widget, 0, Qt::AlignTop);
     m_centerTopLayout->addStretch();
     m_centerTopWidget = widget;
+
+    const int centerTopHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
+    m_centerTopFrame->setFixedHeight(centerTopHeight);
 }
 
 void SessionBaseWindow::initUI()
@@ -176,7 +181,9 @@ void SessionBaseWindow::resizeEvent(QResizeEvent *event)
 {
     const int margin = calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
     m_mainLayout->setContentsMargins(0, margin, 0, margin);
-    m_centerTopFrame->setFixedHeight(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT));
+
+    const int centerTopHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
+    m_centerTopFrame->setFixedSize(event->size().width(), centerTopHeight);
 
     QFrame::resizeEvent(event);
 }
@@ -191,8 +198,14 @@ void SessionBaseWindow::setBottomFrameVisible(bool visible)
     m_bottomFrame->setVisible(visible);
 }
 
-int SessionBaseWindow::calcCurrentHeight(const int height)
+int SessionBaseWindow::calcCurrentHeight(int height) const
 {
     int h = static_cast<int>(((double) height / (double) BASE_SCREEN_HEIGHT) * topLevelWidget()->geometry().height());
     return qMin(h, height);
+}
+
+int SessionBaseWindow::calcTopSpacing(int authWidgetTopSpacing) const
+{
+    const int topWidgetHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
+    return qMax(15, authWidgetTopSpacing - topWidgetHeight);
 }

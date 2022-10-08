@@ -37,7 +37,7 @@ void KBLayoutListView::initData(const QStringList &buttons)
 
     m_buttonModel->clear();
 
-    resize(width(), DDESESSIONCC::LAYOUTBUTTON_HEIGHT * m_kbdParseList.count());
+    resize(width(), DDESESSIONCC::LAYOUT_BUTTON_HEIGHT * m_kbdParseList.count());
     for (int i = 0; i < m_kbdParseList.size(); i++)
         addItem(m_kbdParseList[i]);
 

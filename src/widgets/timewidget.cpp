@@ -115,3 +115,8 @@ void TimeWidget::setShortTimeFormat(int type)
     m_shortTimeIndex = type;
     refreshTime();
 }
+
+QSize TimeWidget::sizeHint() const
+{
+    return QSize(QWidget::sizeHint().width(), m_dateLabel->fontMetrics().height() + m_timeLabel->fontMetrics().height());
+}

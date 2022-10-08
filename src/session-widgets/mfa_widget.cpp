@@ -459,8 +459,7 @@ int MFAWidget::getTopSpacing() const
     const int topHeight = qMin(calcTopHeight, centerTop);
 
     // 需要额外增加的顶部间隔高度 = 屏幕高度*0.35 - 验证窗口高度 - 时间控件高度 - 布局间隔
-    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT)
-            - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
+    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
 
     return qMax(15, deltaY);
 }

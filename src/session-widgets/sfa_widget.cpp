@@ -26,6 +26,7 @@
 
 const QSize AuthButtonSize(60, 36);
 const QSize AuthButtonIconSize(24, 24);
+const int MAIN_LAYOUT_SPACING = 10;
 
 QList<SFAWidget*> SFAWidget::SFAWidgetObjs = {};
 
@@ -36,8 +37,8 @@ SFAWidget::SFAWidget(QWidget *parent)
     , m_biometricAuthState(nullptr)
     , m_retryButton(new DFloatingButton(this))
     , m_bioAuthStatePlaceHolder(new QSpacerItem(0, BIO_AUTH_STATE_PLACE_HOLDER_HEIGHT))
-    , m_bioBottomSpacingHolder(new QSpacerItem(0, BIO_AUTH_STATE_BOTTOM_SPACING))
-    , m_authTypeBottomSpacingHolder(new QSpacerItem(0, CHOOSE_AUTH_TYPE_BUTTON_BOTTOM_SPACING))
+    , m_bioBottomSpacingHolder(new QSpacerItem(0, calcCurrentHeight(BIO_AUTH_STATE_BOTTOM_SPACING)))
+    , m_authTypeBottomSpacingHolder(new QSpacerItem(0, calcCurrentHeight(CHOOSE_AUTH_TYPE_BUTTON_BOTTOM_SPACING)))
     , m_currentAuthType(AT_All)
     , m_inited(false)
 {
@@ -78,7 +79,7 @@ void SFAWidget::initUI()
     m_retryButton->hide();
 
     m_mainLayout->setContentsMargins(10, 0, 10, 0);
-    m_mainLayout->setSpacing(10);
+    m_mainLayout->setSpacing(MAIN_LAYOUT_SPACING);
     m_mainLayout->addWidget(m_biometricAuthState, 0, Qt::AlignCenter);
     m_mainLayout->addItem(m_bioAuthStatePlaceHolder);
     m_mainLayout->addItem(m_bioBottomSpacingHolder);
@@ -937,6 +938,8 @@ void SFAWidget::setBioAuthStateVisible(AuthModule *authModule, bool visible)
     m_bioAuthStatePlaceHolder->changeSize(0, (visible || !hasBioAuth) ? 0 : BIO_AUTH_STATE_PLACE_HOLDER_HEIGHT);
     if (authModule)
         authModule->setAuthStatueVisible(visible);
+
+    m_mainLayout->invalidate();
 }
 
 /**
@@ -965,19 +968,18 @@ int SFAWidget::getTopSpacing() const
     // 需要额外增加的顶部间隔高度 = 屏幕高度*0.35 - 时间控件高度 - 布局间隔 - 生物认证按钮底部间隔
     // - 生物认证切换按钮底部间隔 - 生物认证图标高度(如果有生物认证因子) - 切换验证类型按钮高度（如果认证因子数量大于1)
     int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN)
-            - calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT)
-            - m_bioBottomSpacingHolder->sizeHint().height()
+            - m_bioBottomSpacingHolder->geometry().height()
             - m_authTypeBottomSpacingHolder->sizeHint().height()
             - ((m_faceAuth || m_fingerprintAuth || m_irisAuth) ? BIO_AUTH_STATE_PLACE_HOLDER_HEIGHT : 0)
-            - (m_authButtons.size() > 1 ? CHOOSE_AUTH_TYPE_BUTTON_BOTTOM_SPACING : 0);
+            - (m_authButtons.size() > 1 ? calcCurrentHeight(CHOOSE_AUTH_TYPE_BUTTON_BOTTOM_SPACING) : 0);
 
     return qMax(15, deltaY);
 }
 
 void SFAWidget::resizeEvent(QResizeEvent *event)
 {
-    updateBlurEffectGeometry();
     updateSpaceItem();
+    updateBlurEffectGeometry();
 
     AuthWidget::resizeEvent(event);
 }
@@ -997,6 +999,7 @@ void SFAWidget::updateSpaceItem()
         m_bioAuthStatePlaceHolder->changeSize(0, 0);
     }
 
+    m_mainLayout->invalidate();
     emit updateParentLayout();
 }
 

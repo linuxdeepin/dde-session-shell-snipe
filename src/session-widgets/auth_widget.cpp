@@ -506,8 +506,7 @@ void AuthWidget::resizeEvent(QResizeEvent *event)
 int AuthWidget::getTopSpacing() const
 {
     const int topHeight = static_cast<int>(topLevelWidget()->geometry().height() * AUTH_WIDGET_TOP_SPACING_PERCENT);
-    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT)
-            - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
+    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
 
     return qMax(15, deltaY);
 }

@@ -26,7 +26,8 @@ protected:
     void setTopFrameVisible(bool visible);
     void setBottomFrameVisible(bool visible);
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-    int calcCurrentHeight(const int height);
+    int calcCurrentHeight(int height) const;
+    int calcTopSpacing(int authWidgetTopSpacing) const;
 
 private:
     void initUI();

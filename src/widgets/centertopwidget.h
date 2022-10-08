@@ -21,6 +21,8 @@ class CenterTopWidget : public QWidget
 public:
     explicit CenterTopWidget(QWidget *parent = nullptr);
     void setCurrentUser(User *user);
+    QSize sizeHint() const override;
+    void resizeEvent(QResizeEvent *event) override;
 
 signals:
 
@@ -30,11 +32,13 @@ public slots:
 private:
     void initUi();
     void setTopTipText(const QString &text);
+    void updateTopTipWidget();
 
 private:
     QPointer<User> m_currentUser;
     TimeWidget *m_timeWidget;
     QLabel *m_topTip;
+    QString m_tipText;
     QSpacerItem *m_topTipSpacer;
     QList<QMetaObject::Connection> m_currentUserConnects;
     DTK_CORE_NAMESPACE::DConfig *m_config;

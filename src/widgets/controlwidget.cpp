@@ -95,8 +95,8 @@ void ControlWidget::initKeyboardLayoutList()
     m_kbLayoutListView = new KBLayoutListView(language, this);
     m_kbLayoutListView->setAccessibleName(QStringLiteral("KbLayoutlistview"));
     m_kbLayoutListView->initData(m_curUser->keyboardLayoutList());
-    m_kbLayoutListView->setMinimumWidth(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH);
-    m_kbLayoutListView->setMaximumSize(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH, DDESESSIONCC::LAYOUTBUTTON_HEIGHT * 7);
+    m_kbLayoutListView->setMinimumWidth(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH);
+    m_kbLayoutListView->setMaximumSize(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH, DDESESSIONCC::LAYOUT_BUTTON_HEIGHT * 7);
     m_kbLayoutListView->setFocusPolicy(Qt::NoFocus);
     m_kbLayoutListView->setVisible(false);
 
@@ -114,8 +114,8 @@ void ControlWidget::initKeyboardLayoutList()
     m_arrowRectWidget->setShadowXOffset(0);
     m_arrowRectWidget->setArrowWidth(18);
     m_arrowRectWidget->setArrowHeight(10);
-    m_arrowRectWidget->setMinimumWidth(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH);
-    m_arrowRectWidget->setMaximumSize(DDESESSIONCC::KEYBOARDLAYOUT_WIDTH, DDESESSIONCC::LAYOUTBUTTON_HEIGHT * 7);
+    m_arrowRectWidget->setMinimumWidth(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH);
+    m_arrowRectWidget->setMaximumSize(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH, DDESESSIONCC::LAYOUT_BUTTON_HEIGHT * 7);
     m_arrowRectWidget->setFocusPolicy(Qt::NoFocus);
     m_arrowRectWidget->setBackgroundColor(QColor(235, 235, 235, int(0.05 * 255)));
     m_arrowRectWidget->installEventFilter(this);
