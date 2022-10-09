@@ -21,14 +21,15 @@ public:
      */
     enum ModuleType {
         LoginType,
-        TrayType
+        TrayType,
+        FullManagedLoginType
     };
 
     /**
     * @brief The LoadType enum
     * 模块加载的类型
     */
-    enum LoadType{
+    enum LoadType {
         Load,
         Notload
     };

@@ -154,6 +154,8 @@ public:
      * @brief 重置插件
      */
     virtual void reset() = 0;
+private:
+    virtual ModuleType getType() const { return LoginType; }
 };
 
 } // namespace module

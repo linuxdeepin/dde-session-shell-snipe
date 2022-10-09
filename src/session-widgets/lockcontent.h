@@ -28,6 +28,7 @@ class UserInputWidget;
 class User;
 class ShutdownWidget;
 class LogoWidget;
+class FullManagedAuthWidget;
 
 class LockContent : public SessionBaseWindow
 {
@@ -87,6 +88,7 @@ protected:
     void initConnections();
     void initMFAWidget();
     void initSFAWidget();
+    void initFMAWidget();
     void initUserListWidget();
 
 protected:
@@ -107,6 +109,7 @@ protected:
     SFAWidget *m_sfaWidget;
     MFAWidget *m_mfaWidget;
     AuthWidget *m_authWidget;
+    FullManagedAuthWidget *m_fmaWidget;
     UserFrameList *m_userListWidget;
 
     int m_failures = 0;

@@ -11,6 +11,8 @@
 
 using namespace DDESESSIONCC;
 
+const int kDefaultWidgetIndex = 0;
+
 SessionBaseWindow::SessionBaseWindow(QWidget *parent)
     : QFrame(parent)
     , m_centerTopFrame(nullptr)
@@ -29,6 +31,7 @@ SessionBaseWindow::SessionBaseWindow(QWidget *parent)
     , m_centerBottomWidget(nullptr)
     , m_rightBottomWidget(nullptr)
     , m_centerSpacerItem(new QSpacerItem(0, 0))
+    , m_stackedLayout(nullptr)
 {
     initUI();
 }
@@ -153,7 +156,30 @@ void SessionBaseWindow::initUI()
     m_mainLayout->addWidget(m_centerFrame);
     m_mainLayout->addWidget(m_bottomFrame);
 
-    setLayout(m_mainLayout);
+    QWidget *basewindow = new QWidget(this);
+    basewindow->setLayout(m_mainLayout);
+
+    m_stackedLayout = new QStackedLayout;
+    m_stackedLayout->setStackingMode(QStackedLayout::StackOne);
+    m_stackedLayout->insertWidget(kDefaultWidgetIndex, basewindow);
+
+    setLayout(m_stackedLayout);
+}
+
+void SessionBaseWindow::hideStackedWidgets()
+{
+    // disable and hide all widgets in stackedLayout
+    int widCount = m_stackedLayout->count();
+    if (widCount) {
+        for (int index = 0; index < widCount; index++) {
+            QWidget *tmp = m_stackedLayout->widget(index);
+            // widgets are not members, so maybe it would be delete somewhere
+            if (tmp) {
+                tmp->hide();
+                tmp->setDisabled(true);
+            }
+        }
+    }
 }
 
 QSize SessionBaseWindow::getCenterContentSize()
@@ -170,6 +196,67 @@ QSize SessionBaseWindow::getCenterContentSize()
     }
 
     return QSize(w, h);
+}
+
+void SessionBaseWindow::setFullManagedLoginWidget(QWidget *wid)
+{
+    // set wid to nullptr, and the plugin ui would not be show
+    m_pluginWidgets.insert(PluginWidgetIndex::FullManagedPlugin, wid);
+    // 如果存在全托管，设为当前界面
+    m_stackedLayout->setCurrentIndex(m_stackedLayout->addWidget(wid));
+}
+
+// for some widgets used by both plugin and default UI
+void SessionBaseWindow::showControlFrame(QWidget *wid)
+{
+    if (!wid) {
+        return;
+    }
+
+    hideStackedWidgets();
+
+    // no need to record index
+    // just insert the widget if it's isolated
+    int widIndex = m_stackedLayout->indexOf(wid);
+    if (widIndex < 0) {
+        m_stackedLayout->addWidget(wid);
+        connect(wid, &QWidget::destroyed, this, [&] {
+            m_stackedLayout->removeWidget(wid);
+        });
+    }
+
+    m_stackedLayout->setCurrentIndex(m_stackedLayout->indexOf(wid));
+    wid->show();
+    wid->setDisabled(false);
+}
+
+void SessionBaseWindow::showPasswdFrame()
+{
+    // plugin passwd frame first
+    auto it = m_pluginWidgets.find(PluginWidgetIndex::FullManagedPlugin);
+    if (it != m_pluginWidgets.end()) {
+        QWidget *pluginWid = it.value();
+        if (pluginWid) {
+            showControlFrame(pluginWid);
+            return;
+        }
+    }
+
+    showDefaultFrame();
+}
+
+// userframe will be part or default widget
+// just show default page
+void SessionBaseWindow::showDefaultFrame()
+{
+    hideStackedWidgets();
+
+    QWidget *defaultWid = m_stackedLayout->widget(kDefaultWidgetIndex);
+    if (defaultWid) {
+        defaultWid->setDisabled(false);
+        defaultWid->show();
+        m_stackedLayout->setCurrentIndex(kDefaultWidgetIndex);
+    }
 }
 
 void SessionBaseWindow::resizeEvent(QResizeEvent *event)

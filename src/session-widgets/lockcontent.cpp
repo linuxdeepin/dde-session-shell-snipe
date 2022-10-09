@@ -15,6 +15,7 @@
 #include "userframelist.h"
 #include "virtualkbinstance.h"
 #include "fullscreenbackground.h"
+#include "fullmanagedauthwidget.h"
 
 #include <DDBusSender>
 
@@ -35,6 +36,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_sfaWidget(nullptr)
     , m_mfaWidget(nullptr)
     , m_authWidget(nullptr)
+    , m_fmaWidget(nullptr)
     , m_userListWidget(nullptr)
     , m_localServer(new QLocalServer(this))
 {
@@ -98,6 +100,17 @@ void LockContent::initUI()
     m_authWidget->hide();
 
     initUserListWidget();
+
+    initFMAWidget();
+    if (m_fmaWidget && m_fmaWidget->isPluginLoaded()) {
+        if (m_sfaWidget) {
+            m_sfaWidget->setDisabled(true);
+        }
+
+        if (m_mfaWidget) {
+            m_mfaWidget->setDisabled(true);
+        }
+    }
 }
 
 void LockContent::initConnections()
@@ -209,6 +222,28 @@ void LockContent::initSFAWidget()
     });
 }
 
+// init full managed plugin widget
+void LockContent::initFMAWidget()
+{
+    qDebug() << "LockContent::initFMAWidget" << m_fmaWidget;
+    if (m_fmaWidget) {
+        m_fmaWidget->hide();
+        delete m_fmaWidget;
+        m_fmaWidget = nullptr;
+    }
+
+    m_fmaWidget = new FullManagedAuthWidget();
+    m_fmaWidget->setModel(m_model);
+    if (m_fmaWidget->isPluginLoaded()) {
+        setFullManagedLoginWidget(m_fmaWidget);
+    }
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestStartAuthentication, this, &LockContent::requestStartAuthentication);
+    connect(m_fmaWidget, &FullManagedAuthWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestEndAuthentication, this, &LockContent::requestEndAuthentication);
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
+    connect(m_fmaWidget, &FullManagedAuthWidget::authFinished, this, &LockContent::authFinished);
+}
+
 /**
  * @brief 初始化用户列表界面
  */
@@ -254,6 +289,7 @@ void LockContent::pushPasswordFrame()
     setCenterContent(m_authWidget, 0, Qt::AlignTop, m_authWidget->getTopSpacing());
 
     m_authWidget->syncResetPasswordUI();
+    showPasswdFrame();
 }
 
 void LockContent::pushUserFrame()
@@ -263,11 +299,13 @@ void LockContent::pushUserFrame()
 
     m_userListWidget->updateLayout();
     setCenterContent(m_userListWidget);
+    showDefaultFrame();
 }
 
 void LockContent::pushConfirmFrame()
 {
     setCenterContent(m_authWidget, 0, Qt::AlignTop, m_authWidget->getTopSpacing());
+    showDefaultFrame();
 }
 
 void LockContent::pushShutdownFrame()
@@ -277,6 +315,7 @@ void LockContent::pushShutdownFrame()
     const QSize size = getCenterContentSize();
     m_shutdownFrame->setFixedSize(size);
     setCenterContent(m_shutdownFrame, 2);
+    showDefaultFrame();
 }
 
 void LockContent::setMPRISEnable(const bool state)
@@ -491,6 +530,9 @@ void LockContent::showModule(const QString &name)
     case BaseModuleInterface::TrayType:
         m_loginWidget = module->content();
         setCenterContent(m_loginWidget);
+        break;
+    default:
+        // 扩展插件类型 FullManagedLoginType，不在此处处理
         break;
     }
 }
