@@ -61,6 +61,16 @@ using namespace Dtk::Core;
 const DSysInfo::UosEdition UosEdition = DSysInfo::uosEditionType();
 const bool IsCommunitySystem = (DSysInfo::UosCommunity == UosEdition);//是否是社区版
 
+// dconfig 配置名称
+const QString USE_SOLID_BACKGROUND = "useSolidBackground";
+const QString AUTO_EXIT = "autoExit";
+const QString HIDE_LOGOUT_BUTTON = "hideLogoutButton";
+const QString HIDE_ONBOARD = "hideOnboard";
+const QString ENABLE_ONE_KEY_LOGIN = "enableOneKeylogin";
+const QString ENABLE_SHORTCUT_FOR_LOCK = "enableShortcutForLock";
+const QString SHOW_TOP_TIP = "showTopTip";
+const QString TOP_TIP_TEXT = "topTipText";
+const QString SHOW_USER_NAME = "showUserName";
 }
 
 

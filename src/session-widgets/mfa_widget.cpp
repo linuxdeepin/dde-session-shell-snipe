@@ -38,7 +38,7 @@ void MFAWidget::initUI()
     m_mainLayout->setContentsMargins(10, 0, 10, 0);
     m_mainLayout->setSpacing(10);
     m_mainLayout->addWidget(m_userAvatar);
-    m_mainLayout->addWidget(m_nameLabel, 0, Qt::AlignVCenter);
+    m_mainLayout->addWidget(m_userNameWidget, 0, Qt::AlignVCenter);
     m_mainLayout->addWidget(m_accountEdit, 0, Qt::AlignVCenter);
     m_mainLayout->addSpacing(10);
     m_mainLayout->addWidget(m_expiredStateLabel);
@@ -116,16 +116,16 @@ void MFAWidget::setAuthType(const int type)
         if (m_model->currentUser()->isNoPasswordLogin()) {
             m_lockButton->setEnabled(true);
             m_accountEdit->hide();
-            m_nameLabel->show();
+            m_userNameWidget->show();
         } else {
             m_accountEdit->clear();
             m_accountEdit->show();
-            m_nameLabel->hide();
+            m_userNameWidget->hide();
         }
     } else {
         const bool visible = m_model->isServerModel() && m_model->appType() == Login;
         m_accountEdit->setVisible(visible);
-        m_nameLabel->setVisible(!visible);
+        m_userNameWidget->setVisible(!visible);
     }
 
     updatePasswordExpiredState();

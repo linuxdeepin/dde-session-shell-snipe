@@ -6,6 +6,7 @@
 #define AUTHWIDGET_H
 
 #include "userinfo.h"
+#include "user_name_widget.h"
 
 #include <DArrowRectangle>
 #include <DBlurEffectWidget>
@@ -14,6 +15,7 @@
 #include <DLabel>
 
 #include <QWidget>
+#include <QResizeEvent>
 
 class AuthSingle;
 class AuthIris;
@@ -47,6 +49,7 @@ public:
     void setAccountErrorMsg(const QString &message);
     void syncPasswordResetPasswordVisibleChanged(const QVariant &value);
     void syncResetPasswordUI();
+    void resizeEvent(QResizeEvent *event) override;
 
 Q_SIGNALS:
     void requestCheckAccount(const QString &account);
@@ -70,7 +73,7 @@ protected:
     void setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo);
     void setLimitsInfoString(const QString &limitsInfoStr);
     void setAvatar(const QString &avatar);
-    void updateUserNameLabel();
+    void updateUserDisplayNameLabel();
     void setPasswordHint(const QString &hint);
     void setLockButtonType(const int type);
 
@@ -99,8 +102,8 @@ protected:
 
     DLabel *m_expiredStateLabel;           // 密码过期提示
     QSpacerItem *m_expiredSpacerItem;      // 密码过期提示与按钮的间隔
-    DLabel *m_nameLabel;          // 用户名
     DLineEditEx *m_accountEdit;   // 用户名输入框
+    UserNameWidget *m_userNameWidget;    // 用户名
 
     KeyboardMonitor *m_capslockMonitor;    // 大小写
     DClipEffectWidget *m_keyboardTypeClip; // 键盘布局类型菜单边界裁剪类

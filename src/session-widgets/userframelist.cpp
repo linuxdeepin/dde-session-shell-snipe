@@ -4,11 +4,13 @@
 
 #include "userframelist.h"
 
+#include "dconfig_helper.h"
 #include "dflowlayout.h"
 #include "framedatabind.h"
 #include "sessionbasemodel.h"
 #include "user_widget.h"
 #include "userinfo.h"
+#include "constants.h"
 
 #include <QMouseEvent>
 #include <QScrollArea>
@@ -17,6 +19,8 @@
 #include <QVBoxLayout>
 
 const int UserFrameSpaceing = 40;
+
+using namespace DDESESSIONCC;
 
 UserFrameList::UserFrameList(QWidget *parent)
     : QWidget(parent)
@@ -44,6 +48,8 @@ UserFrameList::UserFrameList(QWidget *parent)
     connect(this, &UserFrameList::destroyed, this, [this, index] {
         m_frameDataBind->unRegisterFunction("UserFrameList", index);
     });
+
+    DConfigHelper::instance()->bind(this, SHOW_USER_NAME);
 }
 
 void UserFrameList::initUI()
@@ -241,12 +247,16 @@ void UserFrameList::onOtherPageChanged(const QVariant &value)
 void UserFrameList::updateLayout()
 {
     //处理窗体数量小于5个时的居中显示，取 窗体数量*窗体宽度 和 最大宽度 的较小值，设置为m_centerWidget的宽度
+    auto userWidget = m_loginWidgets.constFirst();
+    int userWidgetHeight = UserFrameHeight;
+    if (userWidget)
+        userWidgetHeight = userWidget->heightHint();
     int count = m_flowLayout->count();
     if (count < 5 && count > 0) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, UserFrameHeight + 20);
+        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, userWidgetHeight + 20);
     }
     if (count >= 5) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * 5, (UserFrameHeight + UserFrameSpaceing) * 2);
+        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * 5, (userWidgetHeight + UserFrameSpaceing) * 2);
     }
     m_centerWidget->setFixedWidth(m_scrollArea->width() - 10);
 
@@ -317,4 +327,12 @@ void UserFrameList::resizeEvent(QResizeEvent *event)
     updateLayout();
 
     QWidget::resizeEvent(event);
+}
+
+void UserFrameList::OnDConfigPropertyChanged(const QString &key, const QVariant &value)
+{
+    if (key == SHOW_USER_NAME) {
+        // 需要等待UserWidget处理完，延时100ms后更新布局
+        QTimer::singleShot(100, this, &UserFrameList::updateLayout);
+    }
 }

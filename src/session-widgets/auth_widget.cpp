@@ -34,8 +34,8 @@ AuthWidget::AuthWidget(QWidget *parent)
     , m_userAvatar(nullptr)
     , m_expiredStateLabel(new DLabel(this))
     , m_expiredSpacerItem(new QSpacerItem(0, 0))
-    , m_nameLabel(nullptr)
     , m_accountEdit(nullptr)
+    , m_userNameWidget(nullptr)
     , m_capslockMonitor(nullptr)
     , m_keyboardTypeClip(nullptr)
     , m_singleAuth(nullptr)
@@ -71,23 +71,14 @@ void AuthWidget::initUI()
     m_userAvatar->setFocusPolicy(Qt::NoFocus);
     m_userAvatar->setIcon(m_user->avatar());
     m_userAvatar->setAvatarSize(UserAvatar::AvatarLargeSize);
-    /* 用户名 */
-    m_nameLabel = new DLabel(this);
-    m_nameLabel->setAccessibleName(QStringLiteral("NameLabel"));
-    m_nameLabel->setTextFormat(Qt::TextFormat::PlainText);
-    m_nameLabel->setText(m_model->currentUser()->displayName());
-    m_nameLabel->setAlignment(Qt::AlignCenter);
-    m_nameLabel->setTextFormat(Qt::TextFormat::PlainText);
-    DFontSizeManager::instance()->bind(m_nameLabel, DFontSizeManager::T2);
-    QPalette palette = m_nameLabel->palette();
-    palette.setColor(QPalette::WindowText, Qt::white);
-    m_nameLabel->setPalette(palette);
     /* 用户名输入框 */
     m_accountEdit = new DLineEditEx(this);
     m_accountEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_accountEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_accountEdit->setClearButtonEnabled(false);
     m_accountEdit->setPlaceholderText(tr("Account"));
+    // 用户名
+    m_userNameWidget = new UserNameWidget(true, this);
     /* 密码过期提示 */
     m_expiredStateLabel->setAccessibleName("ExpiredStateLabel");
     m_expiredStateLabel->setWordWrap(true);
@@ -116,7 +107,7 @@ void AuthWidget::initConnections()
         setLockButtonType(action);
     });
     /* 用户名 */
-    connect(qGuiApp, &QGuiApplication::fontChanged, this, &AuthWidget::updateUserNameLabel);
+    connect(qGuiApp, &QGuiApplication::fontChanged, this, &AuthWidget::updateUserDisplayNameLabel);
     /* 用户名输入框 */
     connect(m_accountEdit, &DLineEditEx::returnPressed, this, [this] {
         if (m_accountEdit->isVisible() && !m_accountEdit->text().isEmpty()) {
@@ -154,7 +145,7 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
     m_connectionList.clear();
     m_user = user;
     m_connectionList << connect(user.get(), &User::avatarChanged, this, &AuthWidget::setAvatar)
-                     << connect(user.get(), &User::displayNameChanged, this, &AuthWidget::updateUserNameLabel)
+                     << connect(user.get(), &User::displayNameChanged, this, &AuthWidget::updateUserDisplayNameLabel)
                      << connect(user.get(), &User::passwordHintChanged, this, &AuthWidget::setPasswordHint)
                      << connect(user.get(), &User::limitsInfoChanged, this, &AuthWidget::setLimitsInfo)
                      << connect(user.get(), &User::passwordExpiredInfoChanged, this, &AuthWidget::updatePasswordExpiredState)
@@ -164,15 +155,15 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
     setPasswordHint(user->passwordHint());
     setLimitsInfo(user->limitsInfo());
     updatePasswordExpiredState();
-    updateUserNameLabel();
+    updateUserDisplayNameLabel();
 
     /* 根据用户类型设置用户名和用户名输入框的可见性 */
     if (user->type() == User::Default) {
-        m_nameLabel->hide();
+        m_userNameWidget->hide();
         m_accountEdit->show();
         m_accountEdit->setFocus();
     } else {
-        m_nameLabel->show();
+        m_userNameWidget->show();
         m_accountEdit->hide();
         m_accountEdit->clear();
     }
@@ -306,18 +297,10 @@ void AuthWidget::setAvatar(const QString &avatar)
  * @brief 设置用户名字体
  * @param font
  */
-void AuthWidget::updateUserNameLabel()
+void AuthWidget::updateUserDisplayNameLabel()
 {
-    const QString &name = m_user->displayName();
-    int nameWidth = m_nameLabel->fontMetrics().boundingRect(name).width();
-    int labelMaxWidth = width() - 10 * 2;
-
-    if (nameWidth > labelMaxWidth) {
-        QString str = m_nameLabel->fontMetrics().elidedText(name, Qt::ElideRight, labelMaxWidth);
-        m_nameLabel->setText(str);
-    } else {
-        m_nameLabel->setText(name);
-    }
+    m_userNameWidget->updateDisplayName(m_user->displayName());
+    m_userNameWidget->updateUserName(m_user->name());
 }
 
 /**
@@ -508,6 +491,13 @@ void AuthWidget::showEvent(QShowEvent *event)
 {
     activateWindow();
     QWidget::showEvent(event);
+}
+
+
+void AuthWidget::resizeEvent(QResizeEvent *event)
+{
+    updateUserDisplayNameLabel();
+    QWidget::resizeEvent(event);
 }
 
 int AuthWidget::getTopSpacing() const

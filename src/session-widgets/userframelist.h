@@ -34,6 +34,9 @@ signals:
     void requestSwitchUser(std::shared_ptr<User> user);
     void clicked();
 
+public slots:
+    void OnDConfigPropertyChanged(const QString &key, const QVariant &value);
+
 protected:
     void hideEvent(QHideEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;

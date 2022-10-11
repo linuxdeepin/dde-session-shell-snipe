@@ -6,6 +6,7 @@
 #define USERWIDGET_H
 
 #include "userinfo.h"
+#include "user_name_widget.h"
 
 #include <DBlurEffectWidget>
 #include <DLabel>
@@ -33,9 +34,13 @@ public:
 
     inline uint uid() const { return m_uid; }
     void setUid(const uint uid);
+    int heightHint() const;
 
 signals:
     void clicked();
+
+public slots:
+    void OnDConfigPropertyChanged(const QString &key, const QVariant &value);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -62,9 +67,10 @@ private:
     DBlurEffectWidget *m_blurEffectWidget; // 模糊背景
     UserAvatar *m_avatar;                  // 用户头像
 
-    DLabel *m_loginState;  // 用户登录状态
-    DLabel *m_nameLabel;   // 用户名
-    QWidget *m_nameWidget; // 用户名控件
+    DLabel *m_loginState;               // 用户登录状态
+    DLabel *m_displayNameLabel;         // 用户全名
+    QWidget *m_displayNameWidget;       // 用户全名控件
+    UserNameWidget *m_userNameWidget;   // 用户名
 
     std::shared_ptr<User> m_user;
 };

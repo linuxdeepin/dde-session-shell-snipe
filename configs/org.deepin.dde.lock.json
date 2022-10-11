@@ -81,6 +81,16 @@
             "description": "顶部的提示信息的文案，不支持多语言",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "showUserName":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "showUserName",
+            "name[zh_CN]": "锁屏是否展示用户名",
+            "description": "锁屏是否展示用户名，默认不展示",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

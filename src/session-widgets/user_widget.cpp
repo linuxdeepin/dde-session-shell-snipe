@@ -3,14 +3,19 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "user_widget.h"
+#include "user_name_widget.h"
 #include "useravatar.h"
+#include "dconfig_helper.h"
+#include "constants.h"
 
 #include <DFontSizeManager>
 #include <DHiDPIHelper>
 
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
-const int UserNameHeight = 42;
+const int UserDisplayNameHeight = 42;
+
+using namespace DDESESSIONCC;
 
 UserWidget::UserWidget(QWidget *parent)
     : QWidget(parent)
@@ -20,8 +25,9 @@ UserWidget::UserWidget(QWidget *parent)
     , m_blurEffectWidget(new DBlurEffectWidget(this))
     , m_avatar(new UserAvatar(this))
     , m_loginState(new DLabel(this))
-    , m_nameLabel(new DLabel(this))
-    , m_nameWidget(new QWidget(this))
+    , m_displayNameLabel(new DLabel(this))
+    , m_displayNameWidget(new QWidget(this))
+    , m_userNameWidget(nullptr)
 {
     setObjectName(QStringLiteral("UserWidget"));
     setAccessibleName(QStringLiteral("UserWidget"));
@@ -39,9 +45,9 @@ void UserWidget::initUI()
     m_avatar->setIcon(m_user->avatar());
     m_avatar->setAvatarSize(UserAvatar::AvatarSmallSize);
 
-    /* 用户名 */
-    m_nameWidget->setAccessibleName(QStringLiteral("NameWidget"));
-    QHBoxLayout *nameLayout = new QHBoxLayout(m_nameWidget);
+    /* 用户全名 */
+    m_displayNameWidget->setAccessibleName(QStringLiteral("NameWidget"));
+    QHBoxLayout *nameLayout = new QHBoxLayout(m_displayNameWidget);
     nameLayout->setContentsMargins(0, 0, 0, 0);
     nameLayout->setSpacing(5);
 
@@ -52,17 +58,23 @@ void UserWidget::initUI()
     m_loginState->setVisible(m_user->isLogin());
     nameLayout->addWidget(m_loginState, 0, Qt::AlignVCenter | Qt::AlignRight);
 
-    m_nameLabel->setAccessibleName("NameLabel");
-    m_nameLabel->setTextFormat(Qt::TextFormat::PlainText);
-    m_nameLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    m_nameLabel->setFixedHeight(UserNameHeight);
-    m_nameLabel->setText(m_user->displayName());
-    DFontSizeManager::instance()->bind(m_nameLabel, DFontSizeManager::T2);
-    QPalette palette = m_nameLabel->palette();
+    m_displayNameLabel->setAccessibleName("NameLabel");
+    m_displayNameLabel->setTextFormat(Qt::TextFormat::PlainText);
+    m_displayNameLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_displayNameLabel->setFixedHeight(UserDisplayNameHeight);
+    m_displayNameLabel->setText(m_user->displayName());
+    DFontSizeManager::instance()->bind(m_displayNameLabel, DFontSizeManager::T2);
+    QPalette palette = m_displayNameLabel->palette();
     palette.setColor(QPalette::WindowText, Qt::white);
-    m_nameLabel->setPalette(palette);
-    nameLayout->addWidget(m_nameLabel, 1, Qt::AlignVCenter | Qt::AlignLeft);
-
+    m_displayNameLabel->setPalette(palette);
+    nameLayout->addWidget(m_displayNameLabel, 1, Qt::AlignVCenter | Qt::AlignLeft);
+    // 用户名，根据配置决定是否构造对象
+    DConfigHelper::instance()->bind(this, SHOW_USER_NAME);
+    if (DConfigHelper::instance()->getConfig(SHOW_USER_NAME, false).toBool()) {
+        m_userNameWidget = new UserNameWidget(false, this);
+        m_userNameWidget->updateUserName(m_user->name());
+        setFixedHeight(heightHint());
+    }
     /* 模糊背景 */
     m_blurEffectWidget->setMaskColor(DBlurEffectWidget::LightColor);
     m_blurEffectWidget->setMaskAlpha(BlurTransparency);
@@ -70,7 +82,9 @@ void UserWidget::initUI()
     m_blurEffectWidget->setBlurRectYRadius(BlurRadius);
 
     m_mainLayout->addWidget(m_avatar);
-    m_mainLayout->addWidget(m_nameWidget, 0, Qt::AlignHCenter);
+    m_mainLayout->addWidget(m_displayNameWidget, 0, Qt::AlignHCenter);
+    if (m_userNameWidget)
+        m_mainLayout->addWidget(m_userNameWidget);
     m_mainLayout->addSpacing(20);
 }
 
@@ -143,15 +157,17 @@ void UserWidget::setAvatar(const QString &avatar)
 void UserWidget::updateUserNameLabel()
 {
     const QString &name = m_user->displayName();
-    int nameWidth = m_nameLabel->fontMetrics().boundingRect(name).width();
+    int nameWidth = m_displayNameLabel->fontMetrics().boundingRect(name).width();
     int labelMaxWidth = width() - 25 * 2;
 
     if (nameWidth > labelMaxWidth) {
-        QString str = m_nameLabel->fontMetrics().elidedText(name, Qt::ElideRight, labelMaxWidth);
-        m_nameLabel->setText(str);
+        QString str = m_displayNameLabel->fontMetrics().elidedText(name, Qt::ElideRight, labelMaxWidth);
+        m_displayNameLabel->setText(str);
     } else {
-        m_nameLabel->setText(name);
+        m_displayNameLabel->setText(name);
     }
+    if (m_userNameWidget)
+        m_userNameWidget->updateUserName(m_user->name());
 }
 
 /**
@@ -170,7 +186,8 @@ void UserWidget::updateBlurEffectGeometry()
 {
     QRect rect = layout()->geometry();
     rect.setTop(m_avatar->geometry().top() + m_avatar->height() / 2);
-    rect.setBottom(m_nameWidget->geometry().bottom() + 10);
+    const QWidget *w = m_userNameWidget ? m_userNameWidget : m_displayNameWidget;
+    rect.setBottom(w->geometry().bottom() + 10);
     m_blurEffectWidget->setGeometry(rect);
 }
 
@@ -202,4 +219,40 @@ void UserWidget::resizeEvent(QResizeEvent *event)
 {
     updateBlurEffectGeometry();
     QWidget::resizeEvent(event);
+}
+
+int UserWidget::heightHint() const
+{
+    if (m_userNameWidget)
+        return UserFrameHeight + m_userNameWidget->heightHint();
+
+    return UserFrameHeight;
+}
+
+void UserWidget::OnDConfigPropertyChanged(const QString &key, const QVariant &value)
+{
+    qInfo() << Q_FUNC_INFO << key << ", value: " << value;
+    if (key == SHOW_USER_NAME) {
+        const bool showUserName = value.toBool();
+        if (showUserName) {
+            if (!m_userNameWidget) {
+                m_userNameWidget = new UserNameWidget(false, this);
+            }
+            m_mainLayout->insertWidget(m_mainLayout->indexOf(m_displayNameWidget) + 1, m_userNameWidget);
+            m_userNameWidget->show();
+            if (m_user)
+                m_userNameWidget->updateUserName(m_user->name());
+
+        } else {
+            if (m_userNameWidget) {
+                delete m_userNameWidget;
+                m_userNameWidget = nullptr;
+            }
+        }
+    }
+
+    // 刷新界面
+    setFixedHeight(heightHint());
+    updateBlurEffectGeometry();
+    update();
 }

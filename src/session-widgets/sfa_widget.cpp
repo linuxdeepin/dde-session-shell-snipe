@@ -85,7 +85,7 @@ void SFAWidget::initUI()
     m_mainLayout->addWidget(m_chooseAuthButtonBox, 0, Qt::AlignCenter);
     m_mainLayout->addItem(m_authTypeBottomSpacingHolder);
     m_mainLayout->addWidget(m_userAvatar);
-    m_mainLayout->addWidget(m_nameLabel, 0, Qt::AlignVCenter);
+    m_mainLayout->addWidget(m_userNameWidget, 0, Qt::AlignVCenter);
     m_mainLayout->addWidget(m_accountEdit, 0, Qt::AlignVCenter);
     m_mainLayout->addSpacing(10);
     m_mainLayout->addWidget(m_expiredStateLabel);
@@ -162,8 +162,8 @@ void SFAWidget::setAuthType(const int type)
         // fix152437，避免初始化其他认证方式图像和nameLabel为隐藏
         if (!m_userAvatar->isVisible())
             m_userAvatar->setVisible(true);
-        if (!m_nameLabel->isVisible())
-            m_nameLabel->setVisible(true);
+        if (!m_userNameWidget->isVisible())
+            m_userNameWidget->setVisible(true);
         if (!m_lockButton->isVisible())
             m_lockButton->setVisible(true);
     }
@@ -823,19 +823,19 @@ void SFAWidget::initCustomAuth()
             setBioAuthStateVisible(nullptr, false);
             m_accountEdit->hide();
             m_userAvatar->setVisible(m_customAuth->showAvatar());
-            m_nameLabel->setVisible(m_customAuth->showUserName());
+            m_userNameWidget->setVisible(m_customAuth->showUserName());
             m_lockButton->setVisible(m_customAuth->showLockButton());
             replaceWidget(m_customAuth);
             m_frameDataBind->updateValue("SFAType", AT_Custom);
             Q_EMIT requestStartAuthentication(m_user->name(), AT_Custom);
         } else {
             m_customAuth->hide();
-            m_nameLabel->show();
+            m_userNameWidget->show();
             m_userAvatar->show();
             m_lockButton->show();
             m_lockButton->setEnabled(false);
             if (m_user->type() == User::Default) {
-                m_nameLabel->hide();
+                m_userNameWidget->hide();
                 m_accountEdit->show();
                 m_accountEdit->setFocus();
             }
@@ -955,7 +955,7 @@ int SFAWidget::getTopSpacing() const
         // 根据头像、用户名、锁屏以及插件自身的高度来计算居中时顶部间隔
         // 这是一个相对比较严格的高度，如果插件还是无法显示完整，或者界面偏下的话，只能插件调整content界面的大小了
         int height = m_customAuth->showAvatar() ? m_userAvatar->height() + 10 : 0;
-        height += m_customAuth->showUserName() ? m_nameLabel->height() + 10 : 0;
+        height += m_customAuth->showUserName() ? m_userNameWidget->height() + 10 : 0;
         height += m_customAuth->showLockButton() ? m_lockButton->height() + 10 : 0;
 
         centerTop = static_cast<int>((topLevelWidget()->geometry().height() - height - m_customAuth->contentSize().height()) / 2);
@@ -1034,7 +1034,7 @@ void SFAWidget::updateBlurEffectGeometry()
         // top
         if (!m_customAuth->showAvatar()) {
             if (m_customAuth->showUserName()) {
-                rect.setTop(m_nameLabel->geometry().top() - 10);
+                rect.setTop(m_userNameWidget->geometry().top() - 10);
             } else {
                 rect.setTop(m_customAuth->geometry().top() - 10);
             }
