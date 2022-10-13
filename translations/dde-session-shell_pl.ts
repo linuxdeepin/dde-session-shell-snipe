@@ -11,11 +11,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba</numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna szansa </translation>
+        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna próba</translation>
     </message>
     <message>
         <source>Verify your Face ID</source>
@@ -27,14 +27,14 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Urządzenie niedostępne!</translation>
     </message>
 </context>
 <context>
     <name>AuthFingerprint</name>
     <message>
         <source>Verify your fingerprint</source>
-        <translation>Zweryfikuj odcisk palca </translation>
+        <translation>Zweryfikuj odcisk palca</translation>
     </message>
     <message>
         <source>Verification successful</source>
@@ -42,11 +42,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba </numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby </numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform></translation>
+        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba</numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna szansa </translation>
+        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna próba</translation>
     </message>
     <message>
         <source>Fingerprint locked, use password please</source>
@@ -65,11 +65,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba</numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna szansa </translation>
+        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna próba</translation>
     </message>
     <message>
         <source>Verify your Iris ID</source>
@@ -88,15 +88,15 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba</numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób </numerusform></translation>
+        <translation><numerusform>Weryfikacja nie powiodła się, pozostała %n próba</numerusform><numerusform>Weryfikacja nie powiodła się, pozostały %n próby</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób</numerusform><numerusform>Weryfikacja nie powiodła się, pozostało %n prób</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna szansa </translation>
+        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna próba</translation>
     </message>
     <message>
         <source>Wrong Password</source>
-        <translation>Nieprawidłowe hasło</translation>
+        <translation>Błędne hasło</translation>
     </message>
     <message>
         <source>Password</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Spróbuj ponownie za %n minute</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Spróbuj ponownie za %n minute</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
+        <translation><numerusform>Spróbuj ponownie za %n minutę</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -150,11 +150,11 @@
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna szansa </translation>
+        <translation>Weryfikacja nie powiodła się, pozostała tylko jedna próba</translation>
     </message>
     <message>
         <source>Wrong PIN</source>
-        <translation>Nieprawidłowy PIN</translation>
+        <translation>Błędny PIN</translation>
     </message>
     <message>
         <source>UKey is required</source>
@@ -166,7 +166,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Spróbuj ponownie za %n minute</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
+        <translation><numerusform>Spróbuj ponownie za %n minutę</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Spróbuj ponownie za %n minute</numerusform><numerusform>Spróbuj ponownie za %n minuty</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform><numerusform>Spróbuj ponownie za %n minut</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Twoje hasło wygaśnie za %n dzień, proszę zmień je jak najszybciej</numerusform><numerusform>Twoje hasło wygaśnie za %n dni, proszę zmień je jak najszybciej</numerusform><numerusform>Twoje hasło wygaśnie za %n dni, proszę zmień je jak najszybciej</numerusform><numerusform>Twoje hasło wygaśnie za %n dni, proszę zmień je jak najszybciej</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -200,7 +200,7 @@
     </message>
     <message>
         <source>Wrong Password</source>
-        <translation>Nieprawidłowe Hasło</translation>
+        <translation>Błędne hasło</translation>
     </message>
 </context>
 <context>
@@ -229,7 +229,7 @@
     </message>
     <message>
         <source>Failed to match fingerprint</source>
-        <translation>Błąd porównania odcisków palcy</translation>
+        <translation>Nie udało się dopasować odcisku palca</translation>
     </message>
 </context>
 <context>
@@ -324,7 +324,7 @@
     </message>
     <message>
         <source>Shut down</source>
-        <translation>Zamknij</translation>
+        <translation>Wyłącz</translation>
     </message>
     <message>
         <source>Reboot</source>
@@ -336,7 +336,7 @@
     </message>
     <message>
         <source>Hibernate</source>
-        <translation>Hibernować</translation>
+        <translation>Hibernacja</translation>
     </message>
     <message>
         <source>Log out</source>
@@ -344,11 +344,11 @@
     </message>
     <message>
         <source>Are you sure you want to shut down?</source>
-        <translation>Czy na pewno chcesz zamknąć?</translation>
+        <translation>Czy na pewno chcesz wyłączyć?</translation>
     </message>
     <message>
         <source>Are you sure you want to reboot?</source>
-        <translation>Czy na pewno chcesz uruchomić ponownie komputer?</translation>
+        <translation>Czy na pewno chcesz uruchomić ponownie?</translation>
     </message>
     <message>
         <source>Are you sure you want to log out?</source>

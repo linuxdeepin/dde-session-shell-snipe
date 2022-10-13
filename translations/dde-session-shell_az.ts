@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Doğrulama alınmadı, %n cəhdiniz qaldı</numerusform><numerusform>Doğrulama alınmadı, %n cəhdiniz qaldı</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Cihaz əlçatmazdır</translation>
     </message>
 </context>
 <context>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Doğrulama alınmadı, %n cəhdiniz qaldı</numerusform><numerusform>Doğrulama alınmadı, %n cəhdiniz qaldı</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Şifrənizin vaxtı %n gün sonra bitəcəkdir, lütfən onu vaxtında dəyişin</numerusform><numerusform>Şifrənizin vaxtı %n gün sonra bitəcəkdir, lütfən onu vaxtında dəyişin</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

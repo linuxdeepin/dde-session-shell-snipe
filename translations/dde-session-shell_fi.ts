@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Laite ei ole käytettävissä!</translation>
     </message>
 </context>
 <context>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Salasanasi vanhenee %n päivän kuluttua, vaihda se ajoissa</numerusform><numerusform>Salasanasi vanhenee %n päivän kuluttua, vaihda se ajoissa</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

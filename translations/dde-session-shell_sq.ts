@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifikimi dështoi, edhe %n provë</numerusform><numerusform>Verifikimi dështoi, edhe %n prova</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifikimi dështoi, edhe %n provë</numerusform><numerusform>Verifikimi dështoi, edhe %n prova</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Ju lutemi, riprovoni pas %n minute</numerusform><numerusform>Ju lutemi, riprovoni pas %n minutash</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Ju lutemi, riprovoni pas %n minute</numerusform><numerusform>Ju lutemi, riprovoni pas %n minutash</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Fjalëkalimi juaj do të skadojë për %n ditë, ju lutemi, ndryshojeni në kohë</numerusform><numerusform>Fjalëkalimi juaj do të skadojë për %n ditë, ju lutemi, ndryshojeni në kohë</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

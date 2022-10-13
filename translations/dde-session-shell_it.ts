@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Dispositivo non disponibile!</translation>
     </message>
 </context>
 <context>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
+        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -88,7 +88,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
+        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Riprova tra %n minuti</numerusform><numerusform>Riprova tra %n minuti</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Riprova tra %n minuti</numerusform><numerusform>Riprova tra %n minuti</numerusform></translation>
+        <translation><numerusform>Riprova tra %n minuti</numerusform><numerusform>Riprova tra %n minuti</numerusform><numerusform>Riprova tra %n minuti</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
+        <translation><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform><numerusform>Verifica fallita, %n tentativi rimanenti</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +166,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Riprova tra %n minuto(i)</numerusform><numerusform>Riprova tra %n minuto(i)</numerusform></translation>
+        <translation><numerusform>Riprova tra %n minuto(i)</numerusform><numerusform>Riprova tra %n minuto(i)</numerusform><numerusform>Riprova tra %n minuto(i)</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Riprova tra %n minuti</numerusform><numerusform>Riprova tra %n minuti</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>La tua password scadrà in %n giorni, ricordati di sostituirla</numerusform><numerusform>La tua password scadrà in %n giorni, ricordati di sostituirla</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

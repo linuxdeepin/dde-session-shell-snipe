@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Dispositivo indisponível!</translation>
     </message>
 </context>
 <context>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
+        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -88,7 +88,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
+        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
+        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
+        <translation><numerusform>Falha ao verificar, %n tentativa restante</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform><numerusform>Falha ao verificar, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +166,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
+        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Tentar novamente %n minuto mais tarde</numerusform><numerusform>Tentar novamente %n minutos mais tarde</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>A palavra-passe expirará dentro de %n dia. Altere-a atempadamente</numerusform><numerusform>A palavra-passe expirará dentro de %n dias. Altere-a atempadamente</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -251,7 +251,7 @@
     <name>SessionWidget</name>
     <message>
         <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
-        <translation>Ativou o modo de alta segurança no sistema, impedindo de alterar para o modo Wayland. Por favor desative o modo de alta segurança no Centro de Segurança e tente novamente.</translation>
+        <translation>Ativou o modo de alta segurança no sistema, não podendo assim mudar para o modo Wayland. Desative o modo de alta segurança no Centro de Segurança e tente novamente.</translation>
     </message>
 </context>
 <context>

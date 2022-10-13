@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Gerät nicht verfügbar!</translation>
     </message>
 </context>
 <context>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Bitte versuchen Sie es %n Minute später erneut</numerusform><numerusform>Bitte versuchen Sie es %n Minuten später erneut</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Bitte versuchen Sie es %n Minute später erneut</numerusform><numerusform>Bitte versuchen Sie es %n Minuten später erneut</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Ihr Passwort läuft in %d Tage ab, bitte ändern Sie es rechtzeitig</numerusform><numerusform>Ihr Passwort läuft in %d Tagen ab, bitte ändern Sie es rechtzeitig</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

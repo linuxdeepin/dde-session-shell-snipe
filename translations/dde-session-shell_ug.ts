@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>يەنە %n% مىنۇتتىن كېيىن قايتا سىناڭ </numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>پارولنىڭ ۋاقتى %n كۈندە توشىدۇ، پارولنى ۋاقتىدا ئۆزگەرتىڭ</numerusform><numerusform>پارولنىڭ ۋاقتى %n كۈندە توشىدۇ، پارولنى ۋاقتىدا ئۆزگەرتىڭ</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Ověření se nezdařilo – zbývá %d pokus</numerusform><numerusform>Ověření se nezdařilo – zbývají %n pokusy</numerusform><numerusform>Ověření se nezdařilo – zbývá %d pokusů</numerusform><numerusform>Ověření se nezdařilo – zbývá %d pokusů</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>Zařízení není k dispozici!</translation>
     </message>
 </context>
 <context>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Ověření se nezdařilo, zbývá %n pokus</numerusform><numerusform>Ověření se nezdařilo, zbývají %n pokusy</numerusform><numerusform>Ověření se nezdařilo, zbývá %n pokusů</numerusform><numerusform>Ověření se nezdařilo, zbývají %n pokusy</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +108,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Prosím, zkuste znovu za %n minutu</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform><numerusform>Prosím, zkuste znovu za %n minut</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +174,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Prosím, zkuste znovu za %n minutu</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform><numerusform>Prosím, zkuste znovu za %n minut</numerusform><numerusform>Prosím, zkuste znovu za %n minuty</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Platnost vašeho hesla skončí za %n den, prosíme změňte si ho zavčas</numerusform><numerusform>Platnost vašeho hesla skončí za %n dny, prosíme změňte si ho zavčas</numerusform><numerusform>Platnost vašeho hesla skončí za %n dnů, prosíme změňte si ho zavčas</numerusform><numerusform>Platnost vašeho hesla skončí za %n dny, prosíme změňte si ho zavčas</numerusform></translation>
+        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -304,7 +304,7 @@
     </message>
     <message>
         <source>To close the program, click Cancel, and then close the program.</source>
-        <translation>Pro zavření programu klikněte na Storno a potom program zavřete.</translation>
+        <translation>Pro zavření programu klepněte na Zrušit a potom program zavřete.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
