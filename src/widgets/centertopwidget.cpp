@@ -11,6 +11,7 @@ DCORE_USE_NAMESPACE
 
 const QString SHOW_TOP_TIP = "showTopTip";
 const QString TOP_TIP_TEXT = "topTipText";
+const int TOP_TIP_MAX_LENGTH = 60;
 
 CenterTopWidget::CenterTopWidget(QWidget *parent)
     : QWidget(parent)
@@ -55,14 +56,14 @@ void CenterTopWidget::initUi()
                 m_topTipSpacer->changeSize(0, showTopTip ? 20 : 0);
                 m_topTip->setVisible(showTopTip);
             } else if (key == TOP_TIP_TEXT) {
-                m_topTip->setText(m_config->value(TOP_TIP_TEXT).toString());
+                setTopTipText(m_config->value(TOP_TIP_TEXT).toString());
             }
         });
     }
 
     m_topTipSpacer->changeSize(0, showTopTip ? 20 : 0);
     m_topTip->setVisible(showTopTip);
-    m_topTip->setText(topTipText);
+    setTopTipText(topTipText);
 }
 
 void CenterTopWidget::setCurrentUser(User *user)
@@ -104,4 +105,16 @@ void CenterTopWidget::updateTimeFormat(bool use24)
         m_timeWidget->set24HourFormat(use24);
         m_timeWidget->setVisible(true);
     }
+}
+
+void CenterTopWidget::setTopTipText(const QString &text)
+{
+    QString firstLine = text.split("\n").first();
+    if (firstLine.length() > TOP_TIP_MAX_LENGTH) {
+        // 居中省略号，理论上需要判断字体是否支持，考虑到这种场景非常少，
+        // 而且省略号处理只是锦上添花，可以忽略这个判断。
+        QChar ellipsisChar(0x2026);
+        firstLine = firstLine.left(60) + QString(ellipsisChar);
+    }
+    m_topTip->setText(firstLine);
 }

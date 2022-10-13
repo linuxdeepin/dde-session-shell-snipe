@@ -29,6 +29,7 @@ public slots:
 
 private:
     void initUi();
+    void setTopTipText(const QString &text);
 
 private:
     QPointer<User> m_currentUser;
