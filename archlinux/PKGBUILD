@@ -22,7 +22,7 @@ prepare() {
 
 build() {
   cd $deepin_source_name
-  cmake . -GNinja -DCMAKE_INSTALL_PREFIX=/usr
+  cmake . -GNinja -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_SYSCONFDIR=/etc
   ninja
 }
 
