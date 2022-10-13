@@ -108,9 +108,6 @@ void LockContent::initConnections()
         emit requestEndAuthentication(m_model->currentUser()->name(), AT_All);
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
-        if (m_model->appType() == AuthCommon::Lock)
-            m_model->powerBtnPressedFromLock();
-
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
@@ -383,11 +380,6 @@ void LockContent::mouseReleaseEvent(QMouseEvent *event)
         emit requestSwitchToUser(m_model->currentUser());
     }
 
-    if (m_model->currentModeState() == SessionBaseModel::ShutDownMode
-        || m_model->currentModeState() == SessionBaseModel::PowerMode) {
-        m_model->resetPowerBtnPressedFromLock();
-    }
-
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 
     SessionBaseWindow::mouseReleaseEvent(event);
@@ -630,11 +622,6 @@ void LockContent::keyPressEvent(QKeyEvent *event)
         }
         break;
     case Qt::Key_Escape:
-        if (m_model->currentModeState() == SessionBaseModel::ShutDownMode
-            || m_model->currentModeState() == SessionBaseModel::PowerMode) {
-            m_model->resetPowerBtnPressedFromLock();
-        }
-
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ConfirmPasswordMode) {
             m_model->setAbortConfirm(false);
             m_model->setPowerAction(SessionBaseModel::PowerAction::None);

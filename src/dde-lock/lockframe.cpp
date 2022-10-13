@@ -295,13 +295,8 @@ void LockFrame::cancelShutdownInhibit(bool hideFrame)
         setContentVisible(true);
     }
 
-    if (old_visible && hideFrame) {
-        // 从lock点的power btn，不能隐藏锁屏而进入桌面
-        if (!m_model->isPressedPowerBtnFromLock()) {
-            m_model->setVisible(false);
-        }
-
-        m_model->resetPowerBtnPressedFromLock();
+    if (hideFrame) {
+        m_model->setVisible(false);
         m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
     }
 }

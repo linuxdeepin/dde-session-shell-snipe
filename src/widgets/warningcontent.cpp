@@ -120,7 +120,8 @@ void WarningContent::doCancelShutdownInhibit()
 
     m_model->setIsCheckedInhibit(true);
     m_model->setPowerAction(SessionBaseModel::PowerAction::None);
-    emit m_model->cancelShutdownInhibit(true);
+    // 在关机界面点击取消时需要回到桌面，其他情况直接退回原界面
+    emit m_model->cancelShutdownInhibit(m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode);
 }
 
 void WarningContent::doAccecpShutdownInhibit()
@@ -129,7 +130,6 @@ void WarningContent::doAccecpShutdownInhibit()
 
     m_model->setIsCheckedInhibit(true);
     m_model->setPowerAction(m_powerAction);
-    m_model->resetPowerBtnPressedFromLock();
     if (m_model->currentModeState() != SessionBaseModel::ModeStatus::ShutDownMode)
         emit m_model->cancelShutdownInhibit(false);
 }
