@@ -94,7 +94,10 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
     // 如果指针为空，则不加入Map中，并析构创建的全屏窗口。
     if (w && !screen.isNull()) {
         m_frames[screen] = w;
-        w->installEventFilter(this);
+        // wayland下没有屏幕时，容易导致qt崩溃
+        if (!QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
+            w->installEventFilter(this);
+        }
     } else if (w) {
         w->deleteLater();
     }
@@ -142,7 +145,7 @@ void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
 void MultiScreenManager::raiseContentFrame()
 {
     for (auto it = m_frames.constBegin(); it != m_frames.constEnd(); ++it) {
-        if (it.value()->property("contentVisible").toBool()) {
+        if (it.value() && it.value()->property("contentVisible").toBool()) {
             it.value()->raise();
             if (QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
                 it.value()->setFocus();
