@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.13.4)
-project(dde-session-shell C CXX)
+project(dde-session-shell
+  LANGUAGES C CXX)
 
 include(GNUInstallDirs)
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX /usr)
 endif ()
+add_definitions(-DDefaultModulesDir="${CMAKE_INSTALL_FULL_LIBDIR}/dde-session-shell/modules")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

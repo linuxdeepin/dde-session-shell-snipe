@@ -17,7 +17,7 @@
 namespace dss {
 namespace module {
 
-const QString ModulesDir = "/usr/lib/dde-session-shell/modules";
+const QString ModulesDir = QStringLiteral(DefaultModulesDir);
 const int LoadPlugin = 0;
 
 ModulesLoader::ModulesLoader(QObject *parent)
