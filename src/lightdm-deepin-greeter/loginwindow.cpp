@@ -76,6 +76,14 @@ bool LoginWindow::event(QEvent *event)
              m_model->setPowerAction(SessionBaseModel::RequireSuspend);
              break;
         }
+        case Qt::Key_P: {
+            if (static_cast<QKeyEvent *>(event)->modifiers() == Qt::Key_Meta) {
+                QTimer::singleShot(0, this, [] {
+                    QProcess::startDetached("xrandr", QStringList() << "-q");
+                });
+            }
+            break;
+        }
         default:
             break;
         }
