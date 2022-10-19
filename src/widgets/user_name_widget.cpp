@@ -23,9 +23,10 @@ using namespace DDESESSIONCC;
 
 UserNameWidget::UserNameWidget(bool showDisplayName, QWidget *parent)
     : QWidget(parent)
-    , m_userPic(nullptr)
-    , m_userName(nullptr)
+    , m_userPicLabel(nullptr)
+    , m_fullNameLabel(nullptr)
     , m_displayNameLabel(nullptr)
+    , m_showUserName(false)
     , m_showDisplayName(showDisplayName)
 {
     initialize();
@@ -38,20 +39,20 @@ void UserNameWidget::initialize()
     QVBoxLayout *vLayout = new QVBoxLayout;
     QHBoxLayout *hLayout = new QHBoxLayout;
 
-    m_userPic = new DLabel(this);
-    m_userPic->setAlignment(Qt::AlignVCenter);
+    m_userPicLabel = new DLabel(this);
+    m_userPicLabel->setAlignment(Qt::AlignVCenter);
     QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/img/user_name.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
-    m_userPic->setAccessibleName(QStringLiteral("CapsStateLabel"));
-    m_userPic->setPixmap(pixmap);
-    m_userPic->setFixedSize(USER_PIC_HEIGHT, USER_PIC_HEIGHT);
+    m_userPicLabel->setAccessibleName(QStringLiteral("CapsStateLabel"));
+    m_userPicLabel->setPixmap(pixmap);
+    m_userPicLabel->setFixedSize(USER_PIC_HEIGHT, USER_PIC_HEIGHT);
 
-    m_userName = new DLabel(this);
-    m_userName->setAlignment(Qt::AlignVCenter);
-    QPalette palette = m_userName->palette();
+    m_fullNameLabel = new DLabel(this);
+    m_fullNameLabel->setAlignment(Qt::AlignVCenter);
+    QPalette palette = m_fullNameLabel->palette();
     palette.setColor(QPalette::WindowText, Qt::white);
-    m_userName->setPalette(palette);
-    DFontSizeManager::instance()->bind(m_userName, DFontSizeManager::T6);
+    m_fullNameLabel->setPalette(palette);
+    DFontSizeManager::instance()->bind(m_fullNameLabel, DFontSizeManager::T6);
 
     if (m_showDisplayName) {
         m_displayNameLabel = new DLabel(this);
@@ -68,35 +69,60 @@ void UserNameWidget::initialize()
 
     vLayout->addLayout(hLayout);
     hLayout->addStretch();
-    hLayout->addWidget(m_userPic);
-    hLayout->addWidget(m_userName);
+    hLayout->addWidget(m_userPicLabel);
+    hLayout->addWidget(m_fullNameLabel);
     hLayout->addStretch();
 
     setLayout(vLayout);
 
-    const bool showUserName = DConfigHelper::instance()->getConfig(SHOW_USER_NAME, false).toBool();
-    m_userName->setVisible(showUserName);
-    m_userPic->setVisible(showUserName);
+    m_showUserName = DConfigHelper::instance()->getConfig(SHOW_USER_NAME, false).toBool();
+    m_fullNameLabel->setVisible(m_showUserName);
+    m_userPicLabel->setVisible(m_showUserName);
 }
 
 void UserNameWidget::updateUserName(const QString &userName)
 {
-    const int nameWidth = m_userName->fontMetrics().boundingRect(userName).width();
+    if (userName == m_userNameStr)
+        return;
+
+    m_userNameStr = userName;
+    updateUserNameWidget();
+}
+
+void UserNameWidget::updateUserNameWidget()
+{
+    const int nameWidth = m_fullNameLabel->fontMetrics().boundingRect(m_fullNameStr).width();
     const int labelMaxWidth = width() - 20;
 
     if (nameWidth > labelMaxWidth) {
-        const QString &str = m_userName->fontMetrics().elidedText(userName, Qt::ElideRight, labelMaxWidth);
-        m_userName->setText(str);
+        const QString &str = m_fullNameLabel->fontMetrics().elidedText(m_fullNameStr, Qt::ElideRight, labelMaxWidth);
+        m_fullNameLabel->setText(str);
     } else {
-        m_userName->setText(userName);
+        m_fullNameLabel->setText(m_fullNameStr);
     }
 }
 
-void UserNameWidget::updateDisplayName(const QString &displayName)
+void UserNameWidget::updateFullName(const QString &fullName)
+{
+    if (fullName == m_fullNameStr)
+        return;
+
+    m_fullNameStr = fullName;
+    updateUserNameWidget();
+    updateDisplayNameWidget();
+}
+
+/**
+ * @brief 如果在DConfig中配置了showUserName为true，那么displayName显示用户名，
+ * 否则显示全名，如果全名为空，则显示用户名
+ *
+ */
+void UserNameWidget::updateDisplayNameWidget()
 {
     if (!m_displayNameLabel)
         return;
 
+    QString displayName = m_showUserName ? m_userNameStr : (m_fullNameStr.isEmpty() ? m_userNameStr : m_fullNameStr);
     int nameWidth = m_displayNameLabel->fontMetrics().boundingRect(displayName).width();
     int labelMaxWidth = width() - 20;
 
@@ -111,10 +137,10 @@ void UserNameWidget::updateDisplayName(const QString &displayName)
 int UserNameWidget::heightHint() const
 {
     int height = 0;
-    if (m_userPic)
+    if (m_userPicLabel)
         height += USER_PIC_HEIGHT;
-    if (m_userName)
-        height += m_userName->fontMetrics().height();
+    if (m_fullNameLabel)
+        height += m_fullNameLabel->fontMetrics().height();
     if (m_displayNameLabel)
         height += m_displayNameLabel->fontMetrics().height();
 
@@ -124,8 +150,10 @@ int UserNameWidget::heightHint() const
 void UserNameWidget::OnDConfigPropertyChanged(const QString &key, const QVariant &value)
 {
     if (key == SHOW_USER_NAME) {
-        const bool showUserName = value.toBool();
-        m_userName->setVisible(showUserName);
-        m_userPic->setVisible(showUserName);
+        m_showUserName = value.toBool();
+        m_fullNameLabel->setVisible(m_showUserName);
+        m_userPicLabel->setVisible(m_showUserName);
+        updateUserNameWidget();
+        updateDisplayNameWidget();
     }
 }
