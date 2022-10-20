@@ -85,7 +85,7 @@ void AuthWidget::initUI()
     m_expiredStateLabel->setAlignment(Qt::AlignHCenter);
     m_expiredStateLabel->hide();
     /* 解锁按钮 */
-    m_lockButton = new DFloatingButton(this);
+    m_lockButton = new TransparentButton(this);
     if (m_model->appType() == Lock) {
         m_lockButton->setIcon(DStyle::SP_LockElement);
     } else {
@@ -341,6 +341,10 @@ void AuthWidget::setLockButtonType(const int type)
         }
         break;
     }
+
+    // 按钮不可用时颜色还是使用活动色，然后需要40%透明
+    QColor color = lockPalette.color(QPalette::Active, QPalette::Highlight);
+    lockPalette.setColor(QPalette::Disabled, QPalette::Highlight, color);
     m_lockButton->setPalette(lockPalette);
 }
 

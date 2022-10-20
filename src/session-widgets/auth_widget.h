@@ -13,6 +13,7 @@
 #include <DClipEffectWidget>
 #include <DFloatingButton>
 #include <DLabel>
+#include <DStyleOptionButton>
 
 #include <QWidget>
 #include <QResizeEvent>
@@ -32,6 +33,33 @@ class SessionBaseModel;
 class UserAvatar;
 
 DWIDGET_USE_NAMESPACE
+
+class TransparentButton : public DFloatingButton
+{
+    Q_OBJECT
+
+public:
+    explicit TransparentButton(QWidget *parent = nullptr)
+        : DFloatingButton (parent) {
+
+    };
+
+protected:
+    void paintEvent(QPaintEvent *event) override {
+        Q_UNUSED(event)
+
+        // 按钮不可用时颜色还是使用活动色，然后需要40%透明
+        DStylePainter p(this);
+        DStyleOptionButton opt;
+        initStyleOption(&opt);
+        if (isEnabled()) {
+            p.setOpacity(1.0);
+        } else {
+            p.setOpacity(0.4);
+        }
+        p.drawControl(DStyle::CE_IconButton, opt);
+    };
+};
 
 class AuthWidget : public QWidget
 {
@@ -97,7 +125,7 @@ protected:
     FrameDataBind *m_frameDataBind;
 
     DBlurEffectWidget *m_blurEffectWidget; // 模糊背景
-    DFloatingButton *m_lockButton;         // 解锁按钮
+    TransparentButton *m_lockButton;         // 解锁按钮
     UserAvatar *m_userAvatar;              // 用户头像
 
     DLabel *m_expiredStateLabel;           // 密码过期提示
