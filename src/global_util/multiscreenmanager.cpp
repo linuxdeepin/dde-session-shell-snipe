@@ -168,7 +168,7 @@ void MultiScreenManager::onDisplayModeChanged(const QString &)
         }
     } else {
         for (QScreen *screen : qApp->screens()) {
-            if (!m_frames[screen])
+            if (!m_frames.contains(screen))
                 onScreenAdded(screen);
         }
     }
