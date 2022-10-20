@@ -85,7 +85,7 @@ void AuthWidget::initUI()
     m_expiredStateLabel->setAlignment(Qt::AlignHCenter);
     m_expiredStateLabel->hide();
     /* 解锁按钮 */
-    m_lockButton = new DFloatingButton(this);
+    m_lockButton = new TransparentButton(this);
     if (m_model->appType() == Lock) {
         m_lockButton->setIcon(DStyle::SP_LockElement);
     } else {
@@ -334,6 +334,9 @@ void AuthWidget::setLockButtonType(const int type)
         lockPalette.setColor(QPalette::Highlight, ShutdownColor);
         break;
     default:
+//        QColor color = lockPalette.color(QPalette::Highlight);
+//        color.setAlpha(120);
+//        lockPalette.setColor(QPalette::Highlight, color);
         if (m_model->appType() == Login) {
             m_lockButton->setIcon(DStyle::SP_ArrowNext);
         } else {
