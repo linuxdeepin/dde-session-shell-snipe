@@ -334,9 +334,6 @@ void AuthWidget::setLockButtonType(const int type)
         lockPalette.setColor(QPalette::Highlight, ShutdownColor);
         break;
     default:
-//        QColor color = lockPalette.color(QPalette::Highlight);
-//        color.setAlpha(120);
-//        lockPalette.setColor(QPalette::Highlight, color);
         if (m_model->appType() == Login) {
             m_lockButton->setIcon(DStyle::SP_ArrowNext);
         } else {
