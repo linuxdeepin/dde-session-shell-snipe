@@ -51,7 +51,7 @@ protected:
         DStylePainter p(this);
         DStyleOptionButton opt;
         initStyleOption(&opt);
-        p.setOpacity(0.2);
+        p.setOpacity(0.3);
         p.drawControl(DStyle::CE_IconButton, opt);
     };
 };
