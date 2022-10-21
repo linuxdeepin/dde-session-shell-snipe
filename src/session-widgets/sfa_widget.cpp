@@ -127,8 +127,13 @@ void SFAWidget::setAuthType(const int type)
 {
     qDebug() << Q_FUNC_INFO << "SFAWidget::setAuthType:" << type;
     int authType = type;
+    const bool useCustomAuth = m_model->appType() == AuthCommon::Lock         ||
+                             ( m_model ->appType() == AuthCommon::Login       &&
+                               !m_model->currentUser()->isNoPasswordLogin()   &&
+                               !m_model->currentUser()->isAutomaticLogin());
+
     if (dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).size() > 0
-            && !m_model->currentUser()->isNoPasswordLogin() && !m_model->currentUser()->isAutomaticLogin()) {
+            && useCustomAuth) {
         authType |= AT_Custom;
         initCustomAuth();
 
