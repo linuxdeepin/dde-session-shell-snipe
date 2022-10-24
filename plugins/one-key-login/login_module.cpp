@@ -279,6 +279,7 @@ std::string LoginModule::onMessage(const std::string &message)
         retDataObj["ShowLockButton"] = false;
         retDataObj["DefaultAuthLevel"] = DefaultAuthLevel::StrongDefault;
         retDataObj["AuthType"] = AuthType::AT_Custom;
+        retDataObj["SupportDefaultUser"] = false;
 
         retObj["Data"] = retDataObj;
     } else if (cmdType == "StartAuth"){

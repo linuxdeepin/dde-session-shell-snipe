@@ -49,6 +49,7 @@ public:
 
     void notifyAuthState(AuthCommon::AuthType authType, AuthCommon::AuthState state);
     void setLimitsInfo(const QString limitsInfoStr);
+    static bool supportDefaultUser(dss::module::LoginModuleInterface *module);
 
 protected:
     bool event(QEvent *e) override;
@@ -61,6 +62,7 @@ private:
     void updateConfig();
     void changeAuthType(AuthCommon::AuthType type);
     static AuthCustom *getAuthCustomObj(void *app_data);
+    static QJsonObject getDataObj(const QString &jsonStr);
 
 Q_SIGNALS:
     void requestCheckAccount(const QString &account);

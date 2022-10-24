@@ -127,13 +127,7 @@ void SFAWidget::setAuthType(const int type)
 {
     qDebug() << Q_FUNC_INFO << "SFAWidget::setAuthType:" << type;
     int authType = type;
-    const bool useCustomAuth = m_model->appType() == AuthCommon::Lock         ||
-                             ( m_model ->appType() == AuthCommon::Login       &&
-                               !m_model->currentUser()->isNoPasswordLogin()   &&
-                               !m_model->currentUser()->isAutomaticLogin());
-
-    if (dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).size() > 0
-            && useCustomAuth) {
+    if (useCustomAuth()) {
         authType |= AT_Custom;
         initCustomAuth();
 
@@ -165,12 +159,10 @@ void SFAWidget::setAuthType(const int type)
         m_frameDataBind->clearValue("SFCustomAuthMsg");
 
         // fix152437，避免初始化其他认证方式图像和nameLabel为隐藏
-        if (!m_userAvatar->isVisible())
-            m_userAvatar->setVisible(true);
-        if (!m_userNameWidget->isVisible())
+        m_userAvatar->setVisible(true);
+        m_lockButton->setVisible(true);
+        if (m_user->type() != User::Default)
             m_userNameWidget->setVisible(true);
-        if (!m_lockButton->isVisible())
-            m_lockButton->setVisible(true);
     }
 
     if (type != AT_None || !m_customAuth || m_user->type() != User::Default) {
@@ -1107,4 +1099,35 @@ void SFAWidget::onRequestChangeAuth(const int authType)
     QAbstractButton *btn = m_chooseAuthButtonBox->button(authType);
     if (btn)
         emit btn->toggled(true);
+}
+
+bool SFAWidget::useCustomAuth() const
+{
+    // 无密码登录或者自动登录不使用自定义认证
+    const bool isNoPasswordLoginEnabled = m_model->appType() == AuthCommon::Lock         ||
+                             ( m_model ->appType() == AuthCommon::Login       &&
+                               !m_model->currentUser()->isNoPasswordLogin()   &&
+                               !m_model->currentUser()->isAutomaticLogin());
+    if (!isNoPasswordLoginEnabled) {
+        qInfo() << "Automatic login is enabled";
+        return false;
+    }
+
+    // 是否加载了认证插件
+    const QList<dss::module::BaseModuleInterface *> interfaces = dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).values();
+    if (interfaces.isEmpty()) {
+        qInfo() << "There is no login plugin";
+        return false;
+    }
+
+    // 判断认证插件是否支持"..."用户
+    if (m_user && m_user->type() == User::Default) {
+        const bool supportDefaultUser = AuthCustom::supportDefaultUser(dynamic_cast<dss::module::LoginModuleInterface *>(interfaces.first()));
+        if (!supportDefaultUser) {
+            qInfo() << "Do not support default user";
+            return false;
+        }
+    }
+
+    return true;
 }

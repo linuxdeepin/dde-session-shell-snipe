@@ -283,21 +283,10 @@ void AuthCustom::updateConfig()
     message["CmdType"] = "GetConfigs";
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
-
-    QJsonParseError jsonParseError;
-    const QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray::fromStdString(result), &jsonParseError);
-    if (jsonParseError.error != QJsonParseError::NoError || resultDoc.isEmpty()) {
-        qWarning() << "Result json parse error";
+    QJsonObject dataObj = getDataObj(QString::fromStdString(result));
+    if (dataObj.isEmpty())
         return;
-    }
 
-    QJsonObject resultObj = resultDoc.object();
-    if (!resultObj.contains("Data")) {
-        qWarning() << "Result does't contains the 'data' field";
-        return;
-    }
-
-    QJsonObject dataObj = resultObj["Data"].toObject();
     m_showAvatar = dataObj["ShowAvatar"].toBool(m_showAvatar);
     m_showUserName = dataObj["ShowUserName"].toBool(m_showUserName);
     m_showSwitchButton = dataObj["ShowSwitchButton"].toBool(m_showSwitchButton);
@@ -349,7 +338,6 @@ void AuthCustom::notifyAuthState(AuthCommon::AuthType authType, AuthCommon::Auth
     message["AuthType"] = authType;
     message["AuthState"] = state;
     m_module->onMessage(toJson(message).toStdString());
-
 }
 
 void AuthCustom::setLimitsInfo(const QString limitsInfoStr)
@@ -365,4 +353,39 @@ void AuthCustom::setLimitsInfo(const QString limitsInfoStr)
     message["Data"] = retDataObj;
     std::string result = m_module->onMessage(toJson(message).toStdString());
     qInfo() << "Plugin result: " << QString::fromStdString(result);
+}
+
+QJsonObject AuthCustom::getDataObj(const QString &jsonStr)
+{
+    QJsonParseError jsonParseError;
+    const QJsonDocument &resultDoc = QJsonDocument::fromJson(jsonStr.toLocal8Bit(), &jsonParseError);
+    if (jsonParseError.error != QJsonParseError::NoError || resultDoc.isEmpty()) {
+        qWarning() << "Result json parse error";
+        return QJsonObject();
+    }
+
+    const QJsonObject &rootObj = resultDoc.object();
+    if (!rootObj.contains("Data")) {
+        qWarning() << "Result does't contains the 'data' field";
+        return QJsonObject();
+    }
+
+    return rootObj["Data"].toObject();
+}
+
+bool AuthCustom::supportDefaultUser(dss::module::LoginModuleInterface *module)
+{
+    if (!module)
+        return false;
+
+    qInfo() << Q_FUNC_INFO;
+    QJsonObject message;
+    message["CmdType"] = "GetConfigs";
+    const std::string &result = module->onMessage(toJson(message).toStdString());
+    qInfo() << "Plugin result: " << QString::fromStdString(result);
+    const QJsonObject &dataObj = getDataObj(QString::fromStdString(result));
+    if (dataObj.isEmpty())
+        return true;
+
+    return dataObj["SupportDefaultUser"].toBool(true);
 }

@@ -71,6 +71,7 @@ private:
     void updateSpaceItem();
     void updateFocus();
     void initAccount();
+    bool useCustomAuth() const;
 
 private:
     QVBoxLayout *m_mainLayout;
