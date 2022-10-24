@@ -921,6 +921,8 @@ void SFAWidget::replaceWidget(AuthModule *authModule)
     } else {
         m_lockButton->setEnabled(false);
     }
+
+    setFocusProxy(authModule);
 }
 
 void SFAWidget::onRetryButtonVisibleChanged(bool visible)

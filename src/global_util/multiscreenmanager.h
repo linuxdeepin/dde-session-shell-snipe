@@ -25,7 +25,7 @@ public:
     explicit MultiScreenManager(QObject *parent = nullptr);
 
     void register_for_mutil_screen(std::function<QWidget* (QScreen *, int)> function);
-    void startRaiseContentFrame();
+    void startRaiseContentFrame(const bool visible = true);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

@@ -59,9 +59,11 @@ void MultiScreenManager::register_for_mutil_screen(std::function<QWidget *(QScre
     }
 }
 
-void MultiScreenManager::startRaiseContentFrame()
+void MultiScreenManager::startRaiseContentFrame(const bool visible)
 {
-    m_raiseContentFrameTimer->start();
+    if (visible) {
+        m_raiseContentFrameTimer->start();
+    }
 }
 
 bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
