@@ -466,7 +466,7 @@ int MFAWidget::getTopSpacing() const
 
 void MFAWidget::resizeEvent(QResizeEvent *event)
 {
-    updateBlurEffectGeometry();
+    QTimer::singleShot(0, this, &MFAWidget::updateBlurEffectGeometry);
 
     AuthWidget::resizeEvent(event);
 }

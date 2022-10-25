@@ -920,6 +920,8 @@ void SFAWidget::replaceWidget(AuthModule *authModule)
     }
 
     setFocusProxy(authModule);
+    // 加入事件循环中处理，否则其它控件的geometry还未设置完成，导致UI显示异常
+    QTimer::singleShot(0, this, &SFAWidget::updateBlurEffectGeometry);
 }
 
 void SFAWidget::onRetryButtonVisibleChanged(bool visible)
@@ -975,7 +977,7 @@ int SFAWidget::getTopSpacing() const
 void SFAWidget::resizeEvent(QResizeEvent *event)
 {
     updateSpaceItem();
-    updateBlurEffectGeometry();
+    QTimer::singleShot(0, this, &SFAWidget::updateBlurEffectGeometry);
 
     AuthWidget::resizeEvent(event);
 }
@@ -994,8 +996,11 @@ void SFAWidget::updateSpaceItem()
         m_bioBottomSpacingHolder->changeSize(0, 0);
         m_bioAuthStatePlaceHolder->changeSize(0, 0);
     }
-
+    // QSpacerItem 调用了changeSize后需要其所属的layout调用一下invalidate，详见是qt的说明:
+    // Note that if changeSize() is called after the spacer item has been added to a layout,
+    // it is necessary to invalidate the layout in order for the spacer item's new size to take effect.
     m_mainLayout->invalidate();
+
     emit updateParentLayout();
 }
 
