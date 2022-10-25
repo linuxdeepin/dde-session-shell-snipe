@@ -301,6 +301,9 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
         setResetPasswordMessageVisible(false);
         updateResetPasswordUI();
     }
+
+    if (lockStateChanged)
+        emit notifyLockedStateChanged(m_limitsInfo->locked);
 }
 
 /**

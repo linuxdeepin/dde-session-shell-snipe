@@ -50,6 +50,7 @@ protected:
 
 protected Q_SLOTS:
     void updateBlurEffectGeometry();
+    void onActiveAuth(int authType);
 
 private:
     void initUI();

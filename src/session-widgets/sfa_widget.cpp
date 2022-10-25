@@ -393,9 +393,7 @@ void SFAWidget::initSingleAuth()
     replaceWidget(m_singleAuth);
     m_frameDataBind->updateValue("SFAType", AT_PAM);
 
-    connect(m_singleAuth, &AuthSingle::activeAuth, this, [ this ] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_PAM);
-    });
+    connect(m_singleAuth, &AuthSingle::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_singleAuth, &AuthSingle::authFinished, this, [this](const int authState) {
         if (authState == AS_Success) {
             m_user->setLastAuthType(AT_PAM);
@@ -467,9 +465,7 @@ void SFAWidget::initPasswdAuth()
     m_passwordAuth->setCurrentUid(m_model->currentUser()->uid());
     m_passwordAuth->hide();
 
-    connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_user->name(), AT_Password);
-    });
+    connect(m_passwordAuth, &AuthPassword::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const int authState) {
         checkAuthResult(AT_Password, authState);
     });
@@ -484,6 +480,16 @@ void SFAWidget::initPasswdAuth()
         m_lockButton->setEnabled(false);
         emit sendTokenToAuth(m_user->name(), AT_Password, text);
     });
+
+    if (AppType::Login == m_model->appType()) {
+        connect(m_passwordAuth, &AuthPassword::notifyLockedStateChanged, this, [this] (bool isLocked) {
+            m_chooseAuthButtonBox->setEnabled(!isLocked);
+            if (isLocked) {
+                onRequestChangeAuth(AT_Password);
+            }
+        });
+    }
+
     connect(m_lockButton, &QPushButton::clicked, m_passwordAuth, &AuthPassword::requestAuthenticate);
     connect(m_capslockMonitor, &KeyboardMonitor::capslockStatusChanged, m_passwordAuth, &AuthPassword::setCapsLockVisible);
     /* 输入框数据同步 */
@@ -542,9 +548,7 @@ void SFAWidget::initFingerprintAuth()
     m_fingerprintAuth->setAuthFactorType(DDESESSIONCC::SingleAuthFactor);
     m_fingerprintAuth->setAuthStateLabel(m_biometricAuthState);
 
-    connect(m_fingerprintAuth, &AuthFingerprint::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Fingerprint);
-    });
+    connect(m_fingerprintAuth, &AuthFingerprint::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_fingerprintAuth, &AuthFingerprint::authFinished, this, [this](const int authState) {
         checkAuthResult(AT_Fingerprint, authState);
     });
@@ -584,9 +588,7 @@ void SFAWidget::initUKeyAuth()
     m_ukeyAuth = new AuthUKey(this);
     m_ukeyAuth->hide();
 
-    connect(m_ukeyAuth, &AuthUKey::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Ukey);
-    });
+    connect(m_ukeyAuth, &AuthUKey::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_ukeyAuth, &AuthUKey::authFinished, this, [this](const int authState) {
         checkAuthResult(AT_Ukey, authState);
     });
@@ -655,9 +657,7 @@ void SFAWidget::initFaceAuth()
         onRetryButtonVisibleChanged(false);
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
     });
-    connect(m_faceAuth, &AuthFace::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
-    });
+    connect(m_faceAuth, &AuthFace::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_faceAuth, &AuthFace::authFinished, this, [this](const int authState) {
         checkAuthResult(AT_Face, authState);
     });
@@ -717,9 +717,7 @@ void SFAWidget::initIrisAuth()
         onRetryButtonVisibleChanged(false);
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
     });
-    connect(m_irisAuth, &AuthIris::activeAuth, this, [ this ] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
-    });
+    connect(m_irisAuth, &AuthIris::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_irisAuth, &AuthIris::authFinished, this, [this](const int authState) {
         checkAuthResult(AT_Iris, authState);
     });
@@ -1088,15 +1086,17 @@ void SFAWidget::initAccount()
 
 void SFAWidget::onRequestChangeAuth(const int authType)
 {
-    qInfo() << Q_FUNC_INFO << "authType" << authType << "m_chooseAuthButtonBox->isEnabled()" << m_chooseAuthButtonBox->isEnabled()
-               << "m_currentAuthType" << m_currentAuthType;
+    qInfo() << Q_FUNC_INFO
+            << ", authType" << authType
+            << ", curren auth type: " << m_currentAuthType;
 
     if (!m_chooseAuthButtonBox->isEnabled()) {
+        qWarning() << "Choose auth button box is disenabled";
         return;
     }
 
     if (!m_authButtons.contains(authType)) {
-        qDebug() << "onRequestChangeAuth no contain";
+        qWarning() << "Auth type is invalid";
         m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
         return ;
     }
@@ -1135,4 +1135,14 @@ bool SFAWidget::useCustomAuth() const
     }
 
     return true;
+}
+
+void SFAWidget::onActiveAuth(int authType)
+{
+    if (m_currentAuthType != authType) {
+        qWarning() << "Active authentication mismatch the current authentication type";
+        return;
+    }
+
+    emit requestStartAuthentication(m_model->currentUser()->name(), authType);
 }

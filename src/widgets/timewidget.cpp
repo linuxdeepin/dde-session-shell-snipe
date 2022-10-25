@@ -18,6 +18,9 @@ const QStringList shortTimeFormat = { "h:mm", "hh:mm"};
 
 TimeWidget::TimeWidget(QWidget *parent)
     : QWidget(parent)
+    , m_timeLabel(nullptr)
+    , m_dateLabel(nullptr)
+    , m_refreshTimer(nullptr)
     , m_use24HourFormat(true)
 {
     QFont timeFont;

@@ -179,6 +179,9 @@ QSize SessionBaseWindow::getCenterContentSize()
 
 void SessionBaseWindow::resizeEvent(QResizeEvent *event)
 {
+    if (!m_centerTopWidget || !m_centerTopFrame || !m_mainLayout)
+        return;
+
     const int margin = calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
     m_mainLayout->setContentsMargins(0, margin, 0, margin);
 
@@ -206,6 +209,9 @@ int SessionBaseWindow::calcCurrentHeight(int height) const
 
 int SessionBaseWindow::calcTopSpacing(int authWidgetTopSpacing) const
 {
+    if (!m_centerTopWidget)
+        return qMax(15, authWidgetTopSpacing - calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT));
+
     const int topWidgetHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
     return qMax(15, authWidgetTopSpacing - topWidgetHeight);
 }

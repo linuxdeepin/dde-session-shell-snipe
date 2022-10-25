@@ -49,6 +49,7 @@ signals:
     void requestChangeFocus();                 // 切换焦点
     void requestShowKeyboardList();            // 显示键盘布局列表
     void resetPasswordMessageVisibleChanged(const bool isVisible);
+    void notifyLockedStateChanged(bool isLocked);
 
 public slots:
     void setResetPasswordMessageVisible(const bool isVisible);

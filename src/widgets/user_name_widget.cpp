@@ -87,6 +87,7 @@ void UserNameWidget::updateUserName(const QString &userName)
 
     m_userNameStr = userName;
     updateUserNameWidget();
+    updateDisplayNameWidget();
 }
 
 void UserNameWidget::updateUserNameWidget()
