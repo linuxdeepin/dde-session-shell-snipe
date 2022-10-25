@@ -411,12 +411,11 @@ void LoginModule::slotPrepareForSleep(bool active)
         // 等待切换到插件认证完成后再发起多用户认证
         QTimer::singleShot(300, this, [this] {
             startCallHuaweiFingerprint();
+            m_waitAcceptSignalTimer->setInterval(800);
+            m_waitAcceptSignalTimer->start();
         });
         if (m_spinner)
             m_spinner->start();
-        // s3/s4机器认证结果返回可能比较久,所以这里设置等待结果的时间为最大2500ms保证结果一定返回了
-        m_waitAcceptSignalTimer->setInterval(2500);
-        m_waitAcceptSignalTimer->start();
     } else {
         //fix: 多用户时，第一个用户直接锁屏，然后待机唤醒，在直接切换到另一个用户时，m_login1SessionSelf没有激活，见159949
         sendAuthTypeToSession(AT_Fingerprint);
