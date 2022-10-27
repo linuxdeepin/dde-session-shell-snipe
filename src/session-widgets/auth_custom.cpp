@@ -164,7 +164,7 @@ void AuthCustom::authCallBack(const AuthCallbackData *callbackData, void *app_da
 
 std::string AuthCustom::messageCallback(const std::string &message, void *app_data)
 {
-    qDebug() << Q_FUNC_INFO << "Recieved message: " << QString::fromStdString(message);
+    qDebug() << Q_FUNC_INFO << "Received message: " << QString::fromStdString(message);
     QJsonParseError jsonParseError;
     const QJsonDocument messageDoc = QJsonDocument::fromJson(QByteArray::fromStdString(message), &jsonParseError);
 
@@ -366,7 +366,7 @@ QJsonObject AuthCustom::getDataObj(const QString &jsonStr)
 
     const QJsonObject &rootObj = resultDoc.object();
     if (!rootObj.contains("Data")) {
-        qWarning() << "Result does't contains the 'data' field";
+        qWarning() << "Result doesn't contains the 'data' field";
         return QJsonObject();
     }
 
