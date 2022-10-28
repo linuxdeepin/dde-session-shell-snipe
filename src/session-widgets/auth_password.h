@@ -13,6 +13,7 @@
 #include <DFloatingMessage>
 #include <DSuggestButton>
 #include <DMessageManager>
+#include <DAlertControl>
 
 #define Password_Auth QStringLiteral(":/misc/images/auth/password.svg")
 //const QString Password_Auth = ":/misc/images/auth/password.svg";
@@ -65,6 +66,8 @@ private:
     void showPasswordHint();
     void setPasswordHintBtnVisible(const bool isVisible);
     bool isUserAccountBinded();
+    void showAlertMessage(const QString &text);
+    void hidePasswordHintWidget();
 
 private:
     DLabel *m_capsLock;             // 大小写状态
@@ -75,6 +78,7 @@ private:
     DFloatingMessage *m_resetPasswordFloatingMessage;
     uid_t m_currentUid; // 当前用户uid
     QTimer *m_bindCheckTimer;
+    DAlertControl *m_passwordHintWidget;
 };
 
 #endif // AUTHPASSWORD_H
