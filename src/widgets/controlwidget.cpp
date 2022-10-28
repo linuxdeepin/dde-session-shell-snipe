@@ -102,7 +102,7 @@ void ControlWidget::initKeyboardLayoutList()
 
     const QStringList languageList = language.split(";");
     if (!languageList.isEmpty())
-        static_cast<QAbstractButton *>(m_keyboardBtn)->setText(languageList.at(0));
+        static_cast<QAbstractButton *>(m_keyboardBtn)->setText(languageList.at(0).toUpper());
 
     // 无特效模式时，让窗口圆角
     m_arrowRectWidget->setProperty("_d_radius_force", true);
@@ -557,7 +557,7 @@ void ControlWidget::setKeyboardType(const QString &str)
     if (currentText.contains("/"))
         currentText = currentText.split("/").last();
 
-    static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
+    static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText.toUpper());
 
     // 更新键盘布局列表
     m_kbLayoutListView->updateList(str);
@@ -583,7 +583,7 @@ void ControlWidget::onItemClicked(const QString &str)
     if (currentText.contains("/"))
         currentText = currentText.split("/").last();
 
-    static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
+    static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText.toUpper());
     m_arrowRectWidget->hide();
     m_curUser->setKeyboardLayout(str);
 }

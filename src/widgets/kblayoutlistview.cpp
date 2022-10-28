@@ -60,6 +60,8 @@ void KBLayoutListView::initUI()
     setViewportMargins(0, 0, 0, 0);
     setItemSpacing(0);
     setItemSize(QSize(200, 34));
+    setBackgroundType(DStyledItemDelegate::BackgroundType::ClipCornerBackground);
+    setSelectionMode(QAbstractItemView::NoSelection);
 
     QMargins itemMargins(this->itemMargins());
     itemMargins.setLeft(8);
