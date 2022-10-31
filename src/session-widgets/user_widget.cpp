@@ -56,7 +56,10 @@ void UserWidget::initUI()
     m_loginState->setAccessibleName("LoginState");
     m_loginState->setPixmap(pixmap);
     m_loginState->setVisible(m_user->isLogin());
-    nameLayout->addWidget(m_loginState, 0, Qt::AlignVCenter | Qt::AlignRight);
+    QVBoxLayout *loginStateLayout = new QVBoxLayout(m_displayNameWidget);
+    loginStateLayout->addSpacing(4);
+    loginStateLayout->addWidget(m_loginState);
+    nameLayout->addLayout(loginStateLayout, 0);
 
     m_displayNameLabel->setAccessibleName("NameLabel");
     m_displayNameLabel->setTextFormat(Qt::TextFormat::PlainText);
