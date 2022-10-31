@@ -9,6 +9,7 @@
 
 #include <DHiDPIHelper>
 #include <DLabel>
+#include <DPaletteHelper>
 
 #include <QKeyEvent>
 #include <QTimer>
@@ -40,6 +41,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     , m_resetPasswordMessageVisible(false)
     , m_resetPasswordFloatingMessage(nullptr)
     , m_bindCheckTimer(nullptr)
+    , m_passwordHintWidget(nullptr)
 {
     setObjectName(QStringLiteral("AuthPassword"));
     setAccessibleName(QStringLiteral("AuthPassword"));
@@ -119,6 +121,7 @@ void AuthPassword::initConnections()
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
         m_lineEdit->hideAlertMessage();
+        hidePasswordHintWidget();
         m_lineEdit->setAlert(false);
         emit lineEditTextChanged(text);
     });
@@ -136,6 +139,7 @@ void AuthPassword::reset()
     m_lineEdit->clear();
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
+    hidePasswordHintWidget();
     setLineEditEnabled(true);
     setLineEditInfo(tr("Password"), PlaceHolderText);
 }
@@ -160,6 +164,7 @@ void AuthPassword::setAuthState(const int state, const QString &result)
         setLineEditInfo(tr("Verification successful"), PlaceHolderText);
         m_showPrompt = true;
         m_lineEdit->hideAlertMessage();
+        hidePasswordHintWidget();
         emit authFinished(state);
         emit requestChangeFocus();
         break;
@@ -308,7 +313,7 @@ void AuthPassword::setLineEditInfo(const QString &text, const TextType type)
 {
     switch (type) {
     case AlertText:
-        m_lineEdit->showAlertMessage(text, this, 5000);
+        showAlertMessage(text);
         m_lineEdit->setAlert(true);
         break;
     case InputText: {
@@ -392,7 +397,19 @@ void AuthPassword::updateUnlockPrompt()
  */
 void AuthPassword::showPasswordHint()
 {
-    m_lineEdit->showAlertMessage(m_passwordHint, this, 5000);
+    // FIXME dtk如果后期提供接口设置alert的调色板，那么直接设置即可
+    // 在这里将调色板的TextWarning改成黑色，让DAlertControl继承父类调色板，从而能显示黑色的文字
+    DPalette palette = DPaletteHelper::instance()->palette(this->topLevelWidget());
+    palette.setColor(DPalette::TextWarning, Qt::black);
+    DPaletteHelper::instance()->setPalette(this->topLevelWidget(), palette);
+
+    // 每次显示都需要重新生成对象，因为无法修改其内部私有对象的调色板，只能在创建对象的时候从父对象继承
+    if (!m_passwordHintWidget) {
+        m_passwordHintWidget = new DAlertControl(m_lineEdit->lineEdit());
+        QTimer::singleShot(5000, this, &AuthPassword::hidePasswordHintWidget);
+    }
+    m_passwordHintWidget->showAlertMessage(m_passwordHint, m_lineEdit->lineEdit(), 5000);
+    m_lineEdit->hideAlertMessage();
 }
 
 /**
@@ -589,6 +606,7 @@ void AuthPassword::hideEvent(QHideEvent *event)
 {
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
+    hidePasswordHintWidget();
     setLineEditInfo(tr("Password"), PlaceHolderText);
     closeResetPasswordMessage();
     AuthModule::hideEvent(event);
@@ -616,4 +634,21 @@ void AuthPassword::setAuthStatueVisible(bool visible)
 {
     m_showAuthState = visible;
     m_authStateLabel->setVisible(visible && !hasFocus());
+}
+
+void AuthPassword::showAlertMessage(const QString &text)
+{
+    hidePasswordHintWidget();
+    m_lineEdit->showAlertMessage(text, this, 5000);
+}
+
+void AuthPassword::hidePasswordHintWidget()
+{
+    if (m_passwordHintWidget) {
+        m_passwordHintWidget->deleteLater();
+        m_passwordHintWidget = nullptr;
+    }
+
+    // 恢复调色板
+    DPaletteHelper::instance()->resetPalette(this->topLevelWidget());
 }

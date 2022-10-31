@@ -72,7 +72,7 @@ void UserWidget::initUI()
     DConfigHelper::instance()->bind(this, SHOW_USER_NAME);
     if (DConfigHelper::instance()->getConfig(SHOW_USER_NAME, false).toBool()) {
         m_userNameWidget = new UserNameWidget(false, this);
-        m_userNameWidget->updateUserName(m_user->name());
+        m_userNameWidget->updateFullName(m_user->fullName());
         setFixedHeight(heightHint());
     }
     /* 模糊背景 */
@@ -156,7 +156,8 @@ void UserWidget::setAvatar(const QString &avatar)
  */
 void UserWidget::updateUserNameLabel()
 {
-    const QString &name = m_user->displayName();
+    const bool showUserName = DConfigHelper::instance()->getConfig(SHOW_USER_NAME, false).toBool();
+    const QString &name = showUserName ? m_user->name() : m_user->displayName();
     int nameWidth = m_displayNameLabel->fontMetrics().boundingRect(name).width();
     int labelMaxWidth = width() - 25 * 2;
 
@@ -167,7 +168,7 @@ void UserWidget::updateUserNameLabel()
         m_displayNameLabel->setText(name);
     }
     if (m_userNameWidget)
-        m_userNameWidget->updateUserName(m_user->name());
+        m_userNameWidget->updateFullName(m_user->fullName());
 }
 
 /**
@@ -241,7 +242,7 @@ void UserWidget::OnDConfigPropertyChanged(const QString &key, const QVariant &va
             m_mainLayout->insertWidget(m_mainLayout->indexOf(m_displayNameWidget) + 1, m_userNameWidget);
             m_userNameWidget->show();
             if (m_user)
-                m_userNameWidget->updateUserName(m_user->name());
+                m_userNameWidget->updateFullName(m_user->fullName());
 
         } else {
             if (m_userNameWidget) {

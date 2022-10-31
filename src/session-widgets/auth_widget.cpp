@@ -299,7 +299,7 @@ void AuthWidget::setAvatar(const QString &avatar)
  */
 void AuthWidget::updateUserDisplayNameLabel()
 {
-    m_userNameWidget->updateDisplayName(m_user->displayName());
+    m_userNameWidget->updateFullName(m_user->fullName());
     m_userNameWidget->updateUserName(m_user->name());
 }
 
@@ -496,7 +496,6 @@ void AuthWidget::showEvent(QShowEvent *event)
     activateWindow();
     QWidget::showEvent(event);
 }
-
 
 void AuthWidget::resizeEvent(QResizeEvent *event)
 {
