@@ -11,6 +11,7 @@
 
 #include <DFloatingButton>
 #include <DBlurEffectWidget>
+#include <DStyleOptionButton>
 
 #include <QWidget>
 #include <QEvent>
@@ -44,30 +45,38 @@ class TipsWidget;
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
 
-class FlotingButton : public DFloatingButton
+class FloatingButton : public DFloatingButton
 {
     Q_OBJECT
 public:
-    explicit FlotingButton(QWidget *parent = nullptr)
+    enum IconState {
+        Normal,
+        Hover,
+        Press
+    };
+    explicit FloatingButton(QWidget *parent = nullptr)
         : DFloatingButton(parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(QStyle::StandardPixmap iconType = static_cast<QStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
+    explicit FloatingButton(QStyle::StandardPixmap iconType = static_cast<QStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
         : DFloatingButton(iconType, parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(DStyle::StandardPixmap iconType = static_cast<DStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
+    explicit FloatingButton(DStyle::StandardPixmap iconType = static_cast<DStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
         : DFloatingButton(iconType, parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(const QString &text, QWidget *parent = nullptr)
+    explicit FloatingButton(const QString &text, QWidget *parent = nullptr)
         : DFloatingButton(text, parent) {
         installEventFilter(this);
     }
-    FlotingButton(const QIcon& icon, const QString &text = QString(), QWidget *parent = nullptr)
+    FloatingButton(const QIcon& icon, const QString &text = QString(), QWidget *parent = nullptr)
         : DFloatingButton(icon, text, parent) {
         installEventFilter(this);
     }
+
+private:
+    IconState m_State = Normal;
 
 Q_SIGNALS:
     void requestShowMenu();
@@ -76,6 +85,7 @@ Q_SIGNALS:
 
 protected:
     bool eventFilter(QObject *watch, QEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 };
 class ControlWidget : public QWidget
 {
@@ -129,10 +139,10 @@ private:
     QList<DFloatingButton *> m_btnList;
 
     QHBoxLayout *m_mainLayout = nullptr;
-    DFloatingButton *m_virtualKBBtn = nullptr;
-    DFloatingButton *m_switchUserBtn = nullptr;
-    DFloatingButton *m_powerBtn = nullptr;
-    DFloatingButton *m_sessionBtn = nullptr;
+    FloatingButton *m_virtualKBBtn = nullptr;
+    FloatingButton *m_switchUserBtn = nullptr;
+    FloatingButton *m_powerBtn = nullptr;
+    FloatingButton *m_sessionBtn = nullptr;
     QLabel *m_sessionTip = nullptr;
     QWidget *m_tipWidget = nullptr;
 #ifndef SHENWEI_PLATFORM

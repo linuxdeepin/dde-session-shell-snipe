@@ -34,22 +34,51 @@ using namespace dss;
 DCORE_USE_NAMESPACE
 DGUI_USE_NAMESPACE
 
-bool FlotingButton::eventFilter(QObject *watch, QEvent *event)
+bool FloatingButton::eventFilter(QObject *watch, QEvent *event)
 {
     if (watch == this) {
         if (event->type() == QEvent::MouseButtonRelease) {
+            m_State = Normal;
             QMouseEvent *e = static_cast<QMouseEvent *>(event);
             if (e->button() == Qt::RightButton) {
                 Q_EMIT requestShowMenu();
             }
         } else if (event->type() == QEvent::Enter) {
+            m_State = Hover;
             Q_EMIT requestShowTips();
-        } else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonPress) {
+        } else if (event->type() == QEvent::Leave) {
+            m_State = Normal;
+            Q_EMIT requestHideTips();
+        } else if (event->type() == QEvent::MouseButtonPress) {
+            m_State = Press;
             Q_EMIT requestHideTips();
         }
     }
 
     return false;
+}
+
+void FloatingButton::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event)
+    DStylePainter p(this);
+    DStyleOptionButton opt;
+    initStyleOption(&opt);
+    switch (m_State)
+    {
+    case Hover:
+        p.setOpacity(1.0);
+        break;
+    case Press:
+        p.setOpacity(0.4);
+        break;
+    case Normal:
+        p.setOpacity(0.7);
+        break;
+    default:
+        break;
+    }
+    p.drawControl(DStyle::CE_IconButton, opt);
 }
 
 ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
@@ -140,14 +169,14 @@ void ControlWidget::initUI()
     m_mainLayout->setSpacing(26);
     m_mainLayout->setAlignment(Qt::AlignRight | Qt::AlignBottom);
 
-    m_sessionBtn = new DFloatingButton(this);
+    m_sessionBtn = new FloatingButton(this);
     m_sessionBtn->setIconSize(BUTTON_ICON_SIZE);
     m_sessionBtn->setFixedSize(BUTTON_SIZE);
     m_sessionBtn->setAutoExclusive(true);
     m_sessionBtn->setBackgroundRole(DPalette::Button);
     m_sessionBtn->hide();
 
-    m_keyboardBtn = new DFloatingButton(this);
+    m_keyboardBtn = new FloatingButton(this);
     m_keyboardBtn->setAccessibleName("KeyboardLayoutBtn");
     m_keyboardBtn->setFixedSize(BUTTON_SIZE);
     m_keyboardBtn->setAutoExclusive(true);
@@ -160,11 +189,12 @@ void ControlWidget::initUI()
     QPalette pal = m_keyboardBtn->palette();
     pal.setColor(QPalette::Window, QColor(Qt::red));
     pal.setColor(QPalette::HighlightedText, QColor(Qt::white));
+    pal.setColor(QPalette::Highlight, Qt::white);
     m_keyboardBtn->setPalette(pal);
 
-    m_virtualKBBtn = new DFloatingButton(this);
+    m_virtualKBBtn = new FloatingButton(this);
     m_virtualKBBtn->setAccessibleName("VirtualKeyboardBtn");
-    m_virtualKBBtn->setIcon(QIcon::fromTheme(":/img/screen_keyboard_normal.svg"));
+    m_virtualKBBtn->setIcon(QIcon::fromTheme(":/img/screen_keyboard_hover.svg"));
     m_virtualKBBtn->hide();
     m_virtualKBBtn->setIconSize(BUTTON_ICON_SIZE);
     m_virtualKBBtn->setFixedSize(BUTTON_SIZE);
@@ -172,18 +202,18 @@ void ControlWidget::initUI()
     m_virtualKBBtn->setBackgroundRole(DPalette::Button);
     m_virtualKBBtn->installEventFilter(this);
 
-    m_switchUserBtn = new DFloatingButton(this);
+    m_switchUserBtn = new FloatingButton(this);
     m_switchUserBtn->setAccessibleName("SwitchUserBtn");
-    m_switchUserBtn->setIcon(QIcon::fromTheme(":/img/bottom_actions/userswitch_normal.svg"));
+    m_switchUserBtn->setIcon(QIcon::fromTheme(":/img/bottom_actions/userswitch_hover.svg"));
     m_switchUserBtn->setIconSize(BUTTON_ICON_SIZE);
     m_switchUserBtn->setFixedSize(BUTTON_SIZE);
     m_switchUserBtn->setAutoExclusive(true);
     m_switchUserBtn->setBackgroundRole(DPalette::Button);
     m_switchUserBtn->installEventFilter(this);
 
-    m_powerBtn = new DFloatingButton(this);
+    m_powerBtn = new FloatingButton(this);
     m_powerBtn->setAccessibleName("PowerBtn");
-    m_powerBtn->setIcon(QIcon(":/img/bottom_actions/shutdown_normal.svg"));
+    m_powerBtn->setIcon(QIcon(":/img/bottom_actions/shutdown_hover.svg"));
     m_powerBtn->setIconSize(BUTTON_ICON_SIZE);
     m_powerBtn->setFixedSize(BUTTON_SIZE);
     m_powerBtn->setAutoExclusive(true);
@@ -250,7 +280,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
 
     trayModule->init();
 
-    FlotingButton *button = new FlotingButton(this);
+    FloatingButton *button = new FloatingButton(this);
     button->setIconSize(QSize(26, 26));
     button->setFixedSize(QSize(52, 52));
     button->setAutoExclusive(true);
@@ -272,7 +302,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
     // button的顺序与layout插入顺序保持一直
     m_btnList.insert(1, button);
 
-    connect(button, &FlotingButton::requestShowMenu, this, [ = ] {
+    connect(button, &FloatingButton::requestShowMenu, this, [ = ] {
         const QString menuJson = trayModule->itemContextMenu();
         if (menuJson.isEmpty())
             return;
@@ -308,14 +338,14 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         }
     });
 
-    connect(button, &FlotingButton::requestShowTips, this, [ = ] {
+    connect(button, &FloatingButton::requestShowTips, this, [ = ] {
         if (trayModule->itemTipsWidget()) {
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             m_tipsWidget->show(mapToGlobal(button->pos()).x() + button->width() / 2,mapToGlobal(button->pos()).y());
         }
     });
 
-    connect(button, &FlotingButton::requestHideTips, this, [ = ] {
+    connect(button, &FloatingButton::requestHideTips, this, [ = ] {
         if (m_tipsWidget->getContent())
             m_tipsWidget->getContent()->setVisible(false);
         m_tipsWidget->hide();
