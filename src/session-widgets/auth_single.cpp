@@ -440,9 +440,11 @@ void AuthSingle::showResetPasswordMessage()
 
     QPalette pa;
     pa.setColor(QPalette::Background, QColor(247, 247, 247, 51));
+    pa.setColor(QPalette::Highlight, Qt::white);
+    pa.setColor(QPalette::HighlightedText, Qt::black);
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
     m_resetPasswordFloatingMessage->setPalette(pa);
-    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("dialog-warning"));
+    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("gtk-dialog-error").pixmap(20, 20));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
