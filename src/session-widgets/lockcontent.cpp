@@ -116,7 +116,7 @@ void LockContent::initConnections()
     //刷新背景单独与onStatusChanged信号连接，避免在showEvent事件时调用onStatusChanged而重复刷新背景，减少刷新次数
     connect(m_model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
 
-    //在锁屏显示时，启动onborad进程，锁屏结束时结束onboard进程
+    // 在锁屏显示时，启动onborad进程，锁屏结束时结束onboard进程
     auto initVirtualKB = [&](bool hasvirtualkb) {
         if (hasvirtualkb && !m_virtualKB) {
             connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {

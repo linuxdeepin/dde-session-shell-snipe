@@ -117,8 +117,8 @@ void LockWorker::initConnections()
     });
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [=](bool active) {
-        qInfo() << "DBusLockService::ActiveChanged:" << active;
-        if (active) {
+        qInfo() << "DBusLockService::ActiveChanged:" << active << ", model visible: " << m_model->visible();
+        if (active && m_model->visible()) {
             createAuthentication(m_model->currentUser()->name());
         } else {
             endAuthentication(m_account, AT_All);
@@ -132,7 +132,14 @@ void LockWorker::initConnections()
             endAuthentication(m_account, AT_All);
             destoryAuthentication(m_account);
         } else {
-            if(m_login1SessionSelf->active())
+            bool wakeUpLock = true;
+            // 如果待机唤醒后需要密码则创建验证
+            if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
+                QGSettings powerSettings("com.deepin.dde.power", QByteArray(), this);
+                wakeUpLock = powerSettings.get("sleep-lock").toBool();
+            }
+            qInfo() << "Lock screen when system wakes up: " << wakeUpLock;
+            if(m_login1SessionSelf->active() && wakeUpLock)
                 createAuthentication(m_model->currentUser()->name());
         }
         emit m_model->prepareForSleep(isSleep);
