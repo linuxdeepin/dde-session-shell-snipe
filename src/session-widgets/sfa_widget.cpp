@@ -234,7 +234,14 @@ void SFAWidget::setAuthType(const int type)
         m_frameDataBind->clearValue("SFSingleAuthMsg");
     }
 
-    m_chooseAuthButtonBox->setEnabled(true);
+    if (AppType::Login == m_model->appType() && m_passwordAuth) {
+        m_chooseAuthButtonBox->setEnabled(!m_passwordAuth->isLocked());
+        if (m_passwordAuth->isLocked()) {
+            m_user->setLastAuthType(AT_Password);
+            m_currentAuthType = AT_Password;
+        }
+    }
+
     const int count = m_authButtons.values().size();
     if (count > 0) {
         m_chooseAuthButtonBox->setButtonList(m_authButtons.values(), true);

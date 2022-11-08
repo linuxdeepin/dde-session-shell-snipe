@@ -30,7 +30,7 @@ DWIDGET_USE_NAMESPACE
 using namespace DDESESSIONCC;
 
 struct LimitsInfo {
-    bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁
+    bool locked = false;        // 认证锁定状态 --- true: 锁定  false: 解锁
     uint maxTries;      // 最大重试次数
     uint numFailures;   // 失败次数，一直累加
     uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少
