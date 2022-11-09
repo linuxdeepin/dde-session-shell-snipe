@@ -652,11 +652,7 @@ void GreeterWorker::authenticationComplete()
     };
 
     emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
-#ifndef DISABLE_LOGIN_ANI
-    QTimer::singleShot(1000, this, startSessionSync);
-#else
     startSessionSync();
-#endif
     endAuthentication(m_account, AT_All);
     destroyAuthentication(m_account);
 }
