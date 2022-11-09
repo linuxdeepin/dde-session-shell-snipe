@@ -489,12 +489,6 @@ void AuthWidget::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
 }
 
-void AuthWidget::resizeEvent(QResizeEvent *event)
-{
-    updateUserDisplayNameLabel();
-    QWidget::resizeEvent(event);
-}
-
 int AuthWidget::getTopSpacing() const
 {
     const int topHeight = static_cast<int>(topLevelWidget()->geometry().height() * AUTH_WIDGET_TOP_SPACING_PERCENT);
