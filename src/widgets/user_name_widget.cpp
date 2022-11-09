@@ -135,6 +135,14 @@ void UserNameWidget::updateDisplayNameWidget()
     }
 }
 
+void UserNameWidget::resizeEvent(QResizeEvent *event)
+{
+    updateUserNameWidget();
+    updateDisplayNameWidget();
+
+    QWidget::resizeEvent(event);
+}
+
 int UserNameWidget::heightHint() const
 {
     int height = 0;

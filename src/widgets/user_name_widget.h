@@ -7,6 +7,7 @@
 #include "dconfig_helper.h"
 
 #include <QWidget>
+#include <QResizeEvent>
 
 #include <DLabel>
 
@@ -20,6 +21,7 @@ public:
     void updateUserName(const QString &userName);
     void updateFullName(const QString &displayName);
     int heightHint() const;
+    void resizeEvent(QResizeEvent *event) override;
 
 public slots:
     void OnDConfigPropertyChanged(const QString &key, const QVariant &value);

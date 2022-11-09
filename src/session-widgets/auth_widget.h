@@ -16,7 +16,6 @@
 #include <DStyleOptionButton>
 
 #include <QWidget>
-#include <QResizeEvent>
 
 class AuthSingle;
 class AuthIris;
@@ -77,7 +76,6 @@ public:
     void setAccountErrorMsg(const QString &message);
     void syncPasswordResetPasswordVisibleChanged(const QVariant &value);
     void syncResetPasswordUI();
-    void resizeEvent(QResizeEvent *event) override;
 
 Q_SIGNALS:
     void requestCheckAccount(const QString &account);
