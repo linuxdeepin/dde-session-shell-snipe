@@ -73,7 +73,7 @@ void RoundItemButton::initUI()
     setFocusPolicy(Qt::NoFocus);
     setFixedSize(144, 164);
     setCheckable(true);
-    DFontSizeManager::instance()->bind(this, DFontSizeManager::T6);
+    DFontSizeManager::instance()->bind(this, DFontSizeManager::T5);
 }
 
 void RoundItemButton::enterEvent(QEvent* event)
