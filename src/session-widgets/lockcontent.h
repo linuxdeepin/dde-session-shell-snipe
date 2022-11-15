@@ -10,6 +10,7 @@
 #include "sessionbasewindow.h"
 #include "systemmonitor.h"
 #include "centertopwidget.h"
+#include "waylandgrab.h"
 
 #include <DConfig>
 
@@ -111,6 +112,7 @@ protected:
 
     int m_failures = 0;
     QLocalServer *m_localServer;
+    WaylandGrab *m_waylandGrab;
 };
 
 #endif // LOCKCONTENT_H

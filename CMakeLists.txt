@@ -54,6 +54,7 @@ find_package(Qt5 COMPONENTS
     Xml
     Svg
     Network
+    WaylandClient
 REQUIRED)
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
@@ -61,6 +62,7 @@ pkg_check_modules(DFrameworkDBus REQUIRED dframeworkdbus)
 pkg_check_modules(QGSettings REQUIRED gsettings-qt)
 pkg_check_modules(Greeter REQUIRED liblightdm-qt5-3)
 pkg_check_modules(SSL REQUIRED IMPORTED_TARGET libcrypto libssl openssl)
+pkg_check_modules(WaylandClient REQUIRED wayland-client)
 
 set(Qt_LIBS
     Qt5::Core
@@ -70,6 +72,7 @@ set(Qt_LIBS
     Qt5::X11Extras
     Qt5::Xml
     Qt5::Svg
+    Qt5::WaylandClient
 )
 
 try_compile(USE_DEEPIN_WAYLAND
@@ -202,6 +205,7 @@ target_include_directories(dde-lock PUBLIC
     ${Qt5X11Extras_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/src/dde-lock
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus
+    ${Qt5WaylandClient_PRIVATE_INCLUDE_DIRS}
 )
 target_link_libraries(dde-lock PRIVATE
     ${Qt_LIBS}
@@ -218,6 +222,7 @@ target_link_libraries(dde-lock PRIVATE
     ${QGSettings_LIBRARIES}
     KF5::WaylandClient
     PkgConfig::SSL
+    ${WaylandClient_LIBRARIES}
 )
 
 set(GREETER_SRCS
@@ -263,6 +268,7 @@ target_include_directories(lightdm-deepin-greeter PUBLIC
     ${Qt5X11Extras_INCLUDE_DIRS}
     ${Greeter_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter
+    ${Qt5WaylandClient_PRIVATE_INCLUDE_DIRS}
 )
 target_compile_definitions(lightdm-deepin-greeter
     PRIVATE ENABLE_SESSION
@@ -290,6 +296,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Greeter_LIBRARIES}
     KF5::WaylandClient
     PkgConfig::SSL
+    ${WaylandClient_LIBRARIES}
 )
 
 add_subdirectory(tests)

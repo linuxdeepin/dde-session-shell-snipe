@@ -26,7 +26,11 @@ Build-Depends: debhelper (>= 8.0.0), pkg-config,
  libx11-xcb-dev,
  libssl-dev,
  libdtkcore-dev,
- libkf5wayland-dev
+ libkf5wayland-dev,
+ libqt5waylandclient5-dev,
+ qtwayland5-private-dev,
+ qtbase5-private-dev,
+ libwayland-dev
 Standards-Version: 3.9.4
 Homepage: http://www.deepin.org/
 
