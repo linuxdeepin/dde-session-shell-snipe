@@ -37,6 +37,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     , m_authWidget(nullptr)
     , m_userListWidget(nullptr)
     , m_localServer(new QLocalServer(this))
+    , m_waylandGrab(nullptr)
 {
     // 在已显示关机或用户列表界面时，再插入另外一个显示器，会新构建一个LockContent，此时会设置为PasswordMode造成界面状态异常
     if (!m_model->visible()) {
@@ -75,6 +76,9 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
 
 void LockContent::initUI()
 {
+    if (m_model->isUseWayland()) {
+        setAttribute(Qt::WA_NativeWindow);
+    }
     m_centerTopWidget = new CenterTopWidget(this);
     setCenterTopWidget(m_centerTopWidget);
 
@@ -148,6 +152,8 @@ void LockContent::initConnections()
         if (!m_model->isUseWayland() && isVisible() && window()->windowHandle()) {
             qDebug() << "Grab keyboard after keyboard layout hidden";
             window()->windowHandle()->setKeyboardGrabEnabled(true);
+        } else if (m_model->isUseWayland() && isVisible() && m_waylandGrab) {
+            m_waylandGrab->grab();
         }
     });
 }
@@ -295,9 +301,15 @@ void LockContent::onNewConnection()
     Q_EMIT m_model->hidePluginMenu();
 
     // 重置密码程序启动连接成功锁屏界面才释放键盘，避免点击重置密码过程中使用快捷键切走锁屏
-    if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
-        qDebug() << "setKeyboardGrabEnabled(false) success!";
+    if (!m_model->isUseWayland()) {
+        if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
+            qDebug() << "setKeyboardGrabEnabled(false) success!";
+        }
+    } else if (m_waylandGrab) {
+        qInfo() << "Release keyboard";
+        m_waylandGrab->release();
     }
+
 
     if (m_localServer->hasPendingConnections()) {
         QLocalSocket *socket = m_localServer->nextPendingConnection();
@@ -396,6 +408,10 @@ void LockContent::showEvent(QShowEvent *event)
 void LockContent::hideEvent(QHideEvent *event)
 {
     m_shutdownFrame->recoveryLayout();
+    if (m_model->isUseWayland() && m_waylandGrab) {
+        qInfo() << "Release keyboard";
+        m_waylandGrab->release();
+    }
     QFrame::hideEvent(event);
 }
 
@@ -521,7 +537,21 @@ void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
 void LockContent::tryGrabKeyboard(bool exitIfFalied)
 {
 #ifndef QT_DEBUG
-    if (m_model->isUseWayland() || !isVisible()) {
+    if (!isVisible()) {
+        return;
+    }
+
+    if (m_model->isUseWayland()) {
+        if (!m_waylandGrab && AuthCommon::Lock == m_model->appType()) {
+            m_waylandGrab = new WaylandGrab(this);
+        }
+
+        qInfo() << "Grab keyboard";
+        // 需要在showEvent事件执行完后再去grab，否则很可能获取不到surface，导致grab失败
+        QTimer::singleShot(0, this, [this] {
+            if (m_waylandGrab)
+                m_waylandGrab->grab();
+        });
         return;
     }
 
