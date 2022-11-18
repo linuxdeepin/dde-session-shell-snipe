@@ -73,6 +73,7 @@ private:
 private:
     DLabel *m_capsLock;             // 大小写状态
     DLineEditEx *m_lineEdit;        // 密码输入框
+    DIconButton *m_passwordShowBtn; // 密码显示按钮
     DIconButton *m_passwordHintBtn; // 密码提示按钮
     QString m_passwordHint;         // 密码提示
     bool m_resetPasswordMessageVisible;

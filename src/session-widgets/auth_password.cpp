@@ -6,6 +6,7 @@
 
 #include "authcommon.h"
 #include "dlineeditex.h"
+#include "dstyle.h"
 
 #include <DHiDPIHelper>
 #include <DLabel>
@@ -37,6 +38,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     : AuthModule(AT_Password, parent)
     , m_capsLock(new DLabel(this))
     , m_lineEdit(new DLineEditEx(this))
+    , m_passwordShowBtn(new DIconButton(this))
     , m_passwordHintBtn(new DIconButton(this))
     , m_resetPasswordMessageVisible(false)
     , m_resetPasswordFloatingMessage(nullptr)
@@ -81,6 +83,17 @@ void AuthPassword::initUI()
     passwordLayout->addWidget(m_capsLock, 0, Qt::AlignLeft | Qt::AlignVCenter);
     /* 缩放因子 */
     passwordLayout->addStretch(1);
+
+    /*显示密码*/
+    m_passwordShowBtn->setAccessibleName(QStringLiteral("PasswordShow"));
+    m_passwordShowBtn->setContentsMargins(0,0,0,0);
+    m_passwordShowBtn->setFocusPolicy(Qt::NoFocus);
+    m_passwordShowBtn->setCursor(Qt::ArrowCursor);
+    m_passwordShowBtn->setFlat(true);
+    m_passwordShowBtn->setIcon(DStyle::standardIcon(style(), DStyle::SP_HidePassword));
+    m_passwordShowBtn->setIconSize(QSize(16, 16));
+    m_passwordShowBtn->setVisible(true);
+    passwordLayout->addWidget(m_passwordShowBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     /* 认证状态 */
     m_authStateLabel = new DLabel(this);
@@ -128,6 +141,16 @@ void AuthPassword::initConnections()
     connect(m_lineEdit, &DLineEditEx::returnPressed, this, [ this ] {
         if (!m_lineEdit->lineEdit()->isReadOnly()) // 避免用户在验证的时候反复点击
             emit requestAuthenticate();
+    });
+
+    connect(m_passwordShowBtn, &DSuggestButton::clicked, this, [ this ] {
+        if (m_lineEdit->echoMode() == QLineEdit::EchoMode::Password) {
+            m_passwordShowBtn->setIcon(DStyle::standardIcon(style(),DStyle::SP_ShowPassword));
+            m_lineEdit->lineEdit()->setEchoMode(QLineEdit::Normal);
+        } else {
+            m_passwordShowBtn->setIcon(DStyle::standardIcon(style(),DStyle::SP_HidePassword));
+            m_lineEdit->lineEdit()->setEchoMode(QLineEdit::Password);
+        }
     });
 }
 
@@ -657,3 +680,4 @@ void AuthPassword::hidePasswordHintWidget()
     // 恢复调色板
     DPaletteHelper::instance()->resetPalette(this->topLevelWidget());
 }
+
