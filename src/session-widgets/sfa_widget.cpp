@@ -235,6 +235,7 @@ void SFAWidget::setAuthType(const int type)
         m_frameDataBind->clearValue("SFSingleAuthMsg");
     }
 
+    m_chooseAuthButtonBox->setEnabled(true);
     if (AppType::Login == m_model->appType() && m_passwordAuth) {
         m_chooseAuthButtonBox->setEnabled(!m_passwordAuth->isLocked());
         if (m_passwordAuth->isLocked()) {
