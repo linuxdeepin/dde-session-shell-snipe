@@ -4,7 +4,6 @@
 
 #include "lockcontent.h"
 
-#include "base_module_interface.h"
 #include "controlwidget.h"
 #include "logowidget.h"
 #include "mfa_widget.h"
@@ -15,6 +14,7 @@
 #include "userframelist.h"
 #include "virtualkbinstance.h"
 #include "fullscreenbackground.h"
+#include "plugin_manager.h"
 
 #include <DDBusSender>
 
@@ -46,7 +46,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     initUI();
     initConnections();
 
-    if (model->appType() == Lock) {
+    if (model->appType() == AuthCommon::Lock) {
         setMPRISEnable(model->currentModeState() != SessionBaseModel::ModeStatus::ShutDownMode);
     }
 
@@ -61,7 +61,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     if (!once) {
         // 将greeter和lock的服务名称分开
         // 如果服务相同，但是创建套接字文件的用户不一样，greeter和lock不能删除对方的套接字文件，造成锁屏无法监听服务。
-        QString serverName = QString("GrabKeyboard_") + (m_model->appType() == Login ? "greeter" : ("lock_" + m_model->currentUser()->name()));
+        QString serverName = QString("GrabKeyboard_") + (m_model->appType() == AuthCommon::Login ? "greeter" : ("lock_" + m_model->currentUser()->name()));
         // 将之前的server删除，如果是旧文件，即使监听成功，客户端也无法连接。
         QLocalServer::removeServer(serverName);
         if (!m_localServer->listen(serverName)) { // 监听特定的连接
@@ -105,7 +105,7 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [ = ] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-        emit requestEndAuthentication(m_model->currentUser()->name(), AT_All);
+        emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
@@ -470,19 +470,19 @@ void LockContent::toggleVirtualKB()
 
 void LockContent::showModule(const QString &name)
 {
-    BaseModuleInterface *module = ModulesLoader::instance().findModuleByName(name);
-    if (!module) {
+    PluginBase * plugin = PluginManager::instance()->findPlugin(name);
+    if (!plugin) {
         return;
     }
 
-    switch (module->type()) {
-    case BaseModuleInterface::LoginType:
-        m_loginWidget = module->content();
+    switch (plugin->type()) {
+    case PluginBase::ModuleType::LoginType:
+        m_loginWidget = plugin->content();
         setCenterContent(m_loginWidget);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         break;
-    case BaseModuleInterface::TrayType:
-        m_loginWidget = module->content();
+    case PluginBase::ModuleType::TrayType:
+        m_loginWidget = plugin->content();
         setCenterContent(m_loginWidget);
         break;
     }
@@ -500,7 +500,7 @@ void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
     const bool alwaysShowUserSwitchButton = m_model->alwaysShowUserSwitchButton();
     bool haveLogindUser = true;
 
-    if (m_model->isServerModel() && m_model->appType() == Login) {
+    if (m_model->isServerModel() && m_model->appType() == AuthCommon::Login) {
         haveLogindUser = !m_model->loginedUserList().isEmpty();
     }
 

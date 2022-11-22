@@ -18,6 +18,7 @@
 #include "modules_loader.h"
 #include "sessionbasemodel.h"
 #include "useravatar.h"
+#include "plugin_manager.h"
 
 #include <DFontSizeManager>
 #include <DHiDPIHelper>
@@ -139,9 +140,9 @@ void SFAWidget::setAuthType(const int type)
         qInfo() << "Sfa is inited: " << m_inited << ", sfa widgets size: " << SFAWidgetObjs.size();
         if (m_inited || SFAWidgetObjs.size() <= 1) {
             qInfo() << Q_FUNC_INFO << "m_customAuth->authType()" << m_customAuth->authType();
-            if (m_customAuth->pluginConfig().defaultAuthLevel == AuthCommon::DefaultAuthLevel::Default) {
+            if (m_customAuth->pluginConfig().defaultAuthLevel == LoginPlugin::DefaultAuthLevel::Default) {
                 m_currentAuthType = m_currentAuthType == AT_All ? AT_Custom : m_currentAuthType;
-            } else if (m_customAuth->pluginConfig().defaultAuthLevel == AuthCommon::DefaultAuthLevel::StrongDefault) {
+            } else if (m_customAuth->pluginConfig().defaultAuthLevel == LoginPlugin::DefaultAuthLevel::StrongDefault) {
                 m_currentAuthType = AT_Custom;
             }
         }
@@ -773,8 +774,8 @@ void SFAWidget::initCustomAuth()
 
     m_customAuth = new AuthCustom(this);
 
-    dss::module::LoginModuleInterface *module = dynamic_cast<dss::module::LoginModuleInterface *>(dss::module::ModulesLoader::instance().findModulesByType(0).values().first());
-    m_customAuth->setModule(module);
+    LoginPlugin *plugin = PluginManager::instance()->getLoginPlugin();
+    m_customAuth->setModule(plugin);
     m_customAuth->setModel(m_model);
     m_customAuth->initUi();
     m_customAuth->hide();
@@ -792,8 +793,8 @@ void SFAWidget::initCustomAuth()
     connect(m_customAuth, &AuthCustom::requestCheckAccount, this, [this] (const QString &account) {
         qInfo() << "Request check account: " << account;
         if (m_user && m_user->name() == account) {
-            dss::module::AuthCallbackData data = m_customAuth->getCurrentAuthData();
-            if (data.result == dss::module::Success)
+            LoginPlugin::AuthCallbackData data = m_customAuth->getCurrentAuthData();
+            if (data.result == LoginPlugin::AuthResult::Success)
                 Q_EMIT sendTokenToAuth(m_user->name(), AT_Custom, data.token);
             else
                 qWarning() << Q_FUNC_INFO << "auth failed";
@@ -808,7 +809,7 @@ void SFAWidget::initCustomAuth()
 
     /* 认证选择按钮 */
     DButtonBoxButton *btn = new DButtonBoxButton(DStyle::SP_SelectElement, QString(), this);
-    const QString &iconStr = module->icon();
+    const QString &iconStr = plugin->icon();
     const QIcon icon = QFile::exists(iconStr) ? QIcon(iconStr) : QIcon::fromTheme(iconStr);
     if (!icon.isNull()) {
         btn->setIcon(icon);
@@ -817,7 +818,7 @@ void SFAWidget::initCustomAuth()
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
     m_authButtons.insert(AT_Custom, btn);
-    connect(btn, &DButtonBoxButton::toggled, this, [this, module](const bool checked) {
+    connect(btn, &DButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
             qDebug() << Q_FUNC_INFO << "Custom auth is checked";
             m_biometricAuthState->hide();
@@ -1133,23 +1134,21 @@ bool SFAWidget::useCustomAuth() const
     }
 
     // 是否加载了认证插件
-    const QList<dss::module::BaseModuleInterface *> interfaces = dss::module::ModulesLoader::instance().findModulesByType(dss::module::BaseModuleInterface::LoginType).values();
-    if (interfaces.isEmpty()) {
+    LoginPlugin* plugin = PluginManager::instance()->getLoginPlugin();
+    if (!plugin) {
         qInfo() << "There is no login plugin";
         return false;
     }
 
-    dss::module::LoginModuleInterface * const module = dynamic_cast<dss::module::LoginModuleInterface *>(interfaces.first());
-
     // 当前插件是否启动，由插件自己决定
-    if (!AuthCustom::isPluginEnabled(module)) {
+    if (!plugin->isPluginEnabled()) {
         qInfo() << "Plugin is disabled";
         return false;
     }
 
     // 判断认证插件是否支持"..."用户
     if (m_user && m_user->type() == User::Default) {
-        const bool supportDefaultUser = AuthCustom::supportDefaultUser(module);
+        const bool supportDefaultUser = plugin->supportDefaultUser();
         if (!supportDefaultUser) {
             qInfo() << "Do not support default user";
             return false;

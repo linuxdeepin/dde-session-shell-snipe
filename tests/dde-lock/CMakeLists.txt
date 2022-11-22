@@ -12,6 +12,7 @@ set(LOCK_TEST_SRCS
     ${SESSION_WIDGETS}
     ${haweiswitchos_DBUS_SCRS}
     ${AUTHENTICATE}
+    ${PLUGIN_MANAGER}
     ${PROJECT_SOURCE_DIR}/src/dde-lock/lockframe.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/lockworker.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbuslockagent.cpp

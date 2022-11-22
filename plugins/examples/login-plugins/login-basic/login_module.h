@@ -5,17 +5,17 @@
 #ifndef LOGIN_MODULE_H
 #define LOGIN_MODULE_H
 
-#include "login_module_interface.h"
+#include "login_module_interface_v2.h"
 
 namespace dss {
-namespace module {
+namespace module_v2 {
 
 class LoginModule : public QObject
-    , public LoginModuleInterface
+    , public LoginModuleInterfaceV2
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules.Login" FILE "login.json")
-    Q_INTERFACES(dss::module::LoginModuleInterface)
+    Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules_v2.Login" FILE "login.json")
+    Q_INTERFACES(dss::module_v2::LoginModuleInterfaceV2)
 
 public:
     explicit LoginModule(QObject *parent = nullptr);
@@ -27,17 +27,17 @@ public:
     inline QWidget *content() override { return m_loginWidget; }
     void reset() override;
     void setAppData(AppDataPtr) override;
-    void setAuthCallback(AuthCallbackFunc) override;
+    void setAuthCallback(AuthCallbackFun) override;
 
 private:
     void initUI();
 
 private:
     AppDataPtr m_appData;
-    AuthCallbackFunc m_authCallback;
+    AuthCallbackFun m_authCallback;
     QWidget *m_loginWidget;
 };
 
-} // namespace module
+} // namespace module_v2
 } // namespace dss
 #endif // LOGIN_MODULE_H
