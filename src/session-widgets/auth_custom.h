@@ -7,8 +7,8 @@
 
 #include "auth_module.h"
 #include "authcommon.h"
-#include "login_module_interface.h"
 #include "userinfo.h"
+#include "login_plugin.h"
 
 #include <QVBoxLayout>
 
@@ -23,26 +23,16 @@ class AuthCustom : public AuthModule
         DeepinAuthenticate      // deepin authentication framework - 深度认证框架
     };
 
-    // 认证插件配置
-    struct PluginConfig
-    {
-        bool showAvatar = true;         // 是否显示头像
-        bool showUserName = true;       // 是否显示用户名
-        bool showSwitchButton = true;   // 是否显示类型切换按钮
-        bool showLockButton = true;     // 是否显示解锁按钮
-        // 默认使用此认证类型的强度，详细描述见AuthCommon::DefaultAuthLevel
-        AuthCommon::DefaultAuthLevel defaultAuthLevel = AuthCommon::DefaultAuthLevel::Default;
-    };
 
 public:
 
     explicit AuthCustom(QWidget *parent = nullptr);
     ~AuthCustom();
 
-    void setModule(dss::module::LoginModuleInterface *module);
-    dss::module::LoginModuleInterface* getModule() const;
+    void setModule(LoginPlugin *module);
+    LoginPlugin* getModule() const;
     void setAuthState(const int state, const QString &result) override;
-    dss::module::AuthCallbackData getCurrentAuthData() const { return m_currentAuthData; }
+    LoginPlugin::AuthCallbackData getCurrentAuthData() const { return m_currentAuthData; }
     void setModel(const SessionBaseModel *model);
     const SessionBaseModel *getModel() const { return m_model; }
     void initUi();
@@ -50,8 +40,8 @@ public:
     void reset();
     QSize contentSize() const;
 
-    inline AuthCommon::AuthType authType() const { return m_authType; }
-    inline PluginConfig pluginConfig() const { return m_pluginConfig; }
+    LoginPlugin::AuthType authType() const;
+    LoginPlugin::PluginConfig pluginConfig() const;
     void sendAuthToken();
     void lightdmAuthStarted();
 
@@ -59,17 +49,14 @@ public:
     using AuthModule::setLimitsInfo; // 避免警告：XXX hides overloaded virtual function
     void setLimitsInfo(const QMap<int, User::LimitsInfo> &limitsInfo);
 
-    static bool supportDefaultUser(dss::module::LoginModuleInterface *module);
-    static bool isPluginEnabled(dss::module::LoginModuleInterface *module);
-
 protected:
     bool event(QEvent *e) override;
 
 private:
     void setCallback();
-    static void authCallback(const dss::module::AuthCallbackData *callbackData, void *app_data);
+    static void authCallback(const LoginPlugin::AuthCallbackData *callbackData, void *app_data);
     static QString messageCallback(const QString &message, void *app_data);
-    void setAuthData(const dss::module::AuthCallbackData &callbackData);
+    void setAuthData(const LoginPlugin::AuthCallbackData &callbackData);
     void updateConfig();
     void changeAuthType(AuthCommon::AuthType type);
     static AuthCustom *getAuthCustomObj(void *app_data);
@@ -84,11 +71,9 @@ Q_SIGNALS:
 
 private:
     QVBoxLayout *m_mainLayout;
-    dss::module::LoginModuleInterface *m_module;
-    dss::module::AuthCallbackData m_currentAuthData;
+    LoginPlugin *m_plugin;
+    LoginPlugin::AuthCallbackData m_currentAuthData;
     const SessionBaseModel *m_model;
-    PluginConfig m_pluginConfig;
-    AuthCommon::AuthType m_authType;    // TODO 太定制话，考虑删除使用其它方法替代
     static QList<AuthCustom*> AuthCustomObjs;
 };
 

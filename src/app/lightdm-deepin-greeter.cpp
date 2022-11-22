@@ -334,8 +334,7 @@ int main(int argc, char* argv[])
 
     DLogManager::registerConsoleAppender();
 
-    dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
-    modulesLoader->start(QThread::LowestPriority);
+    ModulesLoader::instance().start(QThread::LowestPriority);
 
     const QString serviceName = "com.deepin.daemon.Accounts";
     QDBusConnectionInterface *interface = QDBusConnection::systemBus().interface();

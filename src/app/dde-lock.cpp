@@ -81,8 +81,7 @@ int main(int argc, char *argv[])
     /* load translation files */
     loadTranslation(QLocale::system().name());
 
-    dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
-    modulesLoader->start(QThread::LowestPriority);
+    ModulesLoader::instance().start(QThread::LowestPriority);
 
     QCommandLineParser cmdParser;
     cmdParser.addHelpOption();

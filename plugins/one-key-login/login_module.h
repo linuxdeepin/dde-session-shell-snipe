@@ -10,7 +10,7 @@
 #include <QDBusConnection>
 #include <QDBusPendingReply>
 
-#include "login_module_interface.h"
+#include "login_module_interface_v2.h"
 
 #include "dtkcore_global.h"
 #include <DSpinner>
@@ -20,14 +20,14 @@ class DConfig;
 DCORE_END_NAMESPACE
 
 namespace dss {
-namespace module {
+namespace module_v2 {
 
 class LoginModule : public QObject
-    , public LoginModuleInterface
+    , public LoginModuleInterfaceV2
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules.Login" FILE "login.json")
-    Q_INTERFACES(dss::module::LoginModuleInterface)
+    Q_PLUGIN_METADATA(IID "com.deepin.dde.shell.Modules_v2.Login" FILE "login.json")
+    Q_INTERFACES(dss::module_v2::LoginModuleInterfaceV2)
 
     enum AuthStatus {
         None,
@@ -46,7 +46,7 @@ public:
     inline LoadType loadPluginType() const override { return  m_loadPluginType;}
     void reset() override;
     void setAppData(AppDataPtr) override;
-    void setAuthCallback(AuthCallbackFunc) override;
+    void setAuthCallback(AuthCallbackFun) override;
     void setMessageCallback(MessageCallbackFunc) override;
     QString message(const QString&) override;
 
@@ -64,7 +64,7 @@ private:
 
 private:
     AppDataPtr m_appData;
-    AuthCallbackFunc m_authCallback;
+    AuthCallbackFun m_authCallback;
     MessageCallbackFunc m_messageCallback;
     QWidget *m_loginWidget;
     QString m_userName;

@@ -78,15 +78,5 @@ enum AuthState {
     AS_Unlocked     // 认证解锁，对应 AS_Locked
 };
 
-/**
- * @brief The AppType enum
- * 发起认证是否使用默认类型
- */
-enum DefaultAuthLevel {
-    NoDefault = 0,
-    Default,
-    StrongDefault
-};
-
 } // namespace AuthCommon
 #endif // AUTHCOMMON_H

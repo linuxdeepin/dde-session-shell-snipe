@@ -78,4 +78,7 @@ void loadTranslation(const QString &locale);
 QString findSymLinTarget(const QString &symLink);
 
 QString toJson(const QJsonObject &jsonObj);
+
+bool checkVersion(const QString &target, const QString &base);
+
 #endif // PUBLIC_FUNC_H

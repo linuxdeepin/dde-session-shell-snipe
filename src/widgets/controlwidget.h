@@ -8,6 +8,7 @@
 #include <dtkwidget_global.h>
 #include <dtkcore_global.h>
 #include "userinfo.h"
+#include "tray_plugin.h"
 
 #include <DFloatingButton>
 #include <DBlurEffectWidget>
@@ -108,8 +109,8 @@ signals:
     void notifyKeyboardLayoutHidden();
 
 public slots:
-    void addModule(dss::module::BaseModuleInterface *module);
-    void removeModule(dss::module::BaseModuleInterface *module);
+    void addModule(TrayPlugin *module);
+    void removeModule(TrayPlugin *module);
     void setVirtualKBVisible(bool visible);
     void setUserSwitchEnable(const bool visible);
     void setSessionSwitchEnable(const bool visible);

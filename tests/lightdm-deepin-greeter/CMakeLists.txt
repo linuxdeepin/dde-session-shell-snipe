@@ -13,6 +13,7 @@ set(GREETER_TEST_SRCS
     ${SESSION_WIDGETS}
     ${haweiswitchos_DBUS_SCRS}
     ${AUTHENTICATE}
+    ${PLUGIN_MANAGER}
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/loginwindow.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/greeterworker.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/logincontent.cpp
