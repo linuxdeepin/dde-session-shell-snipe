@@ -7,12 +7,16 @@
 
 #include "base_module_interface.h"
 
-const QString LOGIN_API_VERSION = "2.0.0";
+/**
+* 这个接口已经过时，请使用login_module_interface_v2.h中的2.x.x版本
+*/
 
 namespace dss {
 namespace module {
 
-enum AuthResult{
+const QString LOGIN_API_VERSION = "1.2.0";
+
+enum AuthResult {
     None = 0,
     Success,
     Failure
@@ -21,12 +25,12 @@ enum AuthResult{
 /**
  * @brief 认证插件需要传回的数据
  */
-struct AuthCallbackData{
-    int result = AuthResult::None;  // 认证结果
-    QString account;                // 账户
-    QString token;                  // 令牌
-    QString message;                // 提示消息
-    QString json;                   // 预留数据
+struct AuthCallbackData {
+    int result = AuthResult::None; // 认证结果
+    std::string account; // 账户
+    std::string token; // 令牌
+    std::string message; // 提示消息
+    std::string json; // 预留数据
 };
 
 /**
@@ -93,15 +97,28 @@ enum AuthState {
  * @param void * 登录器回传指针
  * void *: ContainerPtr
  */
-using AuthCallbackFunc = void (*)(const AuthCallbackData *, void *);
+using AuthCallbackFun = void (*)(const AuthCallbackData *, void *);
 
 /**
- * @brief 验证对象类型
+ * @brief 验证回调函数
+ * @param const std::string & 发送给登录器的数据
+ * @param void * 登录器回传指针
+ *
+ * @return 登录器返回的数据
+ * @since 1.2.0
+ *
+ * 传入和传出的数据都是json格式的字符串，详见登录插件接口说明文档
  *
  */
-enum AuthObjectType {
-    LightDM,            // light display manager 显示管理器
-    DeepinAuthenticate  // deepin authenticate service 深度认证框架
+using MessageCallbackFun = std::string (*)(const std::string &, void *);
+
+/**
+ * @brief 插件回调相关
+ */
+struct LoginCallBack {
+    void *app_data; // 插件无需关注
+    AuthCallbackFun authCallbackFun;
+    MessageCallbackFun messageCallbackFunc;
 };
 
 class LoginModuleInterface : public BaseModuleInterface
@@ -114,25 +131,42 @@ public:
     ModuleType type() const override { return LoginType; }
 
     /**
-     * @brief 设置回调验证回调函数，此函数会在init函数之前调用
-     *
-     * @param AuthCallbackFunc 详见`AuthCallbackFunc`说明
-     *
-     * @since 2.0.0
-     */
-    virtual void setAuthCallback(AuthCallbackFunc) = 0;
+    * @brief 模块加载的类型
+    * @return LoadType
+    */
+    LoadType loadPluginType() const override { return Load; }
 
     /**
-     * @brief 插件需要在这个方法中重置UI和验证状态
-     * 调用时机：通常验证开始之前登录器会调用这个方法，但是不保证每次验证前都会调用。
+     * @brief 插件图标
+     * @return 图标的绝对路径或者图标的名称(能够通过QIcon::fromTheme获取)
+     */
+    virtual std::string icon() const { return ""; }
+
+    /**
+     * @brief 设置回调函数 CallbackFun
+     */
+    virtual void setCallback(LoginCallBack *) = 0;
+
+    /**
+     * @brief 登录器通过此函数发送消息给插件，获取插件的状态或者信息，使用json格式字符串in&out数据，方便后期扩展和定制。
      *
-     * @since 2.0.0
+     * @since 1.2.0
+     */
+    virtual std::string onMessage(const std::string &) { return "{}"; };
+
+    /**
+     * @brief 重置插件
      */
     virtual void reset() = 0;
+
+    // Warning: 不要增加虚函数，即使在最后面（如果派生类也有虚函数，那么虚表寻址也会错误）
 };
+
+typedef Q_DECL_DEPRECATED LoginModuleInterface LoginModuleInterfaceV2 ;
 
 } // namespace module
 } // namespace dss
+
 
 Q_DECLARE_INTERFACE(dss::module::LoginModuleInterface, "com.deepin.dde.shell.Modules.Login")
 

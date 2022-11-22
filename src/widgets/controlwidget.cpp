@@ -8,9 +8,9 @@
 
 #include "mediawidget.h"
 #include "modules_loader.h"
-#include "tray_module_interface.h"
 #include "tipswidget.h"
 #include "public_func.h"
+#include "plugin_manager.h"
 
 #include <DFloatingButton>
 #include <DArrowRectangle>
@@ -235,11 +235,11 @@ void ControlWidget::initUI()
     m_mainLayout->addWidget(m_switchUserBtn);
     m_mainLayout->addWidget(m_powerBtn);
 
-    for (QSharedPointer<module::BaseModuleInterface> module : module::ModulesLoader::instance().moduleList()) {
-        if (module.isNull())
+    for (const auto &module : PluginManager::instance()->trayPlugins()) {
+        if (!module)
             continue;
 
-        addModule(module.data());
+        addModule(module);
     }
 
     updateLayout();
@@ -250,7 +250,7 @@ void ControlWidget::initUI()
 
 void ControlWidget::initConnect()
 {
-    connect(&module::ModulesLoader::instance(), &module::ModulesLoader::moduleFound, this, &ControlWidget::addModule);
+    connect(PluginManager::instance(), &PluginManager::trayPluginAdded, this, &ControlWidget::addModule);
     connect(m_sessionBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchSession);
     connect(m_switchUserBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchUser);
     connect(m_powerBtn, &DFloatingButton::clicked, this, &ControlWidget::requestShutdown);
@@ -269,15 +269,8 @@ void ControlWidget::initConnect()
     });
 }
 
-void ControlWidget::addModule(module::BaseModuleInterface *module)
+void ControlWidget::addModule(TrayPlugin *trayModule)
 {
-    if (module && module->type() != module::BaseModuleInterface::TrayType)
-        return;
-
-    module::TrayModuleInterface *trayModule = dynamic_cast<module::TrayModuleInterface *>(module);
-    if (!trayModule)
-        return;
-
     trayModule->init();
 
     FloatingButton *button = new FloatingButton(this);
@@ -359,13 +352,8 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
     updateLayout();
 }
 
-void ControlWidget::removeModule(module::BaseModuleInterface *module)
+void ControlWidget::removeModule(TrayPlugin *trayModule)
 {
-    if (module->type() != module::BaseModuleInterface::TrayType)
-        return;
-
-    module::TrayModuleInterface *trayModule = dynamic_cast<module::TrayModuleInterface *>(module);
-
     QMap<QString, QWidget *>::const_iterator i = m_modules.constBegin();
     while (i != m_modules.constEnd()) {
         if (i.key() == trayModule->key()) {

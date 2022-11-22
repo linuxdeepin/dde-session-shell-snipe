@@ -70,6 +70,7 @@ const QString ENABLE_SHORTCUT_FOR_LOCK = "enableShortcutForLock";
 const QString SHOW_TOP_TIP = "showTopTip";
 const QString TOP_TIP_TEXT = "topTipText";
 const QString SHOW_USER_NAME = "showUserName";
+
 }
 
 

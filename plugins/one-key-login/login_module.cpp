@@ -25,7 +25,7 @@
 DCORE_USE_NAMESPACE
 
 namespace dss {
-namespace module {
+namespace module_v2 {
 
 LoginModule::LoginModule(QObject *parent)
     : QObject(parent)
@@ -34,7 +34,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_messageCallback(nullptr)
     , m_loginWidget(nullptr)
     , m_appType(AppType::Login)
-    , m_loadPluginType(NotLoad)
+    , m_loadPluginType(Notload)
     , m_isAcceptFingerprintSignal(false)
     , m_waitAcceptSignalTimer(nullptr)
     , m_dconfig(nullptr)
@@ -55,7 +55,7 @@ LoginModule::LoginModule(QObject *parent)
     //华为机型,从override配置中获取是否加载插件
     if (m_dconfig) {
         bool showPlugin = m_dconfig->value("enableOneKeylogin", false).toBool();
-        m_loadPluginType = showPlugin ? Load : NotLoad;
+        m_loadPluginType = showPlugin ? Load : Notload;
         if (!showPlugin)
             return;
     }
@@ -252,7 +252,7 @@ void LoginModule::setAppData(AppDataPtr appData)
     m_appData = appData;
 }
 
-void LoginModule::setAuthCallback(AuthCallbackFunc authCallback)
+void LoginModule::setAuthCallback(AuthCallbackFun authCallback)
 {
     m_authCallback = authCallback;
 }
@@ -319,7 +319,7 @@ QString LoginModule::message(const QString &message)
         QJsonArray data = msgObj.value("Data").toArray();
         for (const QJsonValue &limitsInfoStr : data) {
             const QJsonObject limitsInfoObj = limitsInfoStr.toObject();
-            if (limitsInfoObj["flag"].toInt() == AT_Password)
+            if (limitsInfoObj["flag"].toInt() == AuthType::AT_Password)
                 m_isLocked = limitsInfoObj["locked"].toBool();
         }
     } else if (cmdType == "IsPluginEnabled") {
@@ -432,7 +432,7 @@ void LoginModule::slotPrepareForSleep(bool active)
             m_spinner->start();
     } else {
         //fix: 多用户时，第一个用户直接锁屏，然后待机唤醒，在直接切换到另一个用户时，m_login1SessionSelf没有激活，见159949
-        sendAuthTypeToSession(AT_Fingerprint);
+        sendAuthTypeToSession(AuthType::AT_Fingerprint);
     }
 }
 

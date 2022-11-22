@@ -140,6 +140,7 @@ set(haweiswitchos_DBUS_SCRS
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util)
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util/dbus)
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor)
+include_directories(${PROJECT_SOURCE_DIR}/src/global_util/plugin_manager)
 include_directories(${PROJECT_SOURCE_DIR}/src/widgets)
 include_directories(${PROJECT_SOURCE_DIR}/src/session-widgets)
 include_directories(${PROJECT_SOURCE_DIR}/src/libdde-auth)
@@ -152,6 +153,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src/session-widgets SESSION_WIDGETS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/libdde-auth AUTHENTICATE)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor GLOBAL_UTILS_KEYBOARDMONITOR)
 aux_source_directory(${PROJECT_SOURCE_DIR}/interface INTERFACE)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/plugin_manager PLUGIN_MANAGER)
 
 set(QRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc
@@ -170,6 +172,7 @@ set(LOCK_SRCS
     ${haweiswitchos_DBUS_SCRS}
     ${AUTHENTICATE}
     ${INTERFACE}
+    ${PLUGIN_MANAGER}
     src/app/dde-lock.cpp
     src/dde-lock/lockframe.cpp
     src/dde-lock/lockworker.cpp
@@ -228,6 +231,7 @@ set(GREETER_SRCS
     ${haweiswitchos_DBUS_SCRS}
     ${AUTHENTICATE}
     ${INTERFACE}
+    ${PLUGIN_MANAGER}
     src/app/lightdm-deepin-greeter.cpp
     src/lightdm-deepin-greeter/loginwindow.cpp
     src/lightdm-deepin-greeter/greeterworker.cpp

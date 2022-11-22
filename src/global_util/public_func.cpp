@@ -205,3 +205,22 @@ QString toJson(const QJsonObject &jsonObj)
     doc.setObject(jsonObj);
     return doc.toJson();
 }
+
+bool checkVersion(const QString &target, const QString &base)
+{
+    if (target == base) {
+        return true;
+    }
+    const QStringList baseVersion = base.split(".");
+    const QStringList targetVersion = target.split(".");
+
+    const int baseVersionSize = baseVersion.size();
+    const int targetVersionSize = targetVersion.size();
+    const int size = baseVersionSize < targetVersionSize ? baseVersionSize : targetVersionSize;
+
+    for (int i = 0; i < size; i++) {
+        if (targetVersion[i] == baseVersion[i]) continue;
+        return targetVersion[i].toInt() > baseVersion[i].toInt() ? true : false;
+    }
+    return true;
+}

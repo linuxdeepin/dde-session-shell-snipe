@@ -12,7 +12,7 @@
 #include <QJsonArray>
 
 namespace dss {
-namespace module {
+namespace module_v2 {
 
 LoginModule::LoginModule(QObject *parent)
     : QObject(parent)
@@ -75,7 +75,7 @@ void LoginModule::setAppData(AppDataPtr appData)
     m_appData = appData;
 }
 
-void LoginModule::setAuthCallback(AuthCallbackFunc authCallback)
+void LoginModule::setAuthCallback(AuthCallbackFun authCallback)
 {
     m_authCallback = authCallback;
 }
