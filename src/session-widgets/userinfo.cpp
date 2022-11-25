@@ -250,8 +250,12 @@ void NativeUser::initConnections()
 
 void NativeUser::initData()
 {
+    qInfo() << "User name: " << m_userInter->userName();
     m_isAutomaticLogin = m_userInter->automaticLogin();
     m_isNoPasswordLogin = m_userInter->noPasswdLogin();
+    qInfo() << "Is no password login: " << m_isNoPasswordLogin
+            << ", is auto login: " << m_isAutomaticLogin;
+
     m_isPasswordValid = (m_userInter->passwordStatus() == "P");
     m_isUse24HourFormat = m_userInter->use24HourFormat();
 
@@ -458,6 +462,7 @@ void NativeUser::updateName(const QString &name)
  */
 void NativeUser::updateNoPasswordLogin(const bool isNoPasswordLogin)
 {
+    qInfo() << "Update user no password login flag: " << isNoPasswordLogin;
     if (isNoPasswordLogin == m_isNoPasswordLogin) {
         return;
     }

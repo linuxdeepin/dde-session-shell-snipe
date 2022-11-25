@@ -542,6 +542,11 @@ void LockWorker::createAuthentication(const QString &account)
     std::shared_ptr<User> user_ptr = m_model->findUserByName(account);
     if (user_ptr) {
         user_ptr->updatePasswordExpiredInfo();
+
+        if (user_ptr->isNoPasswordLogin()) {
+            qInfo() << "User is no password login";
+            return;
+        }
     }
 
     m_account = account;
@@ -764,5 +769,15 @@ void LockWorker::disableGlobalShortcutsForWayland(const bool enable)
         }
     } else {
         qWarning() << "there is no shortcut should be enabled!";
+    }
+}
+
+void LockWorker::checkAccount(const QString &account)
+{
+    Q_UNUSED(account)
+
+    if (m_model->currentUser() && m_model->currentUser()->isNoPasswordLogin()) {
+        qInfo() << "Current user has set 'no password login' : " << account;
+        onAuthFinished();
     }
 }

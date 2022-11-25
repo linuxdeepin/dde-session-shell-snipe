@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
         if (model->isUseWayland()) {
             QObject::connect(lockFrame, &LockFrame::requestDisableGlobalShortcutsForWayland, worker, &LockWorker::disableGlobalShortcutsForWayland);
         }
+        QObject::connect(lockFrame, &LockFrame::requestCheckAccount, worker, &LockWorker::checkAccount);
 
         lockFrame->setVisible(model->visible());
         emit lockService.Visible(model->visible());
