@@ -4,6 +4,8 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 link_libraries(
     ${Qt_LIBS}
     Qt${QT_VERSION_MAJOR}::Widgets
+    ${DtkCore_LIBRARIES}
+    ${DtkWidget_LIBRARIES}
 )
 
 set(LIB_NAME one-key-login)
