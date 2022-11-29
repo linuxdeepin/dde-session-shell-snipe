@@ -54,6 +54,7 @@ void LoginPluginV1::setAuthCallback(LoginPlugin::AuthCallbackFun func)
 {
     TO_LOGIN_PLUGIN
 
+    authCallbackFunc = func;
     m_loginCallBack.authCallbackFun = &LoginPluginV1::authCallBack;
     if (!m_loginCallBack.authCallbackFun || !m_loginCallBack.app_data) {
         qWarning() << "AuthCallbackFun or appData is null";
@@ -74,7 +75,7 @@ void LoginPluginV1::reset()
 
 void LoginPluginV1::authCallBack(const dss::module::AuthCallbackData *authData, void *appData)
 {
-    if (authCallbackFunc) {
+    if (!authCallbackFunc) {
         qWarning() << "Authentication call back function is null";
         return;
     }

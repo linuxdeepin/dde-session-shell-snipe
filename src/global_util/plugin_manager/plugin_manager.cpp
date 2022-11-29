@@ -77,10 +77,10 @@ PluginBase* PluginManager::createPlugin(dss::module::BaseModuleInterface *module
 LoginPlugin* PluginManager::createLoginPlugin(dss::module::BaseModuleInterface *module, const QString &version)
 {
     qInfo() << "Meta version: " << version;
-    if (checkVersion(LoginPlugin_V2::API_VERSION, version)) {
+    if (checkVersion(version, LoginPlugin_V2::API_VERSION)) {
         qInfo() << "Create LoginPluginV2";
         return new LoginPlugin_V2::LoginPluginV2(dynamic_cast<dss::module_v2::LoginModuleInterfaceV2 *>(module));
-    } else if (checkVersion(LoginPlugin_V1::API_VERSION, version)){
+    } else if (checkVersion(version, LoginPlugin_V1::API_VERSION)){
         qInfo() << "Create LoginPluginV1";
         return new LoginPlugin_V1::LoginPluginV1(dynamic_cast<dss::module::LoginModuleInterface *>(module));
     }
