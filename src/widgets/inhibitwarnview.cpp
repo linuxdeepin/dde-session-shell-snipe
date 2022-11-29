@@ -73,7 +73,7 @@ InhibitWarnView::InhibitWarnView(SessionBaseModel::PowerAction inhibitType, QWid
     m_cancelBtn->setFixedSize(ButtonWidth, ButtonHeight);
     m_cancelBtn->setCheckable(true);
     m_cancelBtn->setAutoExclusive(true);
-    m_cancelBtn->setFocusPolicy(Qt::NoFocus);
+    m_cancelBtn->setFocus();
 
     const auto ratio = devicePixelRatioF();
     QIcon icon_pix = QIcon::fromTheme(":/img/cancel_normal.svg").pixmap(m_cancelBtn->iconSize() * ratio);
