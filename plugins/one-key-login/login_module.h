@@ -81,6 +81,7 @@ private:
     bool m_isLocked;
     QDBusInterface*  m_login1SessionSelf;
     bool m_IdentifyWithMultipleUserStarted;
+    bool m_loginAuthenticated;  // 登录界面是否已经验证过了
 };
 
 } // namespace module

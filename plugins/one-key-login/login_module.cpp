@@ -45,6 +45,7 @@ LoginModule::LoginModule(QObject *parent)
     , m_isLocked(false)
     , m_login1SessionSelf(nullptr)
     , m_IdentifyWithMultipleUserStarted(false)
+    , m_loginAuthenticated(false)
 {
     setObjectName(QStringLiteral("LoginModule"));
 
@@ -81,7 +82,7 @@ LoginModule::LoginModule(QObject *parent)
     initConnect();
     startCallHuaweiFingerprint();
 
-    //在2.5秒内没接收到一键登录信号，视为失败
+    // 超时没接收到一键登录信号，视为失败
     m_waitAcceptSignalTimer = new QTimer(this);
     connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
         qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
@@ -139,6 +140,7 @@ void LoginModule::initConnect()
 
 void LoginModule::startCallHuaweiFingerprint()
 {
+    m_loginAuthenticated = true;
     QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
                                                                              "com.deepin.daemon.Authenticate.Fingerprint",
                                                                              "IdentifyWithMultipleUser");
@@ -324,7 +326,15 @@ QString LoginModule::message(const QString &message)
         }
     } else if (cmdType == "IsPluginEnabled") {
         QJsonObject retDataObj;
-        retDataObj["IsPluginEnabled"] = m_appType != AppType::Lock || m_acceptSleepSignal;
+        // 满足两个条件启用插件
+        // 1. 在登录界面且未曾调用过验证接口，一键登录只在登录界面启动的时候认证一下。
+        // 2. 在锁屏界面且收到了唤醒信号
+        const bool enable = (m_appType == AppType::Login && !m_loginAuthenticated) || (m_appType == AppType::Lock && m_acceptSleepSignal);
+        qInfo() << "Enable plugin: " << enable
+                << ", authenticated: " << m_loginAuthenticated
+                << ", accepted sleep signal: " << m_acceptSleepSignal;
+
+        retDataObj["IsPluginEnabled"] = enable;
         retObj["Data"] = retDataObj;
     }
 
