@@ -92,6 +92,7 @@ LoginModule::LoginModule(QObject *parent)
         // 将消息发送到Dbus
         QDBusConnection::systemBus().call(m);
         m_waitAcceptSignalTimer->stop();
+        m_loginAuthenticated = true;
         m_IdentifyWithMultipleUserStarted = false;
         if (!m_isAcceptFingerprintSignal) {
             // 防止刚切换指纹认证stop还没结束。
@@ -140,7 +141,6 @@ void LoginModule::initConnect()
 
 void LoginModule::startCallHuaweiFingerprint()
 {
-    m_loginAuthenticated = true;
     QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
                                                                              "com.deepin.daemon.Authenticate.Fingerprint",
                                                                              "IdentifyWithMultipleUser");
@@ -392,9 +392,11 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
 void LoginModule::sendAuthData(AuthCallbackData& data)
 {
     if (!m_authCallback) {
-        qDebug() << Q_FUNC_INFO << "m_callbackFun is null";
+        qWarning() << Q_FUNC_INFO << "m_callbackFun is null";
         return;
     }
+
+    m_loginAuthenticated = true;
 
     if (m_spinner) {
         m_spinner->stop();
