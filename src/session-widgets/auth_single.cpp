@@ -8,6 +8,7 @@
 #include "dlineeditex.h"
 
 #include <DHiDPIHelper>
+#include <DDialogCloseButton>
 
 #include <QKeyEvent>
 #include <QTimer>
@@ -444,7 +445,18 @@ void AuthSingle::showResetPasswordMessage()
     pa.setColor(QPalette::HighlightedText, Qt::black);
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
     m_resetPasswordFloatingMessage->setPalette(pa);
-    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("gtk-dialog-error").pixmap(20, 20));
+    // DFloatingMessage 中未放开seticonsize接口，无法设置图标大小，使用缩放会造成图标锯齿
+    // 只能使用findChildren找到对应的图标控件来设置图标大小进行规避
+    // DFloatingMessage中有两个按钮一个是DIconButton,另一个是继承于DIconButton的DDialogCloseButton，需要区分
+    QList<DIconButton *> btnList = m_resetPasswordFloatingMessage->findChildren<DIconButton *>();
+    foreach (const auto iconButton, btnList) {
+        DDialogCloseButton * closeButton = qobject_cast<DDialogCloseButton *>(iconButton);
+        if (closeButton) {
+            continue;
+        }
+        iconButton->setIconSize(QSize(20, 20));
+    }
+    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("gtk-dialog-error"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
