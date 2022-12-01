@@ -556,6 +556,13 @@ void LockContent::tryGrabKeyboard(bool exitIfFalied)
             .arg(5000)
             .call();
 
+        DDBusSender()
+            .service("com.deepin.daemon.ScreenSaver")
+            .path("/org/freedesktop/ScreenSaver")
+            .interface("org.freedesktop.ScreenSaver")
+            .method(QString("SimulateUserActivity"))
+            .call();
+
         emit requestLockFrameHide();
         return;
     }
