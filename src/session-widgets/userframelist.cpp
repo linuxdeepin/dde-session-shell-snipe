@@ -93,7 +93,7 @@ void UserFrameList::setFixedSize(const QSize &size)
 {
     QWidget::setFixedSize(size);
     //先确定界面大小，再根据界面大小计算用户列表区域大小
-    updateLayout();
+    updateLayout(width());
 }
 
 void UserFrameList::handlerBeforeAddUser(std::shared_ptr<User> user)
@@ -131,7 +131,7 @@ void UserFrameList::addUser(const std::shared_ptr<User> user)
     m_flowLayout->insertWidget(index, widget);
 
     //添加用户和删除用户时，重新计算区域大小
-    updateLayout();
+    updateLayout(width());
 }
 
 //删除用户
@@ -151,7 +151,7 @@ void UserFrameList::removeUser(const std::shared_ptr<User> user)
     }
 
     //添加用户和删除用户时，重新计算区域大小
-    updateLayout();
+    updateLayout(width());
 }
 
 //点击用户
@@ -244,20 +244,22 @@ void UserFrameList::onOtherPageChanged(const QVariant &value)
     }
 }
 
-void UserFrameList::updateLayout()
+void UserFrameList::updateLayout(int width)
 {
     //处理窗体数量小于5个时的居中显示，取 窗体数量*窗体宽度 和 最大宽度 的较小值，设置为m_centerWidget的宽度
     auto userWidget = m_loginWidgets.constFirst();
     int userWidgetHeight = UserFrameHeight;
     if (userWidget)
         userWidgetHeight = userWidget->heightHint();
-    int count = m_flowLayout->count();
-    if (count < 5 && count > 0) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, userWidgetHeight + 20);
+
+    // 根据界面总宽度计算每行可以显示多少用户信息，每行最多5个用户信息
+    int count = 5;
+    while ((UserFrameWidth + UserFrameSpaceing) * count > width - 10) {
+        count--;
     }
-    if (count >= 5) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * 5, (userWidgetHeight + UserFrameSpaceing) * 2);
-    }
+    count = count <= 0 ? 1 : count;
+
+    m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, (userWidgetHeight + UserFrameSpaceing) * 2);
     m_centerWidget->setFixedWidth(m_scrollArea->width() - 10);
 
     std::shared_ptr<User> user = m_model->currentUser();
@@ -324,15 +326,16 @@ void UserFrameList::focusOutEvent(QFocusEvent *event)
 
 void UserFrameList::resizeEvent(QResizeEvent *event)
 {
-    updateLayout();
-
     QWidget::resizeEvent(event);
+    updateLayout(width());
 }
 
 void UserFrameList::OnDConfigPropertyChanged(const QString &key, const QVariant &value)
 {
     if (key == SHOW_USER_NAME) {
         // 需要等待UserWidget处理完，延时100ms后更新布局
-        QTimer::singleShot(100, this, &UserFrameList::updateLayout);
+        QTimer::singleShot(100, this, [ = ]{
+            updateLayout(width());
+        });
     }
 }
