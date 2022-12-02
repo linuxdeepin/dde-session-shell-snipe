@@ -25,5 +25,7 @@
         <file>misc/images/unlock/unlock_10.svg</file>
         <file>misc/images/retry16.svg</file>
         <file>misc/images/retry24.svg</file>
+        <file>misc/images/password-hide.svg</file>
+        <file>misc/images/password-shown.svg</file>
     </qresource>
 </RCC>

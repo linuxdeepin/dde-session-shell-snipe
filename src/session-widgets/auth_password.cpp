@@ -33,6 +33,9 @@
 #define Path "/com/deepin/dialogs/ResetPassword"
 #define Interface "com.deepin.dialogs.ResetPassword"
 
+const QString PASSWORD_HIDE = QStringLiteral(":/misc/images/password-hide.svg");
+const QString PASSWORD_SHOWN = QStringLiteral(":/misc/images/password-shown.svg");
+
 using namespace AuthCommon;
 
 AuthPassword::AuthPassword(QWidget *parent)
@@ -91,7 +94,7 @@ void AuthPassword::initUI()
     m_passwordShowBtn->setFocusPolicy(Qt::NoFocus);
     m_passwordShowBtn->setCursor(Qt::ArrowCursor);
     m_passwordShowBtn->setFlat(true);
-    m_passwordShowBtn->setIcon(DStyle::standardIcon(style(), DStyle::SP_HidePassword));
+    m_passwordShowBtn->setIcon(QIcon(PASSWORD_SHOWN));
     m_passwordShowBtn->setIconSize(QSize(16, 16));
     m_passwordShowBtn->setVisible(true);
     passwordLayout->addWidget(m_passwordShowBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
@@ -146,10 +149,10 @@ void AuthPassword::initConnections()
 
     connect(m_passwordShowBtn, &DSuggestButton::clicked, this, [ this ] {
         if (m_lineEdit->echoMode() == QLineEdit::EchoMode::Password) {
-            m_passwordShowBtn->setIcon(DStyle::standardIcon(style(),DStyle::SP_ShowPassword));
+            m_passwordShowBtn->setIcon(QIcon(PASSWORD_HIDE));
             m_lineEdit->lineEdit()->setEchoMode(QLineEdit::Normal);
         } else {
-            m_passwordShowBtn->setIcon(DStyle::standardIcon(style(),DStyle::SP_HidePassword));
+            m_passwordShowBtn->setIcon(QIcon(PASSWORD_SHOWN));
             m_lineEdit->lineEdit()->setEchoMode(QLineEdit::Password);
         }
     });
