@@ -28,7 +28,7 @@ public:
     explicit UserFrameList(QWidget *parent = nullptr);
     void setModel(SessionBaseModel *model);
     void setFixedSize(const QSize &size);
-    void updateLayout();
+    void updateLayout(int width);
 
 signals:
     void requestSwitchUser(std::shared_ptr<User> user);

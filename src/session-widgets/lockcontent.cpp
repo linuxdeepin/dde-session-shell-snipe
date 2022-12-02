@@ -259,7 +259,7 @@ void LockContent::pushUserFrame()
     if(m_model->isServerModel())
         m_controlWidget->setUserSwitchEnable(false);
 
-    m_userListWidget->updateLayout();
+    m_userListWidget->updateLayout(width());
     setCenterContent(m_userListWidget);
 }
 
