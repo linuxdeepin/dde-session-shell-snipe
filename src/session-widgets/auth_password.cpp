@@ -317,8 +317,11 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
         updateUnlockPrompt();
 
     m_passwordHintBtn->setVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
-    if (m_limitsInfo->locked) {
-        setAuthState(AS_Locked, "Locked");
+    if (m_limitsInfo->numFailures >= 3) {
+        if (m_limitsInfo->locked) {
+            setAuthState(AS_Locked, "Locked");
+        }
+
         if (this->isVisible() && isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
@@ -462,8 +465,8 @@ void AuthPassword::setResetPasswordMessageVisible(const bool isVisible)
     if (m_resetPasswordMessageVisible == isVisible)
         return;
 
-    // 如果设置为显示重置按钮，但是实际上并没有锁定，直接退出，是是否锁定为准
-    if (isVisible && !isLocked())
+    // 如果设置为显示重置按钮，失败次数>=3次就显示重置密码 1060-24505
+    if (isVisible && m_limitsInfo && m_limitsInfo->numFailures < 3)
         return;
 
     m_resetPasswordMessageVisible = isVisible;
@@ -658,8 +661,11 @@ void AuthPassword::hideEvent(QHideEvent *event)
 void AuthPassword::showEvent(QShowEvent *event)
 {
     m_passwordHintBtn->setVisible(m_limitsInfo->numFailures > 0 && !m_passwordHint.isEmpty());
-    if (m_limitsInfo->locked) {
-        setAuthState(AS_Locked, "Locked");
+    if (m_limitsInfo->numFailures >= 3) {
+        if (m_limitsInfo->locked) {
+            setAuthState(AS_Locked, "Locked");
+        }
+
         if (isShowResetPasswordMessage()) {
             qDebug() << "begin reset passoword";
             setResetPasswordMessageVisible(true);
