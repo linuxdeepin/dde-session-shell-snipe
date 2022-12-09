@@ -259,7 +259,12 @@ void UserFrameList::updateLayout(int width)
     }
     count = count <= 0 ? 1 : count;
 
-    m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, (userWidgetHeight + UserFrameSpaceing) * 2);
+    if (m_flowLayout->count() <= count) {
+        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * m_flowLayout->count(), userWidgetHeight + 20);
+    } else {
+        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, (userWidgetHeight + UserFrameSpaceing) * 2);
+    }
+
     m_centerWidget->setFixedWidth(m_scrollArea->width() - 10);
 
     std::shared_ptr<User> user = m_model->currentUser();
