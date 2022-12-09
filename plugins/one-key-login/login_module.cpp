@@ -455,6 +455,13 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
         m_needSendAuthType = true;
         return;
     }
+
+    // 登录界面密码锁定后只允许切换到密码认证，等待密码锁定解除后才能切换到其它认证类型
+    if (m_isLocked && m_appType == AppType::Login) {
+        qInfo() << "Password is locked and current application is greeter, change authentication type to password";
+        type = AuthType::AT_Password;
+    }
+
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
     if (m_authStatus == AuthStatus::None && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;

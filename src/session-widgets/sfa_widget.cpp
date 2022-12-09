@@ -1102,8 +1102,8 @@ void SFAWidget::onRequestChangeAuth(const int authType)
             << ", chooseAuthButtonBox is enabled" << m_chooseAuthButtonBox->isEnabled()
             << ", current authentication type" << m_currentAuthType;
 
-    if (!m_chooseAuthButtonBox->isEnabled()) {
-        qWarning() << "Authentication button box is disabled";
+    if (authType != AuthCommon::AT_Password && !m_chooseAuthButtonBox->isEnabled()) {
+        qWarning() << "Authentication button box is disabled and authentication type is not password.";
         return;
     }
 
