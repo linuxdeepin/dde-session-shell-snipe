@@ -29,16 +29,15 @@ bool LoginPlugin::isPluginEnabled()
 
 bool LoginPlugin::supportDefaultUser()
 {
-    qDebug() << Q_FUNC_INFO;
+    qInfo() << Q_FUNC_INFO;
     QJsonObject message;
-    message["CmdType"] = "IsPluginEnabled";
+    message["CmdType"] = "GetConfigs";
     const QString &result = this->message(toJson(message));
-    qDebug() << "Result: " << result;
     const QJsonObject &dataObj = getDataObj(result);
-    if (dataObj.isEmpty() || !dataObj.contains("IsPluginEnabled"))
+    if (dataObj.isEmpty())
         return true;
 
-    return dataObj["IsPluginEnabled"].toBool(true);
+    return dataObj["SupportDefaultUser"].toBool(true);
 }
 
 void LoginPlugin::notifyCurrentUserChanged(const QString &userName)
