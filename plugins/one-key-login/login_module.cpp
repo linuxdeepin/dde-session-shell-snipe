@@ -80,10 +80,10 @@ LoginModule::LoginModule(QObject *parent)
     }
 
     initConnect();
-    startCallHuaweiFingerprint();
 
     // 超时没接收到一键登录信号，视为失败
     m_waitAcceptSignalTimer = new QTimer(this);
+    m_waitAcceptSignalTimer->setInterval(800);
     connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
         qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
         QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
@@ -101,8 +101,6 @@ LoginModule::LoginModule(QObject *parent)
             });
         }
     }, Qt::DirectConnection);
-    m_waitAcceptSignalTimer->setInterval(800);
-    m_waitAcceptSignalTimer->start();
 }
 
 LoginModule::~LoginModule()
@@ -164,6 +162,8 @@ void LoginModule::startCallHuaweiFingerprint()
         }
         watcher->deleteLater();
     });
+
+    m_waitAcceptSignalTimer->start();
 }
 
 void LoginModule::init()
@@ -176,6 +176,12 @@ void LoginModule::init()
         QTimer::singleShot(500, this, [this] {
             sendAuthTypeToSession(AuthType::AT_Fingerprint);
         });
+    }
+
+    static bool initialized = false;
+    if (!initialized) {
+        startCallHuaweiFingerprint();
+        initialized = true;
     }
 }
 
@@ -200,7 +206,6 @@ void LoginModule::initUI()
     m_spinner->setFixedSize(40, 40);
     m_loginWidget->layout()->addWidget(m_spinner);
     m_spinner->start();
-
 }
 
 void LoginModule::updateInfo()
@@ -437,8 +442,6 @@ void LoginModule::slotPrepareForSleep(bool active)
         // 等待切换到插件认证完成后再发起多用户认证
         QTimer::singleShot(300, this, [this] {
             startCallHuaweiFingerprint();
-            m_waitAcceptSignalTimer->setInterval(800);
-            m_waitAcceptSignalTimer->start();
         });
         if (m_spinner)
             m_spinner->start();
@@ -463,7 +466,7 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
     }
 
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
-    if (m_authStatus != AuthStatus::Start && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
+    if (m_authStatus == AuthStatus::None && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;
         return;
     }
