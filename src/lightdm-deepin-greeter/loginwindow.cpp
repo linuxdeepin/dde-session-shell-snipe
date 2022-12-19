@@ -66,11 +66,22 @@ void LoginWindow::hideEvent(QHideEvent *event)
 bool LoginWindow::event(QEvent *event)
 {
     if (event->type() == QEvent::KeyRelease) {
-        switch (static_cast<QKeyEvent *>(event)->key()) {
+        auto *keyEvent = dynamic_cast<QKeyEvent *>(event);
+        switch (keyEvent->key()) {
         // startdde屏蔽了systemd的待机，由greeter处理待机流程
         case Qt::Key_Sleep: {
              m_model->setPowerAction(SessionBaseModel::RequireSuspend);
              break;
+        }
+        // win+p时,触发xrandr -q.用于规避联想机型GT730显卡热插拔问题
+        case Qt::Key_P: {
+            if (!qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
+                if (qApp->queryKeyboardModifiers().testFlag(Qt::MetaModifier)) {
+                    qInfo() << "win + p pressed";
+                    auto ret = QProcess::execute("xrandr", QStringList() << "-q");
+                    qInfo() << "xrandr -q executed:" << ret;
+                }
+            }
         }
         default:
             break;
