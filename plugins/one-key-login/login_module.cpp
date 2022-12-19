@@ -331,10 +331,12 @@ QString LoginModule::message(const QString &message)
         }
     } else if (cmdType == "IsPluginEnabled") {
         QJsonObject retDataObj;
-        // 满足两个条件启用插件
+
+        // 满足以下条件启用插件：
         // 1. 在登录界面且未曾调用过验证接口，一键登录只在登录界面启动的时候认证一下。
         // 2. 在锁屏界面且收到了唤醒信号
-        const bool enable = (m_appType == AppType::Login && !m_loginAuthenticated) || (m_appType == AppType::Lock && m_acceptSleepSignal);
+        // 3. 验证通过(登录时根据验证结果去跳转用户)
+        const bool enable = (m_appType == AppType::Login && !m_loginAuthenticated) || (m_appType == AppType::Lock && m_acceptSleepSignal) || (m_appType == AppType::Login && m_lastAuthResult.result == AuthResult::Success);
         qInfo() << "Enable plugin: " << enable
                 << ", authenticated: " << m_loginAuthenticated
                 << ", accepted sleep signal: " << m_acceptSleepSignal;
