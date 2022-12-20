@@ -96,6 +96,7 @@ void AuthSingle::initUI()
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -233,6 +234,7 @@ void AuthSingle::setAuthState(const int state, const QString &result)
 void AuthSingle::setCapsLockVisible(const bool on)
 {
     m_capsLock->setVisible(on);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -418,6 +420,7 @@ void AuthSingle::showPasswordHint()
 void AuthSingle::setPasswordHintBtnVisible(const bool isVisible)
 {
     m_passwordHintBtn->setVisible(isVisible);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -559,6 +562,15 @@ bool AuthSingle::isUserAccountBinded()
     } else {
         return false;
     }
+}
+
+void AuthSingle::updatePasswordTextMargins()
+{
+    // 根据大小写提示是否显示，设置密码框左边距,根据密码提示和显示密码设置密码杠右边距
+    QMargins textMargins = m_lineEdit->lineEdit()->textMargins();
+    textMargins.setLeft(m_capsLock->isVisible() ? m_capsLock->width() : 0);
+    textMargins.setRight(m_passwordHintBtn->isVisible() ? m_passwordHintBtn->width() : 0);
+    m_lineEdit->lineEdit()->setTextMargins(textMargins);
 }
 
 /**

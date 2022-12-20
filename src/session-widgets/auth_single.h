@@ -55,6 +55,8 @@ private:
     void showPasswordHint();
     void setPasswordHintBtnVisible(const bool isVisible);
     bool isUserAccountBinded();
+    void updatePasswordTextMargins();
+
 private:
     DLabel *m_capsLock;             // 大小写状态
     DLineEditEx *m_lineEdit;        // 输入框
