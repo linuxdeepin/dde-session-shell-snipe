@@ -69,6 +69,7 @@ private:
     bool isUserAccountBinded();
     void showAlertMessage(const QString &text);
     void hidePasswordHintWidget();
+    void updatePasswordTextMargins();
 
 private:
     DLabel *m_capsLock;             // 大小写状态

@@ -116,6 +116,7 @@ void AuthPassword::initUI()
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -131,6 +132,7 @@ void AuthPassword::initConnections()
         if (!focus)
             m_lineEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
+        updatePasswordTextMargins();
         emit focusChanged(focus);
         if (focus) {
             emit lineEditTextChanged(m_lineEdit->text());
@@ -300,6 +302,7 @@ void AuthPassword::setAnimationState(const bool start)
 void AuthPassword::setCapsLockVisible(const bool on)
 {
     m_capsLock->setVisible(on);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -317,6 +320,7 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
         updateUnlockPrompt();
 
     m_passwordHintBtn->setVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
+    updatePasswordTextMargins();
     if (m_limitsInfo->numFailures >= 3) {
         if (m_limitsInfo->locked) {
             setAuthState(AS_Locked, "Locked");
@@ -452,6 +456,7 @@ void AuthPassword::showPasswordHint()
 void AuthPassword::setPasswordHintBtnVisible(const bool isVisible)
 {
     m_passwordHintBtn->setVisible(isVisible);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -661,6 +666,7 @@ void AuthPassword::hideEvent(QHideEvent *event)
 void AuthPassword::showEvent(QShowEvent *event)
 {
     m_passwordHintBtn->setVisible(m_limitsInfo->numFailures > 0 && !m_passwordHint.isEmpty());
+    updatePasswordTextMargins();
     if (m_limitsInfo->numFailures >= 3) {
         if (m_limitsInfo->locked) {
             setAuthState(AS_Locked, "Locked");
@@ -683,6 +689,7 @@ void AuthPassword::setAuthStatueVisible(bool visible)
 {
     m_showAuthState = visible;
     m_authStateLabel->setVisible(visible && !hasFocus());
+    updatePasswordTextMargins();
 }
 
 void AuthPassword::showAlertMessage(const QString &text)
@@ -700,5 +707,16 @@ void AuthPassword::hidePasswordHintWidget()
 
     // 恢复调色板
     DPaletteHelper::instance()->resetPalette(this->topLevelWidget());
+}
+
+void AuthPassword::updatePasswordTextMargins()
+{
+    // 根据大小写提示是否显示，设置密码框左边距,根据密码提示和显示密码设置密码杠右边距
+    QMargins textMargins = m_lineEdit->lineEdit()->textMargins();
+    textMargins.setLeft(m_capsLock->isVisible() ? m_capsLock->width() : 0);
+    textMargins.setRight((m_passwordShowBtn->isVisible() ? m_passwordShowBtn->width() : 0) +
+                         (m_authStateLabel->isVisible() ? m_authStateLabel->width() : 0) +
+                         (m_passwordHintBtn->isVisible() ? m_passwordHintBtn->width() : 0));
+    m_lineEdit->lineEdit()->setTextMargins(textMargins);
 }
 
