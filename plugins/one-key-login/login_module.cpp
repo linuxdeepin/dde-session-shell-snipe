@@ -101,6 +101,8 @@ LoginModule::LoginModule(QObject *parent)
             });
         }
     }, Qt::DirectConnection);
+
+    startCallHuaweiFingerprint();
 }
 
 LoginModule::~LoginModule()
@@ -176,12 +178,6 @@ void LoginModule::init()
         QTimer::singleShot(500, this, [this] {
             sendAuthTypeToSession(AuthType::AT_Fingerprint);
         });
-    }
-
-    static bool initialized = false;
-    if (!initialized) {
-        startCallHuaweiFingerprint();
-        initialized = true;
     }
 }
 
