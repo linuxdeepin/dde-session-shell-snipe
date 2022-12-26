@@ -27,5 +27,6 @@
         <file>misc/images/retry24.svg</file>
         <file>misc/images/password-hide.svg</file>
         <file>misc/images/password-shown.svg</file>
+        <file>misc/images/dss_warning.svg</file>
     </qresource>
 </RCC>

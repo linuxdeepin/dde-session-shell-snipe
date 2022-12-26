@@ -82,6 +82,7 @@ private:
     uid_t m_currentUid; // 当前用户uid
     QTimer *m_bindCheckTimer;
     DAlertControl *m_passwordHintWidget;
+    DIconButton *m_iconButton;
 };
 
 #endif // AUTHPASSWORD_H

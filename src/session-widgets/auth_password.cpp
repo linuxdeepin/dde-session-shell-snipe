@@ -48,6 +48,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     , m_resetPasswordFloatingMessage(nullptr)
     , m_bindCheckTimer(nullptr)
     , m_passwordHintWidget(nullptr)
+    , m_iconButton(nullptr)
 {
     setObjectName(QStringLiteral("AuthPassword"));
     setAccessibleName(QStringLiteral("AuthPassword"));
@@ -513,9 +514,10 @@ void AuthPassword::showResetPasswordMessage()
         if (closeButton) {
             continue;
         }
-        iconButton->setIconSize(QSize(20, 20));
+        iconButton->installEventFilter(this);
+        m_iconButton = iconButton;
     }
-    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("gtk-dialog-error"));
+    m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
@@ -650,6 +652,21 @@ bool AuthPassword::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
+
+    if (watched == m_iconButton && event->type() == QEvent::Paint) {
+        QPainter painter(m_iconButton);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+        if (!m_iconButton->icon().isNull()) {
+            QRect iconRect(0, 0, 20, 20);
+            iconRect.moveCenter(m_iconButton->rect().center());
+            m_iconButton->icon().paint(&painter, iconRect);
+        }
+
+        return true;
+    }
+
     return false;
 }
 
