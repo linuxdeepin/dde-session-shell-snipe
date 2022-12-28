@@ -25,7 +25,7 @@
 #endif
 
 #define PAM_SERVICE_SYSTEM_NAME "password-auth"
-#define PAM_SERVICE_DEEPIN_NAME "common-auth"
+#define PAM_SERVICE_DEEPIN_NAME "dde-lock"
 #define PKCS1_HEADER "-----BEGIN RSA PUBLIC KEY-----"
 #define PKCS8_HEADER "-----BEGIN PUBLIC KEY-----"
 #define OPENSSLNAME "libssl.so"
