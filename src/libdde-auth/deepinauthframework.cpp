@@ -26,7 +26,7 @@
 #endif
 
 #define PAM_SERVICE_SYSTEM_NAME "password-auth"
-#define PAM_SERVICE_DEEPIN_NAME "common-auth"
+#define PAM_SERVICE_DEEPIN_NAME "dde-lock"
 
 using namespace AuthCommon;
 
