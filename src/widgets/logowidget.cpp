@@ -17,11 +17,16 @@
 DCORE_USE_NAMESPACE
 
 #define PIXMAP_WIDTH 128
+#define PIXMAP_WIDTH_EXT 188
 #define PIXMAP_HEIGHT 132 /* SessionBaseWindow */
 
-const QPixmap systemLogo(const QSize &size)
+const QPixmap systemLogo(const QString &file, const QSize &size, bool loadFromDTK)
 {
-    return loadPixmap(DSysInfo::distributionOrgLogo(DSysInfo::Distribution, DSysInfo::Transparent, ":img/logo.svg"), size);
+    if (loadFromDTK) {
+        return loadPixmap(DSysInfo::distributionOrgLogo(DSysInfo::Distribution, DSysInfo::Transparent, file), size);
+    } else {
+        return loadPixmap(file, size);
+    }
 }
 
 LogoWidget::LogoWidget(QWidget *parent)
@@ -50,8 +55,7 @@ void LogoWidget::initUI()
 
     /* logo */
     m_logoLabel->setObjectName("Logo");
-    QPixmap pixmap = loadSystemLogo();
-    m_logoLabel->setPixmap(pixmap);
+    updateLogoPixmap();
     logoLayout->addWidget(m_logoLabel, 0, Qt::AlignBottom | Qt::AlignLeft);
 
     /* version */
@@ -84,12 +88,18 @@ void LogoWidget::initUI()
     updateStyle(":/skin/login.qss", m_logoVersionLabel);
 }
 
-QPixmap LogoWidget::loadSystemLogo()
+QPixmap LogoWidget::loadSystemLogo(const QString &file, bool loadFromDTK)
 {
-    const QPixmap &p = systemLogo(QSize());
-    const bool result = p.width() < PIXMAP_WIDTH && p.height() < PIXMAP_HEIGHT;
-    return result ? p : systemLogo(QSize(PIXMAP_WIDTH, PIXMAP_HEIGHT));
+    QPixmap p = systemLogo(file, QSize(), loadFromDTK);
+    QSize size(PIXMAP_WIDTH_EXT, PIXMAP_HEIGHT);
+    if (loadFromDTK) {
+        size.setWidth(PIXMAP_WIDTH);
+        size.setHeight(PIXMAP_HEIGHT);
+    }
+    const bool result = p.width() < size.width() && p.height() < size.height();
+    return result ? p : systemLogo(file, size, loadFromDTK);
 }
+
 
 QString LogoWidget::getVersion()
 {
@@ -104,6 +114,22 @@ QString LogoWidget::getVersion()
     return version;
 }
 
+void LogoWidget::updateLogoPixmap()
+{
+    QString logo = ":img/logo.svg";
+    QString labelText = getVersion();
+    bool loadFromDTK = true;
+    // 家庭版更换水印logo
+    if (DSysInfo::UosEducation == DSysInfo::uosEditionType()) {
+        logo = QString(":img/distribution_logo.svg");
+        labelText = "";
+        loadFromDTK = false;
+    }
+    QPixmap pixmap = loadSystemLogo(logo, loadFromDTK);
+    m_logoLabel->setPixmap(pixmap);
+    m_logoVersionLabel->setText(labelText);
+}
+
 /**
  * @brief LogoWidget::updateLocale
  * 将翻译文件与用户选择的语言对应
@@ -112,7 +138,7 @@ QString LogoWidget::getVersion()
 void LogoWidget::updateLocale(const QString &locale)
 {
     m_locale = locale;
-    m_logoVersionLabel->setText(getVersion());
+    updateLogoPixmap();
 }
 
 void LogoWidget::resizeEvent(QResizeEvent *event)

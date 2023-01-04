@@ -184,5 +184,6 @@
         <file>img/list_actions/userswitch_press.svg</file>
         <file>img/deepin-system-monitor.svg</file>
         <file>img/user_name.svg</file>
+        <file>img/distribution_logo.svg</file>
     </qresource>
 </RCC>

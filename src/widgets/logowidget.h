@@ -26,7 +26,8 @@ protected:
 
 private:
     void initUI();
-    QPixmap loadSystemLogo();
+    QPixmap loadSystemLogo(const QString &file, bool loadFromDTK);
+    void updateLogoPixmap();
     QString getVersion();
 
 private:
