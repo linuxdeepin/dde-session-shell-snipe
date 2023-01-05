@@ -61,6 +61,7 @@ private:
     void startCallHuaweiFingerprint();
     void sendAuthTypeToSession(AuthType type);
     void sendAuthData(AuthCallbackData& data);
+    void stopIdentify();
 
 private:
     AppDataPtr m_appData;

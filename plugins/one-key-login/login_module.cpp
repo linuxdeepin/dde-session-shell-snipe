@@ -86,11 +86,7 @@ LoginModule::LoginModule(QObject *parent)
     m_waitAcceptSignalTimer->setInterval(800);
     connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
         qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
-        QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
-                                                                                 "com.deepin.daemon.Authenticate.Fingerprint",
-                                                                                 "StopIdentifyWithMultipleUser");
-        // 将消息发送到Dbus
-        QDBusConnection::systemBus().call(m);
+        stopIdentify();
         m_waitAcceptSignalTimer->stop();
         m_loginAuthenticated = true;
         m_IdentifyWithMultipleUserStarted = false;
@@ -101,6 +97,8 @@ LoginModule::LoginModule(QObject *parent)
             });
         }
     }, Qt::DirectConnection);
+
+    startCallHuaweiFingerprint();
 }
 
 LoginModule::~LoginModule()
@@ -176,12 +174,6 @@ void LoginModule::init()
         QTimer::singleShot(500, this, [this] {
             sendAuthTypeToSession(AuthType::AT_Fingerprint);
         });
-    }
-
-    static bool initialized = false;
-    if (!initialized) {
-        startCallHuaweiFingerprint();
-        initialized = true;
     }
 }
 
@@ -355,11 +347,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
     qDebug() << Q_FUNC_INFO << "LoginModule name :" << name << "\n error code:" << errorCode << " \n error msg:" << msg;
     m_waitAcceptSignalTimer->stop();
     if(m_IdentifyWithMultipleUserStarted){
-        QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
-                                                                                 "com.deepin.daemon.Authenticate.Fingerprint",
-                                                                                 "StopIdentifyWithMultipleUser");
-        // 将消息发送到Dbus
-        QDBusConnection::systemBus().call(m);
+        stopIdentify();
     }
 
     m_IdentifyWithMultipleUserStarted = false;
@@ -450,6 +438,20 @@ void LoginModule::slotPrepareForSleep(bool active)
     } else {
         //fix: 多用户时，第一个用户直接锁屏，然后待机唤醒，在直接切换到另一个用户时，m_login1SessionSelf没有激活，见159949
         sendAuthTypeToSession(AuthType::AT_Fingerprint);
+    }
+}
+
+void LoginModule::stopIdentify()
+{
+    QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
+                                                                             "com.deepin.daemon.Authenticate.Fingerprint",
+                                                                             "StopIdentifyWithMultipleUser");
+    // 将消息发送到Dbus
+    QDBusMessage mes = QDBusConnection::systemBus().call(m);
+    if (mes.type() == QDBusMessage::ReplyMessage) {
+        qInfo() << Q_FUNC_INFO << "success";
+    } else {
+        qInfo() << Q_FUNC_INFO << "failed";
     }
 }
 

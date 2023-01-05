@@ -1125,12 +1125,12 @@ void SFAWidget::onRequestChangeAuth(const int authType)
 bool SFAWidget::useCustomAuth() const
 {
     // 无密码登录或者自动登录不使用自定义认证
+    //去掉自动登录的判定，详见bug176463
     const bool isNoPasswordLoginEnabled = m_model->appType() == AuthCommon::Lock         ||
                              ( m_model ->appType() == AuthCommon::Login       &&
-                               !m_model->currentUser()->isNoPasswordLogin()   &&
-                               !m_model->currentUser()->isAutomaticLogin());
+                               !m_model->currentUser()->isNoPasswordLogin());
     if (!isNoPasswordLoginEnabled) {
-        qInfo() << "Automatic login is enabled";
+        qInfo() << "NoPassword login is enabled";
         return false;
     }
 
