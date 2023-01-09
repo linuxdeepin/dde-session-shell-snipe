@@ -281,15 +281,28 @@ void AuthSingle::setLimitsInfo(const LimitsInfo &info)
 void AuthSingle::setLineEditEnabled(const bool enable)
 {
     // m_lineEdit->setEnabled(enable);
-    if (enable) {
+    if (!m_passwordLineEditEnabled) {
+        m_lineEdit->setFocusPolicy(Qt::NoFocus);
+        m_lineEdit->clearFocus();
+        m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(false);
+    } else if (enable) {
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
         m_lineEdit->setFocus();
         m_lineEdit->lineEdit()->setReadOnly(false);
+        m_lineEdit->lineEdit()->setEnabled(true);
     } else {
         m_lineEdit->setFocusPolicy(Qt::NoFocus);
         m_lineEdit->clearFocus();
         m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(true);
     }
+}
+
+void AuthSingle::setPasswordLineEditEnabled(const bool enable)
+{
+    m_passwordLineEditEnabled = enable;
+    setLineEditEnabled(enable);
 }
 
 /**

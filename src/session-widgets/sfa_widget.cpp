@@ -129,6 +129,10 @@ void SFAWidget::setAuthType(const int type)
 {
     qDebug() << Q_FUNC_INFO << "SFAWidget::setAuthType:" << type;
     int authType = type;
+    if (!m_model->currentUser()->allowToChangePassword() && m_model->appType() == Login) {
+        qInfo() << "Password is expired";
+        authType = AT_Password;
+    }
     if (useCustomAuth()) {
         authType |= AT_Custom;
         initCustomAuth();
@@ -399,6 +403,7 @@ void SFAWidget::initSingleAuth()
     m_singleAuth->setCurrentUid(m_model->currentUser()->uid());
     replaceWidget(m_singleAuth);
     m_frameDataBind->updateValue("SFAType", AT_PAM);
+    m_singleAuth->setPasswordLineEditEnabled(m_model->currentUser()->allowToChangePassword() || m_model->appType() != Login);
 
     connect(m_singleAuth, &AuthSingle::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_singleAuth, &AuthSingle::authFinished, this, [this](const int authState) {
@@ -471,6 +476,7 @@ void SFAWidget::initPasswdAuth()
     m_passwordAuth = new AuthPassword(this);
     m_passwordAuth->setCurrentUid(m_model->currentUser()->uid());
     m_passwordAuth->hide();
+    m_passwordAuth->setPasswordLineEditEnabled(m_model->currentUser()->allowToChangePassword() || m_model->appType() != Login);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const int authState) {

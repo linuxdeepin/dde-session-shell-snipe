@@ -236,6 +236,8 @@ void MFAWidget::initPasswdAuth()
     m_passwordAuth->setCapsLockVisible(m_capslockMonitor->isCapslockOn());
     m_passwordAuth->setPasswordHint(m_user->passwordHint());
     m_passwordAuth->setAuthStatueVisible(true);
+    m_passwordAuth->setPasswordLineEditEnabled(m_model->currentUser()->allowToChangePassword() || m_model->appType() != Login);
+
     m_mainLayout->insertWidget(m_index, m_passwordAuth);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {

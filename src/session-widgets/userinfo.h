@@ -19,6 +19,11 @@ class User : public QObject
 {
     Q_OBJECT
 public:
+    enum AccountType {
+        NormalUser,
+        Administrator
+    };
+
     enum UserType {
         Native,
         ADDomain,
@@ -59,6 +64,7 @@ public:
 
     bool operator==(const User &user) const;
 
+    inline int accountType() const { return m_accountType; }
     inline bool isAutomaticLogin() const { return m_isAutomaticLogin; }
     inline bool isPasswordValid() const { return m_isPasswordValid; }
     inline bool isLogin() const { return m_isLogin; }
@@ -92,6 +98,7 @@ public:
     void updateLimitsInfo(const QString &info);
     void updateLoginState(const bool isLogin);
     void setLastAuthType(const int type);
+    bool allowToChangePassword() const;
 
     virtual void setKeyboardLayout(const QString &keyboard) { Q_UNUSED(keyboard) }
     virtual void updatePasswordExpiredInfo() { }
@@ -123,6 +130,7 @@ protected:
     QString userPwdName(const uid_t uid) const;
 
 protected:
+    int m_accountType;                   // 账户类型
     bool m_isAutomaticLogin;             // 自动登录
     bool m_isLogin;                      // 登录状态
     bool m_isNoPasswordLogin;            // 无密码登录
@@ -182,6 +190,7 @@ private slots:
     void updateWeekdayFormat(const int format);
     void updateUid(const QString &uid);
     void updateUse24HourFormat(const bool is24HourFormat);
+    void updateAccountType();
 
 private:
     void initConnections();

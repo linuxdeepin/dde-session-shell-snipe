@@ -101,6 +101,16 @@
             "description": "锁屏是否展示用户名，默认不展示",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "changePasswordForNormalUser":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "changePasswordForNormalUser",
+            "name[zh_CN]": "密码过期后普通用户是否可以在登录界面修改密码",
+            "description": "密码过期后普通用户是否可以在登录界面修改密码，默认允许",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

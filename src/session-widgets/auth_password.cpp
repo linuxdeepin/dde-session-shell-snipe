@@ -400,15 +400,28 @@ QString AuthPassword::lineEditText() const
  */
 void AuthPassword::setLineEditEnabled(const bool enable)
 {
-    if (enable && !m_limitsInfo->locked) {
+    if (!m_passwordLineEditEnabled) {
+        m_lineEdit->setFocusPolicy(Qt::NoFocus);
+        m_lineEdit->clearFocus();
+        m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(false);
+    } else if (enable && !m_limitsInfo->locked) {
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
         m_lineEdit->setFocus();
         m_lineEdit->lineEdit()->setReadOnly(false);
+        m_lineEdit->lineEdit()->setEnabled(true);
     } else {
         m_lineEdit->setFocusPolicy(Qt::NoFocus);
         m_lineEdit->clearFocus();
         m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(true);
     }
+}
+
+void AuthPassword::setPasswordLineEditEnabled(const bool enable)
+{
+    m_passwordLineEditEnabled = enable;
+    setLineEditEnabled(enable);
 }
 
 /**

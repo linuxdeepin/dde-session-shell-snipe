@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "userinfo.h"
-
+#include "dconfig_helper.h"
 #include "constants.h"
 
 #include <grp.h>
@@ -14,8 +14,11 @@
 #define DEFAULT_AVATAR ":/img/default_avatar.svg"
 #define DEFAULT_BACKGROUND "/usr/share/backgrounds/default_background.jpg"
 
+using namespace DDESESSIONCC;
+
 User::User(QObject *parent)
     : QObject(parent)
+    , m_accountType(Administrator)
     , m_isAutomaticLogin(false)
     , m_isLogin(false)
     , m_isNoPasswordLogin(false)
@@ -39,6 +42,7 @@ User::User(QObject *parent)
 
 User::User(const User &user)
     : QObject(user.parent())
+    , m_accountType(user.m_accountType)
     , m_isAutomaticLogin(user.m_isAutomaticLogin)
     , m_isLogin(user.m_isLogin)
     , m_isNoPasswordLogin(user.m_isNoPasswordLogin)
@@ -129,6 +133,11 @@ void User::updatePasswordExpiredState(User::ExpiredState state, int dayLeft)
     m_expiredState = state;
     m_expiredDayLeft = dayLeft;
     emit passwordExpiredInfoChanged();
+}
+
+bool User::allowToChangePassword() const
+{
+    return m_accountType == Administrator || DConfigHelper::instance()->getConfig(CHANGE_PASSWORD_FOR_NORMAL_USER, true).toBool() || m_expiredState != ExpiredAlready;
 }
 
 bool User::checkUserIsNoPWGrp(const User *user) const
@@ -246,6 +255,7 @@ void NativeUser::initConnections()
     connect(m_userInter, &UserInter::Use24HourFormatChanged, this, &NativeUser::updateUse24HourFormat);
     connect(m_userInter, &UserInter::PasswordLastChangeChanged, this, &NativeUser::updatePasswordExpiredInfo);
     connect(m_userInter, &UserInter::MaxPasswordAgeChanged, this, &NativeUser::updatePasswordExpiredInfo);
+    connect(m_userInter, &UserInter::AccountTypeChanged, this, &NativeUser::updateAccountType);
 }
 
 void NativeUser::initData()
@@ -280,6 +290,8 @@ void NativeUser::initData()
     m_desktopBackgrounds = m_userInter->desktopBackgrounds();
     m_keyboardLayoutList = m_userInter->historyLayout();
     m_uid = m_userInter->uid().toUInt();
+    qInfo() << "accountType: " << m_userInter->accountType();
+    m_accountType = m_userInter->accountType();
 }
 
 /**
@@ -493,6 +505,11 @@ void NativeUser::updatePasswordExpiredInfo()
     m_expiredState = m_userInter->PasswordExpiredInfo(m_expiredDayLeft).value();
 
     emit passwordExpiredInfoChanged();
+}
+
+void NativeUser::updateAccountType()
+{
+    m_accountType = m_userInter->accountType();
 }
 
 /**

@@ -503,6 +503,10 @@ void GreeterWorker::destoryAuthentication(const QString &account)
  */
 void GreeterWorker::startAuthentication(const QString &account, const int authType)
 {
+    if (!m_model->currentUser()->allowToChangePassword()) {
+        qInfo() << "Authentication exit because of user's authority";
+        return;
+    }
     qDebug() << "GreeterWorker::startAuthentication:" << account << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:

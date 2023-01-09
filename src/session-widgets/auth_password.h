@@ -30,6 +30,9 @@ public:
     void reset();
     QString lineEditText() const;
 
+    inline bool passwordLineEditEnabled() const { return m_passwordLineEditEnabled; }
+    void setPasswordLineEditEnabled(const bool enable);
+
     void setAnimationState(const bool start) override;
     void setAuthState(const int state, const QString &result) override;
     void setCapsLockVisible(const bool on);
@@ -72,6 +75,7 @@ private:
     void updatePasswordTextMargins();
 
 private:
+    bool m_passwordLineEditEnabled;
     DLabel *m_capsLock;             // 大小写状态
     DLineEditEx *m_lineEdit;        // 密码输入框
     DIconButton *m_passwordShowBtn; // 密码显示按钮
