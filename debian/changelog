@@ -1,3 +1,9 @@
+dde-session-shell (5.6.4) unstable; urgency=low
+
+  * bump version to 5.6.4
+
+ -- lichangze <lichangze@uniontech.com>  Mon, 9 Jan 2023 16:20:17 +0000
+
 dde-session-shell (0.0.0) unstable; urgency=medium
 
   * Initialize release
