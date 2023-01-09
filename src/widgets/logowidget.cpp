@@ -112,6 +112,9 @@ QString LogoWidget::getVersion()
 void LogoWidget::updateLocale(const QString &locale)
 {
     m_locale = locale;
+    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
+        return;
+    }
     m_logoVersionLabel->setText(getVersion());
 }
 
