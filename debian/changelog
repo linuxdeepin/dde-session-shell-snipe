@@ -1,3 +1,9 @@
+dde-session-shell (5.5.93) unstable; urgency=low
+
+  * bump version to 5.5.93
+
+ -- echengqi <echengqi@uniontech.com>  Mon, 10 Jan 2023 13:40:17 +0000
+
 dde-session-shell (0.0.0) unstable; urgency=medium
 
   * Initialize release
