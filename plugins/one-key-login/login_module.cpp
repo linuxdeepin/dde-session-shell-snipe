@@ -83,7 +83,8 @@ LoginModule::LoginModule(QObject *parent)
 
     // 超时没接收到一键登录信号，视为失败
     m_waitAcceptSignalTimer = new QTimer(this);
-    m_waitAcceptSignalTimer->setInterval(800);
+    // 为配合华为指纹规避bug 182893，将时间改为1500毫秒，慎重修改
+    m_waitAcceptSignalTimer->setInterval(1500);
     connect(m_waitAcceptSignalTimer, &QTimer::timeout, this, [this] {
         qInfo() << Q_FUNC_INFO << "start 2.5s, m_isAcceptFingerprintSignal" << m_isAcceptFingerprintSignal;
         QDBusMessage m = QDBusMessage::createMethodCall("com.deepin.daemon.Authenticate", "/com/deepin/daemon/Authenticate/Fingerprint",
