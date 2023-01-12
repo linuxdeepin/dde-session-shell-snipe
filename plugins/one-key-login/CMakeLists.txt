@@ -1,5 +1,6 @@
 find_package(QT NAMES Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+find_package(DtkCore REQUIRED)
 
 link_libraries(
     ${Qt_LIBS}
