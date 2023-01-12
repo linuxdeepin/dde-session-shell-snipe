@@ -60,6 +60,9 @@ public:
 
     void start();
 
+signals:
+    void setOutputFinished();
+
 private:
     void setupRegistry(Registry *registry);
     void onDeviceChanged(OutputDevice *dev);

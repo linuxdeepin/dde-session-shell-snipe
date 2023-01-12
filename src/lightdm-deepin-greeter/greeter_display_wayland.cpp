@@ -107,22 +107,24 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
         if (!m_pManager) {
             m_pManager = registry->createOutputManagement(name, version, this);
             if (!m_pManager || !m_pManager->isValid()) {
-                qDebug() << "create manager is nullptr or not valid!";
+                qWarning() << "create manager is nullptr or not valid!";
                 return;
             }
             if (!m_pConf) {
                 m_pConf = m_pManager->createConfiguration();
                 if (!m_pConf || !m_pConf->isValid()) {
-                    qDebug() << "create output configure is null or is not vaild";
+                    qWarning() << "create output configure is null or is not vaild";
                     return;
                 }
                 disconnect(m_pConf, &OutputConfiguration::applied, this, nullptr);
                 disconnect(m_pConf, &OutputConfiguration::failed, this, nullptr);
                 connect(m_pConf, &OutputConfiguration::applied, [this] {
-                    qDebug() << "Configuration applied!";
+                    qInfo() << "Configuration applied!";
+                    Q_EMIT setOutputFinished();
                 });
                 connect(m_pConf, &OutputConfiguration::failed, [this] {
-                    qDebug() << "Configuration failed!";
+                    qWarning() << "Configuration failed!";
+                    Q_EMIT setOutputFinished();
                 });
             }
         }
@@ -134,7 +136,7 @@ void GreeterDisplayWayland::setupRegistry(Registry *registry)
         auto dev = registry->createOutputDevice(name, version);
         if (!dev || !dev->isValid())
         {
-            qDebug() << "get dev is null or not valid!";
+            qWarning() << "get dev is null or not valid!";
             return;
         }
 
@@ -202,7 +204,7 @@ void GreeterDisplayWayland::setOutputs()
         m_setOutputTimer->stop();
     }
     if (MonitorConfigsForUuid_v1.size() == 0) {
-        qDebug() << "has no monitors ...";
+        qWarning() << "has no monitors ...";
         return;
     }
     QString uuidKey;
@@ -302,7 +304,7 @@ void GreeterDisplayWayland::setOutputs()
                 }
             }
             if (id.isEmpty()) {
-                qDebug() << "invalid monitor ...";
+                qWarning() << "invalid monitor ...";
                 break;
             }
             MonitorConfigsForUuid_v1[id].x = jsonMonitorConfig.value("X").toInt();
@@ -375,7 +377,7 @@ QSize GreeterDisplayWayland::commonSizeForMirrorMode()
 
 void GreeterDisplayWayland::applyDefault()
 {
-    qDebug() << "applyDefault ...";
+    qInfo() << "applyDefault ...";
     QSize applySize;
     if (m_displayMode == Mirror_Mode) {
        applySize = commonSizeForMirrorMode();
@@ -395,11 +397,11 @@ void GreeterDisplayWayland::applyDefault()
                 break;
             }
         }
-        qDebug() << "set output setPosition to " << o.x() << o.y();
+        qInfo() << "set output setPosition to " << o.x() << o.y();
         m_pConf->setPosition(dev, o);
-        qDebug() << "set output setEnabled to " << enabled;
+        qInfo() << "set output setEnabled to " << enabled;
         m_pConf->setEnabled(dev, OutputDevice::Enablement(enabled));
-        qDebug() << "set output transform to 0";
+        qInfo() << "set output transform to 0";
         m_pConf->setTransform(dev, OutputDevice::Transform(0));
         m_pConf->apply();
         // 找不到配置文件，如果是扩展模式，默认横向扩展，如果是仅单屏默认点亮第一个屏幕
@@ -414,7 +416,7 @@ void GreeterDisplayWayland::applyDefault()
 
 void GreeterDisplayWayland::applyConfig(QString uuid)
 {
-    qDebug() << "applyConfig ...";
+    qInfo() << "applyConfig ...";
     auto monitor = MonitorConfigsForUuid_v1[uuid];
     auto dev = monitor.dev;
     bool modeSet = false;
@@ -430,11 +432,11 @@ void GreeterDisplayWayland::applyConfig(QString uuid)
     if (!modeSet) {
         m_pConf->setMode(dev, dev->modes()[0].id);
     }
-    qDebug() << "set output setPosition to " << monitor.x << monitor.y;
+    qInfo() << "set output setPosition to " << monitor.x << monitor.y;
     m_pConf->setPosition(dev, QPoint(monitor.x, monitor.y));
-    qDebug() << "set output setEnabled to " << monitor.enabled;
+    qInfo() << "set output setEnabled to " << monitor.enabled;
     m_pConf->setEnabled(dev, OutputDevice::Enablement(monitor.enabled));
-    qDebug() << "set output transform to " << monitor.transform;
+    qInfo() << "set output transform to " << monitor.transform;
     m_pConf->setTransform(dev, OutputDevice::Transform(monitor.transform));
     m_pConf->apply();
     MonitorConfigsForUuid_v1[uuid].hasCof = true;
