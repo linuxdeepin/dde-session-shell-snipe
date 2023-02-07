@@ -27,7 +27,7 @@ public:
     * @brief 模块加载的类型
     * @return LoadType
     */
-    LoadType loadPluginType()  const override { return Load; }
+    virtual LoadType loadPluginType()  const { return Load; }
 
     /**
      * @brief 插件图标

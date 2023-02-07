@@ -19,11 +19,6 @@ class User : public QObject
 {
     Q_OBJECT
 public:
-    enum AccountType {
-        NormalUser,
-        Administrator
-    };
-
     enum UserType {
         Native,
         ADDomain,
@@ -84,7 +79,6 @@ public:
     inline int shortDateFormat() const { return m_shortDateFormat; }
     inline int shortTimeFormat() const { return m_shortTimeFormat; }
     inline int weekdayFormat() const { return m_weekdayFormat; }
-    inline int accountType() const { return m_accountType; }
 
     virtual inline int type() const { return Default; }
     inline QMap<int, LimitsInfo> *limitsInfo() const { return m_limitsInfo; }
