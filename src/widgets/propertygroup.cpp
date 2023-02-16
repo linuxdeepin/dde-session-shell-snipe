@@ -68,7 +68,7 @@ void PropertyGroup::addProperty(const QByteArray &propertyName)
 
     m_signalMapperMap[propertyName] = mapper;
 
-    connect(mapper, static_cast<void (QSignalMapper::*)(QObject *)>(&QSignalMapper::mapped),
+    connect(mapper, static_cast<void (QSignalMapper::*)(QObject *)>(&QSignalMapper::mappedObject),
             this, &PropertyGroup::onObjectPropertyChanged);
 }
 

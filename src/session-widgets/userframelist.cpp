@@ -16,6 +16,8 @@
 #include <QScroller>
 #include <QVBoxLayout>
 
+#include <algorithm>
+
 const int UserFrameSpaceing = 40;
 
 UserFrameList::UserFrameList(QWidget *parent)
@@ -118,7 +120,7 @@ void UserFrameList::addUser(const std::shared_ptr<User> user)
 
     //多用户的情况按照其uid排序，升序排列，符合账户先后创建顺序
     m_loginWidgets.push_back(widget);
-    qSort(m_loginWidgets.begin(), m_loginWidgets.end(), [ = ](UserWidget *w1, UserWidget *w2) {
+    std::sort(m_loginWidgets.begin(), m_loginWidgets.end(), [ = ](UserWidget *w1, UserWidget *w2) {
         return (w1->uid() < w2->uid());
     });
     int index = m_loginWidgets.indexOf(widget);

@@ -129,7 +129,7 @@ void InhibitWarnView::setInhibitorList(const QList<InhibitorData> &list)
         QIcon icon;
 
         if (inhibitor.icon.isEmpty() && inhibitor.pid) {
-            QFileInfo executable_info(QFile::readLink(QString("/proc/%1/exe").arg(inhibitor.pid)));
+            QFileInfo executable_info(QFile::symLinkTarget(QString("/proc/%1/exe").arg(inhibitor.pid)));
 
             if (executable_info.exists()) {
                 icon = QIcon::fromTheme(executable_info.fileName());

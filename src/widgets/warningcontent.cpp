@@ -54,7 +54,12 @@ QList<InhibitWarnView::InhibitorData> WarningContent::listInhibitors(const Sessi
             for (int i = 0; i < inhibitList.count(); i++) {
                 // Just take care of DStore's inhibition, ignore others'.
                 const Inhibit &inhibitor = inhibitList.at(i);
-                if (inhibitor.what.split(':', QString::SkipEmptyParts).contains(type)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+                auto behavior = Qt::SkipEmptyParts;                    
+#else
+                auto behavior = QString::SkipEmptyParts;
+#endif
+                if (inhibitor.what.split(':', behavior).contains(type)
                         && !m_inhibitorBlacklists.contains(inhibitor.who)) {
 
                     // 待机时，非block暂不处理，因为目前没有倒计时待机功能

@@ -52,8 +52,12 @@ void VirtualKBInstance::init()
             });
         });
 
-        connect(m_virtualKBProcess, QOverload<int>::of(&QProcess::finished),
-                this, &VirtualKBInstance::onVirtualKBProcessFinished);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
+        auto finished = QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished);
+#else
+        auto finished = QOverload<int>::of(&QProcess::finished);
+#endif
+        connect(m_virtualKBProcess, finished, this, &VirtualKBInstance::onVirtualKBProcessFinished);
         m_virtualKBProcess->start("onboard", QStringList() << "-e" << "--layout" << "Small" << "--size" << "600x200" << "-a");
     }
 }
