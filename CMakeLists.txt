@@ -311,6 +311,14 @@ add_subdirectory(modules)
 
 add_subdirectory(tests)
 
+if(NOT DSS_CHECK_ACCESSIBILITY)
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/global_util/accessibilitycheckerex.h 
+    TARGET_DIRECTORY dde-lock dde-lock-test lightdm-deepin-greeter lightdm-deepin-greeter-test
+    PROPERTIES SKIP_AUTOMOC ON)
+else()
+    add_compile_definitions(-DDSS_CHECK_ACCESSIBILITY)
+endif()
+
 # Install settings
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX /usr)
