@@ -211,7 +211,7 @@ int UserItemDelegate::stringWidth(const QString &str, int fontSize, bool isBold)
     font.setPixelSize(fontSize);
 
     QFontMetrics fm(font);
-    return fm.horizontalAdvance(str);
+    return fm.boundingRect(str).width();
 }
 
 QString UserItemDelegate::elidedText(const QString &originString, int width, int fontSize, bool isBold) const
