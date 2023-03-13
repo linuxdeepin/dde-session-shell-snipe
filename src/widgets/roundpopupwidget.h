@@ -5,15 +5,16 @@
 #ifndef ROUND_POPUP_WIDGET_H
 #define ROUND_POPUP_WIDGET_H
 
-#include <QWidget>
+#include <DBlurEffectWidget>
 
 class QVBoxLayout;
 
+using DTK_WIDGET_NAMESPACE::DBlurEffectWidget;
 /*!
  * \brief The RoundPopupWidget class
  * 圆角弹窗页面
  */
-class RoundPopupWidget : public QWidget
+class RoundPopupWidget : public DBlurEffectWidget
 {
     Q_OBJECT
 public:
@@ -25,7 +26,6 @@ public:
 
 protected:
     void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
 
 private:
     void initUI();

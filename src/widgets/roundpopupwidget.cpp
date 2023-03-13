@@ -8,10 +8,11 @@
 #include <QDebug>
 #include <QVBoxLayout>
 
-const int MARGIN = 5;
+static constexpr int MARGIN = 5;
+static constexpr int RADIUS = 18;
 
 RoundPopupWidget::RoundPopupWidget(QWidget *parent)
-    : QWidget(parent)
+    : DBlurEffectWidget(parent)
     , m_pContentWidget(nullptr)
     , m_mainLayout(new QVBoxLayout())
 {
@@ -23,6 +24,10 @@ void RoundPopupWidget::initUI()
     setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
     setAttribute(Qt::WA_TranslucentBackground);
 
+    setBlurEnabled(true);
+    setBlurRectXRadius(RADIUS);
+    setBlurRectYRadius(RADIUS);
+    setMaskColor(QColor(238, 238, 238, 0.8 * 255));
     m_mainLayout->setMargin(0);
     m_mainLayout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
     setLayout(m_mainLayout);
@@ -59,19 +64,4 @@ void RoundPopupWidget::hideEvent(QHideEvent *event)
         m_pContentWidget->hide();
 
     QWidget::hideEvent(event);
-}
-
-void RoundPopupWidget::paintEvent(QPaintEvent *event)
-{
-    const int radius = 18;
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setPen(Qt::transparent);
-    painter.setBrush(QColor(238, 238, 238, int(0.8 * 255)));
-
-    QRect rect = this->rect();
-    rect.setWidth(rect.width() - 1);
-    rect.setHeight(rect.height() - 1);
-    painter.drawRoundedRect(rect, radius, radius);
 }
