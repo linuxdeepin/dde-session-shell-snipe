@@ -21,10 +21,8 @@ RoundPopupWidget::RoundPopupWidget(QWidget *parent)
 
 void RoundPopupWidget::initUI()
 {
-    setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
-    setAttribute(Qt::WA_TranslucentBackground);
-
     setBlurEnabled(true);
+    setBlendMode(DBlurEffectWidget::InWidgetBlend);
     setBlurRectXRadius(RADIUS);
     setBlurRectYRadius(RADIUS);
     setMaskColor(QColor(238, 238, 238, 0.8 * 255));

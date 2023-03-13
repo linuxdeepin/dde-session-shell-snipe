@@ -16,6 +16,7 @@ SessionBaseWindow::SessionBaseWindow(QWidget *parent)
     , m_TopFrame(new QFrame(this))
     , m_centerFrame(new QFrame(this))
     , m_bottomFrame(new QFrame(this))
+    , m_fakeWindowLayer(new FakeWindowLayer(this))
     , m_mainLayout(new QVBoxLayout(this))
     , m_topLayout(new QHBoxLayout(this))
     , m_centerLayout(new QVBoxLayout(this))
@@ -174,6 +175,8 @@ void SessionBaseWindow::initUI()
     m_bottomFrame->setStyleSheet("background-color: gray");
 #endif
     setLayout(m_mainLayout);
+    m_fakeWindowLayer->setFixedSize(size());
+    m_fakeWindowLayer->setAccessibleName("FakeWindowLayer");
 }
 
 QSize SessionBaseWindow::getCenterContentSize()
@@ -205,6 +208,7 @@ void SessionBaseWindow::resizeEvent(QResizeEvent *event)
     m_mainLayout->setContentsMargins(getMainLayoutMargins());
     m_TopFrame->setFixedHeight(autoScaledSize(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT));
     m_bottomFrame->setFixedHeight(autoScaledSize(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT));
+    m_fakeWindowLayer->setFixedSize(size());
 
     QFrame::resizeEvent(event);
 }
@@ -217,6 +221,29 @@ void SessionBaseWindow::setTopFrameVisible(bool visible)
 void SessionBaseWindow::setBottomFrameVisible(bool visible)
 {
     m_bottomFrame->setVisible(visible);
+}
+
+void SessionBaseWindow::showPopup(QPoint globalPos, QWidget *popup)
+{
+    m_fakeWindowLayer->setContent(popup);
+    QPoint localPos = m_fakeWindowLayer->mapFromGlobal(globalPos);
+    popup->move(localPos);
+    m_fakeWindowLayer->raise();
+    m_fakeWindowLayer->show();
+}
+
+void SessionBaseWindow::hidePopup()
+{
+    m_fakeWindowLayer->hide();
+}
+
+SessionBaseWindow *SessionBaseWindow::findFromChild(const QWidget *child)
+{
+    QWidget *pw = child->parentWidget();
+    while (pw && !qobject_cast<SessionBaseWindow *>(pw)) {
+        pw = pw->parentWidget();
+    }
+    return qobject_cast<SessionBaseWindow *>(pw);
 }
 
 /**

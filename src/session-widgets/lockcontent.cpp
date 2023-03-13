@@ -370,7 +370,8 @@ void LockContent::hideEvent(QHideEvent *event)
 {
     if (!m_shutdownFrame.isNull())
         m_shutdownFrame->recoveryLayout();
-
+    // explicitly hide popup in case fake window layer is shown next time
+    hidePopup();
     return SessionBaseWindow::hideEvent(event);
 }
 

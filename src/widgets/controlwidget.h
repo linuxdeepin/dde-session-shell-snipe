@@ -127,6 +127,7 @@ private:
     void updateTapOrder();
     int focusedBtnIndex();
     void showPopupWidget(const FlotingButton *clickedBtn);
+    void hidePopupWidget();
 
 private slots:
     void showInfoTips();

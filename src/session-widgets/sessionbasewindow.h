@@ -4,6 +4,7 @@
 
 #ifndef SESSIONBASEWINDOW_H
 #define SESSIONBASEWINDOW_H
+#include "fakewindowlayer.h"
 
 #include <QFrame>
 #include <QVBoxLayout>
@@ -29,6 +30,11 @@ public:
     void changeCenterSpaceSize(int w, int h);
     void setTopFrameVisible(bool visible);
     void setBottomFrameVisible(bool visible);
+    void showPopup(QPoint globalPos, QWidget *popup);
+    inline void showPopup(int globalX, int globalY, QWidget *popup) { showPopup(QPoint(globalX, globalY), popup); }
+    void hidePopup();
+
+    static SessionBaseWindow *findFromChild(const QWidget *child);
 
 private:
     void initUI();
@@ -42,6 +48,10 @@ private:
     QFrame *m_TopFrame;                 // 上布局容器(按照比例计算，其高度固定为当前屏幕高度的132/1080)
     QFrame *m_centerFrame;              // 中间布局容器(高度 = 屏幕高度 - 上下两个容器的高度)
     QFrame *m_bottomFrame;              // 下布局容器(按照比例计算，其高度固定为当前屏幕高度的132/1080)
+
+    // An overlay layer used to emulate window like popups.
+    // When this layer is visible, it will catch all events for its parent SessionBaseWindow.
+    FakeWindowLayer *m_fakeWindowLayer;
 
     QVBoxLayout *m_mainLayout;          // 主布局(垂直布局，将整个屏幕分为上、中、下三部分,其上下的margin为当前高度的33/1080)
     QHBoxLayout *m_topLayout;           // 上布局(水平布局)

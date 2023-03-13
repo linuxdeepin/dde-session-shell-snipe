@@ -4,6 +4,7 @@
 
 #include "controlwidget.h"
 #include "sessionbasemodel.h"
+#include "sessionbasewindow.h"
 #include "kblayoutlistview.h"
 
 #include "modules_loader.h"
@@ -111,6 +112,7 @@ void ControlWidget::initKeyboardLayoutList()
 void ControlWidget::initUI()
 {
     m_tipsWidget->setVisible(false);
+    m_roundPopupWidget->setVisible(false);
 
     m_mainLayout = new QHBoxLayout(this);
     m_mainLayout->setContentsMargins(0, 0, 60, 0);
@@ -393,7 +395,7 @@ void ControlWidget::onItemClicked(const QString &str)
         currentText = currentText.split("/").last();
 
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
-    m_roundPopupWidget->hide();
+    hidePopupWidget();
     m_curUser->setKeyboardLayout(str);
 }
 
@@ -402,7 +404,7 @@ void ControlWidget::showSessionPopup()
     if (!m_sessionPopupWidget) {
         m_sessionPopupWidget = new SessionPopupWidget(this);
         connect(m_sessionPopupWidget, &SessionPopupWidget::sessionItemClicked, [this](QString session) {
-            m_roundPopupWidget->hide();
+            hidePopupWidget();
             Q_EMIT requestSwitchSession(session);
         });
 
@@ -421,7 +423,7 @@ void ControlWidget::showUserListPopupWidget()
     if (!m_userListPopupWidget) {
         m_userListPopupWidget = new UserListPopupWidget(m_model, this);
         connect(m_userListPopupWidget, &UserListPopupWidget::requestSwitchToUser, [ this ](std::shared_ptr<User> user) {
-            m_roundPopupWidget->hide();
+            hidePopupWidget();
             Q_EMIT requestSwitchUser(user);
         });
     }
@@ -526,25 +528,38 @@ void ControlWidget::showPopupWidget(const FlotingButton *clickedBtn)
     if (!m_roundPopupWidget || !clickedBtn || !topLevelWidget())
         return;
 
+    // Find base window in parents
+    SessionBaseWindow *baseWindow = SessionBaseWindow::findFromChild(this);
+    if (!baseWindow) {
+        qWarning() << "Cannot find a base window, showing popup failed";
+        return;
+    }
     if (m_roundPopupWidget->isVisible()) {
-        m_roundPopupWidget->setVisible(false);
+        baseWindow->hidePopup();
         return;
     }
 
     // 设计弹窗离右边距和底部按钮距离
     const int rightMargin = 10;
     const int bottomMargin = 10;
-
-    QPoint pos = mapToGlobal(clickedBtn->pos()) - QPoint((m_roundPopupWidget->width() - clickedBtn->width()) / 2 - rightMargin,
+    QPoint globalPos = mapToGlobal(clickedBtn->pos()) - QPoint((m_roundPopupWidget->width() - clickedBtn->width()) / 2 - rightMargin,
                                                               m_roundPopupWidget->height() + bottomMargin);
 
     // 保证页面显示没超出显示屏幕范围
     QRect topWidgetRect = topLevelWidget()->frameGeometry();
-    if ((pos.x() + m_roundPopupWidget->width() + rightMargin) > (topWidgetRect.x() + topWidgetRect.width())) {
-        int leftMoveValue = pos.x() + m_roundPopupWidget->width() + rightMargin - (topWidgetRect.x() + topWidgetRect.width());
-        pos.setX(pos.x() - leftMoveValue);
+    if ((globalPos.x() + m_roundPopupWidget->width() + rightMargin) > (topWidgetRect.x() + topWidgetRect.width())) {
+        int leftMoveValue = globalPos.x() + m_roundPopupWidget->width() + rightMargin - (topWidgetRect.x() + topWidgetRect.width());
+        globalPos.setX(globalPos.x() - leftMoveValue);
     }
+    baseWindow->showPopup(globalPos, m_roundPopupWidget);
+}
 
-    m_roundPopupWidget->setGeometry(QRect(pos, m_roundPopupWidget->size()));
-    m_roundPopupWidget->setVisible(true);
+void ControlWidget::hidePopupWidget()
+{
+    SessionBaseWindow *baseWindow = SessionBaseWindow::findFromChild(this);
+    if (!baseWindow) {
+        qWarning() << "Cannot find a base window, hiding popup widget failed";
+        return;
+    }
+    baseWindow->hidePopup();
 }
