@@ -72,7 +72,7 @@ protected:
 
 protected:
     void updateTimeFormat(bool use24);
-    void showModule(const QString &name);
+    void toggleModule(const QString &name);
     void onUserListChanged(QList<std::shared_ptr<User>> list);
     void tryGrabKeyboard();
     void hideToplevelWindow();

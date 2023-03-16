@@ -26,6 +26,7 @@ public:
 
 protected:
     void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     void initUI();

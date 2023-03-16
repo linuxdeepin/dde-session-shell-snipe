@@ -33,8 +33,7 @@ public:
     void showPopup(QPoint globalPos, QWidget *popup);
     inline void showPopup(int globalX, int globalY, QWidget *popup) { showPopup(QPoint(globalX, globalY), popup); }
     void hidePopup();
-
-    static SessionBaseWindow *findFromChild(const QWidget *child);
+    void togglePopup(QPoint globalPos, QWidget *popup);
 
 private:
     void initUI();

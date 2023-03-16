@@ -102,7 +102,8 @@ signals:
     void requestSwitchUser(std::shared_ptr<User> user);
     void requestShutdown();
     void requestSwitchSession(const QString &session);
-    void requestShowModule(const QString &name);
+    void requestTogglePopup(QPoint globalPos, QWidget *popup);
+    void requestHidePopup();
 
 public slots:
     void addModule(dss::module::BaseModuleInterface *module);
@@ -126,8 +127,7 @@ private:
     void updateLayout();
     void updateTapOrder();
     int focusedBtnIndex();
-    void showPopupWidget(const FloatingButton *clickedBtn);
-    void hidePopupWidget();
+    void toggleButtonPopup(const FloatingButton *button, QWidget *popup);
 
 private slots:
     void showInfoTips();

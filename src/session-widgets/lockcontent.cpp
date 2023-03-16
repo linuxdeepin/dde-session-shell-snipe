@@ -107,7 +107,8 @@ void LockContent::initConnections()
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
-    connect(m_controlWidget, &ControlWidget::requestShowModule, this, &LockContent::showModule);
+    connect(m_controlWidget, &ControlWidget::requestTogglePopup, this, &SessionBaseWindow::togglePopup);
+    connect(m_controlWidget, &ControlWidget::requestHidePopup, this, &SessionBaseWindow::hidePopup);
 
     //刷新背景单独与onStatusChanged信号连接，避免在showEvent事件时调用onStatusChanged而重复刷新背景，减少刷新次数
     connect(m_model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
@@ -427,7 +428,7 @@ void LockContent::updateTimeFormat(bool use24)
     }
 }
 
-void LockContent::showModule(const QString &name)
+void LockContent::toggleModule(const QString &name)
 {
     BaseModuleInterface *module = ModulesLoader::instance().findModuleByName(name);
     if (!module) {
@@ -436,11 +437,11 @@ void LockContent::showModule(const QString &name)
 
     switch (module->type()) {
     case BaseModuleInterface::LoginType:
+        setCenterContent(module->content());
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         break;
     case BaseModuleInterface::TrayType:
-        setCenterContent(module->content());
-        break;
+        return;
     }
 }
 

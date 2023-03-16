@@ -36,6 +36,7 @@ void FakeWindowLayer::setContent(QWidget *toSet)
     }
     m_content = toSet;
     m_content->show();
+    m_content->setFocus();
 }
 
 QWidget *FakeWindowLayer::content() const

@@ -16,6 +16,7 @@
 #include "sessionmanager.h"
 #include "userlistpopupwidget.h"
 #include "roundpopupwidget.h"
+#include "constants.h"
 
 #include <DFloatingButton>
 #include <DPushButton>
@@ -204,6 +205,9 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
     if (module && module->type() != module::BaseModuleInterface::TrayType)
         return;
 
+    if (m_modules.contains(module->key()))
+        return;
+
     module::TrayModuleInterface *trayModule = dynamic_cast<module::TrayModuleInterface *>(module);
     if (!trayModule)
         return;
@@ -218,6 +222,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
 
     if (QWidget *trayWidget = trayModule->itemWidget()) {
         QHBoxLayout *layout = new QHBoxLayout(button);
+        layout->setAlignment(Qt::AlignCenter);
         layout->setSpacing(0);
         layout->setMargin(0);
         layout->addWidget(trayWidget);
@@ -269,10 +274,12 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         m_tipsWidget->hide();
     });
 
-    connect(button, &DFloatingButton::clicked, this, [this, trayModule] {
-        emit requestShowModule(trayModule->key());
-    }, Qt::UniqueConnection);
-
+    connect(button, &FloatingButton::clicked, this, [this, button, trayModule] {
+        auto content = trayModule->content();
+        if (!content)
+            return;
+        toggleButtonPopup(button, content);
+    });
 
     updateLayout();
 }
@@ -353,8 +360,7 @@ void ControlWidget::setKBLayoutVisible()
     if (!clickedButton)
         return;
 
-    m_roundPopupWidget->setContent(m_kbLayoutListView);
-    showPopupWidget(clickedButton);
+    toggleButtonPopup(clickedButton, m_kbLayoutListView);
 }
 
 void ControlWidget::setKeyboardType(const QString &str)
@@ -392,7 +398,7 @@ void ControlWidget::onItemClicked(const QString &str)
         currentText = currentText.split("/").last();
 
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText);
-    hidePopupWidget();
+    Q_EMIT requestHidePopup();
     m_curUser->setKeyboardLayout(str);
 }
 
@@ -401,7 +407,7 @@ void ControlWidget::showSessionPopup()
     if (!m_sessionPopupWidget) {
         m_sessionPopupWidget = new SessionPopupWidget(this);
         connect(m_sessionPopupWidget, &SessionPopupWidget::sessionItemClicked, [this](QString session) {
-            hidePopupWidget();
+            Q_EMIT requestHidePopup();
             Q_EMIT requestSwitchSession(session);
         });
 
@@ -410,9 +416,7 @@ void ControlWidget::showSessionPopup()
     } else {
         m_sessionPopupWidget->updateCurrentSession(SessionManager::Reference().currentSession());
     }
-
-    m_roundPopupWidget->setContent(m_sessionPopupWidget);
-    showPopupWidget(m_sessionBtn);
+    toggleButtonPopup(m_sessionBtn, m_sessionPopupWidget);
 }
 
 void ControlWidget::showUserListPopupWidget()
@@ -420,13 +424,11 @@ void ControlWidget::showUserListPopupWidget()
     if (!m_userListPopupWidget) {
         m_userListPopupWidget = new UserListPopupWidget(m_model, this);
         connect(m_userListPopupWidget, &UserListPopupWidget::requestSwitchToUser, [ this ](std::shared_ptr<User> user) {
-            hidePopupWidget();
+            Q_EMIT requestHidePopup();
             Q_EMIT requestSwitchUser(user);
         });
     }
-
-    m_roundPopupWidget->setContent(m_userListPopupWidget);
-    showPopupWidget(m_switchUserBtn);
+    toggleButtonPopup(m_switchUserBtn, m_userListPopupWidget);
 }
 
 void ControlWidget::keyReleaseEvent(QKeyEvent *event)
@@ -487,6 +489,23 @@ int ControlWidget::focusedBtnIndex()
     return -1;
 }
 
+void ControlWidget::toggleButtonPopup(const FloatingButton *button, QWidget *popup)
+{
+    if (!m_roundPopupWidget || !button || !topLevelWidget())
+        return;
+    m_roundPopupWidget->setContent(popup);
+    // 设计弹窗离右边距和底部按钮距离
+    QPoint globalPos = mapToGlobal(button->pos()) - QPoint((m_roundPopupWidget->width() - button->width()) / 2,
+                                                              m_roundPopupWidget->height() + Popup::VerticalMargin);
+    // 保证页面显示没超出显示屏幕范围
+    QRect topWidgetRect = topLevelWidget()->frameGeometry();
+    if ((globalPos.x() + m_roundPopupWidget->width() + Popup::VerticalMargin) > (topWidgetRect.x() + topWidgetRect.width())) {
+        int leftMoveValue = globalPos.x() + m_roundPopupWidget->width() + Popup::VerticalMargin - (topWidgetRect.x() + topWidgetRect.width());
+        globalPos.setX(globalPos.x() - leftMoveValue);
+    }
+    Q_EMIT requestTogglePopup(globalPos, m_roundPopupWidget);
+}
+
 void ControlWidget::showInfoTips()
 {
     FloatingButton * button = qobject_cast<FloatingButton *>(sender());
@@ -518,45 +537,4 @@ void ControlWidget::showEvent(QShowEvent *event)
     updateTapOrder();
 
     QWidget::showEvent(event);
-}
-
-void ControlWidget::showPopupWidget(const FloatingButton *clickedBtn)
-{
-    if (!m_roundPopupWidget || !clickedBtn || !topLevelWidget())
-        return;
-
-    // Find base window in parents
-    SessionBaseWindow *baseWindow = SessionBaseWindow::findFromChild(this);
-    if (!baseWindow) {
-        qWarning() << "Cannot find a base window, showing popup failed";
-        return;
-    }
-    if (m_roundPopupWidget->isVisible()) {
-        baseWindow->hidePopup();
-        return;
-    }
-
-    // 设计弹窗离右边距和底部按钮距离
-    const int rightMargin = 10;
-    const int bottomMargin = 10;
-    QPoint globalPos = mapToGlobal(clickedBtn->pos()) - QPoint((m_roundPopupWidget->width() - clickedBtn->width()) / 2 - rightMargin,
-                                                              m_roundPopupWidget->height() + bottomMargin);
-
-    // 保证页面显示没超出显示屏幕范围
-    QRect topWidgetRect = topLevelWidget()->frameGeometry();
-    if ((globalPos.x() + m_roundPopupWidget->width() + rightMargin) > (topWidgetRect.x() + topWidgetRect.width())) {
-        int leftMoveValue = globalPos.x() + m_roundPopupWidget->width() + rightMargin - (topWidgetRect.x() + topWidgetRect.width());
-        globalPos.setX(globalPos.x() - leftMoveValue);
-    }
-    baseWindow->showPopup(globalPos, m_roundPopupWidget);
-}
-
-void ControlWidget::hidePopupWidget()
-{
-    SessionBaseWindow *baseWindow = SessionBaseWindow::findFromChild(this);
-    if (!baseWindow) {
-        qWarning() << "Cannot find a base window, hiding popup widget failed";
-        return;
-    }
-    baseWindow->hidePopup();
 }

@@ -237,13 +237,12 @@ void SessionBaseWindow::hidePopup()
     m_fakeWindowLayer->hide();
 }
 
-SessionBaseWindow *SessionBaseWindow::findFromChild(const QWidget *child)
+void SessionBaseWindow::togglePopup(QPoint globalPos, QWidget *popup)
 {
-    QWidget *pw = child->parentWidget();
-    while (pw && !qobject_cast<SessionBaseWindow *>(pw)) {
-        pw = pw->parentWidget();
-    }
-    return qobject_cast<SessionBaseWindow *>(pw);
+    if (m_fakeWindowLayer->isVisible())
+        hidePopup();
+    else
+        showPopup(globalPos, popup);
 }
 
 /**

@@ -55,5 +55,10 @@ enum AuthFactorType {
 };
 }
 
+namespace Popup
+{
+static constexpr int HorizontalMargin = 10;
+static constexpr int VerticalMargin = 10;
+}
 
 #endif // CONSTANTS_H
