@@ -33,6 +33,7 @@ private:
 private:
     QWidget *m_pContentWidget;
     QVBoxLayout *m_mainLayout;
+    QWidget *m_savedParent;
 };
 
 

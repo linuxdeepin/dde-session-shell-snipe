@@ -15,14 +15,13 @@ RoundPopupWidget::RoundPopupWidget(QWidget *parent)
     : DBlurEffectWidget(parent)
     , m_pContentWidget(nullptr)
     , m_mainLayout(new QVBoxLayout())
+    , m_savedParent(this)
 {
     initUI();
 }
 
 void RoundPopupWidget::initUI()
 {
-    setBlurEnabled(true);
-    setBlendMode(DBlurEffectWidget::InWidgetBlend);
     setBlurRectXRadius(RADIUS);
     setBlurRectYRadius(RADIUS);
     setMaskColor(QColor(238, 238, 238, 0.8 * 255));
@@ -33,22 +32,22 @@ void RoundPopupWidget::initUI()
 
 void RoundPopupWidget::setContent(QWidget *widget)
 {
+    if (widget != m_pContentWidget && m_pContentWidget) {
+        m_mainLayout->removeWidget(m_pContentWidget);
+        m_pContentWidget->setParent(m_savedParent);
+        m_pContentWidget->hide();
+        m_savedParent = this;
+    }
+
     if (!widget)
         return;
 
     setFixedSize(widget->size() + QSize(MARGIN * 2, MARGIN * 2));
-
-    if (m_pContentWidget != widget) {
-        if (m_pContentWidget) {
-          m_mainLayout->removeWidget(m_pContentWidget);
-          m_pContentWidget->setVisible(false);
-        }
-
-        m_mainLayout->addWidget(widget);
-    }
-
+    if (widget->parentWidget() != this)
+        m_savedParent = widget->parentWidget();
+    m_mainLayout->addWidget(widget);
     m_pContentWidget = widget;
-    widget->setVisible(true);
+    widget->show();
 }
 
 QWidget *RoundPopupWidget::getContent() const
@@ -58,8 +57,6 @@ QWidget *RoundPopupWidget::getContent() const
 
 void RoundPopupWidget::hideEvent(QHideEvent *event)
 {
-    if (m_pContentWidget)
-        m_pContentWidget->hide();
-
+    setContent(nullptr);
     QWidget::hideEvent(event);
 }
