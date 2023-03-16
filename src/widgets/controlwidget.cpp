@@ -33,7 +33,7 @@
 using namespace dss;
 DCORE_USE_NAMESPACE
 
-bool FlotingButton::eventFilter(QObject *watch, QEvent *event)
+bool FloatingButton::eventFilter(QObject *watch, QEvent *event)
 {
     if (watch == this) {
         if (event->type() == QEvent::MouseButtonRelease) {
@@ -54,9 +54,9 @@ bool FlotingButton::eventFilter(QObject *watch, QEvent *event)
 ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
     : QWidget(parent)
     , m_mainLayout(nullptr)
-    , m_switchUserBtn(new FlotingButton(this))
-    , m_powerBtn(new FlotingButton(this))
-    , m_sessionBtn(new FlotingButton(this))
+    , m_switchUserBtn(new FloatingButton(this))
+    , m_powerBtn(new FloatingButton(this))
+    , m_sessionBtn(new FloatingButton(this))
     , m_keyboardBtn(nullptr)
     , m_contextMenu(new QMenu(this))
     , m_tipContentWidget(nullptr)
@@ -126,7 +126,7 @@ void ControlWidget::initUI()
     m_sessionBtn->hide();
     m_sessionBtn->setTipText(tr("Desktop Environment and Display Protocol"));
 
-    m_keyboardBtn = new FlotingButton(this);
+    m_keyboardBtn = new FloatingButton(this);
     m_keyboardBtn->setAccessibleName("KeyboardLayoutBtn");
     m_keyboardBtn->setFixedSize(BUTTON_SIZE);
     m_keyboardBtn->setAutoExclusive(true);
@@ -180,21 +180,21 @@ void ControlWidget::initConnect()
 {
     connect(&module::ModulesLoader::instance(), &module::ModulesLoader::moduleFound, this, &ControlWidget::addModule);
 
-    connect(m_sessionBtn, &FlotingButton::clicked, this, &ControlWidget::showSessionPopup);
-    connect(m_sessionBtn, &FlotingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_sessionBtn, &FlotingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
+    connect(m_sessionBtn, &FloatingButton::clicked, this, &ControlWidget::showSessionPopup);
+    connect(m_sessionBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
+    connect(m_sessionBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
 
-    connect(m_switchUserBtn, &FlotingButton::clicked, this, &ControlWidget::showUserListPopupWidget);
-    connect(m_switchUserBtn, &FlotingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_switchUserBtn, &FlotingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
+    connect(m_switchUserBtn, &FloatingButton::clicked, this, &ControlWidget::showUserListPopupWidget);
+    connect(m_switchUserBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
+    connect(m_switchUserBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
 
-    connect(m_powerBtn, &FlotingButton::clicked, this, &ControlWidget::requestShutdown);
-    connect(m_powerBtn, &FlotingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_powerBtn, &FlotingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
+    connect(m_powerBtn, &FloatingButton::clicked, this, &ControlWidget::requestShutdown);
+    connect(m_powerBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
+    connect(m_powerBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
 
-    connect(m_keyboardBtn, &FlotingButton::clicked, this, &ControlWidget::setKBLayoutVisible);
-    connect(m_keyboardBtn, &FlotingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_keyboardBtn, &FlotingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
+    connect(m_keyboardBtn, &FloatingButton::clicked, this, &ControlWidget::setKBLayoutVisible);
+    connect(m_keyboardBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
+    connect(m_keyboardBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
 
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &ControlWidget::setUser);
 }
@@ -210,27 +210,24 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
 
     trayModule->init();
 
-    FlotingButton *button = new FlotingButton(this);
+    FloatingButton *button = new FloatingButton(this);
     button->setIconSize(QSize(26, 26));
     button->setFixedSize(QSize(52, 52));
     button->setAutoExclusive(true);
     button->setBackgroundRole(DPalette::Button);
 
     if (QWidget *trayWidget = trayModule->itemWidget()) {
-        trayWidget->setParent(this);
-        QHBoxLayout *layout = new QHBoxLayout(this);
+        QHBoxLayout *layout = new QHBoxLayout(button);
         layout->setSpacing(0);
         layout->setMargin(0);
         layout->addWidget(trayWidget);
-
-        button->setLayout(layout);
     } else {
         button->setIcon(QIcon(trayModule->icon()));
     }
 
     m_modules.insert(trayModule->key(), button);
 
-    connect(button, &FlotingButton::requestShowMenu, this, [ = ] {
+    connect(button, &FloatingButton::requestShowMenu, this, [ = ] {
         const QString menuJson = trayModule->itemContextMenu();
         if (menuJson.isEmpty())
             return;
@@ -258,7 +255,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
             trayModule->invokedMenuItem(action->data().toString(), true);
     });
 
-    connect(button, &FlotingButton::requestShowTips, this, [ = ] {
+    connect(button, &FloatingButton::requestShowTips, this, [ = ] {
         if (trayModule->itemTipsWidget()) {
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             QPoint p = m_tipsWidget->parentWidget() ? m_tipsWidget->parentWidget()->mapFromGlobal(mapToGlobal(button->pos())) : mapToGlobal(button->pos());
@@ -266,7 +263,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         }
     });
 
-    connect(button, &FlotingButton::requestHideTips, this, [ = ] {
+    connect(button, &FloatingButton::requestHideTips, this, [ = ] {
         if (m_tipsWidget->getContent())
             m_tipsWidget->getContent()->setVisible(false);
         m_tipsWidget->hide();
@@ -352,7 +349,7 @@ void ControlWidget::chooseToSession(const QString &session)
 
 void ControlWidget::setKBLayoutVisible()
 {
-    FlotingButton *clickedButton = static_cast<FlotingButton *>(sender());
+    FloatingButton *clickedButton = static_cast<FloatingButton *>(sender());
     if (!clickedButton)
         return;
 
@@ -464,7 +461,7 @@ void ControlWidget::updateTapOrder()
     // 找出所有显示的按钮
     m_showedBtnList.clear();
     for(int i = 0; i < m_mainLayout->count(); ++i) {
-        FlotingButton *btn = qobject_cast<FlotingButton *>(m_mainLayout->itemAt(i)->widget());
+        FloatingButton *btn = qobject_cast<FloatingButton *>(m_mainLayout->itemAt(i)->widget());
         if (btn && btn->isVisible()) {
             m_showedBtnList.append(btn);
         }
@@ -481,7 +478,7 @@ void ControlWidget::updateTapOrder()
 int ControlWidget::focusedBtnIndex()
 {
     for (int index = 0; index < m_showedBtnList.count(); index++) {
-        FlotingButton *btn = m_showedBtnList.at(index);
+        FloatingButton *btn = m_showedBtnList.at(index);
         if (btn && btn->hasFocus()) {
             return index;
         }
@@ -492,7 +489,7 @@ int ControlWidget::focusedBtnIndex()
 
 void ControlWidget::showInfoTips()
 {
-    FlotingButton * button = qobject_cast<FlotingButton *>(sender());
+    FloatingButton * button = qobject_cast<FloatingButton *>(sender());
     if (!button) {
         return;
     }
@@ -523,7 +520,7 @@ void ControlWidget::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
 }
 
-void ControlWidget::showPopupWidget(const FlotingButton *clickedBtn)
+void ControlWidget::showPopupWidget(const FloatingButton *clickedBtn)
 {
     if (!m_roundPopupWidget || !clickedBtn || !topLevelWidget())
         return;

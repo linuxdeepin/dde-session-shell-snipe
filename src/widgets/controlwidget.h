@@ -44,27 +44,27 @@ class RoundPopupWidget;
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
 
-class FlotingButton : public DFloatingButton
+class FloatingButton : public DFloatingButton
 {
     Q_OBJECT
 public:
-    explicit FlotingButton(QWidget *parent = nullptr)
+    explicit FloatingButton(QWidget *parent = nullptr)
         : DFloatingButton(parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(QStyle::StandardPixmap iconType = static_cast<QStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
+    explicit FloatingButton(QStyle::StandardPixmap iconType = static_cast<QStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
         : DFloatingButton(iconType, parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(DStyle::StandardPixmap iconType = static_cast<DStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
+    explicit FloatingButton(DStyle::StandardPixmap iconType = static_cast<DStyle::StandardPixmap>(-1), QWidget *parent = nullptr)
         : DFloatingButton(iconType, parent) {
         installEventFilter(this);
     }
-    explicit FlotingButton(const QString &text, QWidget *parent = nullptr)
+    explicit FloatingButton(const QString &text, QWidget *parent = nullptr)
         : DFloatingButton(text, parent) {
         installEventFilter(this);
     }
-    FlotingButton(const QIcon& icon, const QString &text = QString(), QWidget *parent = nullptr)
+    FloatingButton(const QIcon& icon, const QString &text = QString(), QWidget *parent = nullptr)
         : DFloatingButton(icon, text, parent) {
         installEventFilter(this);
     }
@@ -126,7 +126,7 @@ private:
     void updateLayout();
     void updateTapOrder();
     int focusedBtnIndex();
-    void showPopupWidget(const FlotingButton *clickedBtn);
+    void showPopupWidget(const FloatingButton *clickedBtn);
     void hidePopupWidget();
 
 private slots:
@@ -134,13 +134,13 @@ private slots:
     void hideInfoTips();
 
 private:
-    QList<FlotingButton *> m_showedBtnList;
+    QList<FloatingButton *> m_showedBtnList;
 
     QHBoxLayout *m_mainLayout;
-    FlotingButton *m_switchUserBtn;
-    FlotingButton *m_powerBtn;
-    FlotingButton *m_sessionBtn;
-    FlotingButton *m_keyboardBtn;         // 键盘布局按钮
+    FloatingButton *m_switchUserBtn;
+    FloatingButton *m_powerBtn;
+    FloatingButton *m_sessionBtn;
+    FloatingButton *m_keyboardBtn;         // 键盘布局按钮
 
     std::shared_ptr<User> m_curUser;
     const SessionBaseModel *m_model;
