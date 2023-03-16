@@ -19,6 +19,9 @@ const QString ModulesDir = "/usr/lib/dde-session-shell/modules";
 ModulesLoader::ModulesLoader(QObject *parent)
     : QThread(parent)
 {
+    QString localDir = QCoreApplication::applicationDirPath() + "/modules";
+    addModulePath(localDir);
+    addModulePath(ModulesDir);
 }
 
 ModulesLoader::~ModulesLoader()
@@ -49,11 +52,9 @@ QHash<QString, BaseModuleInterface *> ModulesLoader::findModulesByType(const int
 
 void ModulesLoader::run()
 {
-    findModule(ModulesDir);
-
-    // 本地编译modules
-    QString localDir = QCoreApplication::applicationDirPath() + "/modules";
-    findModule(localDir);
+    for (const auto &path : m_modulePaths) {
+        findModule(path);
+    }
 }
 
 bool ModulesLoader::checkVersion(const QString &target, const QString &base)

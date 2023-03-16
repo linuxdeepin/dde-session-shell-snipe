@@ -21,6 +21,8 @@ public:
     inline QHash<QString, BaseModuleInterface *> moduleList() { return m_modules; }
     BaseModuleInterface *findModuleByName(const QString &name) const;
     QHash<QString, BaseModuleInterface *> findModulesByType(const int type) const;
+    inline void setModulePaths(const QStringList &paths) { m_modulePaths.clear(); m_modulePaths.append(paths); }
+    inline void addModulePath(const QString &path) { m_modulePaths.append(path); }
 
 signals:
     void moduleFound(BaseModuleInterface *);
@@ -39,6 +41,7 @@ private:
 
 private:
     QHash<QString, BaseModuleInterface *> m_modules;
+    QStringList m_modulePaths;
 };
 
 } // namespace module

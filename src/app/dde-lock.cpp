@@ -79,9 +79,6 @@ int main(int argc, char *argv[])
     /* load translation files */
     loadTranslation(QLocale::system().name());
 
-    dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
-    modulesLoader->start(QThread::LowestPriority);
-
     QCommandLineParser cmdParser;
     cmdParser.addHelpOption();
     cmdParser.addVersionOption();
@@ -97,8 +94,20 @@ int main(int argc, char *argv[])
     QCommandLineOption lockscreen(QStringList() << "l" << "lockscreen", "show lock screen");
     cmdParser.addOption(lockscreen);
 
-    QStringList xddd = app->arguments();
+    QCommandLineOption modulePath("p", "Paths to load modules from, separated by semicolon. This option will override default module loading paths including local and global.", "paths", QString());
+    cmdParser.addOption(modulePath);
+
     cmdParser.process(*app);
+
+    dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
+
+    if (cmdParser.isSet(modulePath)) {
+        QString modulePathValue = cmdParser.value(modulePath);
+        QStringList paths = modulePathValue.split(":");
+        modulesLoader->setModulePaths(paths);
+    }
+
+    modulesLoader->start(QThread::LowestPriority);
 
     bool runDaemon = cmdParser.isSet(backend);
     bool showUserList = cmdParser.isSet(switchUser);

@@ -237,6 +237,22 @@ int main(int argc, char* argv[])
     DLogManager::registerConsoleAppender();
 
     dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
+
+    QCommandLineParser cmdParser;
+    cmdParser.addHelpOption();
+    cmdParser.addVersionOption();
+
+    QCommandLineOption modulePath("p", "Paths to load modules in debug mode, separated by semicolon.", "paths", QString());
+    cmdParser.addOption(modulePath);
+
+    cmdParser.process(a);
+
+    if (cmdParser.isSet(modulePath)) {
+        QString modulePathValue = cmdParser.value(modulePath);
+        QStringList paths = modulePathValue.split(":");
+        modulesLoader->setModulePaths(paths);
+    }
+
     modulesLoader->start(QThread::LowestPriority);
 
     const QString serviceName = "org.deepin.dde.Accounts1";
