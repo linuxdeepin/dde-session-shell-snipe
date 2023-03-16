@@ -43,6 +43,9 @@ int main(int argc, char *argv[])
     app->setApplicationName("org.deepin.dde.lock");
     app->setApplicationVersion("2015.1.0");
 
+    DLogManager::registerConsoleAppender();
+    DLogManager::registerFileAppender();
+
     //注册全局事件过滤器
     AppEventFilter appEventFilter;
     app->installEventFilter(&appEventFilter);
@@ -72,9 +75,6 @@ int main(int argc, char *argv[])
         palette.setColor(QPalette::Highlight, color);
         DGuiApplicationHelper::instance()->setApplicationPalette(palette);
     });
-
-    DLogManager::registerConsoleAppender();
-    DLogManager::registerFileAppender();
 
     /* load translation files */
     loadTranslation(QLocale::system().name());

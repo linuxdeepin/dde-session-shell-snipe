@@ -210,6 +210,8 @@ int main(int argc, char* argv[])
     qApp->setApplicationVersion("2015.1.0");
     qApp->setAttribute(Qt::AA_ForceRasterWidgets);
 
+    DLogManager::registerConsoleAppender();
+
     set_pointer();
 
     //注册全局事件过滤器
@@ -233,8 +235,6 @@ int main(int argc, char* argv[])
     DGuiApplicationHelper::generatePaletteColor(pa, DPalette::Dark, DGuiApplicationHelper::LightType);
     DGuiApplicationHelper::generatePaletteColor(pa, DPalette::ButtonText, DGuiApplicationHelper::LightType);
     DGuiApplicationHelper::instance()->setApplicationPalette(pa);
-
-    DLogManager::registerConsoleAppender();
 
     dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
 
