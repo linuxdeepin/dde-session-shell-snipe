@@ -107,7 +107,7 @@ void ModulesLoader::findModule(const QString &path)
         if (moduleVersion == "1.0.1" && !moduleInstance->isNeedInitPlugin()) {
             qInfo() << "plugin :" << moduleInstance->key() << " version:"
                     << moduleVersion << " is valid, but not need load";
-            return;
+            continue;
         }
 
         if (m_modules.contains(moduleInstance->key())) {
