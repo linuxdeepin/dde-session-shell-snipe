@@ -38,8 +38,6 @@ private:
     SessionBaseModel *m_model;
     QLightDM::SessionsModel *m_sessionModel;
     QLightDM::UsersModel *m_userModel;
-
-    bool m_allowSwitchingToWayland;
 };
 
 #endif // SESSIONWIDGET_H

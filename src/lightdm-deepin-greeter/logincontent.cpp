@@ -15,8 +15,7 @@ LoginContent::LoginContent(SessionBaseModel *const model, QWidget *parent)
 
     // TODO 确保使用之前先setModel，代码层面有优化空间
     SessionManager::Reference().setModel(model);
-    m_controlWidget->setSessionSwitchEnable(SessionManager::Reference().sessionCount() > 1 &&
-                                            Dtk::Core::DSysInfo::UosCommunity != Dtk::Core::DSysInfo::uosEditionType());
+    m_controlWidget->setSessionSwitchEnable(SessionManager::Reference().sessionCount() > 1);
     m_controlWidget->chooseToSession(model->sessionKey());
     connect(m_controlWidget, &ControlWidget::requestSwitchSession, &SessionManager::Reference(), &SessionManager::switchSession);
     connect(m_model, &SessionBaseModel::onSessionKeyChanged, m_controlWidget, &ControlWidget::chooseToSession);
