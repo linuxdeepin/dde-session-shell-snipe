@@ -106,7 +106,7 @@ generation_dbus_interface(
 )
 
 generation_dbus_interface(
-    ${CMAKE_SOURCE_DIR}/xml/org.deepin.dde.Logined1.xml
+    ${CMAKE_SOURCE_DIR}/xml/org.deepin.dde.Logined.xml
     Logined
     ${XML2CPP_DIR}/logined_interface
 )

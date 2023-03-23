@@ -22,7 +22,7 @@
 #include <memory>
 
 using AccountsInter = org::deepin::dde::Accounts1;
-using LoginedInter = org::deepin::dde::Logined1;
+using LoginedInter = org::deepin::dde::Logined;
 using Login1SessionSelf = org::freedesktop::login1::Session;
 using PowerManagerInter = org::deepin::dde::PowerManager1;
 using DBusObjectInter = org::freedesktop::DBus;

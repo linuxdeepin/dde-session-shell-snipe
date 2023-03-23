@@ -24,7 +24,7 @@
 
 using AccountsInter = org::deepin::dde::Accounts1;
 using UserInter = org::deepin::dde::accounts1::User;
-using LoginedInter = org::deepin::dde::Logined1;
+using LoginedInter = org::deepin::dde::Logined;
 using SessionManagerInter = org::deepin::dde::SessionManager1;
 using HuaWeiSwitchOSInterface = com::huawei::switchos;
 
