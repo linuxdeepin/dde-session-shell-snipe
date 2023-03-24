@@ -49,7 +49,7 @@ void TipContentWidget::setTextList(const QStringList &textList)
     int width = 0;
     int height = 0;
     for (QString text : m_textList) {
-        width = qMax(width, fontMetrics().horizontalAdvance(text) + 20);
+        width = qMax(width, fontMetrics().boundingRect(text).width() + 20);
         height += fontMetrics().boundingRect(text).height();
     }
 
@@ -119,7 +119,7 @@ void TipContentWidget::showSingleLineText(const QString &text)
     m_text = "བོད་སྐད་ཡིག་གཟུགས་ཚད་ལེན་ཚོད་ལྟའི་སྐོར་གྱི་རྗོད་ཚིག";
 #endif
 
-    setFixedSize(fontMetrics().horizontalAdvance(m_text) + 20, fontMetrics().boundingRect(m_text).height());
+    setFixedSize(fontMetrics().boundingRect(m_text).width() + 20, fontMetrics().boundingRect(m_text).height());
 
     update();
 

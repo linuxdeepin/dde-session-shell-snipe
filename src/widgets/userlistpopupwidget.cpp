@@ -295,7 +295,7 @@ int UserListPopupWidget::stringWidth(const QString &str, int fontSize, bool isBo
     font.setPixelSize(fontSize);
 
     QFontMetrics fm(font);
-    return fm.horizontalAdvance(str);
+    return fm.boundingRect(str).width();
 }
 
 void UserListPopupWidget::updateViewWidth()

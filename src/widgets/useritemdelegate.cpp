@@ -174,7 +174,7 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
 
     // 绘制userType, +1个像素为了避免字体大小不一样，绘制中心位置不一致
     int userTypeLeft = userData.name.isEmpty() ? displayNameRect.left() : displayNameRect.left() + nameWidth + itemSpacing;
-    QRect userTypeRect = QRect(userTypeLeft, displayNameRect.bottom() + vItemSpacing + 1, userTypeAreaWidth, typeAreaHeight);
+    QRect userTypeRect = QRect(userTypeLeft, displayNameRect.bottom() + vItemSpacing + 1, userTypeAreaWidth + 1, typeAreaHeight);
     painter->drawText(userTypeRect, userData.userStrType);
 }
 

@@ -134,7 +134,7 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 计算文本行数
     QStringList textList;
     QString str = m_text;
-    while (fontMetrics().horizontalAdvance(str) > width() - 20 && str.length() > 0) {
+    while (fontMetrics().boundingRect(str).width() > width() - 20 && str.length() > 0) {
         int lastSpacePos = str.lastIndexOf(" ");
         if (lastSpacePos == -1) {
             str = fontMetrics().elidedText(str, Qt::ElideRight, width() - 2 * padding);
@@ -151,7 +151,7 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 计算文本绘制的区域
     int textWidth = 0;
     for (auto text : textList) {
-        textWidth = qMax(textWidth, fontMetrics().horizontalAdvance(text));
+        textWidth = qMax(textWidth, fontMetrics().boundingRect(text).width());
     }
     QRect textRect;
     textRect.setX((width() - qMin(width(), textWidth + 2 * padding)) / 2);
