@@ -152,7 +152,7 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
     painter->drawText(displayNameRect, displayNameText);
 
     QFont typeFont = DFontSizeManager::instance()->t8();
-    int userTypeAreaWidth = stringWidth(userData.userType, typeFont.pixelSize());
+    int userTypeAreaWidth = stringWidth(userData.userStrType, typeFont.pixelSize());
 
     // 绘制name
     int nameWidth = 0;
@@ -175,7 +175,7 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
     // 绘制userType, +1个像素为了避免字体大小不一样，绘制中心位置不一致
     int userTypeLeft = userData.name.isEmpty() ? displayNameRect.left() : displayNameRect.left() + nameWidth + itemSpacing;
     QRect userTypeRect = QRect(userTypeLeft, displayNameRect.bottom() + vItemSpacing + 1, userTypeAreaWidth, typeAreaHeight);
-    painter->drawText(userTypeRect, userData.userType);
+    painter->drawText(userTypeRect, userData.userStrType);
 }
 
 void UserItemDelegate::drawCheckedState(QPainter *painter, const QRect &rect) const

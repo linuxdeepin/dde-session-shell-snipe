@@ -160,7 +160,8 @@ void UserListPopupWidget::setItemData(QStandardItem *item, const User *user)
     itemData.displayName = user->displayName();
     // TODO 这块需要结合配置来决定是否显示，待后续配置出来再放开
     itemData.name = "";//user->fullName().isEmpty() ? "" : user->name();
-    itemData.userType = accountStrType(user->accountType());
+    itemData.userStrType = accountStrType(user->accountType());
+    itemData.userType = user->accountType();
     itemData.isLogined = user->isLogin();
     itemData.userId = user->uid();
 
@@ -248,6 +249,12 @@ void UserListPopupWidget::currentUserChanged(const std::shared_ptr<User> &user)
     }
 
     m_currentUser = user;
+
+    for (const auto &item : m_userItemMap) {
+        UserItemDelegate::UserItemData userData = item->data(UserItemDelegate::StaticUserDataRole).value<UserItemDelegate::UserItemData>();
+        userData.userStrType = accountStrType(userData.userType);
+        item->setData(QVariant::fromValue(userData), UserItemDelegate::StaticUserDataRole);
+    }
 }
 
 // 设计给出item的最小宽度和最大长度，需要根据内容来计算item大小

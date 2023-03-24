@@ -23,7 +23,8 @@ public:
         QString imagePath;
         QString displayName;
         QString name;
-        QString userType;
+        QString userStrType;
+        int userType;
         uid_t userId;
         bool isLogined = false;
     };
