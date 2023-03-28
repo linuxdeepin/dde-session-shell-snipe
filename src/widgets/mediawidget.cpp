@@ -18,12 +18,10 @@ void MediaWidget::initUI()
 {
     m_dmprisWidget = new DMPRISControl;
     m_dmprisWidget->setAccessibleName("MPRISWidget");
-    m_dmprisWidget->setFixedWidth(200);
     m_dmprisWidget->setPictureVisible(false);
-
-    QHBoxLayout *mainlayout = new QHBoxLayout;
-
-    mainlayout->addWidget(m_dmprisWidget, 0, Qt::AlignBottom);
+    QVBoxLayout *mainlayout = new QVBoxLayout;
+    mainlayout->setMargin(1);
+    mainlayout->addWidget(m_dmprisWidget);
 
     setLayout(mainlayout);
 

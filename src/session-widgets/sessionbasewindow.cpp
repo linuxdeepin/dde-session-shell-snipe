@@ -60,7 +60,7 @@ void SessionBaseWindow::setCenterBottomWidget(QWidget *const widget)
         m_centerBottomLayout->removeWidget(m_centerBottomWidget);
     }
 
-    m_centerBottomLayout->addWidget(widget, 0, Qt::AlignCenter);
+    m_centerBottomLayout->addWidget(widget, 0, Qt::AlignBottom | Qt::AlignHCenter);
     m_centerBottomWidget = widget;
 
 #ifdef QT_DEBUG
@@ -161,7 +161,7 @@ void SessionBaseWindow::initUI()
 
     m_bottomFrame->setAccessibleName("BottomFrame");
     m_bottomFrame->setLayout(bottomLayout);
-    m_bottomFrame->setFixedHeight(autoScaledSize(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT));
+    m_bottomFrame->setFixedHeight(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT);
     m_bottomFrame->setAutoFillBackground(false);
 
     m_mainLayout->setContentsMargins(getMainLayoutMargins());
@@ -207,7 +207,7 @@ void SessionBaseWindow::resizeEvent(QResizeEvent *event)
 {
     m_mainLayout->setContentsMargins(getMainLayoutMargins());
     m_TopFrame->setFixedHeight(autoScaledSize(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT));
-    m_bottomFrame->setFixedHeight(autoScaledSize(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT));
+    m_bottomFrame->setFixedHeight(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT);
     m_fakeWindowLayer->setFixedSize(size());
 
     QFrame::resizeEvent(event);
