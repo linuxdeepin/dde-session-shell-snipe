@@ -1,3 +1,21 @@
+dde-session-shell (6.0.7) unstable; urgency=medium
+
+  * fix: second click of network won't close
+  * feat: add module path debug mode
+  * fix: popup doesn't reset parent
+  * fix: continue load plugin if not init
+  * fix: wrong text width for painting
+  * fix: user popup list doesn't update locale
+  * fix: acquiring logged in users failed
+  * fix: black rectangular background of popup
+  * fix(greeter): remove delay for startSessionSync
+  * fix: display error of user type
+  * fix: archlinux build ci
+  * fix: dependencies on archlinux
+  * feat: add archlinux build
+
+ -- wangyixue <wangyixue@uniontech.com>  Thu, 30 Mar 2023 14:46:12 +0800
+
 dde-session-shell (6.0.6) unstable; urgency=medium
 
   [ TagBuilder ]
