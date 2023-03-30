@@ -813,6 +813,8 @@ void SFAWidget::setBioAuthStateVisible(AuthModule *authModule, bool visible)
  */
 int SFAWidget::getTopSpacing() const
 {
+    if (m_model->currentUser()->expiredState() == User::ExpiredAlready)
+        return 0;
     int calcTopHeight = static_cast<int>(topLevelWidget()->geometry().height() * AUTH_WIDGET_TOP_SPACING_PERCENT);
 
     // 在低分辨率（高度<916）的时候，如果用户头像到屏幕顶端的距离为整个高度的35%，那么验证窗口整体是偏下的。

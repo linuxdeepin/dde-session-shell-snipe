@@ -16,6 +16,7 @@
 #include <DDesktopServices>
 #include <DFloatingMessage>
 #include <DMessageManager>
+#include <DAnchors>
 
 DWIDGET_USE_NAMESPACE
 
@@ -91,14 +92,26 @@ void ChangePasswordWidget::initUI()
     m_mainLayout->addWidget(m_nameLabel, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_tipsLabel, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_oldPasswdEdit, 0, Qt::AlignCenter);
-    m_mainLayout->addWidget(m_newPasswdEdit, 0, Qt::AlignCenter);
-    m_mainLayout->addWidget(m_levelWidget, 0, Qt::AlignRight | Qt::AlignVCenter);
+    QWidget *newPasswdWidget = new QWidget;
+    m_newPasswdEdit->setParent(newPasswdWidget);
+    m_levelWidget->setParent(newPasswdWidget);
+    auto passwdEditSizeHint = m_newPasswdEdit->sizeHint();
+    auto passwdLevelSizeHint = m_levelWidget->sizeHint();
+    newPasswdWidget->setMinimumSize(passwdEditSizeHint.width() + 2 * passwdLevelSizeHint.width(), passwdEditSizeHint.height());
+    m_mainLayout->addWidget(newPasswdWidget, 0, Qt::AlignCenter);
+    auto passwdAnchor = new DAnchors<DPasswordEdit>(m_newPasswdEdit);
+    auto levelAnchor = new DAnchors<PasswordLevelWidget>(m_levelWidget);
+    auto newPasswdWidgetAnchor = new DAnchors<QWidget>(newPasswdWidget);
+    passwdAnchor->setCenterIn(newPasswdWidgetAnchor);
+    levelAnchor->setVerticalCenter(passwdAnchor->verticalCenter());
+    levelAnchor->setLeftMargin(2);
+    levelAnchor->setLeft(passwdAnchor->right());
     m_mainLayout->addWidget(m_repeatPasswdEdit, 0, Qt::AlignCenter);
+    m_passwordHints->setMinimumWidth(passwdEditSizeHint.width());
     m_mainLayout->addWidget(m_passwordHints, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_okBtn, 0, Qt::AlignCenter);
 
     setLayout(m_mainLayout);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     // 默认焦点处于旧密码输入框中
     m_oldPasswdEdit->setFocus();

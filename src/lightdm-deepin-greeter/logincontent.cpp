@@ -93,7 +93,7 @@ void LoginContent::pushChangePasswordFrame()
             // TODO 这里是回到密码输入界面还是某个因子验证的界面
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         });
-    setCenterContent(m_resetPasswordWidget.get());
+    setCenterContent(m_resetPasswordWidget.get(), Qt::AlignCenter, 0);
 
     LockContent::onStatusChanged(m_model->currentModeState());
 }
