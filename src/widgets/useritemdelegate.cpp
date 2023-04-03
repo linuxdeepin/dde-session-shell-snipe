@@ -46,10 +46,9 @@ void UserItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
         painter->setBrush(bgColor);
     }
 
+    painter->setRenderHint(QPainter::Antialiasing, true);
     // 绘制背景颜色
     painter->drawRoundedRect(rect, RADIUS_VALUE, RADIUS_VALUE);
-
-    painter->setRenderHint(QPainter::Antialiasing, true);
 
     UserItemData userData = index.data(StaticUserDataRole).value<UserItemData>();
 
@@ -93,22 +92,15 @@ void UserItemDelegate::drawRoundImage(QPainter *thisPainter, const QRect &rect, 
 
     QRect drawRect = QRect(rect.left() + marginLeft, rect.top() + margTop,
                            IMAGE_SIZE.width(), IMAGE_SIZE.height());
-
-    // 画成圆角图片
-    QBitmap mask(IMAGE_SIZE);
-    QPainter painter(&mask);
-    painter.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    painter.fillRect(0, 0, IMAGE_SIZE.width(), IMAGE_SIZE.height(), Qt::white);
-    painter.setBrush(Qt::black);
-
-    // 修改后面两个数值，可以改弧度
-    painter.drawRoundedRect(0, 0, IMAGE_SIZE.width(), IMAGE_SIZE.height(), imageRadius, imageRadius);
-
+    QPainterPath clipPath;
+    clipPath.addRoundedRect(drawRect, imageRadius, imageRadius);
+    thisPainter->save();
+    thisPainter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    thisPainter->setClipPath(clipPath);
     QPixmap pixmap(path);
     pixmap = pixmap.scaled(IMAGE_SIZE);
-    pixmap.setMask(mask);
-
     thisPainter->drawPixmap(drawRect, pixmap);
+    thisPainter->restore();
 }
 
 void UserItemDelegate::drawLoginedState(QPainter *painter, const QRect &rect) const
