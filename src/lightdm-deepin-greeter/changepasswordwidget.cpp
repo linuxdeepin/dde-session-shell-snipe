@@ -7,6 +7,7 @@
 #include "useravatar.h"
 #include "pwqualitymanager.h"
 #include "passwordlevelwidget.h"
+#include "constants.h"
 
 #include <QVBoxLayout>
 #include <QProcess>
@@ -17,8 +18,10 @@
 #include <DFloatingMessage>
 #include <DMessageManager>
 #include <DAnchors>
+#include <DFontSizeManager>
 
 DWIDGET_USE_NAMESPACE
+using namespace DDESESSIONCC;
 
 /**
  * @brief The ResetPasswdWidget class   重置密码界面
@@ -54,6 +57,7 @@ void ChangePasswordWidget::initUI()
     m_avatar->setAvatarSize(UserAvatar::AvatarLargeSize);
 
     m_nameLabel->setAlignment(Qt::AlignCenter);
+    DFontSizeManager::instance()->bind(m_nameLabel, DFontSizeManager::T2);
 
     m_tipsLabel->setAlignment(Qt::AlignCenter);
 
@@ -62,12 +66,14 @@ void ChangePasswordWidget::initUI()
     m_oldPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_oldPasswdEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_oldPasswdEdit->setPlaceholderText(tr("Old password"));
+    m_oldPasswdEdit->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
     m_newPasswdEdit->setClearButtonEnabled(false);
     m_newPasswdEdit->setEchoMode(QLineEdit::Password);
     m_newPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_newPasswdEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_newPasswdEdit->setPlaceholderText(tr("New password"));
+    m_newPasswdEdit->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
     m_levelWidget->reset();
     // TODO 后续调整
@@ -78,12 +84,14 @@ void ChangePasswordWidget::initUI()
     m_repeatPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_repeatPasswdEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_repeatPasswdEdit->setPlaceholderText(tr("Repeat new password"));
+    m_repeatPasswdEdit->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
     m_passwordHints->setClearButtonEnabled(false);
     m_passwordHints->setEchoMode(QLineEdit::Normal);
     m_passwordHints->setContextMenuPolicy(Qt::NoContextMenu);
     m_passwordHints->lineEdit()->setAlignment(Qt::AlignCenter);
     m_passwordHints->setPlaceholderText(tr("Password hint (Optional)"));
+    m_passwordHints->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
     m_mainLayout->setContentsMargins(10, 0, 10, 0);
     m_mainLayout->setSpacing(10);
@@ -95,9 +103,8 @@ void ChangePasswordWidget::initUI()
     QWidget *newPasswdWidget = new QWidget;
     m_newPasswdEdit->setParent(newPasswdWidget);
     m_levelWidget->setParent(newPasswdWidget);
-    auto passwdEditSizeHint = m_newPasswdEdit->sizeHint();
     auto passwdLevelSizeHint = m_levelWidget->sizeHint();
-    newPasswdWidget->setMinimumSize(passwdEditSizeHint.width() + 2 * passwdLevelSizeHint.width(), passwdEditSizeHint.height());
+    newPasswdWidget->setFixedSize(PASSWDLINEEIDT_WIDTH + 2 * passwdLevelSizeHint.width(), PASSWDLINEEDIT_HEIGHT);
     m_mainLayout->addWidget(newPasswdWidget, 0, Qt::AlignCenter);
     auto passwdAnchor = new DAnchors<DPasswordEdit>(m_newPasswdEdit);
     auto levelAnchor = new DAnchors<PasswordLevelWidget>(m_levelWidget);
@@ -107,9 +114,9 @@ void ChangePasswordWidget::initUI()
     levelAnchor->setLeftMargin(2);
     levelAnchor->setLeft(passwdAnchor->right());
     m_mainLayout->addWidget(m_repeatPasswdEdit, 0, Qt::AlignCenter);
-    m_passwordHints->setMinimumWidth(passwdEditSizeHint.width());
     m_mainLayout->addWidget(m_passwordHints, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_okBtn, 0, Qt::AlignCenter);
+    m_okBtn->setFixedWidth(160);
 
     setLayout(m_mainLayout);
 
