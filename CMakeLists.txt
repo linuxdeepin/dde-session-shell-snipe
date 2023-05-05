@@ -354,6 +354,14 @@ install(FILES ${INTERFACE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dde-session-s
 file(GLOB CMAKE_CONFIG cmake/*.cmake)
 install(FILES ${CMAKE_CONFIG} DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/DdeSessionShell)
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/DdeSessionShellConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/DdeSessionShellConfig.cmake
+    @ONLY)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/DdeSessionShellConfig.cmake
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/DdeSessionShell)
+
 # config
 dconfig_meta_files(APPID org.deepin.dde.lock FILES configs/org.deepin.dde.lock.json)
 dconfig_meta_files(APPID org.deepin.dde.lightdm-deepin-greeter FILES configs/org.deepin.dde.lightdm-deepin-greeter.json)
