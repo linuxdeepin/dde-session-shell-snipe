@@ -67,6 +67,6 @@ Description: deepin desktop-environment - dde-session-shell module development f
 
 Package: deepin-greeter-wayland
 Architecture: any
-Depends: dde-session-shell (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, dde-wayland-config
+Depends: dde-session-shell (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}, deepin-kwin-wayland
 Description: deepin desktop-environment - dde-session-shell module config files
  DDE Session Shell module configuration package adapted to the wayland environment for lightdm-deepin-greeter

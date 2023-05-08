@@ -5,11 +5,8 @@ if [ -x $display_daemon ]; then
 fi
 
 export QT_QPA_PLATFORM=wayland
-export QT_QPA_PLATFORM_PLUGIN_PATH=/usr/plugins/platforms
-export QT_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins
-export QML2_IMPORT_PATH=/usr/lib/x86_64-linux-gnu/qt5/qml
+export QT_WAYLAND_INTEGRATION_SHELL=kwayland-shell
 export XDG_DATA_DIRS=/usr/share
-export XDG_CURRENT_DESKTOP=Deepin
-export QT_DEBUG_PLUGINS=1
+export XDG_CURRENT_DESKTOP=DDE
 
-/usr/bin/lightdm-deepin-greeter
+/usr/bin/deepin-kwin_wayland_wrapper --xwayland --drm --no-lockscreen /usr/bin/lightdm-deepin-greeter
