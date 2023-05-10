@@ -13,6 +13,7 @@
 
 static constexpr int MARGIN = 5;
 static constexpr int RADIUS = 18;
+static constexpr int BlurMaskAlpha = 120;
 
 RoundPopupWidget::RoundPopupWidget(QWidget *parent)
     : DBlurEffectWidget(parent)
@@ -27,7 +28,8 @@ void RoundPopupWidget::initUI()
 {
     setBlurRectXRadius(RADIUS);
     setBlurRectYRadius(RADIUS);
-    setMaskColor(QColor(238, 238, 238, 0.8 * 255));
+    setMaskColor(DBlurEffectWidget::LightColor);
+    setMaskAlpha(BlurMaskAlpha);
     m_mainLayout->setMargin(0);
     m_mainLayout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
     setLayout(m_mainLayout);
