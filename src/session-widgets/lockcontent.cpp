@@ -26,7 +26,7 @@ using namespace dss::module;
 LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     : SessionBaseWindow(parent)
     , m_model(model)
-    , m_controlWidget(new ControlWidget(m_model))
+    , m_controlWidget(new ControlWidget(m_model, this))
     , m_logoWidget(new LogoWidget(this))
     , m_timeWidget(new TimeWidget(this))
     , m_userListWidget(nullptr)

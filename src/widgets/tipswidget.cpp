@@ -3,49 +3,71 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "tipswidget.h"
-
+#include <QEvent>
+#include <QTimer>
 DWIDGET_USE_NAMESPACE
 
-TipsWidget::TipsWidget(QWidget *parent)
-    : DArrowRectangle(DArrowRectangle::ArrowBottom, parent ? DArrowRectangle::FloatWidget : DArrowRectangle::FloatWindow, parent)
-{
-    setProperty("_d_radius_force", true); // 无特效模式时，让窗口圆角
-    setShadowBlurRadius(20);
-    setRadius(6);
-    setShadowYOffset(2);
-    setShadowXOffset(0);
-    setArrowWidth(18);
-    setArrowHeight(10);
+static constexpr int BlurMaskAlpha = 70;
+static constexpr int BlurRadius = 6;
 
-    setWindowFlags(windowFlags() | Qt::ToolTip | Qt::WindowDoesNotAcceptFocus);
+TipsWidget::TipsWidget(QWidget *parent)
+    : DBlurEffectWidget(parent)
+    , m_content(nullptr)
+{
+    setMaskColor(DBlurEffectWidget::LightColor);
+    setMaskAlpha(BlurMaskAlpha);
+    setBlurRectXRadius(BlurRadius);
+    setBlurRectYRadius(BlurRadius);
+    setWindowFlag(Qt::WindowDoesNotAcceptFocus);
 }
 
 void TipsWidget::setContent(QWidget *content)
 {
-    QWidget *lastWidget = getContent();
-    if (lastWidget)
-        lastWidget->removeEventFilter(this);
-    content->installEventFilter(this);
-    DArrowRectangle::setContent(content);
+    if (m_content)
+        m_content->removeEventFilter(this);
+    if (content) {
+        content->installEventFilter(this);
+        content->setParent(this);
+        content->show();
+        content->move(0, 0);
+    }
+    m_content = content;
+    resizeFromContent();
+}
+
+void TipsWidget::resizeFromContent()
+{
+    if (m_content.isNull()) {
+        resize(0, 0);
+        return;
+    }
+    const QRect contentRect = m_content->rect();
+    const QMargins margins{5, 5, 5, 5};
+    resize(contentRect.marginsAdded(margins).size());
+    m_content->move(margins.left(), margins.top());
 }
 
 void TipsWidget::show(int x, int y)
 {
     m_lastPos = QPoint(x, y);
-    DArrowRectangle::show(x, y);
+    move(x - width() / 2, y - height()); // Position passed in is the bottom center of tips widget
+    DBlurEffectWidget::show();
 }
 
 bool TipsWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (o != getContent() || e->type() != QEvent::Resize)
+    if (o != m_content || e->type() != QEvent::Resize)
         return false;
 
     if (isVisible()) {
+
         QTimer::singleShot(10, this, [ = ] {
-            if (isVisible())
+            if (isVisible()) {
+                resizeFromContent();
                 show(m_lastPos.x(), m_lastPos.y());
+            }
         });
     }
 
-    return DArrowRectangle::eventFilter(o, e);
+    return DBlurEffectWidget::eventFilter(o, e);
 }

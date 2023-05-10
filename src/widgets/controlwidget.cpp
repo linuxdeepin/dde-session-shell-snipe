@@ -30,6 +30,7 @@
 
 #define BUTTON_ICON_SIZE QSize(26,26)
 #define BUTTON_SIZE QSize(52,52)
+static constexpr int TipsBottomDistance = 10;
 
 using namespace dss;
 DCORE_USE_NAMESPACE
@@ -264,13 +265,15 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         if (trayModule->itemTipsWidget()) {
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             QPoint p = m_tipsWidget->parentWidget() ? m_tipsWidget->parentWidget()->mapFromGlobal(mapToGlobal(button->pos())) : mapToGlobal(button->pos());
-            m_tipsWidget->show(p.x() + button->width() / 2, p.y());
+            m_tipsWidget->show(p.x() + button->width() / 2, p.y() - TipsBottomDistance);
         }
     });
 
     connect(button, &FloatingButton::requestHideTips, this, [ = ] {
-        if (m_tipsWidget->getContent())
+        if (m_tipsWidget->getContent()) {
             m_tipsWidget->getContent()->setVisible(false);
+            m_tipsWidget->setContent(nullptr);
+        }
         m_tipsWidget->hide();
     });
 
@@ -520,13 +523,15 @@ void ControlWidget::showInfoTips()
     m_tipContentWidget->setText(button->tipText());
     m_tipsWidget->setContent(m_tipContentWidget);
 
-    m_tipsWidget->show(mapToGlobal(button->pos()).x() + button->width() / 2, mapToGlobal(button->pos()).y());
+    QPoint p = m_tipsWidget->parentWidget() ? m_tipsWidget->parentWidget()->mapFromGlobal(mapToGlobal(button->pos())) : mapToGlobal(button->pos());
+    m_tipsWidget->show(p.x() + button->width() / 2, p.y() - TipsBottomDistance);
 }
 
 void ControlWidget::hideInfoTips()
 {
     if (m_tipsWidget->getContent()) {
         m_tipsWidget->getContent()->setVisible(false);
+        m_tipsWidget->setContent(nullptr);
     }
 
     m_tipsWidget->hide();
