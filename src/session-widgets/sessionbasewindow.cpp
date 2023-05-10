@@ -46,7 +46,7 @@ void SessionBaseWindow::setLeftBottomWidget(QWidget * const widget)
     m_leftBottomLayout->addWidget(widget, 0, Qt::AlignBottom);
     m_leftBottomWidget = widget;
 
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     m_leftBottomWidget->setStyleSheet("background-color: darkRed");
 #endif
 }
@@ -63,7 +63,7 @@ void SessionBaseWindow::setCenterBottomWidget(QWidget *const widget)
     m_centerBottomLayout->addWidget(widget, 0, Qt::AlignBottom | Qt::AlignHCenter);
     m_centerBottomWidget = widget;
 
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     m_centerBottomWidget->setStyleSheet("background-color: darkGreen");
 #endif
 }
@@ -80,7 +80,7 @@ void SessionBaseWindow::setRightBottomWidget(QWidget * const widget)
     m_rightBottomLayout->addWidget(widget, 0, Qt::AlignBottom);
     m_rightBottomWidget = widget;
 
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     m_rightBottomWidget->setStyleSheet("background-color: darkBlue");
 #endif
 }
@@ -170,7 +170,7 @@ void SessionBaseWindow::initUI()
     m_mainLayout->addWidget(m_centerFrame);
     m_mainLayout->addWidget(m_bottomFrame);
 
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     m_TopFrame->setStyleSheet("background-color: darkGray");
     m_bottomFrame->setStyleSheet("background-color: gray");
 #endif

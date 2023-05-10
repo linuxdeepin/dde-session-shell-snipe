@@ -18,6 +18,7 @@ set(CMAKE_C_FLAGS, "${CMAKE_C_FLAGS} ${SECURITY_COMPILE}")
 # coverage option
 # cmake -DENABLE_COVERAGE=ON ..
 OPTION (ENABLE_COVERAGE "Use gcov" OFF)
+option (CONTRAST_BACKGROUND "Fill background using high-contrast color for debug" OFF)
 MESSAGE(STATUS ENABLE_COVERAGE=${ENABLE_COVERAGE})
 if (ENABLE_COVERAGE)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
@@ -310,6 +311,11 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     ${Greeter_LIBRARIES}
     ${DEEPIN_PW_CHECK}
 )
+
+if(CONTRAST_BACKGROUND)
+    target_compile_definitions(dde-lock PRIVATE CONTRAST_BACKGROUND)
+    target_compile_definitions(lightdm-deepin-greeter PRIVATE CONTRAST_BACKGROUND)
+endif()
 
 # plugins
 add_subdirectory(modules)

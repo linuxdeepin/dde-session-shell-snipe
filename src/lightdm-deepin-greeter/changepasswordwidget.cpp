@@ -343,7 +343,7 @@ void ChangePasswordWidget::parseProcessResult(int exitCode, const QString &outpu
 
 void ChangePasswordWidget::paintEvent(QPaintEvent *event)
 {
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     Q_UNUSED(event);
 
     QPainter painter(this);

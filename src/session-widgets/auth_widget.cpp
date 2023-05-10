@@ -525,7 +525,7 @@ void AuthWidget::showEvent(QShowEvent *event)
 
 void AuthWidget::paintEvent(QPaintEvent *event)
 {
-#ifdef QT_DEBUG
+#ifdef CONTRAST_BACKGROUND
     Q_UNUSED(event);
 
     QPainter painter(this);
