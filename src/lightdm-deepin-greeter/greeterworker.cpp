@@ -513,14 +513,6 @@ void GreeterWorker::checkAccount(const QString &account)
     const QString userPath = m_accountsInter->FindUserByName(account);
     if (userPath.startsWith("/")) {
         user_ptr = std::make_shared<NativeUser>(userPath);
-
-        // 对于没有设置密码的账户,直接认定为错误账户
-        if (!user_ptr->isPasswordValid()) {
-            qWarning() << userPath;
-            emit m_model->authFailedTipsMessage(tr("Wrong account"));
-            m_model->setAuthType(AT_None);
-            return;
-        }
     } else if (!user_ptr) {
         // 判断账户第一次登录时的有效性
         std::string str = account.toStdString();
@@ -552,6 +544,13 @@ void GreeterWorker::checkAccount(const QString &account)
         m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
         destroyAuthentication(m_account);
         createAuthentication(user_ptr->name());
+    }
+    // 对于没有设置密码的账户,直接认定为错误账户
+    if (!user_ptr->isPasswordValid()) {
+        qWarning() << userPath;
+        emit m_model->authFailedTipsMessage(tr("Wrong account"));
+        m_model->setAuthType(AT_None);
+        return;
     }
 }
 
