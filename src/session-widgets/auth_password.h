@@ -9,6 +9,7 @@
 
 #include <DIconButton>
 #include <DLabel>
+#include <DLineEdit>
 #include <DPushButton>
 #include <DFloatingMessage>
 #include <DSuggestButton>
@@ -59,6 +60,8 @@ private:
     void initUI();
     void initConnections();
     void updateUnlockPrompt() override;
+    void togglePassword();
+    void setTogglePasswordBtnIcon();
     void showPasswordHint();
     void setPasswordHintBtnVisible(const bool isVisible);
     bool isUserAccountBinded();
@@ -68,6 +71,7 @@ private:
     DLineEditEx *m_passwordEdit;        // 密码输入框
     DIconButton *m_passwordHintBtn;     // 密码提示按钮
     QString m_passwordHint;             // 密码提示
+    DIconButton *m_togglePasswordBtn;   // 显示/隐藏密码按钮
     bool m_resetPasswordMessageVisible;
     DFloatingMessage *m_resetPasswordFloatingMessage;
     uid_t m_currentUid; // 当前用户uid

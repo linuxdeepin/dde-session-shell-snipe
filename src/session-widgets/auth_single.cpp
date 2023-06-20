@@ -32,6 +32,7 @@ AuthSingle::AuthSingle(QWidget *parent)
     , m_lineEdit(new DLineEditEx(this))
     , m_keyboardBtn(new DPushButton(this))
     , m_passwordHintBtn(new DIconButton(this))
+    , m_togglePasswordBtn(new DIconButton(this))
     , m_resetPasswordMessageVisible(false)
     , m_resetPasswordFloatingMessage(nullptr)
     , m_bindCheckTimer(nullptr)
@@ -89,6 +90,15 @@ void AuthSingle::initUI()
     m_passwordHintBtn->setIcon(QIcon(PASSWORD_HINT));
     m_passwordHintBtn->setIconSize(QSize(16, 16));
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
+    // 切换密码显示隐藏
+    m_togglePasswordBtn->setAccessibleName(QStringLiteral("TogglePassword"));
+    m_togglePasswordBtn->setContentsMargins(0, 0, 0, 0);
+    m_togglePasswordBtn->setFocusPolicy(Qt::NoFocus);
+    m_togglePasswordBtn->setCursor(Qt::ArrowCursor);
+    m_togglePasswordBtn->setFlat(true);
+    setTogglePasswordBtnIcon();
+    m_togglePasswordBtn->setIconSize(QSize(16, 16));
+    passwordLayout->addWidget(m_togglePasswordBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
 }
@@ -348,6 +358,25 @@ void AuthSingle::setKeyboardButtonInfo(const QString &text)
 void AuthSingle::setKeyboardButtonVisible(const bool visible)
 {
     m_keyboardBtn->setVisible(visible);
+}
+
+/**
+ * @brief 显示/隐藏密码
+ */
+void AuthSingle::togglePassword()
+{
+    m_lineEdit->setEchoMode(m_lineEdit->echoMode() == QLineEdit::Password
+                            ? QLineEdit::Normal
+                            : QLineEdit::Password);
+    setTogglePasswordBtnIcon();
+}
+
+void AuthSingle::setTogglePasswordBtnIcon() {
+    if (m_lineEdit->echoMode() == QLineEdit::Password) {
+        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_ShowPassword));
+    } else {
+        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_HidePassword));
+    }
 }
 
 /**

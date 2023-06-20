@@ -33,6 +33,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     , m_capsLock(new DLabel(this))
     , m_passwordEdit(new DLineEditEx(this))
     , m_passwordHintBtn(new DIconButton(this))
+    , m_togglePasswordBtn(new DIconButton(this))
     , m_resetPasswordMessageVisible(false)
     , m_resetPasswordFloatingMessage(nullptr)
     , m_currentUid(0)
@@ -91,6 +92,16 @@ void AuthPassword::initUI()
     m_passwordHintBtn->setIcon(QIcon(PASSWORD_HINT));
     m_passwordHintBtn->setIconSize(QSize(16, 16));
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
+    // 切换密码显示隐藏
+    m_togglePasswordBtn->setAccessibleName(QStringLiteral("TogglePassword"));
+    m_togglePasswordBtn->setContentsMargins(0, 0, 0, 0);
+    m_togglePasswordBtn->setFocusPolicy(Qt::NoFocus);
+    m_togglePasswordBtn->setCursor(Qt::ArrowCursor);
+    m_togglePasswordBtn->setFlat(true);
+    setTogglePasswordBtnIcon();
+    m_togglePasswordBtn->setIconSize(QSize(16, 16));
+    passwordLayout->addWidget(m_togglePasswordBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
+
 
     mainLayout->addWidget(m_passwordEdit);
 }
@@ -103,6 +114,7 @@ void AuthPassword::initConnections()
     AuthModule::initConnections();
     /* 密码提示 */
     connect(m_passwordHintBtn, &DIconButton::clicked, this, &AuthPassword::showPasswordHint);
+    connect(m_togglePasswordBtn, &DIconButton::clicked, this, &AuthPassword::togglePassword);
     /* 密码输入框 */
     connect(m_passwordEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
         if (!focus) m_passwordEdit->setAlert(false);
@@ -400,6 +412,25 @@ void AuthPassword::showPasswordHint()
 void AuthPassword::setPasswordHintBtnVisible(const bool isVisible)
 {
     m_passwordHintBtn->setVisible(isVisible);
+}
+
+/**
+ * @brief 显示/隐藏密码
+ */
+void AuthPassword::togglePassword()
+{
+    m_passwordEdit->setEchoMode(m_passwordEdit->echoMode() == QLineEdit::Password
+                                  ? QLineEdit::Normal
+                                  : QLineEdit::Password);
+    setTogglePasswordBtnIcon();
+}
+
+void AuthPassword::setTogglePasswordBtnIcon() {
+    if (m_passwordEdit->echoMode() == QLineEdit::Password) {
+        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_ShowPassword));
+    } else {
+        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_HidePassword));
+    }
 }
 
 /**

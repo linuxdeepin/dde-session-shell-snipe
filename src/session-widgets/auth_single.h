@@ -52,15 +52,18 @@ private:
     void initConnections();
 
     void updateUnlockPrompt();
+    void togglePassword();
+    void setTogglePasswordBtnIcon();
     void showPasswordHint();
     void setPasswordHintBtnVisible(const bool isVisible);
     bool isUserAccountBinded();
 private:
-    DLabel *m_capsLock;             // 大小写状态
-    DLineEditEx *m_lineEdit;        // 输入框
-    DPushButton *m_keyboardBtn;     // 键盘布局按钮
-    DIconButton *m_passwordHintBtn; // 密码提示按钮
-    QString m_passwordHint;         // 密码提示
+    DLabel *m_capsLock;                 // 大小写状态
+    DLineEditEx *m_lineEdit;            // 输入框
+    DPushButton *m_keyboardBtn;         // 键盘布局按钮
+    DIconButton *m_passwordHintBtn;     // 密码提示按钮
+    QString m_passwordHint;             // 密码提示
+    DIconButton *m_togglePasswordBtn;   // 显示/隐藏密码按钮
     bool m_resetPasswordMessageVisible;
     DFloatingMessage *m_resetPasswordFloatingMessage;
     uid_t m_currentUid; // 当前用户uid
