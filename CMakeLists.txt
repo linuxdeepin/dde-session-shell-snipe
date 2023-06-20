@@ -59,6 +59,7 @@ find_package(Qt5 COMPONENTS
     Svg
     Network
 REQUIRED)
+find_package(DtkTools REQUIRED)
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
 pkg_check_modules(QGSettings REQUIRED gsettings-qt)
@@ -77,7 +78,7 @@ set(Qt_LIBS
 set(XML2CPP_DIR ${PROJECT_SOURCE_DIR}/src/global_util/dbus)
 
 function(generation_dbus_interface xml class_name class_file)
-    execute_process(COMMAND qdbusxml2cpp-fix -c ${class_name} -p ${class_file} ${xml}
+    execute_process(COMMAND ${DTK_XML2CPP} -c ${class_name} -p ${class_file} ${xml}
         WORKING_DIRECTORY ${XML2CPP_DIR})
 endfunction(generation_dbus_interface)
 
