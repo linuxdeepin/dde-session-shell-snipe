@@ -1,3 +1,14 @@
+dde-session-shell (6.0.10) unstable; urgency=medium
+
+  * feat: use a special pam module
+  * chore(CI): correct source name and depends
+  * fix: qdbusxml2cpp-fix not found
+  * feat: add toggle password button
+  * chore: Sync by https://github.com/linuxdeepin/.github/commit/559e91167d4919644f37bbcf123eb0651c1528ea(Influence: none)
+  * chore(CI): Update obs tag build workflow
+
+ -- Yixue Wang <wangyixue@deepin.org>  Mon, 14 Aug 2023 11:22:34 +0800
+
 dde-session-shell (6.0.9) unstable; urgency=medium
 
   * feat: use configure_file set path in DdeSessionShellConfig.cmake
