@@ -66,6 +66,7 @@ void SessionPopupWidget::addItem(const QString &icon, const QString &itemName)
     item->setFontSize(DFontSizeManager::T6);
     item->setIcon(QIcon(icon));
     item->setText(itemName);
+    item->setEditable(false);
 
     QSize iconSize(12, 10);
     auto rightAction = new DViewItemAction(Qt::AlignVCenter, iconSize, iconSize, true);
