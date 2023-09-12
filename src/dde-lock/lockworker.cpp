@@ -84,7 +84,7 @@ void LockWorker::initConnections()
     connect(m_loginedInter, &LoginedInter::UserListChanged, m_model, &SessionBaseModel::updateLoginedUserList);
 
     /* org.deepin.dde.Authenticate1 */
-    connect(m_authFramework, &DeepinAuthFramework::FramworkStateChanged, m_model, &SessionBaseModel::updateFrameworkState);
+    connect(m_authFramework, &DeepinAuthFramework::FramworkStateChanged, this, &LockWorker::onFrameworkStateChanged);
     connect(m_authFramework, &DeepinAuthFramework::LimitsInfoChanged, this, [this](const QString &account) {
         qDebug() << "DeepinAuthFramework::LimitsInfoChanged:" << account;
         if (account == m_model->currentUser()->name()) {
@@ -270,6 +270,10 @@ void LockWorker::onAuthStateChanged(const int type, const int state, const QStri
                 m_model->updateAuthState(type, state, message);
                 destroyAuthentication(m_account);
                 break;
+            case AS_Recover:
+                m_model->updateAuthState(type, state, message);
+                createAuthentication(m_account);
+                break;
             default:
                 break;
             }
@@ -354,6 +358,9 @@ void LockWorker::onAuthStateChanged(const int type, const int state, const QStri
             break;
         case AS_Cancel:
             destroyAuthentication(m_account);
+            break;
+        case AS_Recover:
+            createAuthentication(m_account);
             break;
         default:
             break;
@@ -627,6 +634,13 @@ void LockWorker::endAccountAuthentication(const QString &account, const int auth
     if (authType == AT_All) {
         destroyAuthentication(account);
     }
+}
+
+void LockWorker::onFrameworkStateChanged(int state)
+{
+    onAuthStateChanged(AT_All, AS_Cancel, "Framework state changes.");
+    m_model->updateFrameworkState(state);
+    onAuthStateChanged(AT_All, AS_Recover, "Framework state changes.");
 }
 
 void LockWorker::handleServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message)

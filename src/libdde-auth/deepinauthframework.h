@@ -105,6 +105,7 @@ private:
 
 private:
     AuthInter *m_authenticateInter;
+    QDBusServiceWatcher *m_watcher;
     pthread_t m_PAMAuthThread;
     QString m_account;
     QString m_message;
@@ -116,6 +117,7 @@ private:
     QMap<QString, AuthControllerInter *> *m_authenticateControllers;
     bool m_cancelAuth;
     bool m_waitToken;
+    bool m_retryActivateFramework;
 
     void *m_encryptionHandle;
     FUNC_AES_CBC_ENCRYPT m_F_AES_cbc_encrypt;

@@ -52,6 +52,7 @@ public slots:
     void restartResetSessionTimer();
     void onAuthFinished();
     void onAuthStateChanged(const int type, const int state, const QString &message);
+    void onFrameworkStateChanged(const int state);
 
     void disableGlobalShortcutsForWayland(const bool enable);
 

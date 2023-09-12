@@ -30,20 +30,42 @@
 #define PKCS8_HEADER "-----BEGIN PUBLIC KEY-----"
 #define OPENSSLNAME "libssl.so"
 
+Q_LOGGING_CATEGORY(auth, "dss.auth")
+
 using namespace AuthCommon;
 
 DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     : QObject(parent)
     , m_authenticateInter(new AuthInter(AUTHRNTICATESERVICE, "/org/deepin/dde/Authenticate1", QDBusConnection::systemBus(), this))
+    , m_watcher(new QDBusServiceWatcher(AUTHRNTICATESERVICE, QDBusConnection::systemBus(), QDBusServiceWatcher::WatchForOwnerChange, this))
     , m_PAMAuthThread(0)
     , m_authenticateControllers(new QMap<QString, AuthControllerInter *>())
     , m_cancelAuth(false)
     , m_waitToken(true)
+    , m_retryActivateFramework(false)
     , m_encryptionHandle(nullptr)
     , m_AES(new AES_KEY)
     , m_BIO(nullptr)
     , m_RSA(nullptr)
 {
+    connect(m_watcher, &QDBusServiceWatcher::serviceOwnerChanged, this, [=](const QString &service, const QString &oldOwner, const QString &newOwner){
+        qCInfo(auth) << "Service " << service << "owner changed, old owner:" << oldOwner << ", new owner:" << newOwner;
+        if (newOwner.isEmpty()) {
+            if (m_retryActivateFramework) {
+                Q_EMIT this->FramworkStateChanged(Unavailable);
+                return;
+            } else {
+                m_retryActivateFramework = true;
+                GetFrameworkState();
+            }
+        } else if (oldOwner.isEmpty() && !newOwner.isEmpty()) {
+            if (m_retryActivateFramework)
+                m_retryActivateFramework = false;
+            Q_EMIT this->FramworkStateChanged(GetFrameworkState());
+        } else {
+            Q_EMIT this->FramworkStateChanged(GetFrameworkState());
+        }
+    });
     connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FramworkStateChanged);
     connect(m_authenticateInter, &AuthInter::LimitUpdated, this, &DeepinAuthFramework::LimitsInfoChanged);
     connect(m_authenticateInter, &AuthInter::SupportedFlagsChanged, this, &DeepinAuthFramework::SupportedMixAuthFlagsChanged);
