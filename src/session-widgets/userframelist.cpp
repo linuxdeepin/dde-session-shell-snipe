@@ -18,7 +18,18 @@
 
 #include <algorithm>
 
-const int UserFrameSpaceing = 40;
+static constexpr int UserWidgetSpacing = 40;
+static constexpr int ContentsMargin = 10;
+
+static inline int listWidth(int col)
+{
+    return qMax(0, (UserFrameWidth + UserWidgetSpacing) * col - UserWidgetSpacing);
+}
+
+static inline int listHeight(int row)
+{
+    return qMax(0, (UserFrameHeight + UserWidgetSpacing) * row - UserWidgetSpacing);
+}
 
 UserFrameList::UserFrameList(QWidget *parent)
     : QWidget(parent)
@@ -46,6 +57,7 @@ UserFrameList::UserFrameList(QWidget *parent)
     connect(this, &UserFrameList::destroyed, this, [this, index] {
         m_frameDataBind->unRegisterFunction("UserFrameList", index);
     });
+    connect(this, &UserFrameList::gridBoundChanged, this, &UserFrameList::updateLayout);
 }
 
 void UserFrameList::initUI()
@@ -55,10 +67,11 @@ void UserFrameList::initUI()
 
     m_flowLayout = new DFlowLayout(m_centerWidget);
     m_flowLayout->setFlow(QListView::LeftToRight);
-    m_flowLayout->setContentsMargins(10, 10, 10, 10);
-    m_flowLayout->setSpacing(40);
+    m_flowLayout->setContentsMargins(0, 0, 0, 0);
+    m_flowLayout->setSpacing(UserWidgetSpacing);
 
     m_scrollArea->setAccessibleName("UserFrameListCenterWidget");
+    m_scrollArea->setContentsMargins(0, 0, 0, 0);
     m_scrollArea->setWidget(m_centerWidget);
     m_scrollArea->setWidgetResizable(true);
     m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -68,6 +81,7 @@ void UserFrameList::initUI()
     m_centerWidget->setAutoFillBackground(false);
     m_scrollArea->viewport()->setAutoFillBackground(false);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(ContentsMargin, ContentsMargin, ContentsMargin, ContentsMargin);
     mainLayout->addWidget(m_scrollArea, 0, Qt::AlignCenter);
 }
 
@@ -79,17 +93,28 @@ void UserFrameList::setModel(SessionBaseModel *model)
     connect(model, &SessionBaseModel::userAdded, this, &UserFrameList::handlerBeforeAddUser);
     connect(model, &SessionBaseModel::userRemoved, this, &UserFrameList::removeUser);
 
-    QList<std::shared_ptr<User>> userList = m_model->userList();
-    for (auto user : userList) {
+    for (auto user : m_model->userList()) {
         handlerBeforeAddUser(user);
     }
+    onCurrentUserChanged(m_model->currentUser());
+    connect(m_model, &SessionBaseModel::currentUserChanged, this, &UserFrameList::onCurrentUserChanged);
 }
 
-void UserFrameList::setFixedSize(const QSize &size)
+void UserFrameList::setFixedSize(int w, int h)
 {
-    QWidget::setFixedSize(size);
-    //先确定界面大小，再根据界面大小计算用户列表区域大小
-    updateLayout();
+    QWidget::setFixedSize(w, h);
+    onMaximumSizeChanged(w, h);
+}
+
+void UserFrameList::setMaximumSize(int maxw, int maxh)
+{
+    QWidget::setMaximumSize(maxw, maxh);
+    onMaximumSizeChanged(maxw, maxh);
+}
+
+void UserFrameList::setMaximumSize(const QSize &maximumSize)
+{
+    setMaximumSize(maximumSize.width(), maximumSize.height());
 }
 
 void UserFrameList::handlerBeforeAddUser(std::shared_ptr<User> user)
@@ -184,7 +209,7 @@ void UserFrameList::switchNextUser()
                 //处理m_scrollArea翻页显示
                 int selectedRight = m_loginWidgets[i]->geometry().right();
                 int scrollRight = m_scrollArea->widget()->geometry().right();
-                if (selectedRight + UserFrameSpaceing == scrollRight) {
+                if (selectedRight + UserWidgetSpacing == scrollRight) {
                     QPoint topLeft;
                     if (m_rowCount == 1) {
                         topLeft = m_loginWidgets[i + 1]->geometry().topLeft();
@@ -233,6 +258,14 @@ void UserFrameList::switchPreviousUser()
     }
 }
 
+void UserFrameList::setGridBound(QPair<int, int> bound)
+{
+    if (m_gridBound != bound) {
+        m_gridBound = bound;
+        Q_EMIT this->gridBoundChanged(bound);
+    }
+}
+
 void UserFrameList::onOtherPageChanged(const QVariant &value)
 {
     foreach (auto w, m_loginWidgets) {
@@ -240,30 +273,46 @@ void UserFrameList::onOtherPageChanged(const QVariant &value)
     }
 }
 
-void UserFrameList::updateLayout()
+void UserFrameList::onMaximumSizeChanged(int maxw, int maxh)
 {
-    //处理窗体数量小于5个时的居中显示，取 窗体数量*窗体宽度 和 最大宽度 的较小值，设置为m_centerWidget的宽度
-    int count = m_flowLayout->count();
-    if (count < 5 && count > 0) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * count, UserFrameHeight + 20);
+    static constexpr qreal DisplayRatio = 0.8;
+    static constexpr QMargins margin{ContentsMargin, ContentsMargin, ContentsMargin, ContentsMargin};
+    QSize bound = QSize(maxw, maxh).shrunkBy(margin) * DisplayRatio;
+    int candidateCol = qCeil(static_cast<qreal>(bound.width()) / (UserFrameWidth + UserWidgetSpacing));
+    int candidateRow = qCeil(static_cast<qreal>(bound.height()) / (UserFrameHeight + UserWidgetSpacing));
+    if (listWidth(candidateCol) > bound.width()) {
+        --candidateCol;
     }
-    if (count >= 5) {
-        m_scrollArea->setFixedSize((UserFrameWidth + UserFrameSpaceing) * 5, (UserFrameHeight + UserFrameSpaceing) * 2);
+    if (listHeight(candidateRow) > bound.height()) {
+        --candidateRow;
     }
-    m_centerWidget->setFixedWidth(m_scrollArea->width() - 10);
+    setGridBound({candidateCol, candidateRow});
+}
 
-    std::shared_ptr<User> user = m_model->currentUser();
-    if (user.get() == nullptr) return;
-    for (auto it = m_loginWidgets.constBegin(); it != m_loginWidgets.constEnd(); ++it) {
-        auto login_widget = *it;
-
-        if (login_widget->uid() == user->uid()) {
+void UserFrameList::onCurrentUserChanged(std::shared_ptr<User> currentUser)
+{
+    if (!currentUser) return;
+    for (const auto login_widget : m_loginWidgets) {
+        if (login_widget->uid() == currentUser->uid()) {
             currentSelectedUser = login_widget;
             currentSelectedUser->setSelected(true);
         } else {
             login_widget->setSelected(false);
         }
     }
+}
+
+void UserFrameList::updateLayout()
+{
+    // 用户控件分行显示，超过最大显示行数时显示滚动条
+    const int MaxDisplayCol = colBound();
+    const int MaxDisplayRow = rowBound();
+    int count = m_flowLayout->count();
+    int row = qCeil(static_cast<qreal>(count) / MaxDisplayCol);
+    int areaWidth = listWidth(qMin(count, MaxDisplayCol));
+    int areaHeight = listHeight(qMin(row, MaxDisplayRow));
+    m_scrollArea->setFixedSize(areaWidth, areaHeight);
+    m_centerWidget->setFixedSize(areaWidth, listHeight(row));
 }
 
 void UserFrameList::hideEvent(QHideEvent *event)

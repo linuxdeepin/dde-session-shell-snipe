@@ -383,7 +383,8 @@ void LockContent::resizeEvent(QResizeEvent *event)
         changeCenterSpaceSize(0, m_authWidget->getTopSpacing());
     }
 
-    return SessionBaseWindow::resizeEvent(event);
+    SessionBaseWindow::resizeEvent(event);
+    m_userListWidget->setMaximumSize(getCenterContentSize());
 }
 
 void LockContent::restoreMode()

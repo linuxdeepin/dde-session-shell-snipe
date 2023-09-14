@@ -6,7 +6,7 @@
 #include "useravatar.h"
 
 #include <DFontSizeManager>
-#include <DHiDPIHelper>
+#include <DIcon>
 
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
@@ -45,7 +45,7 @@ void UserWidget::initUI()
     nameLayout->setContentsMargins(0, 0, 0, 0);
     nameLayout->setSpacing(5);
 
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/select.svg");
+    QPixmap pixmap = DIcon::loadNxPixmap(":/misc/images/select.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_loginState->setAccessibleName("LoginState");
     m_loginState->setPixmap(pixmap);
