@@ -10,7 +10,7 @@ include /usr/share/dpkg/default.mk
 SYSTYPE=Desktop
 SYSTYPE=$(shell cat /etc/deepin-version | grep Type= | awk -F'=' '{print $$2}')
 %:
-	dh $@ --parallel
+	dh $@
 
 ifeq ($(DEB_BUILD_ARCH), mipsel)
 override_dh_auto_configure:
