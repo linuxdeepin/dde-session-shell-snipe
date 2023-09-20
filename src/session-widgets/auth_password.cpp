@@ -117,7 +117,6 @@ void AuthPassword::initConnections()
     connect(m_togglePasswordBtn, &DIconButton::clicked, this, &AuthPassword::togglePassword);
     /* 密码输入框 */
     connect(m_passwordEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
-        if (!focus) m_passwordEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
         emit focusChanged(focus);
     });
@@ -607,9 +606,5 @@ bool AuthPassword::eventFilter(QObject *watched, QEvent *event)
 
 void AuthPassword::hideEvent(QHideEvent *event)
 {
-    m_passwordEdit->setAlert(false);
-    m_passwordEdit->hideAlertMessage();
-    setLineEditInfo(tr("Password"), PlaceHolderText);
-    closeResetPasswordMessage();
     AuthModule::hideEvent(event);
 }
