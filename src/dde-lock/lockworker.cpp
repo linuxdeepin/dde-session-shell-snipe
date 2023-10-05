@@ -84,7 +84,7 @@ void LockWorker::initConnections()
     connect(m_loginedInter, &LoginedInter::UserListChanged, m_model, &SessionBaseModel::updateLoginedUserList);
 
     /* org.deepin.dde.Authenticate1 */
-    connect(m_authFramework, &DeepinAuthFramework::FramworkStateChanged, this, &LockWorker::onFrameworkStateChanged);
+    connect(m_authFramework, &DeepinAuthFramework::FrameworkStateChanged, this, &LockWorker::onFrameworkStateChanged);
     connect(m_authFramework, &DeepinAuthFramework::LimitsInfoChanged, this, [this](const QString &account) {
         qDebug() << "DeepinAuthFramework::LimitsInfoChanged:" << account;
         if (account == m_model->currentUser()->name()) {

@@ -52,7 +52,7 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
         qCInfo(auth) << "Service " << service << "owner changed, old owner:" << oldOwner << ", new owner:" << newOwner;
         if (newOwner.isEmpty()) {
             if (m_retryActivateFramework) {
-                Q_EMIT this->FramworkStateChanged(Unavailable);
+                Q_EMIT this->FrameworkStateChanged(Unavailable);
                 return;
             } else {
                 m_retryActivateFramework = true;
@@ -61,12 +61,12 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
         } else if (oldOwner.isEmpty() && !newOwner.isEmpty()) {
             if (m_retryActivateFramework)
                 m_retryActivateFramework = false;
-            Q_EMIT this->FramworkStateChanged(GetFrameworkState());
+            Q_EMIT this->FrameworkStateChanged(GetFrameworkState());
         } else {
-            Q_EMIT this->FramworkStateChanged(GetFrameworkState());
+            Q_EMIT this->FrameworkStateChanged(GetFrameworkState());
         }
     });
-    connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FramworkStateChanged);
+    connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FrameworkStateChanged);
     connect(m_authenticateInter, &AuthInter::LimitUpdated, this, &DeepinAuthFramework::LimitsInfoChanged);
     connect(m_authenticateInter, &AuthInter::SupportedFlagsChanged, this, &DeepinAuthFramework::SupportedMixAuthFlagsChanged);
     connect(m_authenticateInter, &AuthInter::SupportEncryptsChanged, this, &DeepinAuthFramework::SupportedEncryptsChanged);

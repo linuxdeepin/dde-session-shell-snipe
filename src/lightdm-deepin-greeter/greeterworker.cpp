@@ -106,7 +106,7 @@ void GreeterWorker::initConnections()
     connect(m_loginedInter, &LoginedInter::LastLogoutUserChanged, m_model, static_cast<void (SessionBaseModel::*)(const uid_t)>(&SessionBaseModel::updateLastLogoutUser));
     connect(m_loginedInter, &LoginedInter::UserListChanged, m_model, &SessionBaseModel::updateLoginedUserList);
     /* org.deepin.dde.Authenticate1 */
-    connect(m_authFramework, &DeepinAuthFramework::FramworkStateChanged, m_model, &SessionBaseModel::updateFrameworkState);
+    connect(m_authFramework, &DeepinAuthFramework::FrameworkStateChanged, m_model, &SessionBaseModel::updateFrameworkState);
     connect(m_authFramework, &DeepinAuthFramework::LimitsInfoChanged, this, [this](const QString &account) {
         qDebug() << "GreeterWorker::initConnections LimitsInfoChanged:" << account;
         if (account == m_model->currentUser()->name()) {

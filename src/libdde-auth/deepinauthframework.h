@@ -74,7 +74,7 @@ signals:
     /* org.deepin.dde.Authenticate1 */
     void LimitsInfoChanged(const QString &);
     void SupportedMixAuthFlagsChanged(const int);
-    void FramworkStateChanged(const int);
+    void FrameworkStateChanged(const int);
     void SupportedEncryptsChanged(const QString &);
     /* org.deepin.dde.Authenticate1.Session */
     void MFAFlagChanged(const bool);
