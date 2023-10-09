@@ -56,6 +56,8 @@ public slots:
 
     void disableGlobalShortcutsForWayland(const bool enable);
 
+    void checkAccount(const QString &account);
+
 private:
     void initConnections();
     void initData();
