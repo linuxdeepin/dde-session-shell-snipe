@@ -27,6 +27,7 @@ class User;
 class ShutdownWidget;
 class LogoWidget;
 class TimeWidget;
+class QDBusInterface;
 
 class LockContent : public SessionBaseWindow
 {
@@ -87,6 +88,15 @@ protected:
     void initSFAWidget();
     void initUserListWidget();
 
+private slots:
+    void onValueChanged(const QDBusMessage &dbusMessage);
+
+private:
+    QString configPath(std::shared_ptr<User>) const;
+    QString regionValue(const QString& key) const;
+    void buildConnect();
+    void disconnect(std::shared_ptr<User> user);
+
 protected:
     SessionBaseModel *m_model;
     ControlWidget *m_controlWidget;                 // 右下角图标
@@ -106,6 +116,10 @@ protected:
 
     int m_lockFailTimes;                             // 尝试锁屏时失败的次数
     QLocalServer *m_localServer;
+
+    QString m_localeName;
+    QString m_shortTimeFormat;
+    QString m_longDateFormat;
 };
 
 #endif // LOCKCONTENT_H

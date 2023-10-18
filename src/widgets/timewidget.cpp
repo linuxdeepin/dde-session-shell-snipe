@@ -61,9 +61,13 @@ void TimeWidget::set24HourFormat(bool use24HourFormat)
     refreshTime();
 }
 
-void TimeWidget::updateLocale(const QLocale &locale)
+void TimeWidget::updateLocale(const QLocale &locale, const QString &shortTimeFormat, const QString &longDateFormat)
 {
     m_locale = locale;
+    if (!shortTimeFormat.isEmpty())
+        m_shortTimeFormat = shortTimeFormat;
+    if (!longDateFormat.isEmpty())
+        m_longDateFormat = longDateFormat;
     refreshTime();
 }
 
@@ -77,6 +81,11 @@ void TimeWidget::refreshTime()
 
     QString date_format = shortDateFormat.at(m_shortDateIndex) + " " + weekdayFormat.at(m_weekdayIndex);
     m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), date_format));
+
+    if (!m_shortTimeFormat.isEmpty() && !m_longDateFormat.isEmpty()) {
+        m_timeLabel->setText(m_locale.toString(QTime::currentTime(), m_shortTimeFormat));
+        m_dateLabel->setText(m_locale.toString(QDate::currentDate(), m_longDateFormat));
+    }
 }
 
 /**

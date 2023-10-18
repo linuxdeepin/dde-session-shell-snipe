@@ -23,6 +23,11 @@
 using namespace dss;
 using namespace dss::module;
 
+static const QString dsg_config = "org.desktopspec.ConfigManager";
+static const QString localeName_key = "localeName";
+static const QString longDateFormat_key = "longDateFormat";
+static const QString shortTimeFormat_key = "shortTimeFormat";
+
 LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     : SessionBaseWindow(parent)
     , m_model(model)
@@ -198,23 +203,103 @@ void LockContent::initUserListWidget()
     connect(m_userListWidget, &UserFrameList::requestSwitchUser, this, &LockContent::requestSwitchToUser);
 }
 
+void LockContent::onValueChanged(const QDBusMessage &dbusMessage)
+{
+    QList<QVariant> arguments = dbusMessage.arguments();
+    if (1 != arguments.count())
+        return;
+
+    QString interfaceName = dbusMessage.arguments().at(0).toString();
+    if (interfaceName == localeName_key) {
+        m_localeName = regionValue(localeName_key);
+    } else if (interfaceName == shortTimeFormat_key) {
+        m_shortTimeFormat = regionValue(shortTimeFormat_key);
+    } else if (interfaceName == longDateFormat_key) {
+        m_longDateFormat = regionValue(longDateFormat_key);
+    }
+    m_timeWidget->updateLocale(QLocale(m_localeName), m_shortTimeFormat, m_longDateFormat);
+}
+
+QString LockContent::configPath(std::shared_ptr<User> user) const
+{
+    if (!user)
+        return QString();
+
+    QDBusInterface configInter(dsg_config, "/", "org.desktopspec.ConfigManager", QDBusConnection::systemBus());
+    if (!configInter.isValid()) {
+        qWarning("Can't acquire config manager. error:\"%s\"",
+                 qPrintable(QDBusConnection::systemBus().lastError().message()));
+        return QString();
+    }
+    QDBusReply<QDBusObjectPath> dbusReply = configInter.call("acquireManagerV2",
+                                                             (uint)user->uid(),
+                                                             QString(QCoreApplication::applicationName()),
+                                                             QString("org.deepin.region-format"),
+                                                             QString(""));
+    if (configInter.lastError().isValid() ) {
+        qWarning("Call failed: %s", qPrintable(configInter.lastError().message()));
+        return QString();
+    }
+    return dbusReply.value().path();
+}
+
+QString LockContent::regionValue(const QString &key) const
+{
+    QString dbusPath = configPath(m_user);
+    if (dbusPath.isEmpty())
+        return QString();
+    QDBusInterface managerInter(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager", QDBusConnection::systemBus());
+    QDBusReply<QVariant> reply = managerInter.call("value", key);
+    if (managerInter.lastError().isValid() ) {
+        qWarning("Call failed: %s", qPrintable(managerInter.lastError().message()));
+        return QString();
+    }
+    return reply.value().toString();
+}
+
+void LockContent::buildConnect()
+{
+    QString dbusPath = configPath(m_user);
+    if (dbusPath.isEmpty())
+        return;
+    QDBusConnection::systemBus().connect(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager",
+                                         "valueChanged", "s", this,
+                                         SLOT(onValueChanged(const QDBusMessage&)));
+}
+
+void LockContent::disconnect(std::shared_ptr<User> user)
+{
+    if (!user)
+        return;
+
+    QString dbusPath = configPath(user);
+    if (dbusPath.isEmpty())
+        return;
+    QDBusConnection::systemBus().disconnect(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager",
+                                            "valueChanged", "s", this,
+                                            SLOT(onValueChanged(const QDBusMessage&)));
+}
+
 void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
     if (!user)
         return;
 
-    //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
-    auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
-    m_logoWidget->updateLocale(locale);
-    m_timeWidget->updateLocale(locale);
-
     for (auto connect : m_currentUserConnects) {
         m_user.get()->disconnect(connect);
     }
-
+    disconnect(m_user);
     m_currentUserConnects.clear();
 
     m_user = user;
+
+    m_localeName = regionValue(localeName_key);
+    QLocale locale = m_localeName.isEmpty()? QLocale::system() : QLocale(m_localeName);
+    m_shortTimeFormat = regionValue(shortTimeFormat_key);
+    m_longDateFormat = regionValue(longDateFormat_key);
+    buildConnect();
+    m_logoWidget->updateLocale(locale.name());
+    m_timeWidget->updateLocale(locale, m_shortTimeFormat, m_longDateFormat);
 
     m_timeWidget->set24HourFormat(user->isUse24HourFormat());
     m_timeWidget->setWeekdayFormatType(user->weekdayFormat());
@@ -232,7 +317,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
         updateTimeFormat(user->isUse24HourFormat());
     }, Qt::QueuedConnection);
 
-    m_logoWidget->updateLocale(locale);
+    m_logoWidget->updateLocale(locale.name());
 }
 
 void LockContent::pushPasswordFrame()
@@ -423,8 +508,6 @@ void LockContent::updateDesktopBackgroundPath(const QString &path)
 void LockContent::updateTimeFormat(bool use24)
 {
     if (m_user != nullptr) {
-        auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : m_user->locale();
-        m_timeWidget->updateLocale(locale);
         m_timeWidget->set24HourFormat(use24);
         m_timeWidget->setVisible(true);
     }
