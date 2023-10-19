@@ -1,3 +1,9 @@
+dde-session-shell (6.0.12) unstable; urgency=medium
+
+  * feat: support no password unlock
+
+ -- chenhongtao <chenhongtao@deepin.org>  Thu, 19 Oct 2023 10:31:18 +0800
+
 dde-session-shell (6.0.11) unstable; urgency=medium
 
   * Release 6.0.11
