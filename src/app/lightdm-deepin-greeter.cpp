@@ -197,6 +197,8 @@ int main(int argc, char* argv[])
         setenv("XDG_CURRENT_DESKTOP", "Deepin", 1);
     }
 
+    setenv("DSG_APP_ID", "org.deepin.dde.lightdm-deepin-greeter", 1);
+
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
     // 设置缩放，文件存在的情况下，由后端去设置，否则前端自行设置
     if (!QFile::exists("/etc/lightdm/deepin/xsettingsd.conf")) {
@@ -211,6 +213,7 @@ int main(int argc, char* argv[])
     qApp->setAttribute(Qt::AA_ForceRasterWidgets);
 
     DLogManager::registerConsoleAppender();
+    DLogManager::registerJournalAppender();
 
     set_pointer();
 
