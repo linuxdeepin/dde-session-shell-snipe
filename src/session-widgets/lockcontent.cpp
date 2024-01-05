@@ -298,7 +298,9 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
     m_shortTimeFormat = regionValue(shortTimeFormat_key);
     m_longDateFormat = regionValue(longDateFormat_key);
     buildConnect();
-    m_logoWidget->updateLocale(locale.name());
+
+    auto logoLocale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
+    m_logoWidget->updateLocale(logoLocale);
     m_timeWidget->updateLocale(locale, m_shortTimeFormat, m_longDateFormat);
 
     m_timeWidget->set24HourFormat(user->isUse24HourFormat());
@@ -317,7 +319,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
         updateTimeFormat(user->isUse24HourFormat());
     }, Qt::QueuedConnection);
 
-    m_logoWidget->updateLocale(locale.name());
+    m_logoWidget->updateLocale(logoLocale);
 }
 
 void LockContent::pushPasswordFrame()
