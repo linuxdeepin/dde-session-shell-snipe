@@ -78,6 +78,9 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
         }
     }
     once = true;
+
+    QString localeName = regionValue(localeName_key);
+    m_timeWidget->updateLocale(QLocale(localeName));
 }
 
 void LockContent::initUI()
@@ -294,7 +297,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
     m_user = user;
 
     m_localeName = regionValue(localeName_key);
-    QLocale locale = m_localeName.isEmpty()? QLocale::system() : QLocale(m_localeName);
+    QLocale locale = m_localeName.isEmpty()? user->locale() : QLocale(m_localeName);
     m_shortTimeFormat = regionValue(shortTimeFormat_key);
     m_longDateFormat = regionValue(longDateFormat_key);
     buildConnect();
