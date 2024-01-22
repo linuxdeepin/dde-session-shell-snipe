@@ -80,7 +80,7 @@ LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
     once = true;
 
     QString localeName = regionValue(localeName_key);
-    m_timeWidget->updateLocale(QLocale(localeName));
+    m_timeWidget->updateLocale(localeName);
 }
 
 void LockContent::initUI()
@@ -220,7 +220,7 @@ void LockContent::onValueChanged(const QDBusMessage &dbusMessage)
     } else if (interfaceName == longDateFormat_key) {
         m_longDateFormat = regionValue(longDateFormat_key);
     }
-    m_timeWidget->updateLocale(QLocale(m_localeName), m_shortTimeFormat, m_longDateFormat);
+    m_timeWidget->updateLocale(m_localeName, m_shortTimeFormat, m_longDateFormat);
 }
 
 QString LockContent::configPath(std::shared_ptr<User> user) const
@@ -304,7 +304,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
     auto logoLocale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
     m_logoWidget->updateLocale(logoLocale);
-    m_timeWidget->updateLocale(locale, m_shortTimeFormat, m_longDateFormat);
+    m_timeWidget->updateLocale(locale.name(), m_shortTimeFormat, m_longDateFormat);
 
     m_timeWidget->set24HourFormat(user->isUse24HourFormat());
     m_timeWidget->setWeekdayFormatType(user->weekdayFormat());

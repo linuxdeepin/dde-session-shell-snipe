@@ -20,7 +20,7 @@ public:
     explicit TimeWidget(QWidget *parent = nullptr);
     inline bool get24HourFormat() const { return m_use24HourFormat; }
     void set24HourFormat(bool use24HourFormat);
-    void updateLocale(const QLocale &locale, const QString &shortTimeFormat = "", const QString &longDateFormat = "");
+    void updateLocale(const QString &locale, const QString &shortTimeFormat = "", const QString &longDateFormat = "");
 
 public Q_SLOTS:
     void setWeekdayFormatType(int type);

@@ -61,9 +61,9 @@ void TimeWidget::set24HourFormat(bool use24HourFormat)
     refreshTime();
 }
 
-void TimeWidget::updateLocale(const QLocale &locale, const QString &shortTimeFormat, const QString &longDateFormat)
+void TimeWidget::updateLocale(const QString &locale, const QString &shortTimeFormat, const QString &longDateFormat)
 {
-    m_locale = locale.name().isEmpty() ? QLocale::system() : locale;
+    m_locale = locale.isEmpty() ? QLocale::system() : QLocale(locale);
     if (!shortTimeFormat.isEmpty())
         m_shortTimeFormat = shortTimeFormat;
     if (!longDateFormat.isEmpty())
