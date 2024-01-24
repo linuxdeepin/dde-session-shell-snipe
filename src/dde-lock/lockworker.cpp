@@ -115,6 +115,13 @@ void LockWorker::initConnections()
         emit m_model->authFinished(true);
     });
 
+    connect(m_sessionManagerInter, &SessionManagerInter::LockedChanged, this, [ this ](bool locked) {
+        qDebug() << "SessionManagerInter::LockedChanged" << locked;
+        if (locked && !m_model->visible()) {
+            m_model->showLockScreen();
+        }
+    });
+
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [ = ](bool active) {
         qInfo() << "DBusLockService::ActiveChanged:" << active;
