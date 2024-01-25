@@ -1,3 +1,11 @@
+dde-session-shell (6.0.16) unstable; urgency=medium
+
+  * fix: switch tty can not lock screen
+  * fix: default locale for time
+  * fix: no translation for time in greeter
+
+ -- dengbo <dengbo@deepin.org>  Thu, 25 Jan 2024 09:18:05 +0800
+
 dde-session-shell (6.0.15) unstable; urgency=medium
 
   * fix: greeter edition name show error with locale change
