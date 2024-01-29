@@ -222,6 +222,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
     button->setBackgroundRole(DPalette::Button);
 
     if (QWidget *trayWidget = trayModule->itemWidget()) {
+        trayWidget->setFocusPolicy(Qt::NoFocus);
         QHBoxLayout *layout = new QHBoxLayout(button);
         layout->setAlignment(Qt::AlignCenter);
         layout->setSpacing(0);
