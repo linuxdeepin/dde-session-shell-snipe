@@ -42,10 +42,10 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  deepin-authenticate(>=1.2.27),
  libssl3,
  libxcb-util0|libxcb-util1,
- xsettingsd
+ xsettingsd,
+ onboard
 Provides: lightdm-greeter
-Recommends: onboard,
- dss-network-plugin,
+Recommends: dss-network-plugin,
  dde-network-dialog
 Conflicts: dde-workspace,
  deepin-notifications,

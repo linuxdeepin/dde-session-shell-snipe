@@ -76,7 +76,10 @@ public:
         return m_tipText;
     }
 
-Q_SIGNALS:
+    void setPluginItem(QWidget *item) { m_item = item; }
+    QWidget *pluginItem() const { return m_item; }
+
+  Q_SIGNALS:
     void requestShowMenu();
     void requestShowTips();
     void requestHideTips();
@@ -85,7 +88,9 @@ protected:
     bool eventFilter(QObject *watch, QEvent *event) override;
 
 private:
-    QString m_tipText;
+  void showCustomWidget() const;
+  QString m_tipText;
+  QWidget *m_item{nullptr};
 };
 class ControlWidget : public QWidget
 {

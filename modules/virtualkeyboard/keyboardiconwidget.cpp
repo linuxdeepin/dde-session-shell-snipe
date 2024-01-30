@@ -23,6 +23,19 @@ void KeyboardIconWidget::setIconPath(const QString &iconPath)
     update();
 }
 
+bool KeyboardIconWidget::event(QEvent *event) {
+  if (event->type() == QEvent::User + 10) {
+    QWidget *topLevelWidget = this->topLevelWidget();
+    if (topLevelWidget) {
+      // 获取顶层窗口，虚拟键盘窗口中需要知道顶层窗口以便移动位置
+      Q_EMIT clicked(topLevelWidget);
+    }
+  }
+
+  return QWidget::event(event);
+}
+
+
 void KeyboardIconWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
@@ -52,17 +65,4 @@ void KeyboardIconWidget::hideEvent(QHideEvent *event)
     }
 
     QWidget::hideEvent(event);
-}
-
-void KeyboardIconWidget::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton) {
-        QWidget *topLevelWidget = this->topLevelWidget();
-        if (topLevelWidget) {
-            // 获取顶层窗口，虚拟键盘窗口中需要知道顶层窗口以便移动位置
-            Q_EMIT clicked(topLevelWidget);
-        }
-    }
-
-    QWidget::mousePressEvent(event);
 }

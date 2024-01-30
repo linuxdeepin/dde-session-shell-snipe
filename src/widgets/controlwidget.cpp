@@ -35,6 +35,14 @@ static constexpr int TipsBottomDistance = 10;
 using namespace dss;
 DCORE_USE_NAMESPACE
 
+void FloatingButton::showCustomWidget() const {
+  qInfo() << __PRETTY_FUNCTION__;
+  QEvent eve{static_cast<QEvent::Type>(QEvent::User + 10)};
+  if (pluginItem() != nullptr) {
+    QCoreApplication::sendEvent(pluginItem(), &eve);
+  }
+}
+
 bool FloatingButton::eventFilter(QObject *watch, QEvent *event)
 {
     if (watch == this) {
@@ -42,15 +50,23 @@ bool FloatingButton::eventFilter(QObject *watch, QEvent *event)
             QMouseEvent *e = static_cast<QMouseEvent *>(event);
             if (e->button() == Qt::RightButton) {
                 Q_EMIT requestShowMenu();
+            } else if (e->button() == Qt::LeftButton) {
+              showCustomWidget();
             }
         } else if (event->type() == QEvent::Enter) {
             Q_EMIT requestShowTips();
         } else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonPress) {
             Q_EMIT requestHideTips();
+        } else if (event->type() == QEvent::KeyRelease) {
+          auto *keyEve = dynamic_cast<QKeyEvent *>(event);
+          if (keyEve->key() == Qt::Key_Return ||
+              keyEve->key() == Qt::Key_Enter) {
+            showCustomWidget();
+          }
         }
     }
 
-    return false;
+    return DFloatingButton::eventFilter(watch, event);
 }
 
 ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
@@ -228,6 +244,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         layout->setSpacing(0);
         layout->setMargin(0);
         layout->addWidget(trayWidget);
+        button->setPluginItem(trayWidget);
     } else {
         button->setIcon(QIcon(trayModule->icon()));
     }

@@ -21,12 +21,12 @@ signals:
     void clicked(QWidget *parent);
 
 protected:
-    virtual void paintEvent(QPaintEvent *event);
-    virtual void hideEvent(QHideEvent *event);
-    virtual void mousePressEvent(QMouseEvent *event);
+  bool event(QEvent *event) override;
+  virtual void paintEvent(QPaintEvent *event);
+  virtual void hideEvent(QHideEvent *event);
 
 private:
-    QString m_iconPath;
+  QString m_iconPath;
 };
 
 #endif // KEYBOARDICONWIDGET_H
