@@ -76,6 +76,7 @@ private:
     DFloatingMessage *m_resetPasswordFloatingMessage;
     uid_t m_currentUid; // 当前用户uid
     QTimer *m_bindCheckTimer;
+    QFont m_passwordFont;
 };
 
 #endif // AUTHPASSWORD_H

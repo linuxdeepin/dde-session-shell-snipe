@@ -65,6 +65,9 @@ void AuthPassword::initUI()
     m_passwordEdit->setFocusPolicy(Qt::StrongFocus);
     m_passwordEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_passwordEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+    m_passwordFont = m_passwordEdit->lineEdit()->font();
+    m_passwordFont.setPixelSize(6);
+    m_passwordFont.setLetterSpacing(m_passwordFont.letterSpacingType(), 200);
 
     setLineEditInfo(tr("Password"), PlaceHolderText);
 
@@ -594,12 +597,17 @@ void AuthPassword::updateResetPasswordUI()
 
 bool AuthPassword::eventFilter(QObject *watched, QEvent *event)
 {
-    if (qobject_cast<DLineEditEx *>(watched) == m_passwordEdit && event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->matches(QKeySequence::Cut)
-            || keyEvent->matches(QKeySequence::Copy)
-            || keyEvent->matches(QKeySequence::Paste)) {
-            return true;
+    if (qobject_cast<DLineEditEx *>(watched) == m_passwordEdit) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            if (keyEvent->matches(QKeySequence::Cut)
+                || keyEvent->matches(QKeySequence::Copy)
+                || keyEvent->matches(QKeySequence::Paste)) {
+              return true;
+            }
+        } else if (event->type() == QEvent::Paint) {
+          m_passwordEdit->lineEdit()->echoMode() == QLineEdit::Password ?
+              m_passwordEdit->lineEdit()->setFont(m_passwordFont) : m_passwordEdit->lineEdit()->setFont(m_passwordEdit->font());
         }
     }
     return false;
