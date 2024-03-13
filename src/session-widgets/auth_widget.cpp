@@ -97,6 +97,8 @@ void AuthWidget::initUI()
 
     /* 解锁按钮 */
     m_lockButton = new DFloatingButton(this);
+    m_lockButton->setFocusPolicy(Qt::StrongFocus);
+
     if (m_model->appType() == Lock) {
         m_lockButton->setIcon(DStyle::SP_LockElement);
     } else {
