@@ -345,20 +345,17 @@ void GreeterWorker::switchToUser(std::shared_ptr<User> user)
     if (user->uid() == INT_MAX) {
         m_model->setAuthType(AT_None);
     }
-    if (user->isLogin()) { // switch to user Xorg
-        QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
+
+    setCurrentUser(user);
+    m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
+    destroyAuthentication(m_account);
+    m_model->updateCurrentUser(user);
+    if (!user->isNoPasswordLogin()) {
+        createAuthentication(user->name());
     } else {
-        setCurrentUser(user);
-        m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
-        destroyAuthentication(m_account);
-        m_model->updateCurrentUser(user);
-        if (!user->isNoPasswordLogin()) {
-            createAuthentication(user->name());
-        } else {
-            m_model->setAuthType(AT_None);
-        }
-        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+        m_model->setAuthType(AT_None);
     }
+    m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
 }
 
 bool GreeterWorker::isSecurityEnhanceOpen()

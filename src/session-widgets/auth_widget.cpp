@@ -99,7 +99,7 @@ void AuthWidget::initUI()
     m_lockButton = new DFloatingButton(this);
     m_lockButton->setFocusPolicy(Qt::StrongFocus);
 
-    if (m_model->appType() == Lock) {
+    if (m_user->isLogin()) {
         m_lockButton->setIcon(DStyle::SP_LockElement);
     } else {
         m_lockButton->setIcon(DStyle::SP_ArrowNext);
@@ -187,6 +187,12 @@ void AuthWidget::setUser(std::shared_ptr<User> user)
     }
     if (m_passwordAuth) {
         m_passwordAuth->setCurrentUid(user->uid());
+    }
+
+    if (user->isLogin()) {
+        m_lockButton->setIcon(DStyle::SP_LockElement);
+    } else {
+        m_lockButton->setIcon(DStyle::SP_ArrowNext);
     }
 }
 
@@ -340,10 +346,10 @@ void AuthWidget::setLockButtonType(const int type)
         lockPalette.setColor(QPalette::Highlight, ShutdownColor);
         break;
     default:
-        if (m_model->appType() == Login) {
-            m_lockButton->setIcon(DStyle::SP_ArrowNext);
-        } else {
+        if (m_user->isLogin()) {
             m_lockButton->setIcon(DStyle::SP_LockElement);
+        } else {
+            m_lockButton->setIcon(DStyle::SP_ArrowNext);
         }
         break;
     }
