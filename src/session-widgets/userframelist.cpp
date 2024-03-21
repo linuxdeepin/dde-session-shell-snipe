@@ -67,7 +67,7 @@ void UserFrameList::initUI()
 
     m_flowLayout = new DFlowLayout(m_centerWidget);
     m_flowLayout->setFlow(QListView::LeftToRight);
-    m_flowLayout->setContentsMargins(0, 0, 0, 0);
+    m_flowLayout->setContentsMargins(ContentsMargin, ContentsMargin, ContentsMargin, ContentsMargin);
     m_flowLayout->setSpacing(UserWidgetSpacing);
 
     m_scrollArea->setAccessibleName("UserFrameListCenterWidget");
@@ -81,7 +81,7 @@ void UserFrameList::initUI()
     m_centerWidget->setAutoFillBackground(false);
     m_scrollArea->viewport()->setAutoFillBackground(false);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(ContentsMargin, ContentsMargin, ContentsMargin, ContentsMargin);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(m_scrollArea, 0, Qt::AlignCenter);
 }
 
@@ -277,7 +277,7 @@ void UserFrameList::onMaximumSizeChanged(int maxw, int maxh)
 {
     static constexpr qreal DisplayRatio = 0.8;
     static constexpr QMargins margin{ContentsMargin, ContentsMargin, ContentsMargin, ContentsMargin};
-    QSize bound = QSize(maxw, maxh).shrunkBy(margin) * DisplayRatio;
+    QSize bound = (QSize(maxw, maxh) * DisplayRatio).shrunkBy(margin);
     int candidateCol = qCeil(static_cast<qreal>(bound.width()) / (UserFrameWidth + UserWidgetSpacing));
     int candidateRow = qCeil(static_cast<qreal>(bound.height()) / (UserFrameHeight + UserWidgetSpacing));
     if (listWidth(candidateCol) > bound.width()) {
@@ -309,10 +309,10 @@ void UserFrameList::updateLayout()
     const int MaxDisplayRow = rowBound();
     int count = m_flowLayout->count();
     int row = qCeil(static_cast<qreal>(count) / MaxDisplayCol);
-    int areaWidth = listWidth(qMin(count, MaxDisplayCol));
-    int areaHeight = listHeight(qMin(row, MaxDisplayRow));
+    int areaWidth = listWidth(qMin(count, MaxDisplayCol)) + ContentsMargin  * 2;
+    int areaHeight = listHeight(qMin(row, MaxDisplayRow)) + ContentsMargin  * 2;
     m_scrollArea->setFixedSize(areaWidth, areaHeight);
-    m_centerWidget->setFixedSize(areaWidth, listHeight(row));
+    m_centerWidget->setFixedSize(areaWidth, listHeight(row) + ContentsMargin  * 2);
 }
 
 void UserFrameList::hideEvent(QHideEvent *event)
