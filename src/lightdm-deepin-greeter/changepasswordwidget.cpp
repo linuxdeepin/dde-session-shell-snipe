@@ -76,8 +76,6 @@ void ChangePasswordWidget::initUI()
     m_newPasswdEdit->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
     m_levelWidget->reset();
-    // TODO 后续调整
-    //    m_levelWidget->setMaximumHeight(10);
 
     m_repeatPasswdEdit->setClearButtonEnabled(false);
     m_repeatPasswdEdit->setEchoMode(QLineEdit::Password);
@@ -99,22 +97,19 @@ void ChangePasswordWidget::initUI()
     m_mainLayout->addWidget(m_avatar, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_nameLabel, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_tipsLabel, 0, Qt::AlignCenter);
-    m_mainLayout->addWidget(m_oldPasswdEdit, 0, Qt::AlignCenter);
-    QWidget *newPasswdWidget = new QWidget;
-    m_newPasswdEdit->setParent(newPasswdWidget);
-    m_levelWidget->setParent(newPasswdWidget);
-    auto passwdLevelSizeHint = m_levelWidget->sizeHint();
-    newPasswdWidget->setFixedSize(PASSWDLINEEIDT_WIDTH + 2 * passwdLevelSizeHint.width(), PASSWDLINEEDIT_HEIGHT);
-    m_mainLayout->addWidget(newPasswdWidget, 0, Qt::AlignCenter);
-    auto passwdAnchor = new DAnchors<DPasswordEdit>(m_newPasswdEdit);
-    auto levelAnchor = new DAnchors<PasswordLevelWidget>(m_levelWidget);
-    auto newPasswdWidgetAnchor = new DAnchors<QWidget>(newPasswdWidget);
-    passwdAnchor->setCenterIn(newPasswdWidgetAnchor);
-    levelAnchor->setVerticalCenter(passwdAnchor->verticalCenter());
-    levelAnchor->setLeftMargin(2);
-    levelAnchor->setLeft(passwdAnchor->right());
-    m_mainLayout->addWidget(m_repeatPasswdEdit, 0, Qt::AlignCenter);
-    m_mainLayout->addWidget(m_passwordHints, 0, Qt::AlignCenter);
+    auto lineEditWidget = new QWidget;
+    auto lineEditLayout = new QVBoxLayout(lineEditWidget);
+    lineEditLayout->setMargin(0);
+    lineEditLayout->setSpacing(0);
+    lineEditLayout->addWidget(m_oldPasswdEdit, 0, Qt::AlignCenter);
+    m_levelWidget->setMinimumHeight(LINEEDIT_SPACING);
+    lineEditLayout->addWidget(m_levelWidget, 0, Qt::AlignRight);
+    lineEditLayout->addWidget(m_newPasswdEdit, 0, Qt::AlignCenter);
+    lineEditLayout->addSpacing(LINEEDIT_SPACING);
+    lineEditLayout->addWidget(m_repeatPasswdEdit, 0, Qt::AlignCenter);
+    lineEditLayout->addSpacing(LINEEDIT_SPACING);
+    lineEditLayout->addWidget(m_passwordHints, 0, Qt::AlignCenter);
+    m_mainLayout->addWidget(lineEditWidget, 0, Qt::AlignCenter);
     m_mainLayout->addWidget(m_okBtn, 0, Qt::AlignCenter);
     m_okBtn->setFixedWidth(160);
 

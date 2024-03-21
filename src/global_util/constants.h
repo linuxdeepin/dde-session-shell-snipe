@@ -55,6 +55,8 @@ enum AuthFactorType {
 };
 }
 
+static constexpr int LINEEDIT_SPACING = 30;
+
 namespace Popup
 {
 static constexpr int HorizontalMargin = 10;
