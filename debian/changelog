@@ -1,3 +1,13 @@
+dde-session-shell (6.0.18) unstable; urgency=medium
+
+  * chore: lock button focus policy tweak(Issue: https://github.com/linuxdeepin/developer-center/issues/6876)
+  * fix: can't login after recreating user(Issue: #6512)
+  * fix: content margin for user list(Issue: https://github.com/linuxdeepin/developer-center/issues/5704)
+  * fix: password level hint not visible(Issue: https://github.com/linuxdeepin/developer-center/issues/5588)(Influence: https://github.com/linuxdeepin/dde-session-shell/issues/302)
+  * fix: alert and hint disappear when hide(Issue: https://github.com/linuxdeepin/developer-center/issues/5622)
+
+ -- Yixue Wang <wangyixue@deepin.org>  Fri, 22 Mar 2024 15:45:49 +0800
+
 dde-session-shell (6.0.17) unstable; urgency=medium
 
   * fix: trayWidget shouldn't acquire focus
