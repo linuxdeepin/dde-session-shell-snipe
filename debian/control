@@ -26,7 +26,6 @@ Build-Depends: debhelper-compat (=12), pkg-config,
  libx11-xcb-dev,
  libssl-dev,
  libdtkcore-dev,
- qtwebengine5-dev,
  libdeepin-pw-check-dev,
  libxcb-util0-dev|libxcb-util1-dev
 Standards-Version: 3.9.4

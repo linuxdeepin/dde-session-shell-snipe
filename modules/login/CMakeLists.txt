@@ -1,4 +1,5 @@
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+# install qtwebengine5-dev / qt6-webengine-dev manually
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 include_directories(
