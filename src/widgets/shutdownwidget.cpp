@@ -423,7 +423,25 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 
 void ShutdownWidget::runSystemMonitor()
 {
-    QProcess::startDetached("/usr/bin/deepin-system-monitor", QStringList());
+    auto launchProcessByAM = []() {
+        QDBusMessage message = QDBusMessage::createMethodCall(
+                "org.desktopspec.ApplicationManager1",
+                "/org/desktopspec/ApplicationManager1/deepin_2dsystem_2dmonitor",
+                "org.desktopspec.ApplicationManager1.Application",
+                "Launch"
+        );
+
+        message << QString("") << QStringList() << QVariantMap();
+
+        QDBusMessage reply = QDBusConnection::sessionBus().call(message);
+        if (reply.type() == QDBusMessage::ReplyMessage) {
+            qDebug() << "Launch deepin-system-monitor successful!";
+        } else {
+            qWarning() << "Launch deepin-system-monitor main process error:" << reply.errorMessage();
+        }
+    };
+
+    launchProcessByAM();
 
     if (m_systemMonitor) {
         m_systemMonitor->clearFocus();
