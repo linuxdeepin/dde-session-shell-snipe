@@ -1,3 +1,9 @@
+dde-session-shell (6.0.19) unstable; urgency=medium
+
+  * launch system-monitor by am dbus
+
+ -- rewine <luhongxu@deepin.org>  Wed, 08 May 2024 18:24:15 +0800
+
 dde-session-shell (6.0.18) unstable; urgency=medium
 
   * chore: lock button focus policy tweak(Issue: https://github.com/linuxdeepin/developer-center/issues/6876)
