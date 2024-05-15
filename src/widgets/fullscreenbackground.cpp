@@ -224,7 +224,7 @@ void FullscreenBackground::paintEvent(QPaintEvent *e)
     const QPixmap &blurBackground = getPixmap(PIXMAP_TYPE_BLUR_BACKGROUND);
 
     const QRect trueRect(QPoint(0, 0), QSize(size() * devicePixelRatioF()));
-    if (m_useSolidBackground) {
+    if (m_useSolidBackground || (background.isNull() && blurBackground.isNull())) {
         painter.fillRect(trueRect, QColor(DDESESSIONCC::SOLID_BACKGROUND_COLOR));
     } else {
         if (m_fadeOutAni) {
