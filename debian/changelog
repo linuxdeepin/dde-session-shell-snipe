@@ -1,3 +1,9 @@
+dde-session-shell (6.0.20) unstable; urgency=medium
+
+  * fix: greeter unable to start(Issue: https://github.com/linuxdeepin/developer-center/issues/8681)
+
+ -- Zhang Kun <zhangkun2@uniontech.com>  Tue, 21 May 2024 15:02:26 +0800
+
 dde-session-shell (6.0.19) unstable; urgency=medium
 
   * launch system-monitor by am dbus
