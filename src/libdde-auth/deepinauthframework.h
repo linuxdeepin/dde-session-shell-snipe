@@ -119,7 +119,7 @@ private:
     bool m_waitToken;
     bool m_retryActivateFramework;
 
-    void *m_encryptionHandle;
+    QPointer<QLibrary>m_encryptionHandle;
     FUNC_AES_CBC_ENCRYPT m_F_AES_cbc_encrypt;
     FUNC_AES_SET_ENCRYPT_KEY m_F_AES_set_encrypt_key;
     FUNC_BIO_NEW m_F_BIO_new;

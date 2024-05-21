@@ -28,7 +28,8 @@
 #define PAM_SERVICE_DEEPIN_NAME "dde-lock"
 #define PKCS1_HEADER "-----BEGIN RSA PUBLIC KEY-----"
 #define PKCS8_HEADER "-----BEGIN PUBLIC KEY-----"
-#define OPENSSLNAME "libssl.so"
+#define OPENSSLNAME "ssl"
+#define OPENSSLVERSION 3
 
 Q_LOGGING_CATEGORY(auth, "dss.auth")
 
@@ -319,21 +320,22 @@ void DeepinAuthFramework::setEncryption(const int type, ArrayInt method)
  */
 void DeepinAuthFramework::initEncryptionService()
 {
-    if ((m_encryptionHandle = dlopen(OPENSSLNAME, RTLD_NOW)) == nullptr) {
-        qCritical() << "Failed to load" << OPENSSLNAME;
+    m_encryptionHandle = new QLibrary(OPENSSLNAME, OPENSSLVERSION);
+    if (!m_encryptionHandle->load()) {
+        qCritical() << "Failed to load library name: " << OPENSSLNAME << ", version: " << OPENSSLVERSION;
         return;
     }
-    m_F_AES_cbc_encrypt = reinterpret_cast<FUNC_AES_CBC_ENCRYPT>(dlsym(m_encryptionHandle, "AES_cbc_encrypt"));
-    m_F_AES_set_encrypt_key = reinterpret_cast<FUNC_AES_SET_ENCRYPT_KEY>(dlsym(m_encryptionHandle, "AES_set_encrypt_key"));
-    m_F_BIO_new = reinterpret_cast<FUNC_BIO_NEW>(dlsym(m_encryptionHandle, "BIO_new"));
-    m_F_BIO_puts = reinterpret_cast<FUNC_BIO_PUTS>(dlsym(m_encryptionHandle, "BIO_puts"));
-    m_F_BIO_s_mem = reinterpret_cast<FUNC_BIO_S_MEM>(dlsym(m_encryptionHandle, "BIO_s_mem"));
-    m_F_PEM_read_bio_RSAPublicKey = reinterpret_cast<FUNC_PEM_READ_BIO_RSAPUBLICKEY>(dlsym(m_encryptionHandle, "PEM_read_bio_RSAPublicKey"));
-    m_F_PEM_read_bio_RSA_PUBKEY = reinterpret_cast<FUNC_PEM_READ_BIO_RSA_PUBKEY>(dlsym(m_encryptionHandle, "PEM_read_bio_RSA_PUBKEY"));
-    m_F_RSA_public_encrypt = reinterpret_cast<FUNC_RSA_PUBLIC_ENCRYPT>(dlsym(m_encryptionHandle, "RSA_public_encrypt"));
-    m_F_RSA_size = reinterpret_cast<FUNC_RSA_SIZE>(dlsym(m_encryptionHandle, "RSA_size"));
-    m_F_RSA_free = reinterpret_cast<FUNC_RSA_FREE>(dlsym(m_encryptionHandle, "RSA_free"));
-    m_F_BIO_free = reinterpret_cast<FUNC_RSA_FREE>(dlsym(m_encryptionHandle, "BIO_free"));
+    m_F_AES_cbc_encrypt = reinterpret_cast<FUNC_AES_CBC_ENCRYPT>(m_encryptionHandle->resolve( "AES_cbc_encrypt"));
+    m_F_AES_set_encrypt_key = reinterpret_cast<FUNC_AES_SET_ENCRYPT_KEY>(m_encryptionHandle->resolve("AES_set_encrypt_key"));
+    m_F_BIO_new = reinterpret_cast<FUNC_BIO_NEW>(m_encryptionHandle->resolve("BIO_new"));
+    m_F_BIO_puts = reinterpret_cast<FUNC_BIO_PUTS>(m_encryptionHandle->resolve("BIO_puts"));
+    m_F_BIO_s_mem = reinterpret_cast<FUNC_BIO_S_MEM>(m_encryptionHandle->resolve("BIO_s_mem"));
+    m_F_PEM_read_bio_RSAPublicKey = reinterpret_cast<FUNC_PEM_READ_BIO_RSAPUBLICKEY>(m_encryptionHandle->resolve("PEM_read_bio_RSAPublicKey"));
+    m_F_PEM_read_bio_RSA_PUBKEY = reinterpret_cast<FUNC_PEM_READ_BIO_RSA_PUBKEY>(m_encryptionHandle->resolve("PEM_read_bio_RSA_PUBKEY"));
+    m_F_RSA_public_encrypt = reinterpret_cast<FUNC_RSA_PUBLIC_ENCRYPT>(m_encryptionHandle->resolve("RSA_public_encrypt"));
+    m_F_RSA_size = reinterpret_cast<FUNC_RSA_SIZE>(m_encryptionHandle->resolve("RSA_size"));
+    m_F_RSA_free = reinterpret_cast<FUNC_RSA_FREE>(m_encryptionHandle->resolve("RSA_free"));
+    m_F_BIO_free = reinterpret_cast<FUNC_RSA_FREE>(m_encryptionHandle->resolve("BIO_free"));
 
     m_BIO = m_F_BIO_new(m_F_BIO_s_mem());
     m_F_BIO_puts(m_BIO, m_publicKey.toLatin1().data());
@@ -440,7 +442,7 @@ void DeepinAuthFramework::DestroyAuthController(const QString &account)
     if (m_encryptionHandle) {
         m_F_RSA_free(m_RSA);
         m_F_BIO_free(m_BIO);
-        dlclose(m_encryptionHandle);
+        delete m_encryptionHandle;
     }
 }
 
