@@ -50,6 +50,7 @@ private:
     void updateViewWidth();
     void updateViewHeight();
     int calculateItemWidth();
+    int getItemHeight();
     int stringWidth(const QString &str, int fontSize, bool isBold = false);
 
 private:

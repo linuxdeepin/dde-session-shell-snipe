@@ -14,6 +14,8 @@
 DWIDGET_USE_NAMESPACE
 
 const int ITEM_HEIGHT = 64;
+const int ITEM_SPACE = 10;
+const int LABEL_SPACE = 2;
 const int RADIUS_VALUE = 8;
 const QSize IMAGE_SIZE = QSize(48, 48);
 
@@ -30,6 +32,8 @@ void UserItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
     QPen pen;
     QRect rect = option.rect;
+    // item间要留10空间的空白
+    rect.setHeight(rect.height() - ITEM_SPACE);
 
     if (option.state.testFlag(QStyle::State_Selected)) {
         // 鼠标悬停背景色
@@ -77,7 +81,16 @@ void UserItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 QSize UserItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(index)
-    return QSize(option.rect.width(), ITEM_HEIGHT);
+
+    UserItemData userData = index.data(StaticUserDataRole).value<UserItemData>();
+    int height = ITEM_SPACE + displayNameHeight() + LABEL_SPACE + userTypeHeight() + ITEM_SPACE;
+    if (!userData.name.isEmpty()) {
+        height += nameHeight() + LABEL_SPACE;
+    }
+
+    height = height > ITEM_HEIGHT ? height : ITEM_HEIGHT;
+
+    return QSize(option.rect.width(), height);
 }
 
 void UserItemDelegate::drawRoundImage(QPainter *thisPainter, const QRect &rect, const QString &path) const
@@ -86,9 +99,13 @@ void UserItemDelegate::drawRoundImage(QPainter *thisPainter, const QRect &rect, 
         return;
 
     // 设计图上常量
-    const int margTop = 8;
+    int margTop = 0;
     const int marginLeft = 8;
     const int imageRadius = 10;
+
+    if (rect.height() > IMAGE_SIZE.height()) {
+        margTop = rect.height() / 2 - IMAGE_SIZE.height() / 2;
+    }
 
     QRect drawRect = QRect(rect.left() + marginLeft, rect.top() + margTop,
                            IMAGE_SIZE.width(), IMAGE_SIZE.height());
@@ -124,16 +141,13 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
     // 文字区域设计图常量
     const int leftMargin = 65;  // 开始位置距离item最左边
     const int rightMargin = 48; // 结束位置距离item最右边
-    const int topMargin = 6;
-    const int displayNameAreaHeight = 29;
+    const int topMargin = 0;
+
     const int itemSpacing = 10;
-    const int nameAreaHeight = 20;
-    const int typeAreaHeight = 17;
-    const int vItemSpacing = 2;
 
     int textAreaWidth = rect.width() - leftMargin - rightMargin;
     QRect displayNameRect = QRect(rect.left() + leftMargin, rect.top() + topMargin,
-                                  textAreaWidth, displayNameAreaHeight);
+                                  textAreaWidth, displayNameHeight());
 
     QFont font = DFontSizeManager::instance()->t4();
     font.setBold(true);
@@ -141,7 +155,10 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
 
     // 绘制displayName, +1个像素是为了避免刚好width和文本宽度一致，最后文本还有省略号
     QString displayNameText = elidedText(userData.displayName, textAreaWidth + 1, font.pixelSize(), true);
-    painter->drawText(displayNameRect, displayNameText);
+
+    QTextOption qTextOption;
+    qTextOption.setAlignment(Qt::AlignmentFlag::AlignVCenter);
+    painter->drawText(displayNameRect, displayNameText, qTextOption);
 
     QFont typeFont = DFontSizeManager::instance()->t8();
     int userTypeAreaWidth = stringWidth(userData.userStrType, typeFont.pixelSize());
@@ -155,8 +172,8 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
 
         QString nameText = elidedText(userData.name, textAreaWidth - itemSpacing - userTypeAreaWidth, font.pixelSize());
         nameWidth = stringWidth(nameText, font.pixelSize());
-        QRect nameRect = QRect(displayNameRect.left(), displayNameRect.bottom() + vItemSpacing,
-                                   textAreaWidth - itemSpacing - userTypeAreaWidth, nameAreaHeight);
+        QRect nameRect = QRect(displayNameRect.left(), displayNameRect.bottom() + LABEL_SPACE,
+                                   textAreaWidth - itemSpacing - userTypeAreaWidth, nameHeight());
 
         painter->drawText(nameRect, nameText);
     }
@@ -166,8 +183,11 @@ void UserItemDelegate::drawNameAndType(QPainter *painter, const UserItemData &us
 
     // 绘制userType, +1个像素为了避免字体大小不一样，绘制中心位置不一致
     int userTypeLeft = userData.name.isEmpty() ? displayNameRect.left() : displayNameRect.left() + nameWidth + itemSpacing;
-    QRect userTypeRect = QRect(userTypeLeft, displayNameRect.bottom() + vItemSpacing + 1, userTypeAreaWidth + 1, typeAreaHeight);
-    painter->drawText(userTypeRect, userData.userStrType);
+    QRect userTypeRect = QRect(userTypeLeft, displayNameRect.bottom() + LABEL_SPACE + 1, userTypeAreaWidth + 1, userTypeHeight());
+    qreal currentOpacity = painter->opacity();
+    painter->setOpacity(0.7);
+    painter->drawText(userTypeRect, userData.userStrType, qTextOption);
+    painter->setOpacity(currentOpacity);
 }
 
 void UserItemDelegate::drawCheckedState(QPainter *painter, const QRect &rect) const
@@ -217,4 +237,25 @@ QString UserItemDelegate::elidedText(const QString &originString, int width, int
 
     QFontMetrics fm(font);
     return fm.elidedText(originString, Qt::ElideRight, width);
+}
+
+int UserItemDelegate::displayNameHeight()
+{
+    QFont font = DFontSizeManager::instance()->t4();
+    QFontMetrics fm(font);
+    return fm.height();
+}
+
+int UserItemDelegate::nameHeight()
+{
+    QFont font = DFontSizeManager::instance()->t6();
+    QFontMetrics fm(font);
+    return fm.height();
+}
+
+int UserItemDelegate::userTypeHeight()
+{
+    QFont font = DFontSizeManager::instance()->t8();
+    QFontMetrics fm(font);
+    return fm.height();
 }

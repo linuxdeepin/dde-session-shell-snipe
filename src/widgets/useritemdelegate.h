@@ -31,6 +31,9 @@ public:
 
 public:
     explicit UserItemDelegate(QObject *parent = nullptr);
+    static int displayNameHeight();
+    static int nameHeight();
+    static int userTypeHeight();
 
 protected:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const Q_DECL_OVERRIDE;

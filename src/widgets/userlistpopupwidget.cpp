@@ -179,9 +179,9 @@ void UserListPopupWidget::initUI()
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     setEditTriggers(QAbstractItemView::NoEditTriggers);
-    setViewportMargins(0, 0, 0, 0);
+    setViewportMargins(5, 5, 5, 5);
     setMaximumHeight(MAX_HEIGHT);
-    setSpacing(ITEM_SPACING);
+    setSpacing(0);
 
     setItemDelegate(m_userItemDelegate);
     setModel(m_userItemModel);
@@ -203,6 +203,10 @@ void UserListPopupWidget::initConnections()
 
         qInfo() << "request switch user id:" << data.userId << " displayName:" << data.displayName;
         Q_EMIT requestSwitchToUser(m_model->findUserByUid(data.userId));
+    });
+
+    connect(qGuiApp, &QGuiApplication::fontChanged, this, [ this ] {
+        updateViewHeight();
     });
 }
 
@@ -308,7 +312,7 @@ void UserListPopupWidget::updateViewWidth()
 
 void UserListPopupWidget::updateViewHeight()
 {
-    int height = m_userItemModel->rowCount() * ITEM_HEIGHT + (m_userItemModel->rowCount() * 2) * ITEM_SPACING;
+    int height = m_userItemModel->rowCount() * getItemHeight();
     setFixedHeight(qMin(height, MAX_HEIGHT));
 }
 
@@ -325,4 +329,11 @@ QString UserListPopupWidget::accountStrType(int accountType) const
         default:
             return "";
     }
+}
+
+int UserListPopupWidget::getItemHeight()
+{
+    int height = ITEM_SPACING * 2 + UserItemDelegate::displayNameHeight() + 2 + UserItemDelegate::userTypeHeight() + ITEM_SPACING * 2;
+
+    return height > ITEM_HEIGHT ? height : ITEM_HEIGHT;
 }
