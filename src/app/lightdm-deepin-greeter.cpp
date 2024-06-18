@@ -106,6 +106,30 @@ static int set_rootwindow_cursor() {
 }
 // Load system cursor --end
 
+// 参照后端算法，保持一致
+float toListedScaleFactor(float s)  {
+    const float min = 1.0, max = 3.0, step = 0.25;
+    if (s <= min) {
+        return min;
+    } else if (s >= max) {
+        return max;
+    }
+
+    for (float i = min; i <= max; i += step) {
+        if (i > s) {
+            float ii = i - step;
+            float d1 = s - ii;
+            float d2 = i - s;
+            if (d1 >= d2) {
+                return i;
+            } else {
+                return ii;
+            }
+        }
+    }
+    return max;
+}
+
 static double get_scale_ratio() {
     Display *display = XOpenDisplay(nullptr);
     double scaleRatio = 0.0;
@@ -128,18 +152,14 @@ static double get_scale_ratio() {
 
             XRRCrtcInfo *crtInfo = XRRGetCrtcInfo(display, resources, outputInfo->crtc);
             if (crtInfo == nullptr) continue;
-
-            scaleRatio = static_cast<double>(crtInfo->width) / static_cast<double>(outputInfo->mm_width) / (1366.0 / 310.0);
-
-            if (scaleRatio > 1 + 2.0 / 3.0) {
-                scaleRatio = 2;
-            }
-            else if (scaleRatio > 1 + 1.0 / 3.0) {
-                scaleRatio = 1.5;
-            }
-            else {
-                scaleRatio = 1;
-            }
+            // 参照后端的算法，与后端保持一致
+            float lenPx = hypot(static_cast<double>(crtInfo->width), static_cast<double>(crtInfo->height));
+            float lenMm = hypot(static_cast<double>(outputInfo->mm_width), static_cast<double>(outputInfo->mm_height));
+            float lenPxStd = hypot(1920, 1080);
+            float lenMmStd = hypot(477, 268);
+            float fix = (lenMm - lenMmStd) * (lenPx / lenPxStd) * 0.00158;
+            float scale = (lenPx / lenMm) / (lenPxStd / lenMmStd) + fix;
+            scaleRatio = toListedScaleFactor(scale);
         }
     }
     else {
