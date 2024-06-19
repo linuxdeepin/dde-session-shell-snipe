@@ -1,3 +1,10 @@
+dde-session-shell (6.0.21) unstable; urgency=medium
+
+  * fix: 修复字体字号为20的时候锁屏界面切换用户列表文字被遮挡的问题
+  * fix: incorrect scaling of greeter interface on first login
+
+ -- xionglinlin <xionglinlin@uniontech.com>  Wed, 19 Jun 2024 14:34:01 +0800
+
 dde-session-shell (6.0.20) unstable; urgency=medium
 
   * fix: greeter unable to start(Issue: https://github.com/linuxdeepin/developer-center/issues/8681)
