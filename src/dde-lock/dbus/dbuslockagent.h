@@ -15,6 +15,7 @@ public:
     explicit DBusLockAgent(QObject *parent = nullptr);
     void setModel(SessionBaseModel *const model);
 
+    bool Visible();
     void Show();
     void ShowUserList();
     void ShowAuth(bool active);

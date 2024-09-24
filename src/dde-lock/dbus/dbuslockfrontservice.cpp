@@ -18,6 +18,11 @@ DBusLockFrontService::~DBusLockFrontService()
 {
 }
 
+bool DBusLockFrontService::Visible()
+{
+    return parent()->Visible();
+}
+
 void DBusLockFrontService::Show()
 {
     parent()->Show();

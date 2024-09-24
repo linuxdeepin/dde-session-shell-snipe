@@ -15,6 +15,11 @@ void DBusLockAgent::setModel(SessionBaseModel *const model)
     m_model = model;
 }
 
+bool DBusLockAgent::Visible()
+{
+    return m_model->visible();
+}
+
 void DBusLockAgent::Show()
 {
     m_model->setIsBlackMode(false);
