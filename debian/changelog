@@ -1,3 +1,9 @@
+dde-session-shell (6.0.22) unstable; urgency=medium
+
+  * feat: Expose the Visible property of lockFront in DBus interface (#378)
+
+ -- Yutao Meng <mengyutao@deepin.org>  Wed, 25 Sep 2024 16:44:54 +0800
+
 dde-session-shell (6.0.21) unstable; urgency=medium
 
   * fix: 修复字体字号为20的时候锁屏界面切换用户列表文字被遮挡的问题
