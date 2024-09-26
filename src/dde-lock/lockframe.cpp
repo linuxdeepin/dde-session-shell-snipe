@@ -19,6 +19,8 @@
 #include <QWindow>
 #include <QX11Info>
 
+#define LOCK_START_EFFECT 16 // 锁屏动效比较特殊，窗管根据这个动效值进行处理
+
 xcb_atom_t internAtom(xcb_connection_t *connection, const char *name, bool only_if_exists)
 {
     if (!name || *name == 0)
@@ -49,6 +51,12 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
         xcb_atom_t cook = internAtom(connection, "_DEEPIN_LOCK_SCREEN", false);
         xcb_change_property(connection, XCB_PROP_MODE_REPLACE, static_cast<xcb_window_t>(winId()),
                             cook, XCB_ATOM_ATOM, 32, 1, &cook);
+
+        // x11下通过窗口属性设置锁屏启动动效
+        xcb_atom_t startup = internAtom(connection, "_DEEPIN_NET_STARTUP", false);
+        quint32 value = LOCK_START_EFFECT;
+        xcb_change_property(connection, XCB_PROP_MODE_REPLACE, static_cast<xcb_window_t>(winId()),
+                            startup, XCB_ATOM_CARDINAL, 32, 1, &value);
     }
 
     updateBackground(m_model->currentUser()->greeterBackground());
