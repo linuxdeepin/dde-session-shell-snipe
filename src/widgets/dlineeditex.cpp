@@ -127,7 +127,8 @@ void DLineEditEx::paintEvent(QPaintEvent *event)
         pa.setPen(col);
         QTextOption option;
         option.setAlignment(Qt::AlignCenter);
-        pa.drawText(lineEdit()->rect(), lineEdit()->placeholderText(), option);
+        QRect contentRect(lineEdit()->pos(), lineEdit()->size());
+        pa.drawText(contentRect, lineEdit()->placeholderText(), option);
     }
     QWidget::paintEvent(event);
 }
