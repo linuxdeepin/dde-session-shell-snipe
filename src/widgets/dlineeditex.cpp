@@ -91,9 +91,9 @@ void DLineEditEx::startAnimation()
         return;
     }
     m_loadSlider->show();
-    m_loadSlider->resize(40, height());
-    m_animation->setStartValue(QPoint(0 - 40, 0));
-    m_animation->setEndValue(QPoint(width(), 0));
+    m_loadSlider->resize(40, lineEdit()->height());
+    m_animation->setStartValue(QPoint(0 - 40, lineEdit()->y()));
+    m_animation->setEndValue(QPoint(width(), lineEdit()->y()));
     m_animation->start();
 }
 
