@@ -1,3 +1,10 @@
+dde-session-shell (6.0.23) unstable; urgency=medium
+
+  * fix: https://pms.uniontech.com/bug-view-277209.html
+  * fix: https://pms.uniontech.com/bug-view-279953.html
+
+ -- Zhang Kun <zhangkun2@uniontech.com>  Fri, 25 Oct 2024 17:51:45 +0800
+
 dde-session-shell (6.0.22) unstable; urgency=medium
 
   * feat: Expose the Visible property of lockFront in DBus interface (#378)
