@@ -104,7 +104,15 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
             if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
                 QGSettings powerSettings("com.deepin.dde.power", QByteArray(), this);
                 if (!powerSettings.get("sleep-lock").toBool()) {
-                    hide();
+                    qDebug() << "sleep-lock is off, prepare unlock";
+                    // 待机唤醒的一瞬间，会延迟收到DBusLogin1Manager::PrepareForSleep（true）, 进而最终传入到dde-session的locked状态也是延迟的
+                    // dde-session 延迟收到locked后会重新发送锁定信号，导致这里unlock后又被重新lock
+                    // 设置一个100ms的延时，等待dde-session的locked状态和dde-lock的locked状态完全同步后再进行隐藏锁屏的动作
+                    model->setIsBlackMode(true);
+                    QTimer::singleShot(100, this, [this, model](){
+                        model->setIsBlackMode(false);
+                        hide();
+                    });
                 }
             }
         }
