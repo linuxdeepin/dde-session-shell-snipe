@@ -63,7 +63,8 @@ void TimeWidget::set24HourFormat(bool use24HourFormat)
 
 void TimeWidget::updateLocale(const QString &locale, const QString &shortTimeFormat, const QString &longDateFormat)
 {
-    m_locale = locale.isEmpty() ? QLocale::system() : QLocale(locale);
+    Q_UNUSED(locale);
+    m_locale = QLocale::system(); // locale.isEmpty() ? QLocale::system() : QLocale(locale);
     if (!shortTimeFormat.isEmpty())
         m_shortTimeFormat = shortTimeFormat;
     if (!longDateFormat.isEmpty())
@@ -78,6 +79,9 @@ void TimeWidget::refreshTime()
     } else {
         m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), shortTimeFormat.at(m_shortTimeIndex) + " AP"));
     }
+
+    // "Ap"/"aP"->"AP"
+    m_shortTimeFormat.replace(QRegExp("a?p", Qt::CaseInsensitive), "AP");
 
     QString date_format = shortDateFormat.at(m_shortDateIndex) + " " + weekdayFormat.at(m_weekdayIndex);
     m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), date_format));
