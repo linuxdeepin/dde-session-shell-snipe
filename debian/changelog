@@ -1,3 +1,10 @@
+dde-session-shell (6.0.25) unstable; urgency=medium
+
+  * fix: turning off 'Unlocking is required to wake up the computer' does not work
+  * fix: Time text changes with time zone
+
+ -- zsien <quezhiyong@deepin.org>  Fri, 29 Nov 2024 15:36:13 +0800
+
 dde-session-shell (6.0.24) unstable; urgency=medium
 
   * release 6.0.24
