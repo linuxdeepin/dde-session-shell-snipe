@@ -107,6 +107,7 @@ void LockContent::initUI()
 
 void LockContent::initConnections()
 {
+    connect(m_model, &SessionBaseModel::onRequirePowerAction, this, &LockContent::onRequirePowerAction);
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [ = ] (std::shared_ptr<User> user) {
         Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AT_All);
@@ -350,6 +351,8 @@ void LockContent::pushShutdownFrame()
 {
     //设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
     m_shutdownFrame.reset(new ShutdownWidget(this));
+    connect(m_shutdownFrame.get(), &ShutdownWidget::onRequirePowerAction, this, &LockContent::onRequirePowerAction);
+
     m_shutdownFrame->setAccessibleName("ShutdownFrame");
     m_shutdownFrame->setModel(m_model);
     m_shutdownFrame->move(0, 0);
@@ -673,5 +676,29 @@ void LockContent::keyPressEvent(QKeyEvent *event)
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         }
         break;
+    }
+}
+
+void LockContent::onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm)
+{
+    //锁屏或关机模式时，需要确认是否关机或检查是否有阻止关机
+    if (m_model->appType() == Lock) {
+        switch (powerAction) {
+        case SessionBaseModel::PowerAction::RequireShutdown:
+        case SessionBaseModel::PowerAction::RequireRestart:
+        case SessionBaseModel::PowerAction::RequireSwitchSystem:
+        case SessionBaseModel::PowerAction::RequireLogout:
+        case SessionBaseModel::PowerAction::RequireSuspend:
+        case SessionBaseModel::PowerAction::RequireHibernate:
+            m_model->setIsCheckedInhibit(false);
+            emit m_model->shutdownInhibit(powerAction, needConfirm);
+            break;
+        default:
+            m_model->setPowerAction(powerAction);
+            break;
+        }
+    } else {
+        //登录模式直接操作
+        m_model->setPowerAction(powerAction);
     }
 }

@@ -63,6 +63,7 @@ public slots:
     void setMPRISEnable(const bool state);
     void onNewConnection();
     void onDisConnect();
+    void onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
