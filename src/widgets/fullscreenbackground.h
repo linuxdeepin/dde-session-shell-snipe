@@ -84,6 +84,7 @@ private:
     bool m_useSolidBackground;
     bool m_fadeOutAniFinished;
     bool m_enableAnimation;
+    bool m_useBlurBackground;
 
     BlackWidget *m_blackWidget;
 };

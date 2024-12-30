@@ -38,6 +38,7 @@ FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *par
     , m_useSolidBackground(false)
     , m_fadeOutAniFinished(false)
     , m_enableAnimation(true)
+    , m_useBlurBackground(true)
     , m_blackWidget(new BlackWidget(this))
 {
 #ifndef QT_DEBUG
@@ -89,12 +90,12 @@ FullscreenBackground::~FullscreenBackground()
 
 void FullscreenBackground::updateBackground(const QString &path)
 {
+    m_useBlurBackground = true;
     if (m_useSolidBackground)
         return;
 
     if (isPicture(path)) {
-        // 动画播放完毕不再需要清晰的背景图片
-        if (!m_fadeOutAniFinished && !(backgroundPath == path && contains(PIXMAP_TYPE_BACKGROUND))) {
+        if (!(backgroundPath == path && contains(PIXMAP_TYPE_BACKGROUND))) {
             backgroundPath = path;
             addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BACKGROUND);
         }
@@ -129,7 +130,9 @@ void FullscreenBackground::updateBlurBackground(const QString &path)
             else
                 update();
         } else {
-            qWarning() << "get blur background image error: " << reply.error().message();
+            qWarning() << "get blur background image error: " << reply.error().message() << ", then use normal background";
+            m_useBlurBackground = false;
+            update();
         }
         call->deleteLater();
     }, Qt::QueuedConnection);
@@ -227,7 +230,7 @@ void FullscreenBackground::paintEvent(QPaintEvent *e)
     if (m_useSolidBackground || (background.isNull() && blurBackground.isNull())) {
         painter.fillRect(trueRect, QColor(DDESESSIONCC::SOLID_BACKGROUND_COLOR));
     } else {
-        if (m_fadeOutAni) {
+        if (m_fadeOutAni && m_useBlurBackground) {
             const double currentAniValue = m_fadeOutAni->currentValue().toDouble();
             if (!background.isNull() && currentAniValue != 1.0) {
                 painter.setOpacity(1);
