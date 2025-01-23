@@ -99,7 +99,7 @@ void ChangePasswordWidget::initUI()
     m_mainLayout->addWidget(m_tipsLabel, 0, Qt::AlignCenter);
     auto lineEditWidget = new QWidget;
     auto lineEditLayout = new QVBoxLayout(lineEditWidget);
-    lineEditLayout->setMargin(0);
+    lineEditLayout->setContentsMargins(0, 0, 0, 0);
     lineEditLayout->setSpacing(0);
     lineEditLayout->addWidget(m_oldPasswdEdit, 0, Qt::AlignCenter);
     m_levelWidget->setMinimumHeight(LINEEDIT_SPACING);
@@ -298,7 +298,7 @@ void ChangePasswordWidget::parseProcessResult(int exitCode, const QString &outpu
         // 提示修改成功
         DFloatingMessage *message = new DFloatingMessage(DFloatingMessage::MessageType::TransientType);
         QPalette pa;
-        pa.setColor(QPalette::Background, QColor(247, 247, 247, 51));
+        pa.setColor(QPalette::Window, QColor(247, 247, 247, 51));
         message->setPalette(pa);
         message->setIcon(QIcon::fromTheme("dialog-ok"));
         message->setMessage(tr("Password changed"));

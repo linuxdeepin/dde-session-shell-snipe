@@ -132,7 +132,7 @@ void LockContent::initConnections()
             setCenterContent(m_authWidget, Qt::AlignTop, m_authWidget->getTopSpacing());
     });
 
-    connect(m_wmInter, &__wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
+    connect(m_wmInter, &com::deepin::wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
     connect(m_localServer, &QLocalServer::newConnection, this, &LockContent::onNewConnection);
 }
 
@@ -298,7 +298,7 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
     m_user = user;
 
     m_localeName = regionValue(localeName_key);
-    QLocale locale = m_localeName.isEmpty()? user->locale() : QLocale(m_localeName);
+    QLocale locale = m_localeName.isEmpty() ? QLocale(user->locale()) : QLocale(m_localeName);
     m_shortTimeFormat = regionValue(shortTimeFormat_key);
     m_longDateFormat = regionValue(longDateFormat_key);
     buildConnect();

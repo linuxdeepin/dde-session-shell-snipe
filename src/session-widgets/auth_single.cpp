@@ -7,7 +7,7 @@
 #include "authcommon.h"
 #include "dlineeditex.h"
 
-#include "accountsuser_interface.h"
+#include "userinterface.h"
 
 #include <DHiDPIHelper>
 
@@ -15,12 +15,8 @@
 #include <QTimer>
 #include <QDBusConnection>
 #include <QDBusInterface>
-#include <QApplication>
-#include <QDesktopWidget>
 #include <QDBusReply>
 #include <QWindow>
-#include <QValidator>
-#include <QRegExp>
 
 #include <unistd.h>
 
@@ -61,7 +57,7 @@ void AuthSingle::initUI()
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
-    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+    m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
 
     QHBoxLayout *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
     passwordLayout->setContentsMargins(0, 0, 10, 0);
@@ -459,7 +455,7 @@ void AuthSingle::showResetPasswordMessage()
     }
 
     QPalette pa;
-    pa.setColor(QPalette::Background, QColor(247, 247, 247, 51));
+    pa.setColor(QPalette::Window, QColor(247, 247, 247, 51));
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
     m_resetPasswordFloatingMessage->setPalette(pa);
     m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("dialog-warning"));

@@ -27,13 +27,8 @@ add_executable(${BIN_NAME}
 )
 
 target_include_directories(${BIN_NAME} PUBLIC
-    ${DTKWIDGET_INCLUDE_DIR}
-    ${DTKCORE_INCLUDE_DIR}
-    ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
-    ${QGSettings_INCLUDE_DIRS}
     ${PAM_INCLUDE_DIR}
     ${XCB_EWMH_INCLUDE_DIRS}
-    ${Qt5X11Extras_INCLUDE_DIRS}
     ${PROJECT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/src/dde-lock
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus
@@ -41,20 +36,14 @@ target_include_directories(${BIN_NAME} PUBLIC
 )
 
 target_link_libraries(${BIN_NAME} PRIVATE
-    ${Qt5Test_LIBRARIES}
-    ${DtkWidget_LIBRARIES}
-    ${DtkCore_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5DBus_LIBRARIES}
-    ${QGSettings_LIBRARIES}
+    Dtk${DTK_VERSION_MAJOR}::Widget
+    Dtk${DTK_VERSION_MAJOR}::Core
     ${GTEST_LIBRARIES}
     ${Qt_LIBS}
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}
-    ${Qt5Concurrent_LIBRARIES}
-    ${Qt5X11Extras_LIBRARIES}
-    ${Qt5Network_LIBRARIES}
     ${Greeter_LIBRARIES}
+    Qt${QT_VERSION_MAJOR}::Test
     -lpthread
     -lm
 )

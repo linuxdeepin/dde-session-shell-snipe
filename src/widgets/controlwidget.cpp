@@ -242,7 +242,7 @@ void ControlWidget::addModule(module::BaseModuleInterface *module)
         QHBoxLayout *layout = new QHBoxLayout(button);
         layout->setAlignment(Qt::AlignCenter);
         layout->setSpacing(0);
-        layout->setMargin(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(trayWidget);
         button->setPluginItem(trayWidget);
     } else {

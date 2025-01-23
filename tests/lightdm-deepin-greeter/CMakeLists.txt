@@ -32,13 +32,8 @@ add_executable(${BIN_NAME}
 
 target_include_directories(${BIN_NAME} PUBLIC
     ${PAM_INCLUDE_DIR}
-    ${DTKWIDGET_INCLUDE_DIR}
-    ${DTKCORE_INCLUDE_DIR}
     ${XCB_EWMH_INCLUDE_DIRS}
-    ${Qt5Gui_PRIVATE_INCLUDE_DIRS}
     ${PROJECT_BINARY_DIR}
-    ${QGSettings_INCLUDE_DIRS}
-    ${Qt5X11Extras_INCLUDE_DIRS}
     ${Greeter_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter
 )
@@ -51,16 +46,10 @@ target_link_libraries(${BIN_NAME} PRIVATE
     ${Qt_LIBS}
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}
-    ${DtkWidget_LIBRARIES}
-    ${DtkCore_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5Concurrent_LIBRARIES}
-    ${Qt5X11Extras_LIBRARIES}
-    ${Qt5DBus_LIBRARIES}
-    ${Qt5Network_LIBRARIES}
-    ${QGSettings_LIBRARIES}
+    Dtk${DTK_VERSION_MAJOR}::Widget
+    Dtk${DTK_VERSION_MAJOR}::Core
     ${Greeter_LIBRARIES}
-    ${Qt5Test_LIBRARIES}
+    Qt${QT_VERSION_MAJOR}::Test
     ${GTEST_LIBRARIES}
     ${DEEPIN_PW_CHECK}
     -lpthread

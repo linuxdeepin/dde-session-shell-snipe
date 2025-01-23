@@ -10,7 +10,7 @@
 #include <QLoggingCategory>
 Q_DECLARE_LOGGING_CATEGORY(DDE_SS)
 
-#include "imageeffect_interface.h"
+#include "imageeffect1interface.h"
 
 using ImageEffectInter = org::deepin::dde::ImageEffect1;
 
@@ -50,7 +50,7 @@ protected:
 
 private:
     void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
-    void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
+    void enterEvent(QEnterEvent *event) Q_DECL_OVERRIDE;
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     const QPixmap pixmapHandle(const QPixmap &pixmap);

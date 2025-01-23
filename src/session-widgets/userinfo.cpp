@@ -6,6 +6,8 @@
 
 #include "constants.h"
 
+#include <QImageReader>
+
 #include <grp.h>
 #include <memory>
 #include <pwd.h>

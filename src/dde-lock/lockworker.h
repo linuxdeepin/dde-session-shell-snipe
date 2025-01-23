@@ -8,19 +8,17 @@
 #include "authinterface.h"
 #include "dbushotzone.h"
 #include "dbuslockservice.h"
-#include "dbuslogin1manager.h"
 #include "deepinauthframework.h"
 #include "sessionbasemodel.h"
-#include "huaweiswitchos_interface.h"
+#include "switchosinterface.h"
 #include "userinfo.h"
 
-#include "accounts_interface.h"
-#include "logined_interface.h"
-#include "accountsuser_interface.h"
-#include "sessionmanager_interface.h"
+#include "accounts1interface.h"
+#include "loginedinterface.h"
+#include "userinterface.h"
+#include "sessionmanager1interface.h"
 
 #include <QObject>
-#include <QWidget>
 
 using AccountsInter = org::deepin::dde::Accounts1;
 using UserInter = org::deepin::dde::accounts1::User;

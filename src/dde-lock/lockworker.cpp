@@ -10,14 +10,11 @@
 
 #include <DSysInfo>
 
-#include <QApplication>
 #include <QDebug>
 #include <QProcess>
-#include <QRegularExpression>
 
 #include <grp.h>
 #include <libintl.h>
-#include <pwd.h>
 #include <unistd.h>
 
 #define DOMAIN_BASE_UID 10000
@@ -49,17 +46,12 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
 
     m_resetSessionTimer->setInterval(15000);
 
-    if (QGSettings::isSchemaInstalled("com.deepin.dde.session-shell")) {
-        m_gsettings = new QGSettings("com.deepin.dde.session-shell", "/com/deepin/dde/session-shell/", this);
-        if(m_gsettings->keys().contains("authResetTime")){
-            int resetTime = m_gsettings->get("auth-reset-time").toInt();
-            if(resetTime > 0)
-               m_resetSessionTimer->setInterval(resetTime);
+    if (!m_dConfig) {
+        m_dConfig = DConfig::create("org.deepin.dde.session-shell", "org.deepin.dde.session-shell", QString(), this);
+        int resetTime = m_dConfig->value("authResetTime", 15000).toInt();
+        if (resetTime > 0) {
+            m_resetSessionTimer->setInterval(resetTime);
         }
-    }
-
-    if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
-        m_powerGsettings = new QGSettings("com.deepin.dde.power", "/com/deepin/dde/power/", this);
     }
 
     m_resetSessionTimer->setSingleShot(true);
@@ -251,8 +243,8 @@ void LockWorker::initData()
 
 void LockWorker::initConfiguration()
 {
-    m_model->setAlwaysShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Always);
-    m_model->setAllowShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Ondemand);
+    m_model->setAlwaysShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Always);
+    m_model->setAllowShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Ondemand);
 
     checkPowerInfo();
 }
@@ -384,12 +376,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
     switch (action) {
     case SessionBaseModel::PowerAction::RequireSuspend:
     {
-        bool sleepLock = true;
-        if (m_powerGsettings && m_powerGsettings->keys().contains("sleep-lock")){
-            sleepLock = m_powerGsettings->get("sleep-lock").toBool();
-        }
-
-        if (sleepLock) {
+        if (isSleepLock()) {
             m_model->setIsBlackMode(true);
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         } else {
@@ -398,10 +385,11 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         }
 
         int delayTime = 500;
-        if(m_gsettings && m_gsettings->keys().contains("delaytime")){
-            delayTime = m_gsettings->get("delaytime").toInt();
+        if (m_dConfig) {
+            delayTime = m_dConfig->value("delayTime", 500).toInt();
             qInfo() << "delayTime : " << delayTime;
         }
+
         if (delayTime < 0) {
             delayTime = 500;
         }
@@ -415,9 +403,9 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setIsBlackMode(true);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         int delayTime = 500;
-        if(m_gsettings && m_gsettings->keys().contains("delaytime")){
-            delayTime = m_gsettings->get("delaytime").toInt();
-            qInfo() << " delayTime : " << delayTime;
+        if (m_dConfig) {
+            delayTime = m_dConfig->value("delayTime", 500).toInt();
+            qInfo() << "delayTime : " << delayTime;
         }
         if (delayTime < 0) {
             delayTime = 500;

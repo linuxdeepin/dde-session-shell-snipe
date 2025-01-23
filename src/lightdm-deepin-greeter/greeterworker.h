@@ -7,18 +7,13 @@
 
 #include "authinterface.h"
 #include "dbuslockservice.h"
-#include "dbuslogin1manager.h"
 #include "deepinauthframework.h"
 #include "sessionbasemodel.h"
 
-#include "soundthemeplayer_interface.h"
 
 #include <QLightDM/Greeter>
-#include <QLightDM/SessionsModel>
 
 #include <QObject>
-
-using SoundThemePlayerInter = org::deepin::dde::SoundThemePlayer1;
 
 class GreeterWorker : public Auth::AuthInterface
 {
@@ -76,12 +71,12 @@ private:
     void recoveryUserKBState(std::shared_ptr<User> user);
     void startGreeterAuth(const QString &account = QString());
     void changePasswd();
+    void prepareShutdownSound();
 
 private:
     QLightDM::Greeter *m_greeter;
     DeepinAuthFramework *m_authFramework;
     DBusLockService *m_lockInter;
-    SoundThemePlayerInter *m_soundPlayerInter;
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;

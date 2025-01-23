@@ -20,7 +20,7 @@ void MediaWidget::initUI()
     m_dmprisWidget->setAccessibleName("MPRISWidget");
     m_dmprisWidget->setPictureVisible(false);
     QVBoxLayout *mainlayout = new QVBoxLayout;
-    mainlayout->setMargin(0);
+    mainlayout->setContentsMargins(0, 0, 0, 0);
     mainlayout->addWidget(m_dmprisWidget);
 
     setLayout(mainlayout);

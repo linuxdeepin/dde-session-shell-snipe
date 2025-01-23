@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "rounditembutton.h"
+
 #include <QtCore/QObject>
 #include <QSvgRenderer>
-#include "rounditembutton.h"
-#include "../global_util/gsettingwatcher.h"
 
 #include <DFontSizeManager>
 
@@ -76,7 +76,7 @@ void RoundItemButton::initUI()
     DFontSizeManager::instance()->bind(this, DFontSizeManager::T6);
 }
 
-void RoundItemButton::enterEvent(QEvent* event)
+void RoundItemButton::enterEvent(QEnterEvent* event)
 {
     Q_UNUSED(event)
 

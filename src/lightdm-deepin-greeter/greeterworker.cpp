@@ -8,11 +8,9 @@
 #include "keyboardmonitor.h"
 #include "userinfo.h"
 
-#include "systempower_interface.h"
+#include "systempower1interface.h"
 
 #include <DSysInfo>
-
-#include <QGSettings>
 
 #include <pwd.h>
 
@@ -35,7 +33,6 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     , m_greeter(new QLightDM::Greeter(this))
     , m_authFramework(new DeepinAuthFramework(this))
     , m_lockInter(new DBusLockService(LOCKSERVICE_NAME, LOCKSERVICE_PATH, QDBusConnection::systemBus(), this))
-    , m_soundPlayerInter(new SoundThemePlayerInter("org.deepin.dde.SoundThemePlayer1", "/org/deepin/dde/SoundThemePlayer1", QDBusConnection::systemBus(), this))
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
     , m_retryAuth(false)
@@ -58,12 +55,11 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
     //认证超时重启
     m_resetSessionTimer->setInterval(15000);
-    if (QGSettings::isSchemaInstalled("com.deepin.dde.session-shell")) {
-        QGSettings gsetting("com.deepin.dde.session-shell", "/com/deepin/dde/session-shell/", this);
-        if (gsetting.keys().contains("authResetTime")) {
-            int resetTime = gsetting.get("auth-reset-time").toInt();
-            if (resetTime > 0)
-                m_resetSessionTimer->setInterval(resetTime);
+    if (!m_dConfig) {
+        m_dConfig = DConfig::create("org.deepin.dde.session-shell", "org.deepin.dde.session-shell", QString(), this);
+        int resetTime = m_dConfig->value("authResetTime", 15000).toInt();
+        if (resetTime > 0) {
+            m_resetSessionTimer->setInterval(resetTime);
         }
     }
 
@@ -100,7 +96,7 @@ void GreeterWorker::initConnections()
             } else {
                 m_model->setAuthType(AT_None);
             }
-            m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+            prepareShutdownSound();
         }
     });
     connect(m_loginedInter, &LoginedInter::LastLogoutUserChanged, m_model, static_cast<void (SessionBaseModel::*)(const uid_t)>(&SessionBaseModel::updateLastLogoutUser));
@@ -161,7 +157,7 @@ void GreeterWorker::initConnections()
                 m_model->setAuthType(AT_None);
             }
         }
-        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+        prepareShutdownSound();
     });
     /* org.deepin.dde.LockService1 */
     connect(m_lockInter, &DBusLockService::UserChanged, this, [ = ](const QString &json) {
@@ -253,7 +249,7 @@ void GreeterWorker::initData()
         /* org.deepin.dde.LockService1 */
         m_model->updateCurrentUser(m_lockInter->CurrentUser());
     }
-    m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+    prepareShutdownSound();
 
     /* org.deepin.dde.Authenticate1 */
     if (m_authFramework->isDeepinAuthValid()) {
@@ -266,8 +262,8 @@ void GreeterWorker::initData()
 
 void GreeterWorker::initConfiguration()
 {
-    m_model->setAlwaysShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Always);
-    m_model->setAllowShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Ondemand);
+    m_model->setAlwaysShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Always);
+    m_model->setAllowShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Ondemand);
 
     checkPowerInfo();
 
@@ -355,7 +351,7 @@ void GreeterWorker::switchToUser(std::shared_ptr<User> user)
     } else {
         m_model->setAuthType(AT_None);
     }
-    m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+    prepareShutdownSound();
 }
 
 bool GreeterWorker::isSecurityEnhanceOpen()
@@ -527,7 +523,7 @@ void GreeterWorker::checkAccount(const QString &account)
         passwd *pw = getpwnam(str.c_str());
         if (pw) {
             QString userName = pw->pw_name;
-            QString userFullName = userName.leftRef(userName.indexOf(QString("@"))).toString();
+            QString userFullName = userName.left(userName.indexOf(QString("@")));
             user_ptr = std::make_shared<ADDomainUser>(INT_MAX - 1);
 
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setName(userName);
@@ -855,4 +851,11 @@ void GreeterWorker::changePasswd()
 {
     m_model->updateMFAFlag(false);
     m_model->setAuthType(AT_PAM);
+}
+
+void GreeterWorker::prepareShutdownSound()
+{
+    QDBusInterface soundPlayerInter("org.deepin.dde.SoundThemePlayer1", "/org/deepin/dde/SoundThemePlayer1",
+        "org.deepin.dde.SoundThemePlayer1", QDBusConnection::systemBus());
+    soundPlayerInter.call("PrepareShutdownSound", static_cast<int>(m_model->currentUser()->uid()));
 }

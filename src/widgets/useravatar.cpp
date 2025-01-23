@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "useravatar.h"
-#include "dthememanager.h"
+
 #include <QUrl>
 #include <QFile>
 #include <QPainterPath>
+#include <QVBoxLayout>
 
 #define AVATAR_ROUND_RADIUS (18)
 

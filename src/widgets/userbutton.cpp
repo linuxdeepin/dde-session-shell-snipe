@@ -79,14 +79,14 @@ void UserButton::initUI()
 
     m_nameLayout = new QHBoxLayout;
     m_nameLayout->setSpacing(5);
-    m_nameLayout->setMargin(0);
+    m_nameLayout->setContentsMargins(0, 0, 0, 0);
     m_nameLayout->addStretch();
     m_nameLayout->addWidget(m_checkedMark);
     m_nameLayout->addWidget(m_userNameLabel);
     m_nameLayout->addStretch();
 
     m_centralLayout = new QVBoxLayout;
-    m_centralLayout->setMargin(0);
+    m_centralLayout->setContentsMargins(0, 0, 0, 0);
     m_centralLayout->setSpacing(0);
     m_centralLayout->addWidget(m_userAvatar);
     m_centralLayout->setAlignment(m_userAvatar, Qt::AlignHCenter);

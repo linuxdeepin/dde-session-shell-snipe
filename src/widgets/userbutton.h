@@ -5,19 +5,14 @@
 #ifndef USERBUTTON_H
 #define USERBUTTON_H
 
-#include <QGraphicsDropShadowEffect>
 #include <QGraphicsOpacityEffect>
-#include <QPushButton>
 #include <QtGui/QPaintEvent>
 #include <QVBoxLayout>
-#include <QObject>
-#include <QLabel>
-#include <QPropertyAnimation>
 #include <memory>
 
 #include "useravatar.h"
 
-#include "accountsuser_interface.h"
+#include "userinterface.h"
 
 using UserInter = org::deepin::dde::accounts1::User;
 

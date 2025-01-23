@@ -5,14 +5,12 @@
 #ifndef MULTISCREENMANAGER_H
 #define MULTISCREENMANAGER_H
 
-#include <QObject>
 #include <QWidget>
 #include <QScreen>
 #include <QMap>
 #include <functional>
-#include <QTimer>
 
-#include "systemdisplay_interface.h"
+#include "systemdisplay1interface.h"
 
 using SystemDisplayInter = org::deepin::dde::Display1;
 

@@ -1,3 +1,9 @@
+dde-session-shell (6.0.27) unstable; urgency=medium
+
+  * chore: adapt to Qt6.
+
+ -- Deepin Packages Builder <packages@deepin.org>  Thu, 23 Jan 2025 16:38:47 +0800
+
 dde-session-shell (6.0.26) unstable; urgency=medium
 
   * UNRELEASED

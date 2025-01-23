@@ -8,23 +8,15 @@
 
 #include <DConfig>
 
-#include <QDBusConnection>
-#include <QDBusMessage>
+#include <QDBusInterface>
 #include <QDBusReply>
-#include <QDateTime>
+#include <QImageReader>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QGSettings>
-#include <QProcess>
-#include <QStandardPaths>
 #include <QTranslator>
 
 #include <execinfo.h>
-#include <signal.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <time.h>
 
 using namespace std;
 
@@ -57,11 +49,12 @@ QPixmap loadPixmap(const QString &file, const QSize& size)
 /**
  * @brief 是否使用域管认证。
  *
- * @return true 使用域管认证
- * @return false 使用系统认证
+ * @return false 使用域管认证
+ * @return true 使用系统认证
  */
 bool isDeepinAuth()
 {
+#if 0 // TODO this gsetting config provided by 域管
     const char* controlId = "com.deepin.dde.auth.control";
     if (QGSettings::isSchemaInstalled(controlId)) {
         const char *controlPath = "/com/deepin/dde/auth/control/";
@@ -73,15 +66,9 @@ bool isDeepinAuth()
     #endif
         return useDeepinAuth;
     }
-    return true;
-}
+#endif
 
-uint timeFromString(QString time)
-{
-    if (time.isEmpty()) {
-        return QDateTime::currentDateTime().toTime_t();
-    }
-    return QDateTime::fromString(time, Qt::ISODateWithMs).toLocalTime().toTime_t();
+    return true;
 }
 
 /**
@@ -155,4 +142,23 @@ void loadTranslation(const QString &locale)
     qApp->removeTranslator(&translator);
     translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first());
     qApp->installTranslator(&translator);
+}
+
+bool isSleepLock()
+{
+    QDBusInterface powerInterface("org.deepin.dde.Power1",
+        "/org/deepin/dde/Power1", "org.deepin.dde.Power1", QDBusConnection::sessionBus());
+
+    if (!powerInterface.isValid()) {
+        qCritical() << powerInterface.lastError().message();
+        return true; // default
+    }
+
+    QVariant value = powerInterface.property("SleepLock");
+    if (!value.isValid()) {
+        qCritical() << "read SleepLock property failed";
+        return true; // default
+    }
+
+    return value.toBool();
 }

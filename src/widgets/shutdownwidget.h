@@ -18,7 +18,7 @@
 #include "systemmonitor.h"
 #include "public_func.h"
 
-#include "huaweiswitchos_interface.h"
+#include "switchosinterface.h"
 
 DCORE_BEGIN_NAMESPACE
 class DConfig;
@@ -34,7 +34,7 @@ public:
     ~ShutdownWidget() override;
     void setModel(SessionBaseModel * const model);
     void onStatusChanged(SessionBaseModel::ModeStatus status);
-    bool enableState(const QString &gsettingsValue);
+    bool enableState(int settingsValue);
 
 public slots:
     void leftKeySwitch();
@@ -42,7 +42,7 @@ public slots:
     void runSystemMonitor();
     void recoveryLayout();
     void setUserSwitchEnable(bool enable);
-    void onEnable(const QString &gsettingsName, bool enable);
+    void onEnable(const QString &key, bool enable);
     void updateLocale(std::shared_ptr<User> user);
 
 signals:

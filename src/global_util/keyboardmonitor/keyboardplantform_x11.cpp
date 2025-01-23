@@ -4,11 +4,9 @@
 
 #include "keyboardplantform_x11.h"
 
-#include <QX11Info>
-#include <QDebug>
+#include <QGuiApplication>
 
 #include <X11/X.h>
-#include <QX11Info>
 #include <X11/XKBlib.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -17,7 +15,6 @@
 #include <X11/extensions/XTest.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 
 static int xi2_opcode;
 
@@ -137,30 +134,30 @@ int KeyboardPlantformX11::listen(Display *display)
 KeyboardPlantformX11::KeyboardPlantformX11(QObject *parent)
     : KeyBoardPlatform(parent)
 {
-
+    if (auto x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())
+        m_display = x11Application->display();
 }
 
 bool KeyboardPlantformX11::isCapslockOn()
 {
     bool result = false;
     unsigned int n = 0;
-    static Display *d = QX11Info::display();
-    if (d != nullptr) {
-        XkbGetIndicatorState(d, XkbUseCoreKbd, &n);
+    if (m_display) {
+        XkbGetIndicatorState(m_display, XkbUseCoreKbd, &n);
         result = (n & 0x01) != 0;
     }
+
     return result;
 }
 
 bool KeyboardPlantformX11::isNumlockOn()
 {
-    bool result;
+    bool result = false;
     unsigned int n = 0;
-    static Display* d = QX11Info::display();
-    if (!d)
+    if (!m_display)
         return false;
 
-    XkbGetIndicatorState(d, XkbUseCoreKbd, &n);
+    XkbGetIndicatorState(m_display, XkbUseCoreKbd, &n);
     result = (n & 0x02) != 0;
 
     return result;
@@ -168,12 +165,11 @@ bool KeyboardPlantformX11::isNumlockOn()
 
 bool KeyboardPlantformX11::setNumlockStatus(const bool &on)
 {
-    Display* d = QX11Info::display();
-    if (!d)
+    if (!m_display)
         return false;
 
     XKeyboardState x;
-    XGetKeyboardControl(d, &x);
+    XGetKeyboardControl(m_display, &x);
     const bool numLockEnabled = x.led_mask & 2;
 
     if (numLockEnabled == on) {
@@ -181,15 +177,15 @@ bool KeyboardPlantformX11::setNumlockStatus(const bool &on)
     }
 
     // Get the keycode for XK_Caps_Lock keysymbol
-    unsigned int keycode = XKeysymToKeycode(d, XK_Num_Lock);
+    unsigned int keycode = XKeysymToKeycode(m_display, XK_Num_Lock);
 
     // Simulate Press
-    int pressExit = XTestFakeKeyEvent(d, keycode, True, CurrentTime);
-    XFlush(d);
+    int pressExit = XTestFakeKeyEvent(m_display, keycode, True, CurrentTime);
+    XFlush(m_display);
 
     // Simulate Release
-    int releseExit = XTestFakeKeyEvent(d, keycode, False, CurrentTime);
-    XFlush(d);
+    int releseExit = XTestFakeKeyEvent(m_display, keycode, False, CurrentTime);
+    XFlush(m_display);
 
     return pressExit == 0 && releseExit == 0;
 }

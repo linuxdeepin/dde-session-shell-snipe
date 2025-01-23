@@ -30,7 +30,7 @@ void RoundPopupWidget::initUI()
     setBlurRectYRadius(RADIUS);
     setMaskColor(DBlurEffectWidget::LightColor);
     setMaskAlpha(BlurMaskAlpha);
-    m_mainLayout->setMargin(0);
+    m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setContentsMargins(MARGIN, MARGIN, MARGIN, MARGIN);
     setLayout(m_mainLayout);
 }
@@ -77,7 +77,7 @@ bool RoundPopupWidget::eventFilter(QObject *watched, QEvent *event)
         QSize newSize = resizeEvent->size() + QSize(MARGIN * 2, MARGIN * 2);
         // Recalculate the geometry
         QRect oldGeometry = geometry();
-        QPoint anchor = parentWidget()->mapToGlobal({oldGeometry.left() + oldGeometry.width() / 2 - 1, oldGeometry.bottom()});
+        QPoint anchor = parentWidget()->mapToGlobal(QPoint(oldGeometry.left() + oldGeometry.width() / 2 - 1, oldGeometry.bottom()));
         // Bound to screen and margin. If we can't show the popup fully, assume it's a scroll area, we just set a max height.
         QRect boundary = topLevelWidget()->frameGeometry();
         boundary.adjust((boundary.width() + DDESESSIONCC::PASSWDLINEEIDT_WIDTH) / 2 + Popup::HorizontalMargin, Popup::VerticalMargin, -Popup::HorizontalMargin, 0);

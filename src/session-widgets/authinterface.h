@@ -9,17 +9,17 @@
 #include "constants.h"
 #include "dbuslogin1manager.h"
 
-#include "authenticate_interface.h"
-#include "accounts_interface.h"
-#include "logined_interface.h"
-#include "powermanager_interface.h"
-#include "freedesktopdbus_interface.h"
-#include "login1sessionself_interface.h"
+#include "authenticate1interface.h"
+#include "accounts1interface.h"
+#include "loginedinterface.h"
+#include "powermanager1interface.h"
+#include "dbusinterface.h"
+#include "selfinterface.h"
 
-#include <QJsonArray>
 #include <QObject>
-#include <QGSettings>
 #include <memory>
+
+#include <DConfig>
 
 using AccountsInter = org::deepin::dde::Accounts1;
 using LoginedInter = org::deepin::dde::Logined;
@@ -62,7 +62,7 @@ protected:
     void checkConfig();
     void checkPowerInfo();
     bool isDeepin();
-    QVariant getGSettings(const QString& node, const QString& key);
+    QVariant getDconfigValue(const QString &key, const QVariant &fallbackValue);
 
     template <typename T>
     T valueByQSettings(const QString & group,
@@ -83,8 +83,7 @@ protected:
     PowerManagerInter* m_powerManagerInter;
     Authenticate*      m_authenticateInter;
     DBusObjectInter*   m_dbusInter;
-    QGSettings*        m_gsettings = nullptr;
-    QGSettings*        m_powerGsettings = nullptr;
+    Dtk::Core::DConfig* m_dConfig = nullptr;
     uint               m_lastLogoutUid;
     uint               m_currentUserUid;
     std::list<uint>    m_loginUserList;

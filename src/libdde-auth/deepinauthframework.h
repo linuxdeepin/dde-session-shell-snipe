@@ -5,14 +5,10 @@
 #ifndef DEEPINAUTHFRAMEWORK_H
 #define DEEPINAUTHFRAMEWORK_H
 
-#include <QObject>
-#include <QPointer>
-
-#include <memory>
 #include <openssl/aes.h>
 
-#include "authenticate_interface.h"
-#include "authenticatesession2_interface.h"
+#include "authenticate1interface.h"
+#include "session2interface.h"
 
 #define AUTHRNTICATESERVICE "org.deepin.dde.Authenticate1"
 #define AUTHRNTICATEINTERFACE "org.deepin.dde.Authenticate1.Session"

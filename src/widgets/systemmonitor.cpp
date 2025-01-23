@@ -45,7 +45,7 @@ void SystemMonitor::setState(const State state)
     update();
 }
 
-void SystemMonitor::enterEvent(QEvent *event)
+void SystemMonitor::enterEvent(QEnterEvent *event)
 {
     m_state = Enter;
     update();

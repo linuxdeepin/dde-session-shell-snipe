@@ -7,10 +7,8 @@
 
 #include "constants.h"
 
-#include <QPixmap>
 #include <QApplication>
 #include <QIcon>
-#include <QImageReader>
 #include <QSettings>
 #include <QString>
 
@@ -51,11 +49,6 @@ T findValueByQSettings(const QStringList &configFiles,
  */
 bool isDeepinAuth();
 
-/**
- * @brief 把字符串解析成时间，然后转换为Unix时间戳
- */
-uint timeFromString(QString time);
-
 QVariant getDConfigValue(const QString &configFileName, const QString &key, const QVariant &defaultValue);
 
 void setDConfigValue(const QString &configFileName, const QString &key, const QVariant &value);
@@ -71,5 +64,7 @@ void setAppType(int type);
 QString getDefaultConfigFileName();
 
 void loadTranslation(const QString &locale);
+
+bool isSleepLock();
 
 #endif // PUBLIC_FUNC_H

@@ -157,8 +157,8 @@ void AuthModule::updateUnlockTime()
 void AuthModule::updateIntegerMinutes()
 {
     if (QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs) > QDateTime::currentDateTime()) {
-        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toTime_t()
-                               - QDateTime::currentDateTimeUtc().toTime_t();
+        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch()
+                        - QDateTime::currentDateTimeUtc().toSecsSinceEpoch();
         m_integerMinutes = static_cast<uint>(qCeil(intervalSeconds / 60));
     } else {
         m_integerMinutes = 0;

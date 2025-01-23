@@ -4,8 +4,8 @@
 
 #include "shutdownwidget.h"
 #include "multiuserswarningview.h"
-#include "../global_util/gsettingwatcher.h"
-#include "../global_util/public_func.h"
+#include "dconfigwatcher.h"
+#include "public_func.h"
 
 #include <DConfig>
 
@@ -31,10 +31,10 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     initUI();
     initConnect();
 
-    onEnable("systemShutdown", enableState(GSettingWatcher::instance()->getStatus("systemShutdown")));
-    onEnable("systemSuspend", enableState(GSettingWatcher::instance()->getStatus("systemSuspend")));
-    onEnable("systemHibernate", enableState(GSettingWatcher::instance()->getStatus("systemHibernate")));
-    onEnable("systemLock", enableState(GSettingWatcher::instance()->getStatus("systemLock")));
+    onEnable("systemShutdown", enableState(DConfigWatcher::instance()->getStatus("systemShutdown")));
+    onEnable("systemSuspend", enableState(DConfigWatcher::instance()->getStatus("systemSuspend")));
+    onEnable("systemHibernate", enableState(DConfigWatcher::instance()->getStatus("systemHibernate")));
+    onEnable("systemLock", enableState(DConfigWatcher::instance()->getStatus("systemLock")));
 
     std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
     int index = m_frameDataBind->registerFunction("ShutdownWidget", function);
@@ -47,9 +47,9 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
 
 ShutdownWidget::~ShutdownWidget()
 {
-    GSettingWatcher::instance()->erase("systemSuspend");
-    GSettingWatcher::instance()->erase("systemHibernate");
-    GSettingWatcher::instance()->erase("systemShutdown");
+    DConfigWatcher::instance()->erase("systemSuspend");
+    DConfigWatcher::instance()->erase("systemHibernate");
+    DConfigWatcher::instance()->erase("systemShutdown");
 }
 
 void ShutdownWidget::initConnect()
@@ -89,7 +89,7 @@ void ShutdownWidget::initConnect()
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireLogout, false);
     });
 
-    connect(GSettingWatcher::instance(), &GSettingWatcher::enableChanged, this, &ShutdownWidget::onEnable);
+    connect(DConfigWatcher::instance(), &DConfigWatcher::enableChanged, this, &ShutdownWidget::onEnable);
 
     if (m_systemMonitor) {
         connect(m_systemMonitor, &SystemMonitor::requestShowSystemMonitor, this, &ShutdownWidget::runSystemMonitor);
@@ -109,25 +109,25 @@ void ShutdownWidget::updateTr(RoundItemButton *widget, const QString &tr)
     m_trList << std::pair<std::function<void (QString)>, QString>(std::bind(&RoundItemButton::setText, widget, std::placeholders::_1), tr);
 }
 
-bool ShutdownWidget::enableState(const QString &gsettingsValue)
+bool ShutdownWidget::enableState(int settingsValue)
 {
-    if ("Disabled" == gsettingsValue)
+    if (Status_Disabled == settingsValue)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
-void ShutdownWidget::onEnable(const QString &gsettingsName, bool enable)
+void ShutdownWidget::onEnable(const QString &key, bool enable)
 {
-    if ("systemShutdown" == gsettingsName) {
+    if ("systemShutdown" == key) {
         m_requireShutdownButton->setDisabled(!enable);
-    } else if ("systemSuspend" == gsettingsName) {
+    } else if ("systemSuspend" == key) {
         m_requireSuspendButton->setDisabled(!enable);
         m_requireSuspendButton->setCheckable(enable);
-    } else if ("systemHibernate" == gsettingsName) {
+    } else if ("systemHibernate" == key) {
         m_requireHibernateButton->setDisabled(!enable);
         m_requireHibernateButton->setCheckable(enable);
-    } else if ("systemLock" == gsettingsName) {
+    } else if ("systemLock" == key) {
         m_requireLockButton->setDisabled(!enable);
     }
 }
@@ -184,12 +184,12 @@ void ShutdownWidget::enterKeyPushed()
 
 void ShutdownWidget::enableHibernateBtn(bool enable)
 {
-    m_requireHibernateButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemHibernate") != "Hiden"));
+    m_requireHibernateButton->setVisible(enable && (DConfigWatcher::instance()->getStatus("systemHibernate") != Status_Hidden));
 }
 
 void ShutdownWidget::enableSleepBtn(bool enable)
 {
-    m_requireSuspendButton->setVisible(enable && (GSettingWatcher::instance()->getStatus("systemSuspend") != "Hiden"));
+    m_requireSuspendButton->setVisible(enable && (DConfigWatcher::instance()->getStatus("systemSuspend") != Status_Hidden));
 }
 
 void ShutdownWidget::initUI()
@@ -201,7 +201,7 @@ void ShutdownWidget::initUI()
     m_requireShutdownButton->setAccessibleName("RequireShutDownButton");
     m_requireShutdownButton->setAutoExclusive(true);
     updateTr(m_requireShutdownButton, "Shut down");
-    GSettingWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);  // GSettings配置项
+    DConfigWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);
 
     m_requireRestartButton = new RoundItemButton(tr("Reboot"), this);
     m_requireRestartButton->setFocusPolicy(Qt::NoFocus);
@@ -216,7 +216,7 @@ void ShutdownWidget::initUI()
     m_requireSuspendButton->setAccessibleName("RequireSuspendButton");
     m_requireSuspendButton->setAutoExclusive(true);
     updateTr(m_requireSuspendButton, "Suspend");
-    GSettingWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);  // GSettings配置项
+    DConfigWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);
 
     m_requireHibernateButton = new RoundItemButton(tr("Hibernate"), this);
     m_requireHibernateButton->setFocusPolicy(Qt::NoFocus);
@@ -224,7 +224,7 @@ void ShutdownWidget::initUI()
     m_requireHibernateButton->setObjectName("RequireHibernateButton");
     m_requireHibernateButton->setAutoExclusive(true);
     updateTr(m_requireHibernateButton, "Hibernate");
-    GSettingWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);  // GSettings配置项
+    DConfigWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);
 
     m_requireLockButton = new RoundItemButton(tr("Lock"));
     m_requireLockButton->setFocusPolicy(Qt::NoFocus);
@@ -232,7 +232,7 @@ void ShutdownWidget::initUI()
     m_requireLockButton->setObjectName("RequireLockButton");
     m_requireLockButton->setAutoExclusive(true);
     updateTr(m_requireLockButton, "Lock");
-    GSettingWatcher::instance()->bind("systemLock", m_requireLockButton);  // GSettings配置项
+    DConfigWatcher::instance()->bind("systemLock", m_requireLockButton);
 
     m_requireLogoutButton = new RoundItemButton(tr("Log out"));
     m_requireLogoutButton->setFocusPolicy(Qt::NoFocus);
@@ -271,7 +271,7 @@ void ShutdownWidget::initUI()
     m_btnList.append(m_requireLogoutButton);
 
     m_shutdownLayout = new QHBoxLayout;
-    m_shutdownLayout->setMargin(0);
+    m_shutdownLayout->setContentsMargins(0, 0, 0, 0);
     m_shutdownLayout->setSpacing(10);
     m_shutdownLayout->addStretch();
     m_shutdownLayout->addWidget(m_requireShutdownButton);
@@ -291,7 +291,7 @@ void ShutdownWidget::initUI()
     m_shutdownFrame->setLayout(m_shutdownLayout);
 
     m_actionLayout = new QVBoxLayout;
-    m_actionLayout->setMargin(0);
+    m_actionLayout->setContentsMargins(0, 0, 0, 0);
     m_actionLayout->setSpacing(10);
     m_actionLayout->addStretch();
     m_actionLayout->addWidget(m_shutdownFrame);
@@ -318,7 +318,7 @@ void ShutdownWidget::initUI()
     m_actionFrame->setLayout(m_actionLayout);
 
     m_mainLayout = new QStackedLayout;
-    m_mainLayout->setMargin(0);
+    m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
     m_mainLayout->addWidget(m_actionFrame);
     m_mainLayout->setAlignment(m_actionFrame, Qt::AlignCenter);
@@ -395,7 +395,7 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
     RoundItemButton *roundItemButton;
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-        m_requireLockButton->setVisible(GSettingWatcher::instance()->getStatus("systemLock") != "Hiden");
+        m_requireLockButton->setVisible(DConfigWatcher::instance()->getStatus("systemLock") != Status_Hidden);
         m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
         if (m_requireSwitchSystemBtn) {
             m_requireSwitchSystemBtn->setVisible(true);
@@ -455,11 +455,11 @@ void ShutdownWidget::recoveryLayout()
 {
     //关机或重启确认前会隐藏所有按钮,取消重启或关机后隐藏界面时重置按钮可见状态
     //同时需要判断切换用户按钮是否允许可见
-    m_requireShutdownButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemShutdown") != "Hiden"));
+    m_requireShutdownButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemShutdown") != Status_Hidden));
     m_requireRestartButton->setVisible(true);
     enableHibernateBtn(m_model->hasSwap());
     enableSleepBtn(m_model->canSleep());
-    m_requireLockButton->setVisible(true && (GSettingWatcher::instance()->getStatus("systemLock") != "Hiden"));
+    m_requireLockButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemLock") != Status_Hidden));
     m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
 
     if (m_systemMonitor) {

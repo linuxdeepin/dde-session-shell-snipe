@@ -5,7 +5,6 @@
 #ifndef LOCKCONTENT_H
 #define LOCKCONTENT_H
 
-#include <QWidget>
 #include <QLocalServer>
 
 #include <memory>
@@ -13,9 +12,8 @@
 #include "mediawidget.h"
 #include "sessionbasemodel.h"
 #include "sessionbasewindow.h"
-#include "systemmonitor.h"
 
-#include "wm_interface.h"
+#include "wminterface.h"
 
 class AuthWidget;
 class MFAWidget;

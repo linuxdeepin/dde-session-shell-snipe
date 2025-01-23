@@ -200,13 +200,13 @@ bool AuthInterface::checkHaveDisplay(const QJsonArray &array)
     return false;
 }
 
-QVariant AuthInterface::getGSettings(const QString& node, const QString& key)
+QVariant AuthInterface::getDconfigValue(const QString &key, const QVariant &fallbackValue)
 {
-    QVariant value = valueByQSettings<QVariant>(node, key, true);
-    if (m_gsettings != nullptr && m_gsettings->keys().contains(key)) {
-        value = m_gsettings->get(key);
+    if (m_dConfig) {
+        return m_dConfig->value(key, fallbackValue);
     }
-    return value;
+
+    return fallbackValue;
 }
 
 bool AuthInterface::isLogined(uint uid)
@@ -220,14 +220,14 @@ bool AuthInterface::isDeepin()
 #ifdef QT_DEBUG
     return true;
 #else
-    return getGSettings("","useDeepinAuth").toBool();
+    return getDconfigValue("useDeepinAuth", true).toBool();
 #endif
 }
 
 void AuthInterface::checkConfig()
 {
-    m_model->setAlwaysShowUserSwitchButton(getGSettings("","switchuser").toInt() == AuthInterface::Always);
-    m_model->setAllowShowUserSwitchButton(getGSettings("","switchuser").toInt() == AuthInterface::Ondemand);
+    m_model->setAlwaysShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Always);
+    m_model->setAllowShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Ondemand);
 }
 
 void AuthInterface::checkPowerInfo()
@@ -235,11 +235,11 @@ void AuthInterface::checkPowerInfo()
     // 替换接口org.freedesktop.login1 org.deepin.dde.SessionManager1,原接口的是否支持待机和休眠的信息不准确
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     bool can_sleep = env.contains(POWER_CAN_SLEEP) ? QVariant(env.value(POWER_CAN_SLEEP)).toBool()
-                                                   : getGSettings("Power","sleep").toBool() && m_powerManagerInter->CanSuspend();
+                                                   : getDconfigValue("sleep", true).toBool() && m_powerManagerInter->CanSuspend();
     m_model->setCanSleep(can_sleep);
 
     bool can_hibernate = env.contains(POWER_CAN_HIBERNATE) ? QVariant(env.value(POWER_CAN_HIBERNATE)).toBool()
-                                                           : getGSettings("Power","hibernate").toBool() && m_powerManagerInter->CanHibernate();
+                                                           : getDconfigValue("hibernate", true).toBool() && m_powerManagerInter->CanHibernate();
 
     m_model->setHasSwap(can_hibernate);
 }

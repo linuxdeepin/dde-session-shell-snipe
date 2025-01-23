@@ -81,7 +81,7 @@ void TimeWidget::refreshTime()
     }
 
     // "Ap"/"aP"->"AP"
-    m_shortTimeFormat.replace(QRegExp("a?p", Qt::CaseInsensitive), "AP");
+    m_shortTimeFormat.replace(QRegularExpression("a?p", QRegularExpression::CaseInsensitiveOption), "AP");
 
     QString date_format = shortDateFormat.at(m_shortDateIndex) + " " + weekdayFormat.at(m_weekdayIndex);
     m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), date_format));

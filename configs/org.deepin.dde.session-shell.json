@@ -1,0 +1,116 @@
+{
+  "magic": "dsg.config.meta",
+  "version": "1.0",
+  "contents": {
+    "authResetTime": {
+      "value": 15000,
+      "serial": 0,
+      "flags": [],
+      "name": "max auth timeout",
+      "name[zh_CN]": "最大认证超时时间",
+      "description[zh_CN]": "最大认证超时时间, 默认为15秒认证超时。",
+      "description": "max auth timeout",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "delayTime": {
+      "value": 500,
+      "serial": 0,
+      "flags": [],
+      "name": "delayTime",
+      "name[zh_CN]": "待机休眠休眠延时时间",
+      "description[zh_CN]": "待机休眠休眠延时时间, 默认为500毫秒。",
+      "description": "delay time",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "useDeepinAuth": {
+      "value": true,
+      "serial": 0,
+      "flags": [],
+      "name": "use Deepin Auth",
+      "name[zh_CN]": "使用Deepin认证",
+      "description[zh_CN]": "是否使用Deepin认证。",
+      "description": "use Deepin Auth",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "sleep": {
+      "value": true,
+      "serial": 0,
+      "flags": [],
+      "name": "AutoExit",
+      "name[zh_CN]": "sleep",
+      "description": "sleep, If enabled, suspend operation display, If disabled, suspend operation does not show.",
+      "description[zh_CN]": "sleep，如果启用，那么待机操作显示，如果禁用，那么待机操作不显示。",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "hibernate": {
+      "value": true,
+      "serial": 0,
+      "flags": [],
+      "name": "hibernate",
+      "name[zh_CN]": "休眠",
+      "description": "If enabled, hibernate operation display, If disabled, hibernate operation does not show.",
+      "description[zh_CN]": "如果启用，那么休眠操作显示，如果禁用，那么休眠操作不显示。",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "switchUser": {
+      "value": 1,
+      "serial": 0,
+      "flags": [],
+      "name": "switch user",
+      "name[zh_CN]": "切换用户",
+      "description": "0:always show switch user button。1:ondemand show switch user button。2:disabled show switch user button",
+      "description[zh_CN]": "0：总是显示切换用户按钮。1：按需显示切换用户按钮。2：禁用显示切换用户按钮",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "systemSuspend": {
+      "value": 0,
+      "serial": 0,
+      "flags": [],
+      "name": "system suspend",
+      "name[zh_CN]": "系统待机",
+      "description": "0:Enabled。1:Disabled。2:Hidden",
+      "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "systemHibernate": {
+      "value": 0,
+      "serial": 0,
+      "flags": [],
+      "name": "system hibernate",
+      "name[zh_CN]": "系统待机",
+      "description": "0:Enabled。1:Disabled。2:Hidden",
+      "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "systemShutdown": {
+      "value": 0,
+      "serial": 0,
+      "flags": [],
+      "name": "system shutdown",
+      "name[zh_CN]": "系统关机",
+      "description": "0:Enabled。1:Disabled。2:Hidden",
+      "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "systemLock": {
+      "value": 0,
+      "serial": 0,
+      "flags": [],
+      "name": "system lock",
+      "name[zh_CN]": "系统锁屏",
+      "description": "0:Enabled。1:Disabled。2:Hidden",
+      "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
+      "permissions": "readwrite",
+      "visibility": "private"
+    }
+  }
+}

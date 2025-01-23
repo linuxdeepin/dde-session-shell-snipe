@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "fullscreenbackground.h"
-
 #include "black_widget.h"
 #include "public_func.h"
 #include "sessionbasemodel.h"
@@ -273,7 +272,7 @@ void FullscreenBackground::tryActiveWindow(int count/* = 9*/)
     QTimer::singleShot(50 , this, std::bind(&FullscreenBackground::tryActiveWindow, this, count -1));
 }
 
-void FullscreenBackground::enterEvent(QEvent *event)
+void FullscreenBackground::enterEvent(QEnterEvent *event)
 {
     if (m_primaryShowFinished && m_enableEnterEvent && m_model->visible()) {
         m_content->show();
@@ -421,7 +420,7 @@ const QPixmap& FullscreenBackground::getPixmap(int type)
     auto findPixmap = [size](QList<QPair<QSize, QPixmap>> &list) -> const QPixmap & {
         auto it = std::find_if(list.begin(), list.end(),
                                [size](QPair<QSize, QPixmap> pair) { return pair.first == size; });
-        return it != list.end() ? it.i->t().second : pixmap;
+        return it != list.end() ? it->second : pixmap;
     };
 
     if (PIXMAP_TYPE_BACKGROUND == type)
@@ -476,9 +475,12 @@ void FullscreenBackground::updatePixmap()
     };
 
     auto updateFunc = [ isNoUsefunc ] (QList<QPair<QSize, QPixmap>> &list) {
-        for (auto &pair : list) {
-            if (isNoUsefunc(pair.first))
-                list.removeAll(pair);
+        for (auto it = list.begin(); it != list.end(); /* no increment here */) {
+            if (isNoUsefunc(it->first)) {
+                list.erase(it);
+            } else {
+                ++it;
+            }
         }
     };
 

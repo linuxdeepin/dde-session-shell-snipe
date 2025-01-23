@@ -91,7 +91,7 @@ void PasswordLevelWidget::initUI()
     m_layout->addWidget(m_lowIcon);
     m_layout->addWidget(m_mediumIcon);
     m_layout->addWidget(m_highIcon);
-    m_layout->setMargin(0);
+    m_layout->setContentsMargins(0, 0, 0, 0);
     setLayout(m_layout);
 }
 

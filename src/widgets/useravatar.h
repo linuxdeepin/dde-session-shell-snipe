@@ -5,16 +5,10 @@
 #ifndef USERAVATAR_H
 #define USERAVATAR_H
 
-#include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QPainter>
 #include <QPainterPath>
-#include <QDebug>
-#include <QPropertyAnimation>
-
-#include <DImageButton>
 
 class UserAvatar : public QPushButton
 {

@@ -5,6 +5,8 @@
 #include "user_widget.h"
 #include "useravatar.h"
 
+#include <QVBoxLayout>
+
 #include <DFontSizeManager>
 #include <DIcon>
 

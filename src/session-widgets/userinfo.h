@@ -5,10 +5,9 @@
 #ifndef USERINFO_H
 #define USERINFO_H
 
-#include "constants.h"
 #include "public_func.h"
 
-#include "accountsuser_interface.h"
+#include "userinterface.h"
 
 #include <QObject>
 
