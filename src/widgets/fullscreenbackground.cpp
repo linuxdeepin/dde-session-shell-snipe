@@ -393,6 +393,10 @@ void FullscreenBackground::updateGeometry()
     setGeometry(m_screen->geometry());
     qInfo() << "set background geometry:" << m_screen << m_screen->geometry() << "lockFrame:"
             << this  << " lockframe geometry:" << this->geometry();
+    if (m_screen->geometry().size() != this->geometry().size()) {
+        qWarning() << "size not same updateGeometry: " << this->geometry() << " lockFrame:" << this;
+        setGeometry(m_screen->geometry());
+    }
 }
 
 /********************************************************
