@@ -35,6 +35,7 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     onEnable("systemSuspend", enableState(DConfigWatcher::instance()->getStatus("systemSuspend")));
     onEnable("systemHibernate", enableState(DConfigWatcher::instance()->getStatus("systemHibernate")));
     onEnable("systemLock", enableState(DConfigWatcher::instance()->getStatus("systemLock")));
+    onEnable("systemReboot", enableState(DConfigWatcher::instance()->getStatus("systemReboot")));
 
     std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
     int index = m_frameDataBind->registerFunction("ShutdownWidget", function);
@@ -50,6 +51,7 @@ ShutdownWidget::~ShutdownWidget()
     DConfigWatcher::instance()->erase("systemSuspend");
     DConfigWatcher::instance()->erase("systemHibernate");
     DConfigWatcher::instance()->erase("systemShutdown");
+    DConfigWatcher::instance()->erase("systemReboot");
 }
 
 void ShutdownWidget::initConnect()
@@ -129,6 +131,9 @@ void ShutdownWidget::onEnable(const QString &key, bool enable)
         m_requireHibernateButton->setCheckable(enable);
     } else if ("systemLock" == key) {
         m_requireLockButton->setDisabled(!enable);
+    } else if ("systemReboot" == key) {
+        m_requireRestartButton->setDisabled(!enable);
+        m_requireRestartButton->setCheckable(enable);
     }
 }
 
@@ -209,6 +214,7 @@ void ShutdownWidget::initUI()
     m_requireRestartButton->setAccessibleName("RequireRestartButton");
     m_requireRestartButton->setAutoExclusive(true);
     updateTr(m_requireRestartButton, "Reboot");
+    DConfigWatcher::instance()->bind("systemReboot", m_requireRestartButton);
 
     m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
     m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
@@ -456,7 +462,7 @@ void ShutdownWidget::recoveryLayout()
     //关机或重启确认前会隐藏所有按钮,取消重启或关机后隐藏界面时重置按钮可见状态
     //同时需要判断切换用户按钮是否允许可见
     m_requireShutdownButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemShutdown") != Status_Hidden));
-    m_requireRestartButton->setVisible(true);
+    m_requireRestartButton->setVisible(DConfigWatcher::instance()->getStatus("systemReboot") != Status_Hidden);
     enableHibernateBtn(m_model->hasSwap());
     enableSleepBtn(m_model->canSleep());
     m_requireLockButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemLock") != Status_Hidden));

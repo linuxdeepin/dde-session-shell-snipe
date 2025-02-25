@@ -111,6 +111,17 @@
       "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
       "permissions": "readwrite",
       "visibility": "private"
+    },
+    "systemReboot": {
+      "value": 0,
+      "serial": 0,
+      "flags": [],
+      "name": "system reboot",
+      "name[zh_CN]": "系统重启",
+      "description": "0:Enabled。1:Disabled。2:Hidden",
+      "description[zh_CN]": "0：启用。1：禁用。2：隐藏",
+      "permissions": "readwrite",
+      "visibility": "private"
     }
   }
 }
