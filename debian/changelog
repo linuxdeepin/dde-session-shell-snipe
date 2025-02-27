@@ -1,3 +1,9 @@
+dde-session-shell (6.0.29) unstable; urgency=medium
+
+  * feat: add systemReboot config
+
+ -- zhangkun <zhangkun2@uniontech.com>  Thu, 27 Feb 2025 21:59:07 +0800
+
 dde-session-shell (6.0.28) unstable; urgency=medium
 
   * fix: multiple screens, has lock screen widget is not the right size
