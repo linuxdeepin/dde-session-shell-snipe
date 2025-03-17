@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         }
         QObject::connect(lockFrame, &LockFrame::requestCheckAccount, worker, &LockWorker::checkAccount);
         lockFrame->setVisible(model->visible());
-        emit lockService.Visible(true);
+        emit lockService.Visible(model->visible());
         return lockFrame;
     };
 
