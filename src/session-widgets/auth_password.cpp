@@ -55,6 +55,8 @@ void AuthPassword::initUI()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
+    m_passwordEdit->setCopyEnabled(false);
+    m_passwordEdit->setCutEnabled(false);
     m_passwordEdit->setClearButtonEnabled(false);
     m_passwordEdit->setEchoMode(QLineEdit::Password);
     m_passwordEdit->setContextMenuPolicy(Qt::NoContextMenu);

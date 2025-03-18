@@ -61,6 +61,8 @@ void ChangePasswordWidget::initUI()
 
     m_tipsLabel->setAlignment(Qt::AlignCenter);
 
+    m_oldPasswdEdit->setCutEnabled(false);
+    m_oldPasswdEdit->setCopyEnabled(false);
     m_oldPasswdEdit->setClearButtonEnabled(false);
     m_oldPasswdEdit->setEchoMode(QLineEdit::Password);
     m_oldPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
@@ -68,6 +70,8 @@ void ChangePasswordWidget::initUI()
     m_oldPasswdEdit->setPlaceholderText(tr("Old password"));
     m_oldPasswdEdit->setFixedSize(PASSWDLINEEIDT_WIDTH, PASSWDLINEEDIT_HEIGHT);
 
+    m_newPasswdEdit->setCutEnabled(false);
+    m_newPasswdEdit->setCopyEnabled(false);
     m_newPasswdEdit->setClearButtonEnabled(false);
     m_newPasswdEdit->setEchoMode(QLineEdit::Password);
     m_newPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
@@ -77,6 +81,8 @@ void ChangePasswordWidget::initUI()
 
     m_levelWidget->reset();
 
+    m_repeatPasswdEdit->setCutEnabled(false);
+    m_repeatPasswdEdit->setCopyEnabled(false);
     m_repeatPasswdEdit->setClearButtonEnabled(false);
     m_repeatPasswdEdit->setEchoMode(QLineEdit::Password);
     m_repeatPasswdEdit->setContextMenuPolicy(Qt::NoContextMenu);
