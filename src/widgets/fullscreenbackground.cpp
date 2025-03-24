@@ -184,6 +184,10 @@ void FullscreenBackground::setContentVisible(bool visible)
 
 void FullscreenBackground::setContent(QWidget *const w)
 {
+    if (m_content) {
+        m_content->setVisible(false);
+    }
+
     m_content = w;
     m_content->setParent(this);
     m_content->move(0, 0);

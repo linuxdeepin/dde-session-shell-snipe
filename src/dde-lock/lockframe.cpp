@@ -91,25 +91,6 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
                 m_enablePowerOffKey = true;
             });
         }
-
-        //待机时由锁屏提供假黑屏，唤醒时显示正常界面
-        model->setIsBlackMode(isSleep);
-        model->setVisible(true);
-
-        if (!isSleep) {
-            //待机唤醒后检查是否需要密码，若不需要密码直接隐藏锁定界面
-            if (!isSleepLock()) {
-                qDebug() << "sleep-lock is off, prepare unlock";
-                // 待机唤醒的一瞬间，会延迟收到DBusLogin1Manager::PrepareForSleep（true）, 进而最终传入到dde-session的locked状态也是延迟的
-                // dde-session 延迟收到locked后会重新发送锁定信号，导致这里unlock后又被重新lock
-                // 设置一个100ms的延时，等待dde-session的locked状态和dde-lock的locked状态完全同步后再进行隐藏锁屏的动作
-                model->setIsBlackMode(true);
-                QTimer::singleShot(100, this, [this, model](){
-                    model->setIsBlackMode(false);
-                    hide();
-                });
-            }
-        }
     } );
 
     connect(model, &SessionBaseModel::authFinished, this, [this](bool success) {
@@ -263,16 +244,18 @@ void LockFrame::shutdownInhibit(const SessionBaseModel::PowerAction action, bool
         m_warningContent->setPowerAction(action);
     }
     m_warningContent->resize(size());
-    setContent(m_warningContent);
+    //检查是有阻塞
+    if (const bool inhibit = m_warningContent->beforeInvokeAction(needConfirm)) {
+        setContent(m_warningContent);
 
-    //多屏状态下，当前界面显示内容时才显示提示界面
-    if (old_visible) {
-        setContentVisible(true);
-        m_lockContent->hide();
+        //多屏状态下，当前界面显示内容时才显示提示界面
+        if (old_visible) {
+            m_lockContent->hide();
+            setContentVisible(true);
+        }
+    } else {
+        m_warningContent->doAccecpShutdownInhibit();
     }
-
-    //检查是否允许关机
-    m_warningContent->beforeInvokeAction(needConfirm);
 }
 
 void LockFrame::cancelShutdownInhibit(bool hideFrame)

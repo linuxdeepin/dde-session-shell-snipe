@@ -138,7 +138,7 @@ void WarningContent::doAccecpShutdownInhibit()
         emit m_model->cancelShutdownInhibit(false);
 }
 
-void WarningContent::beforeInvokeAction(bool needConfirm)
+bool WarningContent::beforeInvokeAction(bool needConfirm)
 {
     const QList<InhibitWarnView::InhibitorData> inhibitors = listInhibitors(m_powerAction);
     const QList<std::shared_ptr<User>> &loginUsers = m_model->loginedUserList();
@@ -178,7 +178,7 @@ void WarningContent::beforeInvokeAction(bool needConfirm)
                                            tr("To close the program, click Cancel, and then close the program."));
             break;
         default:
-            return;
+            return true;
         }
 
         // 如果有阻止关机、重启、待机或休眠的进程，则不允许手动强制执行
@@ -209,7 +209,7 @@ void WarningContent::beforeInvokeAction(bool needConfirm)
         connect(view, &InhibitWarnView::cancelled, this, &WarningContent::doCancelShutdownInhibit);
         connect(view, &InhibitWarnView::actionInvoked, this, &WarningContent::doAccecpShutdownInhibit);
 
-        return;
+        return true;
     }
 
     if (loginUsers.length() > 1 && (m_powerAction == SessionBaseModel::PowerAction::RequireShutdown || m_powerAction == SessionBaseModel::PowerAction::RequireRestart)) {
@@ -239,7 +239,7 @@ void WarningContent::beforeInvokeAction(bool needConfirm)
         connect(view, &MultiUsersWarningView::cancelled, this, &WarningContent::doCancelShutdownInhibit);
         connect(view, &MultiUsersWarningView::actionInvoked, this, &WarningContent::doAccecpShutdownInhibit);
 
-        return;
+        return true;
     }
 
     if (needConfirm && (m_powerAction == SessionBaseModel::PowerAction::RequireShutdown ||
@@ -266,10 +266,11 @@ void WarningContent::beforeInvokeAction(bool needConfirm)
         connect(view, &InhibitWarnView::cancelled, this, &WarningContent::doCancelShutdownInhibit);
         connect(view, &InhibitWarnView::actionInvoked, this, &WarningContent::doAccecpShutdownInhibit);
 
-        return;
+        return true;
     }
 
-    doAccecpShutdownInhibit();
+    //doAccecpShutdownInhibit();
+    return false;
 }
 
 void WarningContent::setPowerAction(const SessionBaseModel::PowerAction action)

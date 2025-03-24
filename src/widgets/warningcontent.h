@@ -22,15 +22,15 @@ class WarningContent : public SessionBaseWindow
 public:
     explicit WarningContent(SessionBaseModel *const model, const SessionBaseModel::PowerAction action, QWidget *parent = nullptr);
     ~WarningContent() override;
-    void beforeInvokeAction(bool needConfirm);
+    bool beforeInvokeAction(bool needConfirm);
     void setPowerAction(const SessionBaseModel::PowerAction action);
+    void doAccecpShutdownInhibit();
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     QList<InhibitWarnView::InhibitorData> listInhibitors(const SessionBaseModel::PowerAction action);
     void doCancelShutdownInhibit();
-    void doAccecpShutdownInhibit();
 
 private:
     SessionBaseModel *m_model;

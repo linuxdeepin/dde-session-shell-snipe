@@ -132,12 +132,35 @@ void LockWorker::initConnections()
     /* org.freedesktop.login1.Manager */
     connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [ = ](bool isSleep) {
         qInfo() << "DBusLogin1Manager::PrepareForSleep:" << isSleep;
+
+        const auto sleepLock = isSleepLock();
         if (isSleep) {
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
         } else {
-            createAuthentication(m_model->currentUser()->name());
+            // 非黑屏mode
+            m_model->setIsBlackMode(false);
+
+            // 如果待机唤醒后需要密码则创建验证
+            if(m_login1SessionSelf->active() && sleepLock)
+                createAuthentication(m_model->currentUser()->name());
         }
+        if (!m_model->visible() && sleepLock) {
+            m_model->setIsBlackMode(isSleep);
+            m_model->setVisible(true);
+        }
+
+        if (!isSleep && !sleepLock) {
+            // 待机唤醒后检查是否需要密码，若不需要密码直接隐藏锁定界面
+            // 待机唤醒的一瞬间，会延迟收到DBusLogin1Manager::PrepareForSleep（true）, 进而最终传入到dde-session的locked状态也是延迟的
+            // dde-session 延迟收到locked后会重新发送锁定信号，导致这里unlock后又被重新lock
+            // 设置一个100ms的延时，等待dde-session的locked状态和dde-lock的locked状态完全同步后再进行隐藏锁屏的动作
+            QTimer::singleShot(100, this, [this]() {
+                m_model->setVisible(false);
+                m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
+            });
+        }
+
         emit m_model->prepareForSleep(isSleep);
     });
 
