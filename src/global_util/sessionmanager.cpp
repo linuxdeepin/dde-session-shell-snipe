@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "sessionmanager.h"
+#include "dconfig_helper.h"
 #include "sessionbasemodel.h"
 
 #include <QDebug>
@@ -11,7 +12,7 @@
 
 DCORE_USE_NAMESPACE
 
-static const QString DEFAULT_SESSION_NAME = "dde-x11";
+static const QString DEFAULT_SESSION_NAME = "deepin";
 static const QString WAYLAND_SESSION_NAME = "dde-wayland";
 static const QString DISPLAY_X11_NAME     = "X11";
 static const QString DISPLAY_WAYLAND_NAME = "Wayland (Technology Preview)";
@@ -162,5 +163,5 @@ QString SessionManager::lastLoggedInSession(const QString &userName) const
 
 QString SessionManager::defaultConfigSession() const
 {
-    return getDConfigValue(getDefaultConfigFileName(),"defaultSession", DEFAULT_SESSION_NAME).toString();
+    return DConfigHelper::instance()->getConfig("defaultSession", DEFAULT_SESSION_NAME).toString();
 }

@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>電源</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>螢幕鍵盤</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Napajanje</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Na plošči</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

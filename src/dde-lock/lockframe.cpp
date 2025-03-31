@@ -6,13 +6,14 @@
 
 #include "lockcontent.h"
 #include "sessionbasemodel.h"
-#include "userinfo.h"
 #include "warningcontent.h"
 #include "public_func.h"
+#include "dconfig_helper.h"
 
 #include <xcb/xproto.h>
 
-#include <QGuiApplication>
+#include <DPlatformWindowHandle>
+
 #include <QApplication>
 #include <QDBusInterface>
 
@@ -36,10 +37,8 @@ xcb_atom_t internAtom(xcb_connection_t *connection, const char *name, bool only_
 }
 
 LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
-    : FullscreenBackground(model, parent)
+    : FullScreenBackground(model, parent)
     , m_model(model)
-    , m_lockContent(new LockContent(model))
-    , m_warningContent(nullptr)
     , m_enablePowerOffKey(false)
     , m_autoExitTimer(nullptr)
 {
@@ -56,60 +55,49 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
                             startup, XCB_ATOM_CARDINAL, 32, 1, &value);
     }
 
-    updateBackground(m_model->currentUser()->greeterBackground());
-
     setAccessibleName("LockFrame");
-    m_lockContent->setAccessibleName("LockContent");
-    m_lockContent->hide();
-    setContent(m_lockContent);
 
-    connect(m_lockContent, &LockContent::requestSwitchToUser, this, &LockFrame::requestSwitchToUser);
-    connect(m_lockContent, &LockContent::requestSetKeyboardLayout, this, &LockFrame::requestSetKeyboardLayout);
-    connect(m_lockContent, &LockContent::requestBackground, this, static_cast<void (LockFrame::*)(const QString &)>(&LockFrame::updateBackground));
-    connect(m_lockContent, &LockContent::requestStartAuthentication, this, &LockFrame::requestStartAuthentication);
-    connect(m_lockContent, &LockContent::sendTokenToAuth, this, &LockFrame::sendTokenToAuth);
-    connect(m_lockContent, &LockContent::requestEndAuthentication, this, &LockFrame::requestEndAuthentication);
-    connect(m_lockContent, &LockContent::requestLockFrameHide, this, &LockFrame::hide);
-    connect(m_lockContent, &LockContent::authFinished, this, [this] {
-        hide();
-        emit requestEnableHotzone(true);
-        emit authFinished();
-    });
-    connect(m_lockContent, &LockContent::requestCheckAccount, this, &LockFrame::requestCheckAccount);
-    connect(model, &SessionBaseModel::showUserList, this, &LockFrame::showUserList);
-    connect(model, &SessionBaseModel::showLockScreen, this, &LockFrame::showLockScreen);
-    connect(model, &SessionBaseModel::showShutdown, this, &LockFrame::showShutdown);
-    connect(model, &SessionBaseModel::shutdownInhibit, this, &LockFrame::shutdownInhibit);
-    connect(model, &SessionBaseModel::cancelShutdownInhibit, this, &LockFrame::cancelShutdownInhibit);
-    connect(model, &SessionBaseModel::prepareForSleep, this, [ = ](bool isSleep) {
-        //不管是待机还是唤醒均不响应电源按键信号
-        m_enablePowerOffKey = false;
+    // wayland下通过DTK设置锁屏启动动效
+    if (qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
+        DPlatformWindowHandle handle(this, this);
+        handle.setWindowStartUpEffect(static_cast<DPlatformWindowHandle::EffectType>(LOCK_START_EFFECT));
+    }
 
-        //唤醒1秒后才响应电源按键信号，避免待机唤醒时响应信号，将界面切换到关机选项
-        if (!isSleep) {
-            QTimer::singleShot(1000, this, [ = ] {
-                m_enablePowerOffKey = true;
-            });
-        }
-    } );
-
+    if (!currentContent) {
+        setContent(LockContent::instance());
+        m_model->setCurrentContentType(SessionBaseModel::LockContent);
+    }
+    connect(LockContent::instance(), &LockContent::requestBackground, this, static_cast<void (LockFrame::*)(const QString &)>(&LockFrame::updateBackground));
+    connect(model, &SessionBaseModel::prepareForSleep, this, &LockFrame::prepareForSleep);
     connect(model, &SessionBaseModel::authFinished, this, [this](bool success) {
         if (success) {
             Q_EMIT requestEnableHotzone(true);
-            hide();
+            if (!WarningContent::instance()->supportDelayOrWait())
+                m_model->setVisible(false);
         }
     });
 
     //程序启动1秒后才响应电源按键信号，避免第一次待机唤醒启动锁屏程序后响应信号，将界面切换到关机选项
-    QTimer::singleShot(1000, this, [ = ] {
+    QTimer::singleShot(1000, this, [this] {
         m_enablePowerOffKey = true;
     });
 
-    if (getDConfigValue(getDefaultConfigFileName(), "autoExit", false).toBool()) {
+    if (DConfigHelper::instance()->getConfig("autoExit", false).toBool()) {
         m_autoExitTimer = new QTimer(this);
         m_autoExitTimer->setInterval(1000*60); //1分钟
         m_autoExitTimer->setSingleShot(true);
         connect(m_autoExitTimer, &QTimer::timeout, qApp, &QApplication::quit);
+    }
+}
+
+LockFrame::~LockFrame()
+{
+    if (LockContent::instance()->parent() == this) {
+        LockContent::instance()->setParent(nullptr);
+    }
+
+    if (WarningContent::instance()->parent() == this) {
+        WarningContent::instance()->setParent(nullptr);
     }
 }
 
@@ -164,26 +152,40 @@ bool LockFrame::event(QEvent *event)
             keyValue = "mon-brightness-down";
             break;
         }
+        // 锁屏时会独占键盘，需要单独处理F1待机事件
+        case Qt::Key_Sleep: {
+             m_model->setPowerAction(SessionBaseModel::RequireSuspend);
+             break;
+        }
         }
 
         if (keyValue != "") {
             emit sendKeyValue(keyValue);
         }
     }
-    return FullscreenBackground::event(event);
+    return FullScreenBackground::event(event);
 }
 
 void LockFrame::resizeEvent(QResizeEvent *event)
 {
-    m_lockContent->resize(size());
-    FullscreenBackground::resizeEvent(event);
+    if (contentVisible()) {
+        LockContent::instance()->resize(size());
+    }
+    FullScreenBackground::resizeEvent(event);
 }
 
 bool LockFrame::handlePoweroffKey()
 {
+    qCInfo(DDE_SHELL) << "Handle poweroff key";
+    // 升级的时候，不响应电源按钮
+    if (m_model->currentContentType() == SessionBaseModel::UpdateContent) {
+        qCInfo(DDE_SHELL) << "Is updating, do not handle power off key";
+        return false;
+    }
+
     QDBusInterface powerInter("org.deepin.dde.Power1","/org/deepin/dde/Power1","org.deepin.dde.Power1");
     if (!powerInter.isValid()) {
-        qDebug() << "powerInter is not valid";
+        qCWarning(DDE_SHELL) << "Poweroff interface is not valid";
         return false;
     }
     bool isBattery = powerInter.property("OnBattery").toBool();
@@ -193,11 +195,14 @@ bool LockFrame::handlePoweroffKey()
     } else {
         action = powerInter.property("LinePowerPressPowerBtnAction").toInt();
     }
-    qDebug() << "battery is: " << isBattery << "," << action;
+    qCDebug(DDE_SHELL) << "Whether on battery: " << isBattery << ", press poweroff button action: " << action;
     // 需要特殊处理：关机(0)和无任何操作(4)
     if (action == 0) {
-        //锁屏时或显示关机界面时，需要确认是否关机
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        // 待机刚唤醒一段时间内不响应电源按键事件
+        if (m_enablePowerOffKey) {
+            //锁屏时或显示关机界面时，需要确认是否关机
+            emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        }
         return true;
     } else if (action == 4) {
         // 先检查当前是否允许响应电源按键
@@ -208,78 +213,6 @@ bool LockFrame::handlePoweroffKey()
         return true;
     }
     return false;
-}
-
-void LockFrame::showUserList()
-{
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-    QTimer::singleShot(10, this, [ = ] {
-        this->show();
-    });
-}
-
-void LockFrame::showLockScreen()
-{
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-    show();
-}
-
-void LockFrame::showShutdown()
-{
-    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
-    show();
-}
-
-void LockFrame::shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm)
-{
-    //如果其他显示屏界面已经检查过是否允许关机，此显示屏上的界面不再显示，避免重复检查并触发信号
-    if (m_model->isCheckedInhibit()) return;
-    //记录多屏状态下当前显示屏是否显示内容
-    bool old_visible = contentVisible();
-
-    if (!m_warningContent) {
-        m_warningContent = new WarningContent(m_model, action, this);
-        m_warningContent->setAccessibleName("WarningContent");
-    } else {
-        m_warningContent->setPowerAction(action);
-    }
-    m_warningContent->resize(size());
-    //检查是有阻塞
-    if (const bool inhibit = m_warningContent->beforeInvokeAction(needConfirm)) {
-        setContent(m_warningContent);
-
-        //多屏状态下，当前界面显示内容时才显示提示界面
-        if (old_visible) {
-            m_lockContent->hide();
-            setContentVisible(true);
-        }
-    } else {
-        m_warningContent->doAccecpShutdownInhibit();
-    }
-}
-
-void LockFrame::cancelShutdownInhibit(bool hideFrame)
-{
-    //允许关机检查结束后切换界面
-    //记录多屏状态下当前显示屏是否显示内容
-    bool old_visible = contentVisible();
-
-    setContent(m_lockContent);
-
-    //隐藏提示界面
-    if (m_warningContent) {
-        m_warningContent->hide();
-    }
-
-    //多屏状态下，当前界面显示内容时才显示
-    if (old_visible) {
-        setContentVisible(true);
-    }
-
-    if (hideFrame) {
-        m_model->setVisible(false);
-        m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
-    }
 }
 
 void LockFrame::keyPressEvent(QKeyEvent *e)
@@ -295,20 +228,33 @@ void LockFrame::showEvent(QShowEvent *event)
 {
     emit requestEnableHotzone(false);
 
-    m_model->setVisible(true);
     if (m_autoExitTimer)
         m_autoExitTimer->stop();
 
-    return FullscreenBackground::showEvent(event);
+    return FullScreenBackground::showEvent(event);
 }
 
 void LockFrame::hideEvent(QHideEvent *event)
 {
     emit requestEnableHotzone(true);
 
-    m_model->setVisible(false);
     if (m_autoExitTimer)
         m_autoExitTimer->start();
 
-    return FullscreenBackground::hideEvent(event);
+    return FullScreenBackground::hideEvent(event);
+}
+
+
+void LockFrame::prepareForSleep(bool isSleep)
+{
+    //不管是待机还是唤醒均不响应电源按键信号
+    m_enablePowerOffKey = false;
+    // 唤醒不需要密码时，在性能差的机器上可能会在1秒后才收到电源事件，依就会响应电源事件
+    // 或者将延时改的更长
+    //唤醒时间改为3秒后才响应电源按键信号，避免待机唤醒时响应信号，将界面切换到关机选项
+    if (!isSleep) {
+        QTimer::singleShot(3000, this, [this] {
+            m_enablePowerOffKey = true;
+        });
+    }
 }

@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>الطاقة</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>لوحة المفاتيح الافتراضية</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

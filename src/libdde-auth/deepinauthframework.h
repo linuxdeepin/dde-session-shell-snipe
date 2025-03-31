@@ -5,27 +5,18 @@
 #ifndef DEEPINAUTHFRAMEWORK_H
 #define DEEPINAUTHFRAMEWORK_H
 
-#include <openssl/aes.h>
+#include "authcommon.h"
+
+#include <QObject>
 
 #include "authenticate1interface.h"
 #include "session2interface.h"
 
-#define AUTHRNTICATESERVICE "org.deepin.dde.Authenticate1"
-#define AUTHRNTICATEINTERFACE "org.deepin.dde.Authenticate1.Session"
+#define AUTHENTICATE_SERVICE "org.deepin.dde.Authenticate1"
 
 using AuthInter = org::deepin::dde::Authenticate1;
 using AuthControllerInter = org::deepin::dde::authenticate1::Session;
 
-using FUNC_AES_CBC_ENCRYPT = void (*)(const unsigned char *in, unsigned char *out, size_t length, const void *aes, unsigned char *ivec, const int enc);
-using FUNC_AES_SET_ENCRYPT_KEY = int (*)(const unsigned char *userKey, const int bits, void *aes);
-using FUNC_BIO_S_MEM = void *(*)();
-using FUNC_BIO_NEW = void *(*)(void *);
-using FUNC_BIO_PUTS = int (*)(void *, const char *);
-using FUNC_PEM_READ_BIO_RSA_PUBKEY = void *(*)(void *, void *, void *, void *);
-using FUNC_PEM_READ_BIO_RSAPUBLICKEY = void *(*)(void *, void *, void *, void *);
-using FUNC_RSA_PUBLIC_ENCRYPT = void *(*)(int flen, const unsigned char *from, unsigned char *to, void *rsa, int padding);
-using FUNC_RSA_SIZE = int (*)(void *);
-using FUNC_RSA_FREE = void (*)(void *);
 
 class DeepinAuthFramework : public QObject
 {
@@ -45,10 +36,12 @@ public:
     void CreateAuthenticate(const QString &account);
     void SendToken(const QString &token);
     void DestroyAuthenticate();
+    // 是否正在使用pam认证
+    bool IsUsingPamAuth();
 
     /* org.deepin.dde.Authenticate1 */
     int GetFrameworkState() const;
-    int GetSupportedMixAuthFlags() const;
+    AuthCommon::AuthFlags GetSupportedMixAuthFlags() const;
     QString GetPreOneKeyLogin(const int flag) const;
     QString GetLimitedInfo(const QString &account) const;
     QString GetSupportedEncrypts() const;
@@ -65,12 +58,15 @@ public:
     void setEncryption(const int type, const ArrayInt method);
     bool authSessionExist(const QString &account) const;
     bool isDeepinAuthValid() const;
+    bool isDAStartupCompleted() const { return  m_isDAStartupCompleted;}
+
 
 signals:
+    void startupCompleted();
     /* org.deepin.dde.Authenticate1 */
     void LimitsInfoChanged(const QString &);
     void SupportedMixAuthFlagsChanged(const int);
-    void FrameworkStateChanged(const int);
+    void FramworkStateChanged(const int);
     void SupportedEncryptsChanged(const QString &);
     /* org.deepin.dde.Authenticate1.Session */
     void MFAFlagChanged(const bool);
@@ -79,29 +75,29 @@ signals:
     void FactorsInfoChanged(const MFAInfoList &);
     void PINLenChanged(const int);
     void AuthStateChanged(const int, const int, const QString &);
+    void SessionCreated();
+    void DeviceChanged(const int, const int);
+    void TokenAccountMismatch(const QString &);
 
 public slots:
     /* New authentication framework */
-    void CreateAuthController(const QString &account, const int authType, const int appType);
+    void CreateAuthController(const QString &account, const AuthCommon::AuthFlags authType, const int appType);
     void DestroyAuthController(const QString &account);
-    void StartAuthentication(const QString &account, const int authType, const int timeout);
-    void EndAuthentication(const QString &account, const int authType);
-    void SendTokenToAuth(const QString &account, const int authType, const QString &token);
+    void StartAuthentication(const QString &account, const AuthCommon::AuthFlags authType, const int timeout);
+    void EndAuthentication(const QString &account, const AuthCommon::AuthFlags authType);
+    void SendTokenToAuth(const QString &account, const AuthCommon::AuthType authType, const QString &token);
     void SetAuthQuitFlag(const QString &account, const int flag = AutoQuit);
+    void onDeviceChanged(const int authType, const int state);
 
 private:
     /* Compatible with old authentication methods */
     static void *PAMAuthWorker(void *arg);
     void PAMAuthentication(const QString &account);
     static int PAMConversation(int num_msg, const struct pam_message **msg, struct pam_response **resp, void *app_data);
-    void UpdateAuthState(const int state, const QString &message);
-
-    void initEncryptionService();
-    void encryptSymmtricKey(const QString &account);
+    void UpdateAuthState(const AuthCommon::AuthState state, const QString &message);
 
 private:
     AuthInter *m_authenticateInter;
-    QDBusServiceWatcher *m_watcher;
     pthread_t m_PAMAuthThread;
     QString m_account;
     QString m_message;
@@ -113,23 +109,10 @@ private:
     QMap<QString, AuthControllerInter *> *m_authenticateControllers;
     bool m_cancelAuth;
     bool m_waitToken;
-    bool m_retryActivateFramework;
+    bool m_isDAStartupCompleted;
 
-    QPointer<QLibrary>m_encryptionHandle;
-    FUNC_AES_CBC_ENCRYPT m_F_AES_cbc_encrypt;
-    FUNC_AES_SET_ENCRYPT_KEY m_F_AES_set_encrypt_key;
-    FUNC_BIO_NEW m_F_BIO_new;
-    FUNC_BIO_PUTS m_F_BIO_puts;
-    FUNC_BIO_S_MEM m_F_BIO_s_mem;
-    FUNC_PEM_READ_BIO_RSAPUBLICKEY m_F_PEM_read_bio_RSAPublicKey;
-    FUNC_PEM_READ_BIO_RSA_PUBKEY m_F_PEM_read_bio_RSA_PUBKEY;
-    FUNC_RSA_FREE m_F_RSA_free;
-    FUNC_RSA_FREE m_F_BIO_free;
-    FUNC_RSA_PUBLIC_ENCRYPT m_F_RSA_public_encrypt;
-    FUNC_RSA_SIZE m_F_RSA_size;
-    AES_KEY *m_AES;
-    void *m_BIO;
-    void *m_RSA;
+    QTimer m_authReminder;
+    QString m_lastAuthUser;
 };
 
 #endif // DEEPINAUTHFRAMEWORK_H

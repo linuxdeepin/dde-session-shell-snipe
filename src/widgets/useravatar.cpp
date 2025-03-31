@@ -6,18 +6,12 @@
 
 #include <QUrl>
 #include <QFile>
-#include <QPainterPath>
 #include <QVBoxLayout>
+#include <QPainterPath>
 
-#define AVATAR_ROUND_RADIUS (18)
-
-UserAvatar::UserAvatar(QWidget *parent)
+UserAvatar::UserAvatar(QWidget *parent, bool deleteable)
     : QPushButton(parent)
-    , m_iconLabel(new QLabel(this))
-    , m_borderColor(Qt::white)
-    , m_avatarSize(90)
-    , m_borderWidth(0)
-    , m_selected(false)
+    , m_deleteable(deleteable)
 {
     setGeometry(0, 0, AvatarLargeSize, AvatarLargeSize);
 
@@ -27,10 +21,17 @@ UserAvatar::UserAvatar(QWidget *parent)
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
+    m_iconLabel = new QLabel(this);
     m_iconLabel->setObjectName("UserAvatar");
     m_iconLabel->setAccessibleName("UserAvatar");
 
     mainLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
+
+    initDeleteButton();
+    m_borderColor = QColor(255, 255, 255, 255);
+    setStyleSheet("background-color: rgba(255, 255, 255, 0);\
+                                    color: #b4b4b4;\
+                                    border: none;");
 }
 
 void UserAvatar::setIcon(const QString &iconPath)
@@ -112,11 +113,31 @@ QImage UserAvatar::imageToGray(const QImage &image)
     return targetImg;
 }
 
+void UserAvatar::initDeleteButton()
+{
+//    m_deleteButton = new AvatarDeleteButton(this);
+//    m_deleteButton->hide();
+//    m_deleteButton->raise();
+//    m_deleteButton->setFixedSize(24, 24); //image's size
+//    m_deleteButton->move(width()  - m_deleteButton->width(), 0);
+//    connect(m_deleteButton, &AvatarDeleteButton::clicked, this, &UserAvatar::requestDelete);
+}
+bool UserAvatar::deleteable() const
+{
+    return m_deleteable;
+}
+
+void UserAvatar::setDeleteable(bool deleteable)
+{
+    m_deleteable = deleteable;
+}
+
+
 void UserAvatar::setAvatarSize(const int size)
 {
-    if (size == m_avatarSize)
+    if (size == m_avatarSize) {
         return;
-
+    }
     m_avatarSize = size;
     setMinimumSize(size, size);
 }
@@ -124,16 +145,16 @@ void UserAvatar::setAvatarSize(const int size)
 void UserAvatar::setDisabled(bool disable)
 {
     setEnabled(!disable);
-
-    update();
+    repaint();
 }
 
 void UserAvatar::setSelected(bool selected)
 {
     m_selected = selected;
 
-    update();
+    repaint();
 }
+
 
 int UserAvatar::borderWidth() const
 {
@@ -163,4 +184,16 @@ QColor UserAvatar::borderColor() const
 void UserAvatar::setBorderColor(const QColor &borderColor)
 {
     m_borderColor = borderColor;
+}
+//AvatarDeleteButton::AvatarDeleteButton(QWidget *parent) : DImageButton(parent)
+//{
+
+//}
+//void UserAvatar::showUserAvatar() {
+//    showButton();
+//}
+
+void UserAvatar::setColor(QColor color) {
+    m_palette.setColor(QPalette::WindowText, color);
+    this->setPalette(m_palette);
 }

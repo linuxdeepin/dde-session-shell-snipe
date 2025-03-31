@@ -3,308 +3,308 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "fullscreenbackground.h"
+
 #include "black_widget.h"
+#include "lockcontent.h"
 #include "public_func.h"
 #include "sessionbasemodel.h"
+#include "dconfig_helper.h"
 
 #include <DGuiApplicationHelper>
 
 #include <QDebug>
-#include <QImageReader>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QScreen>
 #include <QTimer>
 #include <QWindow>
 
+Q_LOGGING_CATEGORY(DDE_SS, "dss.active")
+
 DGUI_USE_NAMESPACE
 
 const int PIXMAP_TYPE_BACKGROUND = 0;
 const int PIXMAP_TYPE_BLUR_BACKGROUND = 1;
 
-QString FullscreenBackground::backgroundPath;
-QString FullscreenBackground::blurBackgroundPath;
+QString FullScreenBackground::originBackgroundPath;
+QString FullScreenBackground::blurBackgroundPath;
 
-QList<QPair<QSize, QPixmap>> FullscreenBackground::backgroundCacheList;
-QList<QPair<QSize, QPixmap>> FullscreenBackground::blurBackgroundCacheList;
-QList<FullscreenBackground *> FullscreenBackground::frameList;
+QMap<QString, QPixmap> FullScreenBackground::blurBackgroundCacheMap;
+QList<FullScreenBackground *> FullScreenBackground::frameList;
+QPointer<FullScreenBackground> FullScreenBackground::currentFrame = nullptr;
+QPointer<QWidget> FullScreenBackground::currentContent = nullptr;
 
-FullscreenBackground::FullscreenBackground(SessionBaseModel *model, QWidget *parent)
+FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *parent)
     : QWidget(parent)
-    , m_fadeOutAni(nullptr)
-    , m_imageEffectInter(new ImageEffectInter("org.deepin.dde.ImageEffect1", "/org/deepin/dde/ImageEffect1", QDBusConnection::systemBus(), this))
     , m_model(model)
     , m_useSolidBackground(false)
-    , m_fadeOutAniFinished(false)
-    , m_enableAnimation(true)
     , m_blackWidget(new BlackWidget(this))
+    , m_resetGeometryTimer(new QTimer(this))
 {
 #ifndef QT_DEBUG
     if (!m_model->isUseWayland()) {
         setWindowFlags(Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint);
     } else {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Window);
+        setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::Window);
 
         setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
-        windowHandle()->setProperty("_d_dwayland_window-type", "standAlone"); // 禁止移动
+        // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
+        windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
     }
 #endif
     frameList.append(this);
-    m_useSolidBackground = getDConfigValue(getDefaultConfigFileName(), "useSolidBackground", false).toBool();
-    m_enableAnimation = DGuiApplicationHelper::isSpecialEffectsEnvironment();
-    if (m_enableAnimation && !m_useSolidBackground) {
-        m_fadeOutAni = new QVariantAnimation(this);
-        m_fadeOutAni->setEasingCurve(QEasingCurve::InOutCubic);
-        m_fadeOutAni->setDuration(2000);
-        m_fadeOutAni->setStartValue(0.0);
-        m_fadeOutAni->setEndValue(1.0);
-
-        connect(m_fadeOutAni, &QVariantAnimation::valueChanged, this, [ this ] {
-            update();
-            // 动画播放完毕后不在需要清晰的壁纸，释放资源
-            if (m_fadeOutAni->currentValue() == 1.0) {
-                backgroundCacheList.clear();
-                backgroundPath = "";
-                m_fadeOutAniFinished = true;
-            }
-        });
-    }
-
-    connect(qApp, &QGuiApplication::primaryScreenChanged, this, [this](QScreen *screen) {
-        qDebug() << "QGuiApplication::primaryScreenChanged:" << m_screen << screen << m_content;
-        if (m_screen && m_screen == screen && m_content) {
-            m_primaryShowFinished = true;
-        }
-    });
+    m_useSolidBackground = DConfigHelper::instance()->getConfig("useSolidBackground", false).toBool();
 
     m_blackWidget->setBlackMode(m_model->isBlackMode());
-    connect(m_model, &SessionBaseModel::blackModeChanged, m_blackWidget, &BlackWidget::setBlackMode);
+    connect(m_model, &SessionBaseModel::blackModeChanged, this, [this](bool is_black) {
+        m_blackWidget->setBlackMode(is_black);
+        if (currentContent) {
+            // 黑屏模式的时候需要隐藏中间的窗口
+            currentContent->setVisible(!is_black);
+            currentContent->raise();
+        }
+    });
+    connect(m_resetGeometryTimer, &QTimer::timeout, this, [this] {
+        qCDebug(DDE_SHELL) << " setGeometry : " << m_geometryRect;
+        setGeometry(m_geometryRect);
+    });
 }
 
-FullscreenBackground::~FullscreenBackground()
+FullScreenBackground::~FullScreenBackground()
 {
     frameList.removeAll(this);
 }
 
-void FullscreenBackground::updateBackground(const QString &path)
+void FullScreenBackground::updateBackground(const QString &path)
 {
-    if (m_useSolidBackground)
+    if (m_useSolidBackground || !isPicture(path))
         return;
 
-    if (isPicture(path)) {
-        // 动画播放完毕不再需要清晰的背景图片
-        if (!m_fadeOutAniFinished && !(backgroundPath == path && contains(PIXMAP_TYPE_BACKGROUND))) {
-            backgroundPath = path;
-            addPixmap(pixmapHandle(QPixmap(path)), PIXMAP_TYPE_BACKGROUND);
-        }
+    if (path == originBackgroundPath && !blurBackgroundPath.isEmpty()) {
+        updateScreenBluBackground(blurBackgroundPath);
+        return;
+    }
 
-        // 需要播放动画的时候才更新模糊壁纸
-        if (m_enableAnimation)
-            updateBlurBackground(path);
+    originBackgroundPath = path;
+    updateBlurBackground(path);
+}
+
+void FullScreenBackground::updateScreenBluBackground(const QString &blurPath)
+{
+    if (!blurPath.isEmpty() && blurBackgroundPath != blurPath) {
+        blurBackgroundPath = blurPath;
+    }
+
+    QString scaledPath;
+    if (getScaledBlurImage(blurPath, scaledPath)) {
+        QPixmap pixmap;
+        loadPixmap(scaledPath, pixmap);
+        addPixmap(pixmap, PIXMAP_TYPE_BLUR_BACKGROUND);
+    } else {
+        handleBackground(blurBackgroundPath, PIXMAP_TYPE_BLUR_BACKGROUND);
+    }
+
+    if (isVisible()) {
+        update();
     }
 }
 
-void FullscreenBackground::updateBlurBackground(const QString &path)
+void FullScreenBackground::updateBlurBackground(const QString &path)
 {
-    QDBusPendingCall async = m_imageEffectInter->Get("", path);
-    QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(async, this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, this, [this] (QDBusPendingCallWatcher *call) {
-        const QDBusPendingReply<QString> reply = *call;
-        if (!reply.isError()) {
-            QString blurPath = reply.value();
-
-            if (!isPicture(blurPath)) {
-                blurPath = "/usr/share/backgrounds/default_background.jpg";
-            }
-
-            if (blurBackgroundPath != blurPath || !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
-                blurBackgroundPath = blurPath;
-                addPixmap(pixmapHandle(QPixmap(blurPath)), PIXMAP_TYPE_BLUR_BACKGROUND);
-            }
-
-            // 只播放一次动画，后续背景图片变更直接更新模糊壁纸即可
-            if (m_fadeOutAni && !m_fadeOutAniFinished)
-                m_fadeOutAni->start();
-            else
-                update();
-        } else {
-            qWarning() << "get blur background image error: " << reply.error().message();
+    QDBusMessage message = QDBusMessage::createMethodCall("org.deepin.dde.ImageEffect1", "/org/deepin/dde/ImageEffect1",
+                                                          "org.deepin.dde.ImageEffect1", "Get");
+    message << "" << path;
+    QDBus::CallMode callMode = isVisible() ? QDBus::BlockWithGui : QDBus::Block;
+    QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(message, callMode, 2 * 1000);
+    QString blurPath;
+    if (!reply.isError()) {
+        blurPath = reply.value();
+        bool isPicture = QFile::exists(blurPath) && QFile(blurPath).size() && checkPictureCanRead(blurPath);
+        if (!isPicture) {
+            blurPath = "/usr/share/backgrounds/default_background.jpg";
         }
-        call->deleteLater();
-    }, Qt::QueuedConnection);
+    } else {
+        blurPath = "/usr/share/backgrounds/default_background.jpg";
+        qCWarning(DDE_SHELL) << "Get blur background path error:" << reply.error().message();
+    }
+
+    // 处理模糊背景图和执行动画或update；
+    updateScreenBluBackground(blurPath);
 }
 
-bool FullscreenBackground::contentVisible() const
+bool FullScreenBackground::contentVisible() const
 {
-    return m_content && m_content->isVisible();
+    return currentContent && currentContent->isVisible() && currentContent->parent() == this;
 }
 
-void FullscreenBackground::setEnterEnable(bool enable)
+void FullScreenBackground::setEnterEnable(bool enable)
 {
     m_enableEnterEvent = enable;
 }
 
-void FullscreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
+void FullScreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
 {
-    if (screen.isNull())
+    if (screen.isNull()) {
+        qCWarning(DDE_SHELL) << "Screen is nullptr";
         return;
+    }
 
-    qInfo() << Q_FUNC_INFO << ", init screen:" << screen << " screen geometry:"
-            << screen->geometry() << " lockframe:" << this;
-    QScreen *primary_screen = QGuiApplication::primaryScreen();
-    if (primary_screen == screen && isVisible) {
-        m_content->show();
-        m_primaryShowFinished = true;
-        emit contentVisibleChanged(true);
+    qCInfo(DDE_SHELL) << "Set screen:" << screen
+                      << ", screen geometry:" << screen->geometry()
+                      << ", full screen background object:" << this;
+    if (isVisible) {
+        updateCurrentFrame(this);
     } else {
-        QTimer::singleShot(1000, this, [ = ] {
-            m_primaryShowFinished = true;
+        // 如果有多个屏幕则根据鼠标所在的屏幕来显示
+        QTimer::singleShot(1000, this, [this] {
             setMouseTracking(true);
         });
     }
 
     updateScreen(screen);
+
+    // 更新屏幕后设置壁纸，这样避免处理多个尺寸的壁纸
+    updateBackground(m_model->currentUser()->greeterBackground());
 }
 
-void FullscreenBackground::setContentVisible(bool visible)
+void FullScreenBackground::setContent(QWidget *const w)
 {
-    if (this->contentVisible() == visible)
+    if (!w) {
+        qCWarning(DDE_SHELL) << "Content is null";
         return;
-
-    if (!m_content)
+    }
+    qCInfo(DDE_SHELL) << "Incoming  content:" << w << ", current content:" << currentContent;
+    // 不重复设置content
+    if (currentContent && currentContent->isVisible() && currentContent == w && currentFrame && w->parent() == currentFrame) {
+        qCDebug(DDE_SHELL) << "Parent is current frame";
         return;
-
-    if (!isVisible() && !visible)
-        return;
-
-    m_content->setVisible(visible);
-
-    emit contentVisibleChanged(visible);
-}
-
-void FullscreenBackground::setContent(QWidget *const w)
-{
-    if (m_content) {
-        m_content->setVisible(false);
     }
 
-    m_content = w;
-    m_content->setParent(this);
-    m_content->move(0, 0);
-    m_content->setFocus();
-    setFocusProxy(m_content);
+    if (!currentContent.isNull()) {
+        currentContent->setParent(nullptr);
+        currentContent->hide();
+    }
+    currentContent = w;
+    if (!currentFrame) {
+        qCWarning(DDE_SHELL) << "Current frame is null";
+        return;
+    }
+
+    currentContent->setParent(currentFrame);
+    currentContent->move(0, 0);
+    currentContent->resize(currentFrame->size());
+    currentFrame->setFocusProxy(currentContent);
+    currentFrame->setFocus();
+    currentFrame->activateWindow();
     // 如果是黑屏状态则不置顶
-    if (!m_blackWidget->isVisible())
-        m_content->raise();
+    if (!currentFrame->m_blackWidget->isVisible()) {
+        currentContent->raise();
+        currentContent->show();
+    };
+    auto lockContent = dynamic_cast<LockContent *>(w);
+    if (lockContent)
+        Q_EMIT lockContent->parentChanged();
 }
 
-void FullscreenBackground::setIsHibernateMode()
+void FullScreenBackground::setIsHibernateMode()
 {
     updateGeometry();
-    m_content->show();
-    emit contentVisibleChanged(true);
+    updateCurrentFrame(this);
 }
 
-bool FullscreenBackground::isPicture(const QString &file)
+bool FullScreenBackground::isPicture(const QString &file)
 {
-    return QFile::exists(file) && QFile(file).size() && QImageReader(file).canRead();
+    return QFile::exists(file) && QFile(file).size() && checkPictureCanRead(file);
 }
 
-QString FullscreenBackground::getLocalFile(const QString &file)
+QString FullScreenBackground::getLocalFile(const QString &file)
 {
     const QUrl url(file);
     return url.isLocalFile() ? url.toLocalFile() : url.url();
 }
 
-void FullscreenBackground::paintEvent(QPaintEvent *e)
+void FullScreenBackground::paintEvent(QPaintEvent *e)
 {
     QWidget::paintEvent(e);
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
-    const QPixmap &background = getPixmap(PIXMAP_TYPE_BACKGROUND);
-    const QPixmap &blurBackground = getPixmap(PIXMAP_TYPE_BLUR_BACKGROUND);
-
     const QRect trueRect(QPoint(0, 0), QSize(size() * devicePixelRatioF()));
-    if (m_useSolidBackground || (background.isNull() && blurBackground.isNull())) {
+    if (m_useSolidBackground) {
         painter.fillRect(trueRect, QColor(DDESESSIONCC::SOLID_BACKGROUND_COLOR));
     } else {
-        if (m_fadeOutAni) {
-            const double currentAniValue = m_fadeOutAni->currentValue().toDouble();
-            if (!background.isNull() && currentAniValue != 1.0) {
-                painter.setOpacity(1);
-                painter.drawPixmap(trueRect,
-                                background,
-                                QRect(trueRect.topLeft(), trueRect.size() * background.devicePixelRatioF()));
-            }
-
-            if (!blurBackground.isNull()) {
-                painter.setOpacity(currentAniValue);
-                painter.drawPixmap(trueRect,
-                                blurBackground,
-                                QRect(trueRect.topLeft(), trueRect.size() * blurBackground.devicePixelRatioF()));
-            }
+        const QPixmap &blurBackground = getPixmap(PIXMAP_TYPE_BLUR_BACKGROUND);
+        if (blurBackground.isNull()) {
+            painter.fillRect(trueRect, QColor(DDESESSIONCC::SOLID_BACKGROUND_COLOR));
         } else {
-            // 不使用的动画的过渡的时候直接绘制清晰的背景
-            if (!background.isNull()) {
-                painter.drawPixmap(trueRect,
-                                background,
-                                QRect(trueRect.topLeft(), trueRect.size() * background.devicePixelRatioF()));
-            }
+            painter.drawPixmap(trueRect,
+                               blurBackground,
+                               QRect(trueRect.topLeft(), trueRect.size() * devicePixelRatioF()));
         }
     }
 }
 
-void FullscreenBackground::tryActiveWindow(int count/* = 9*/)
+void FullScreenBackground::tryActiveWindow(int count /* = 9*/)
 {
     if (count < 0 || m_model->isUseWayland())
         return;
 
-    qDebug() << "try active window..." << count;
+    qCDebug(DDE_SS) << "try active window..." << count;
     if (isActiveWindow()) {
-        qDebug() << "...finally activewindow is me ...";
+        qCDebug(DDE_SS) << "...finally activewindow is me ...";
         return;
     }
 
     activateWindow();
 
-    if (m_content && !m_content->isVisible()) {
-        qDebug() << "hide..." << count;
+    if (currentContent && !currentContent->isVisible()) {
+        qCDebug(DDE_SS) << "hide..." << count;
         return;
     }
-    QTimer::singleShot(50 , this, std::bind(&FullscreenBackground::tryActiveWindow, this, count -1));
+    QTimer::singleShot(50, this, std::bind(&FullScreenBackground::tryActiveWindow, this, count - 1));
 }
 
-void FullscreenBackground::enterEvent(QEnterEvent *event)
+void FullScreenBackground::enterEvent(QEnterEvent *event)
 {
-    if (m_primaryShowFinished && m_enableEnterEvent && m_model->visible()) {
-        m_content->show();
-        emit contentVisibleChanged(true);
+    if (m_enableEnterEvent && m_model->visible()) {
+        updateCurrentFrame(this);
+        // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
+        activateWindow();
     }
 
-    // 锁屏截图之后 activewindow 不是锁屏了，此时发现不是 activewindow 主动尝试激活
-    if (!isActiveWindow() && m_content && m_content->isVisible())
-         tryActiveWindow();
+    // 锁屏截图之后 active window 不是锁屏了，此时发现不是 active window 主动尝试激活
+    if (!isActiveWindow() && contentVisible())
+        tryActiveWindow();
 
     return QWidget::enterEvent(event);
 }
 
-void FullscreenBackground::leaveEvent(QEvent *event)
+void FullScreenBackground::leaveEvent(QEvent *event)
 {
     return QWidget::leaveEvent(event);
 }
 
-void FullscreenBackground::resizeEvent(QResizeEvent *event)
+void FullScreenBackground::resizeEvent(QResizeEvent *event)
 {
-    m_blackWidget->resize(size());
-    m_content->resize(size());
-    if (isPicture(backgroundPath) && !contains(PIXMAP_TYPE_BACKGROUND))
-        addPixmap(pixmapHandle(QPixmap(backgroundPath)), PIXMAP_TYPE_BACKGROUND);
-    if (isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND))
-        addPixmap(pixmapHandle(QPixmap(blurBackgroundPath)), PIXMAP_TYPE_BLUR_BACKGROUND);
+    if (!blurBackgroundCacheMap.isEmpty() && isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
+        QString scaledPath;
+        if (getScaledBlurImage(blurBackgroundPath, scaledPath)) {
+            QPixmap pixmap;
+            loadPixmap(scaledPath, pixmap);
+            addPixmap(pixmap, PIXMAP_TYPE_BLUR_BACKGROUND);
+        } else {
+            handleBackground(blurBackgroundPath, PIXMAP_TYPE_BLUR_BACKGROUND);
+        }
+    }
 
     updatePixmap();
+
+    m_blackWidget->resize(size());
+    if (currentFrame == this && currentContent) {
+        currentContent->resize(size());
+    }
+
     QWidget::resizeEvent(event);
 }
 
@@ -313,17 +313,16 @@ void FullscreenBackground::resizeEvent(QResizeEvent *event)
  *
  * @param event
  */
-void FullscreenBackground::mouseMoveEvent(QMouseEvent *event)
+void FullScreenBackground::mouseMoveEvent(QMouseEvent *event)
 {
-    if (m_model->visible()) {
-        m_content->show();
-        emit contentVisibleChanged(true);
+    if (m_model->visible() && m_enableEnterEvent) {
+        updateCurrentFrame(this);
     }
 
     QWidget::mouseMoveEvent(event);
 }
 
-void FullscreenBackground::keyPressEvent(QKeyEvent *e)
+void FullScreenBackground::keyPressEvent(QKeyEvent *e)
 {
     QWidget::keyPressEvent(e);
 
@@ -338,68 +337,101 @@ void FullscreenBackground::keyPressEvent(QKeyEvent *e)
     }
 }
 
-void FullscreenBackground::showEvent(QShowEvent *event)
+void FullScreenBackground::showEvent(QShowEvent *event)
 {
+    qCDebug(DDE_SHELL) << "Frame is already displayed:" << this;
     if (m_model->isUseWayland()) {
         Q_EMIT requestDisableGlobalShortcutsForWayland(true);
     }
+    // fix bug 155019 此处是针对wayland下屏保退出，因qt没有发送enterEvent事件，进而导致密码框没有显示的规避方案
+    // x下面先激活其它窗口右键菜单，锁屏后，再激活dock右键菜单自动锁屏后，同样存在没有发送enterEvent事件的问题
+    // 如果鼠标的位置在当前屏幕内且锁屏状态为显示，将密码框显示出来
+    if (m_model->visible() && geometry().contains(QCursor::pos())) {
+        currentContent->show();
+        // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
+        activateWindow();
+    }
 
-    updateGeometry();
+    // setScreen中有设置updateGeometry，单屏不需要再次设置
+    if (qApp->screens().size() > 1) {
+        updateGeometry();
+    }
+
+    // 显示的时候需要置顶，截图在上方的话无法显示锁屏 见Bug-140545
+    raise();
+
+    m_blackWidget->setBlackMode(m_model->isBlackMode());
+
     return QWidget::showEvent(event);
 }
 
-void FullscreenBackground::hideEvent(QHideEvent *event)
+void FullScreenBackground::hideEvent(QHideEvent *event)
 {
+    qCDebug(DDE_SHELL) << "Frame is hidden:" << this;
     if (m_model->isUseWayland()) {
         Q_EMIT requestDisableGlobalShortcutsForWayland(false);
     }
+
     QWidget::hideEvent(event);
 }
 
-const QPixmap FullscreenBackground::pixmapHandle(const QPixmap &pixmap)
-{
-    const QSize trueSize {size() * devicePixelRatioF()};
-    QPixmap pix;
-    if (!pixmap.isNull())
-        pix = pixmap.scaled(trueSize, Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
-
-    pix = pix.copy(QRect((pix.width() - trueSize.width()) / 2,
-                         (pix.height() - trueSize.height()) / 2,
-                         trueSize.width(),
-                         trueSize.height()));
-
-    // draw pix to widget, so pix need set pixel ratio from qwidget devicepixelratioF
-    pix.setDevicePixelRatio(devicePixelRatioF());
-
-    return pix;
-}
-
-void FullscreenBackground::updateScreen(QScreen *screen)
+void FullScreenBackground::updateScreen(QPointer<QScreen> screen)
 {
     if (screen == m_screen)
         return;
 
-    if (m_screen)
-        disconnect(m_screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+    if (!m_screen.isNull())
+        disconnect(m_screen, &QScreen::geometryChanged, this, &FullScreenBackground::updateGeometry);
 
-    if (screen) {
-        connect(screen, &QScreen::geometryChanged, [=](){
-            qInfo() << "screen geometry changed:" << screen << " lockframe:" << this;
-        });
-        connect(screen, &QScreen::geometryChanged, this, &FullscreenBackground::updateGeometry);
+    if (!screen.isNull()) {
+        connect(screen, &QScreen::geometryChanged, this, &FullScreenBackground::updateGeometry);
     }
 
     m_screen = screen;
+
+    updateGeometry();
 }
 
-void FullscreenBackground::updateGeometry()
+void FullScreenBackground::updateGeometry()
 {
-    setGeometry(m_screen->geometry());
-    qInfo() << "set background geometry:" << m_screen << m_screen->geometry() << "lockFrame:"
-            << this  << " lockframe geometry:" << this->geometry();
-    if (m_screen->geometry().size() != this->geometry().size()) {
-        qWarning() << "size not same updateGeometry: " << this->geometry() << " lockFrame:" << this;
-        setGeometry(m_screen->geometry());
+    if (m_screen.isNull()) {
+        return;
+    }
+
+    qCInfo(DDE_SHELL) << "Set background screen:" << m_screen << ", geometry:" << m_screen->geometry();
+
+    // for bug:184943.系统修改分辨率后，登录界面获取的屏幕分辨率不正确,通过xrandr获取屏幕分辨率
+    if (m_model->appType() == AuthCommon::Login && !m_model->isUseWayland()) {
+        const auto screensGeometry = getScreenGeometryByXrandr();
+
+        if (screensGeometry.contains(m_screen->name())) {
+            // 如果qt获取的屏幕分辨率和xrandr获取的屏幕分辨率一致，使用qt获取的屏幕geometry
+            QSize qtScreenSize = m_screen->size();
+            QSize xrandrScreenSize = screensGeometry[m_screen->name()].size();
+            if (qtScreenSize == xrandrScreenSize) {
+                // fix205519。获取到的屏幕尺寸一致，但qt的位置可能是错的，但不影响窗口位置。
+                setddeGeometry(m_screen->geometry());
+            } else {
+                setddeGeometry(screensGeometry[m_screen->name()]);
+                qCDebug(DDE_SHELL) << "Set geometry by xrandr, this:" << this << screensGeometry[m_screen->name()]
+                                   << " screen:" << m_screen->name() << "screen geometry:" << m_screen->geometry();
+            }
+        } else {
+            setddeGeometry(m_screen->geometry());
+        }
+
+        return;
+    }
+
+    if (!m_screen.isNull()) {
+        setddeGeometry(m_screen->geometry());
+
+        qCInfo(DDE_SHELL) << "Update geometry, screen:" << m_screen
+                          << ", screen geometry:" << m_screen->geometry()
+                          << ", lockFrame:" << this
+                          << ", frame geometry:" << this->geometry();
+    } else {
+        qCWarning(DDE_SHELL) << "Screen is nullptr";
     }
 }
 
@@ -408,111 +440,270 @@ void FullscreenBackground::updateGeometry()
  * 用户登录界面，主窗体在某时刻会被设置为WindowDeactivate，
  * 此时登录界面获取不到焦点，需要调用requestActivate激活窗体。
 ********************************************************/
-bool FullscreenBackground::event(QEvent *e)
+bool FullScreenBackground::event(QEvent *e)
 {
 #ifndef QT_DEBUG
     if (e->type() == QEvent::WindowDeactivate) {
-        if (m_content->isVisible()) {
+        if (contentVisible()) {
             tryActiveWindow();
         }
     }
 #endif
+
+    if (e->type() == QEvent::MouseButtonPress) {
+        setFocus();
+    }
+
     return QWidget::event(e);
 }
 
-const QPixmap& FullscreenBackground::getPixmap(int type)
+const QPixmap &FullScreenBackground::getPixmap(int type)
 {
-    static QPixmap pixmap;
+    static QPixmap nullPixmap;
 
-    const QSize &size = trueSize();
-    auto findPixmap = [size](QList<QPair<QSize, QPixmap>> &list) -> const QPixmap & {
-        auto it = std::find_if(list.begin(), list.end(),
-                               [size](QPair<QSize, QPixmap> pair) { return pair.first == size; });
-        return it != list.end() ? it->second : pixmap;
-    };
+    QString strSize = sizeToString(trueSize());
+    if (PIXMAP_TYPE_BLUR_BACKGROUND == type && blurBackgroundCacheMap.contains(strSize)) {
+        return blurBackgroundCacheMap[strSize];
+    }
 
-    if (PIXMAP_TYPE_BACKGROUND == type)
-        return findPixmap(backgroundCacheList);
-    else
-        return findPixmap(blurBackgroundCacheList);
+    return nullPixmap;
 }
 
-QSize FullscreenBackground::trueSize() const
+QSize FullScreenBackground::trueSize() const
 {
     return size() * devicePixelRatioF();
 }
 
 /**
- * @brief FullscreenBackground::addPixmap
+ * @brief FullScreenBackground::addPixmap
  * 新增pixmap，存在相同size的则替换，没有则新增
  * @param pixmap pixmap对象
  * @param type 清晰壁纸还是模糊壁纸
  */
-void FullscreenBackground::addPixmap(const QPixmap &pixmap, const int type)
+void FullScreenBackground::addPixmap(const QPixmap &pixmap, const int type)
 {
-    const QSize &size = trueSize();
-    auto addFunc = [ this, &pixmap, size ] (QList<QPair<QSize, QPixmap>> &list){
-        bool exist = false;
-        for (auto &pair : list) {
-            if (pair.first == size) {
-                pair.second = pixmap;
-                exist = true;
-            }
-        }
-        if (!exist)
-            list.append(QPair<QSize, QPixmap>(trueSize(), pixmap));
-    };
-
-    if (PIXMAP_TYPE_BACKGROUND == type)
-        addFunc(backgroundCacheList);
-    else
-        addFunc(blurBackgroundCacheList);
+    QString strSize = sizeToString(trueSize());
+    if (type == PIXMAP_TYPE_BLUR_BACKGROUND) {
+        blurBackgroundCacheMap[strSize] = pixmap;
+    }
 }
 
 /**
- * @brief FullscreenBackground::updatePixmap
+ * @brief FullScreenBackground::updatePixmap
  * 更新壁纸列表，移除当前所有屏幕都不会使用的壁纸数据
  */
-void FullscreenBackground::updatePixmap()
+void FullScreenBackground::updatePixmap()
 {
-    auto isNoUsefunc = [](const QSize &size) -> bool {
-        bool b = std::any_of(frameList.begin(), frameList.end(), [size](FullscreenBackground *frame) {
-            return frame->trueSize() == size;
-        });
-        return !b;
-    };
-
-    auto updateFunc = [ isNoUsefunc ] (QList<QPair<QSize, QPixmap>> &list) {
-        for (auto it = list.begin(); it != list.end(); /* no increment here */) {
-            if (isNoUsefunc(it->first)) {
-                list.erase(it);
-            } else {
-                ++it;
+    auto removeNotUsedPixmap = [](QMap<QString, QPixmap> &cacheMap, const QStringList &frameSizeList) {
+        QStringList cacheMapKeys = cacheMap.keys();
+        for (auto &key : cacheMapKeys) {
+            if (!frameSizeList.contains(key)) {
+                qCInfo(DDE_SHELL) << "Remove not used pixmap:" << key;
+                cacheMap.remove(key);
             }
         }
     };
 
-    updateFunc(backgroundCacheList);
-    updateFunc(blurBackgroundCacheList);
+    QStringList frameSizeList;
+    for (auto &frame : frameList) {
+        QString strSize = sizeToString(frame->trueSize());
+        frameSizeList.append(strSize);
+    }
+
+    removeNotUsedPixmap(blurBackgroundCacheMap, frameSizeList);
 }
 
-bool FullscreenBackground::contains(int type)
+bool FullScreenBackground::contains(int type)
 {
-    auto containsFunc = [this](QList<QPair<QSize, QPixmap>> &list) -> bool {
-        bool b = std::any_of(list.begin(), list.end(), [this](QPair<QSize, QPixmap> &pair) {
-            return pair.first == trueSize();
-        });
-        return b;
+    auto containPixmap = [](const QMap<QString, QPixmap> &cacheMap, const QString &strSize) {
+        if (cacheMap.contains(strSize)) {
+            const QPixmap &pixmap = cacheMap[strSize];
+            return !pixmap.isNull(); // pixmap 为空也返回false
+        } else {
+            return false;
+        }
     };
 
-    if (PIXMAP_TYPE_BACKGROUND == type)
-        return containsFunc(backgroundCacheList);
-    else
-        return containsFunc(blurBackgroundCacheList);
+    QString strSize = sizeToString(trueSize());
+    if (PIXMAP_TYPE_BLUR_BACKGROUND == type) {
+        return containPixmap(blurBackgroundCacheMap, strSize);
+    }
+    return false;
 }
 
-void FullscreenBackground::moveEvent(QMoveEvent *event)
+void FullScreenBackground::moveEvent(QMoveEvent *event)
 {
-    qInfo() << "FullscreenBackground::moveEvent: " << ", old pos: " << event->oldPos() << ", pos: " << event->pos();
+    // 规避 bug189309，登录时后端屏幕变化通知太晚
+    if (currentContent && !currentContent->isVisible()) {
+        if (m_model->isUseWayland()) {
+            if (m_model->visible() && geometry().contains(QCursor::pos())) {
+                currentContent->show();
+            }
+        }
+    }
     QWidget::moveEvent(event);
+}
+
+QMap<QString, QRect> FullScreenBackground::getScreenGeometryByXrandr()
+{
+    QMap<QString, QRect> screensGeometry;
+
+    // 获取缩放比例
+    double scale = getScaleFactorFromDisplay();
+    double scaleFromDisplayQt = qApp->devicePixelRatio();
+    qCInfo(DDE_SHELL) << "Get scale factor from display scale:" << scale << " scale from display qt:" << scaleFromDisplayQt;
+    // 如果获取失败或者与从Qt获取的不一致，则不需要处理，使用Qt的屏幕信息
+    if (scale <= 0 || scaleFromDisplayQt != scale) {
+        return screensGeometry;
+    }
+
+    // 启动 xrandr | grep connected 进程
+    QProcess process;
+    QStringList arguments;
+    arguments << "-c"
+              << "xrandr | grep connected";
+    process.start("/bin/sh", arguments);
+    process.waitForStarted();
+    process.waitForFinished();
+
+    // 读取进程输出并解析屏幕信息
+    QString output = QString::fromLocal8Bit(process.readAll());
+    QRegularExpression regex("(\\S+) connected (?:primary )?(\\d+)x(\\d+)\\+(\\d+)\\+(\\d+)");
+    QRegularExpressionMatchIterator iter = regex.globalMatch(output);
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        if (match.hasMatch()) {
+            QString name = match.captured(1);
+            int width = match.captured(2).toInt();
+            int height = match.captured(3).toInt();
+            int x = match.captured(4).toInt();
+            int y = match.captured(5).toInt();
+            QRect rect(x, y, width / scale, height / scale);
+            screensGeometry.insert(name, rect);
+            qCInfo(DDE_SHELL) << "Screen name:" << name << ", screen rect:" << rect;
+        }
+    }
+
+    return screensGeometry;
+}
+
+double FullScreenBackground::getScaleFactorFromDisplay()
+{
+    QDBusInterface display("org.deepin.dde.Display1",
+                           "/org/deepin/dde/Display1",
+                           "org.deepin.dde.Display1",
+                           QDBusConnection::systemBus(), this);
+
+    QDBusReply<QString> reply = display.call("GetConfig");
+    QString jsonObjStr = reply.value();
+    if (jsonObjStr.isNull()) {
+        qCWarning(DDE_SHELL) << "Greeter get system display config failed (`GetConfig` null)";
+        return -1.0;
+    }
+
+    // 获取 ScaleFactors 对象
+    QJsonObject json = QJsonDocument::fromJson(jsonObjStr.toUtf8()).object();
+    QJsonObject scaleFactors = json.value("Config").toObject().value("ScaleFactors").toObject();
+
+    // 遍历 ScaleFactors 对象
+    for (const auto &key : scaleFactors.keys()) {
+        return scaleFactors.value(key).toDouble();
+    }
+
+    qCWarning(DDE_SHELL) << "greeter get system display config failed(`scaleFactors` null)";
+    return -1.0;
+}
+
+void FullScreenBackground::updateCurrentFrame(FullScreenBackground *frame)
+{
+    if (!frame) {
+        qCWarning(DDE_SHELL) << "Update current frame failed, frame is null";
+        return;
+    }
+
+    if (frame->m_screen)
+        qCInfo(DDE_SHELL) << "Update current frame:" << frame << ", screen:" << frame->m_screen->name();
+
+    currentFrame = frame;
+    setContent(currentContent);
+}
+
+void FullScreenBackground::handleBackground(const QString &path, int type)
+{
+    QSize trueSize = this->trueSize();
+
+    QPixmap pixmap;
+    loadPixmap(path, pixmap);
+
+    pixmap = pixmap.scaled(trueSize, Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
+    pixmap = pixmap.copy(QRect((pixmap.width() - trueSize.width()) / 2,
+                               (pixmap.height() - trueSize.height()) / 2,
+                               trueSize.width(),
+                               trueSize.height()));
+
+    // draw pix to widget, so pix need set pixel ratio from qwidget devicepixelratioF
+    pixmap.setDevicePixelRatio(devicePixelRatioF());
+    addPixmap(pixmap, type);
+}
+
+QString FullScreenBackground::sizeToString(const QSize &size)
+{
+    return QString("%1x%2").arg(size.width()).arg(size.height());
+}
+
+bool FullScreenBackground::getScaledBlurImage(const QString &originPath, QString &scaledPath)
+{
+    // 为了兼容没有安装壁纸服务环境;Qt5.15高版本可以使用activatableServiceNames()遍历然后可判断系统有没有安装服务
+    const QString wallpaperServicePath = "/lib/systemd/system/dde-wallpaper-cache.service";
+    if (!QFile::exists(wallpaperServicePath)) {
+        qWarning() << "dde-wallpaper-cache service not existed";
+        return false;
+    }
+
+    // 壁纸服务dde-wallpaper-cache
+    QDBusInterface wallpaperCacheInterface("org.deepin.dde.WallpaperCache", "/org/deepin/dde/WallpaperCache",
+                                           "org.deepin.dde.WallpaperCache", QDBusConnection::systemBus());
+
+    QFile file(originPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open file.";
+        return false;
+    }
+    const int fd = file.handle();
+    if (fd <= 0) {
+        qWarning() << "originPath file fd error";
+        return false;
+    }
+
+    QDBusUnixFileDescriptor dbusFd(fd);
+    const QString &pathmd5 = QCryptographicHash::hash(originPath.toUtf8(), QCryptographicHash::Md5).toHex();
+    QVariantList sizeArray;
+    sizeArray << QVariant::fromValue(this->trueSize());
+    QDBusReply<QStringList> pathList = wallpaperCacheInterface.call("GetProcessedImagePathByFd", QVariant::fromValue(dbusFd), pathmd5, sizeArray);
+    if (pathList.value().isEmpty()) {
+        qWarning() << "GetProcessedImagePathByFd interface return null";
+        return false;
+    }
+
+    QString path = pathList.value().at(0);
+    if (!path.isEmpty() && path != originPath) {
+        scaledPath = path;
+        // 图片处理完之后会添加_xxxx尺寸后缀，升级场景第一次登录只能获取到正在处理的原生图片，此时不能进行设置
+        if (!path.contains("_")) {
+            return false;
+        }
+        qDebug() << "get scaled path:" << path;
+        return true;
+    }
+
+    return false;
+}
+
+//增加一个定时器，每隔50ms再设置一次Geometry，避免出现xorg初始化未完成的情况，导致界面显示不全
+void FullScreenBackground::setddeGeometry(const QRect &rect)
+{
+    setGeometry(rect);
+    m_geometryRect = rect;
+    m_resetGeometryTimer->start(200);
+    QTimer::singleShot(200 * 5, m_resetGeometryTimer, &QTimer::stop);
 }

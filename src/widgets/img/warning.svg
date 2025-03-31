@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="14px" height="13px" viewBox="0 0 14 13" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>warning</title>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="97.6283482%" id="linearGradient-1">
+            <stop stop-color="#FFD200" offset="0%"></stop>
+            <stop stop-color="#FFB223" offset="100%"></stop>
+        </linearGradient>
+        <path d="M5.99442857,0 C9.31119394,0 12,2.68695042 12,6 C12,9.31304957 9.31119394,12 5.99442857,12 C2.68323579,12 0,9.313053 0,6 C0,2.68694704 2.68323579,0 5.99442857,0 Z" id="path-2"></path>
+        <filter x="-6.7%" y="-3.3%" width="113.3%" height="113.3%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="0" dy="0.4" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="0.2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="登录" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="错误提示_定制特殊提示-2" transform="translate(-893.000000, -628.000000)">
+            <g id="entry/error_tooltip" transform="translate(830.000000, 613.000000)">
+                <g id="warning" transform="translate(64.000000, 15.000000)">
+                    <g id="Shape">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                        <use fill="url(#linearGradient-1)" fill-rule="evenodd" xlink:href="#path-2"></use>
+                    </g>
+                    <path d="M5.4,3 L6.6,3 L6.6,6.6 L5.4,6.6 L5.4,3 Z M5.4,7.8 L6.6,7.8 L6.6,9 L5.4,9 L5.4,7.8 Z" id="Combined-Shape" fill="#FFFFFF" fill-rule="nonzero" opacity="0.900000036"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

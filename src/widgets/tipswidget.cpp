@@ -5,6 +5,7 @@
 #include "tipswidget.h"
 #include <QEvent>
 #include <QTimer>
+
 DWIDGET_USE_NAMESPACE
 
 static constexpr int BlurMaskAlpha = 70;

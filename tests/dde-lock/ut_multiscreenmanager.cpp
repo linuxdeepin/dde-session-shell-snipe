@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -30,6 +30,6 @@ void UT_MultiScreenManager::TearDown()
 TEST_F(UT_MultiScreenManager, basic)
 {
     m_manager->startRaiseContentFrame();
-    m_manager->register_for_mutil_screen(nullptr);
+    m_manager->register_for_multi_screen(nullptr);
     m_manager->onScreenRemoved(QGuiApplication::primaryScreen());
 }

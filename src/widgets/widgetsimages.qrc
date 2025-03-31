@@ -124,6 +124,7 @@
         <file>img/nopassword_login_hover.svg</file>
         <file>img/nopassword_login_normal.svg</file>
         <file>img/logo.svg</file>
+        <file>img/warning.svg</file>
         <file>img/bottom_actions/reboot.svg</file>
         <file>img/bottom_actions/shutdown.svg</file>
         <file>img/default_avatar.svg</file>
@@ -183,5 +184,56 @@
         <file>img/list_actions/userswitch_normal.svg</file>
         <file>img/list_actions/userswitch_press.svg</file>
         <file>img/deepin-system-monitor.svg</file>
+        <file>img/back-normal.svg</file>
+        <file>img/back-hover.svg</file>
+        <file>img/user_name.svg</file>
+        <file>img/update/failed.svg</file>
+        <file>img/update/success.svg</file>
+        <file>img/update/logo.svg</file>
+        <file>img/update/waiting_update/waiting_update_0.png</file>
+        <file>img/update/waiting_update/waiting_update_1.png</file>
+        <file>img/update/waiting_update/waiting_update_2.png</file>
+        <file>img/update/waiting_update/waiting_update_3.png</file>
+        <file>img/update/waiting_update/waiting_update_4.png</file>
+        <file>img/update/waiting_update/waiting_update_5.png</file>
+        <file>img/update/waiting_update/waiting_update_6.png</file>
+        <file>img/update/waiting_update/waiting_update_7.png</file>
+        <file>img/update/waiting_update/waiting_update_8.png</file>
+        <file>img/update/waiting_update/waiting_update_9.png</file>
+        <file>img/update/waiting_update/waiting_update_10.png</file>
+        <file>img/update/waiting_update/waiting_update_11.png</file>
+        <file>img/update/waiting_update/waiting_update_12.png</file>
+        <file>img/update/waiting_update/waiting_update_13.png</file>
+        <file>img/update/waiting_update/waiting_update_14.png</file>
+        <file>img/update/waiting_update/waiting_update_15.png</file>
+        <file>img/update/waiting_update/waiting_update_16.png</file>
+        <file>img/update/waiting_update/waiting_update_17.png</file>
+        <file>img/update/waiting_update/waiting_update_18.png</file>
+        <file>img/update/waiting_update/waiting_update_19.png</file>
+        <file>img/update/waiting_update/waiting_update_20.png</file>
+        <file>img/update/waiting_update/waiting_update_21.png</file>
+        <file>img/update/waiting_update/waiting_update_22.png</file>
+        <file>img/update/waiting_update/waiting_update_23.png</file>
+        <file>img/update/waiting_update/waiting_update_24.png</file>
+        <file>img/update/waiting_update/waiting_update_25.png</file>
+        <file>img/update/waiting_update/waiting_update_26.png</file>
+        <file>img/update/waiting_update/waiting_update_27.png</file>
+        <file>img/update/waiting_update/waiting_update_28.png</file>
+        <file>img/update/waiting_update/waiting_update_29.png</file>
+        <file>img/update/waiting_update/waiting_update_30.png</file>
+        <file>img/update/waiting_update/waiting_update_31.png</file>
+        <file>img/update/waiting_update/waiting_update_32.png</file>
+        <file>img/update/waiting_update/waiting_update_33.png</file>
+        <file>img/update/waiting_update/waiting_update_34.png</file>
+        <file>img/update/waiting_update/waiting_update_35.png</file>
+        <file>img/update/waiting_update/waiting_update_36.png</file>
+        <file>img/update/waiting_update/waiting_update_37.png</file>
+        <file>img/update/waiting_update/waiting_update_38.png</file>
+        <file>img/update/waiting_update/waiting_update_39.png</file>
+        <file>img/inhibitview/cancel_normal.svg</file>
+        <file>img/inhibitview/cancel_hover.svg</file>
+        <file>img/inhibitview/reboot_warning.svg</file>
+        <file>img/inhibitview/logout_warning.svg</file>
+        <file>img/inhibitview/poweroff_warning.svg</file>
     </qresource>
 </RCC>

@@ -14,14 +14,16 @@ public:
     KeyBoardPlatform(QObject *parent = nullptr);
     virtual ~KeyBoardPlatform();
 
-    virtual bool isCapslockOn() = 0;
-    virtual bool isNumlockOn() = 0;
-    virtual bool setNumlockStatus(const bool &on) = 0;
+    virtual bool isCapsLockOn() = 0;
+    virtual bool isNumLockOn() = 0;
+    virtual bool setNumLockStatus(const bool &on) = 0;
     virtual void run() = 0;
+    virtual void ungrabKeyboard() = 0;
 
 signals:
-    void capslockStatusChanged(bool on);
-    void numlockStatusChanged(bool on);
+    void capsLockStatusChanged(bool on);
+    void numLockStatusChanged(bool on);
+    void initialized();
 };
 
 #endif // KEYBOARDPLATFORM_H

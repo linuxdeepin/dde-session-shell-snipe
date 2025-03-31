@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>قۇۋۋەت</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>ئېكران كۇنۇپكىسى</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

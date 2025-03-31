@@ -3,11 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "shutdownwidget.h"
-#include "multiuserswarningview.h"
 #include "dconfigwatcher.h"
-#include "public_func.h"
 
 #include <DConfig>
+#include <dconfig_helper.h>
+
+#include <QHBoxLayout>
+#include <QKeyEvent>
+#include <QStackedLayout>
 
 #if 0 // storage i10n
 QT_TRANSLATE_NOOP("ShutdownWidget", "Shut down"),
@@ -16,18 +19,22 @@ QT_TRANSLATE_NOOP("ShutdownWidget", "Suspend"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Hibernate")
 #endif
 
+const QString LASTORE_DCONFIG_NAME = "org.deepin.lastore";
+const QString LASTORE_DAEMON_STATUS = "lastore-daemon-status";
+const int IS_UPDATE_READY       = 1 << 0;
+const int IS_UPDATE_DISABLED    = 1 << 1;
+const int IS_UPDATE_FORCE       = 1 << 2;
+
 DCORE_USE_NAMESPACE
+
+
 
 ShutdownWidget::ShutdownWidget(QWidget *parent)
     : QFrame(parent)
-    , m_index(-1)
-    , m_model(nullptr)
-    , m_systemMonitor(nullptr)
     , m_switchosInterface(new HuaWeiSwitchOSInterface("com.huawei", "/com/huawei/switchos", QDBusConnection::sessionBus(), this))
+    , m_modeStatus(SessionBaseModel::ModeStatus::NoStatus)
     , m_dconfig(DConfig::create(getDefaultConfigFileName(), getDefaultConfigFileName(), QString(), this))
 {
-    m_frameDataBind = FrameDataBind::Instance();
-
     initUI();
     initConnect();
 
@@ -37,12 +44,6 @@ ShutdownWidget::ShutdownWidget(QWidget *parent)
     onEnable("systemLock", enableState(DConfigWatcher::instance()->getStatus("systemLock")));
     onEnable("systemReboot", enableState(DConfigWatcher::instance()->getStatus("systemReboot")));
 
-    std::function<void (QVariant)> function = std::bind(&ShutdownWidget::onOtherPageChanged, this, std::placeholders::_1);
-    int index = m_frameDataBind->registerFunction("ShutdownWidget", function);
-
-    connect(this, &ShutdownWidget::destroyed, this, [this, index] {
-        m_frameDataBind->unRegisterFunction("ShutdownWidget", index);
-    });
     installEventFilter(this);
 }
 
@@ -51,50 +52,59 @@ ShutdownWidget::~ShutdownWidget()
     DConfigWatcher::instance()->erase("systemSuspend");
     DConfigWatcher::instance()->erase("systemHibernate");
     DConfigWatcher::instance()->erase("systemShutdown");
+    DConfigWatcher::instance()->erase("systemLock");
     DConfigWatcher::instance()->erase("systemReboot");
 }
 
 void ShutdownWidget::initConnect()
 {
-    connect(m_requireRestartButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireRestartButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireRestartButton;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, false);
     });
-    connect(m_requireShutdownButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireShutdownButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireShutdownButton;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
     });
-    connect(m_requireSuspendButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireSuspendButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireSuspendButton;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireSuspend, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireSuspend, false);
     });
-    connect(m_requireHibernateButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireHibernateButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireHibernateButton;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireHibernate, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireHibernate, false);
     });
-    connect(m_requireLockButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireLockButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireLockButton;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireLock, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireLock, false);
     });
-    connect(m_requireSwitchUserBtn, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireSwitchUserBtn, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireSwitchUserBtn;
-        emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireSwitchUser, false);
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireSwitchUser, false);
     });
     if (m_requireSwitchSystemBtn) {
-        connect(m_requireSwitchSystemBtn, &RoundItemButton::clicked, this, [ = ] {
+        connect(m_requireSwitchSystemBtn, &RoundItemButton::clicked, this, [this] {
             m_currentSelectedBtn = m_requireSwitchSystemBtn;
-            emit onRequirePowerAction(SessionBaseModel::PowerAction::RequireSwitchSystem, false);
+            onRequirePowerAction(SessionBaseModel::PowerAction::RequireSwitchSystem, false);
         });
     }
-    connect(m_requireLogoutButton, &RoundItemButton::clicked, this, [ = ] {
+    connect(m_requireLogoutButton, &RoundItemButton::clicked, this, [this] {
         m_currentSelectedBtn = m_requireLogoutButton;
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireLogout, false);
+    });
+    connect(m_updateAndRebootButton, &RoundItemButton::clicked, this, [this] {
+        m_currentSelectedBtn = m_updateAndRebootButton;
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireUpdateRestart, false);
+    });
+    connect(m_updateAndShutdownButton, &RoundItemButton::clicked, this, [this] {
+        m_currentSelectedBtn = m_updateAndShutdownButton;
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireUpdateShutdown, false);
     });
 
     connect(DConfigWatcher::instance(), &DConfigWatcher::enableChanged, this, &ShutdownWidget::onEnable);
 
     if (m_systemMonitor) {
-        connect(m_systemMonitor, &SystemMonitor::requestShowSystemMonitor, this, &ShutdownWidget::runSystemMonitor);
+        connect(m_systemMonitor, &SystemMonitor::requestAction, this, &ShutdownWidget::runSystemMonitor);
     }
 
     connect(m_dconfig, &DConfig::valueChanged, this, [this] (const QString &key) {
@@ -133,29 +143,6 @@ void ShutdownWidget::onEnable(const QString &key, bool enable)
         m_requireLockButton->setDisabled(!enable);
     } else if ("systemReboot" == key) {
         m_requireRestartButton->setDisabled(!enable);
-        m_requireRestartButton->setCheckable(enable);
-    }
-}
-
-void ShutdownWidget::onOtherPageChanged(const QVariant &value)
-{
-    m_index = value.toInt();
-
-    for (auto it = m_btnList.constBegin(); it != m_btnList.constEnd(); ++it) {
-        (*it)->updateState(RoundItemButton::Normal);
-    }
-
-    m_currentSelectedBtn = m_btnList.at(m_index);
-    m_currentSelectedBtn->updateState(RoundItemButton::Checked);
-}
-
-void ShutdownWidget::hideToplevelWindow()
-{
-    QWidgetList widgets = qApp->topLevelWidgets();
-    for (QWidget *widget : widgets) {
-        if (widget->isVisible()) {
-            widget->hide();
-        }
     }
 }
 
@@ -166,7 +153,8 @@ void ShutdownWidget::enterKeyPushed()
         return;
     }
 
-    if (!m_currentSelectedBtn->isEnabled())
+    // 在按回车键时，若m_currentSelectedBtn不存在，则退出
+    if (!m_currentSelectedBtn || !m_currentSelectedBtn->isEnabled() || !m_currentSelectedBtn->isVisible())
         return;
 
     if (m_currentSelectedBtn == m_requireShutdownButton)
@@ -185,6 +173,10 @@ void ShutdownWidget::enterKeyPushed()
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireSwitchSystem, false);
     else if (m_currentSelectedBtn == m_requireLogoutButton)
         onRequirePowerAction(SessionBaseModel::PowerAction::RequireLogout, false);
+    else if (m_currentSelectedBtn == m_updateAndShutdownButton)
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireUpdateShutdown, false);
+    else if (m_currentSelectedBtn == m_updateAndRebootButton)
+        onRequirePowerAction(SessionBaseModel::PowerAction::RequireUpdateRestart, false);
 }
 
 void ShutdownWidget::enableHibernateBtn(bool enable)
@@ -200,7 +192,16 @@ void ShutdownWidget::enableSleepBtn(bool enable)
 void ShutdownWidget::initUI()
 {
     setFocusPolicy(Qt::StrongFocus);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    auto setPic = [](RoundItemButton* button, const QString &pic) {
+        button->setNormalPic(":/img/list_actions/" + pic + "_normal.svg");
+        button->setHoverPic(":/img/list_actions/" + pic + "_hover.svg");
+        button->setPressPic(":/img/list_actions/" + pic + "_press.svg");
+    };
+
     m_requireShutdownButton = new RoundItemButton(this);
+    setPic(m_requireShutdownButton, "poweroff");
     m_requireShutdownButton->setFocusPolicy(Qt::NoFocus);
     m_requireShutdownButton->setObjectName("RequireShutDownButton");
     m_requireShutdownButton->setAccessibleName("RequireShutDownButton");
@@ -209,6 +210,7 @@ void ShutdownWidget::initUI()
     DConfigWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);
 
     m_requireRestartButton = new RoundItemButton(tr("Reboot"), this);
+    setPic(m_requireRestartButton, "reboot");
     m_requireRestartButton->setFocusPolicy(Qt::NoFocus);
     m_requireRestartButton->setObjectName("RequireRestartButton");
     m_requireRestartButton->setAccessibleName("RequireRestartButton");
@@ -217,6 +219,7 @@ void ShutdownWidget::initUI()
     DConfigWatcher::instance()->bind("systemReboot", m_requireRestartButton);
 
     m_requireSuspendButton = new RoundItemButton(tr("Suspend"), this);
+    setPic(m_requireSuspendButton, "suspend");
     m_requireSuspendButton->setFocusPolicy(Qt::NoFocus);
     m_requireSuspendButton->setObjectName("RequireSuspendButton");
     m_requireSuspendButton->setAccessibleName("RequireSuspendButton");
@@ -225,6 +228,7 @@ void ShutdownWidget::initUI()
     DConfigWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);
 
     m_requireHibernateButton = new RoundItemButton(tr("Hibernate"), this);
+    setPic(m_requireHibernateButton, "sleep");
     m_requireHibernateButton->setFocusPolicy(Qt::NoFocus);
     m_requireHibernateButton->setAccessibleName("RequireHibernateButton");
     m_requireHibernateButton->setObjectName("RequireHibernateButton");
@@ -233,6 +237,7 @@ void ShutdownWidget::initUI()
     DConfigWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);
 
     m_requireLockButton = new RoundItemButton(tr("Lock"));
+    setPic(m_requireLockButton, "lock");
     m_requireLockButton->setFocusPolicy(Qt::NoFocus);
     m_requireLockButton->setAccessibleName("RequireLockButton");
     m_requireLockButton->setObjectName("RequireLockButton");
@@ -241,14 +246,15 @@ void ShutdownWidget::initUI()
     DConfigWatcher::instance()->bind("systemLock", m_requireLockButton);
 
     m_requireLogoutButton = new RoundItemButton(tr("Log out"));
+    setPic(m_requireLogoutButton, "logout");
     m_requireLogoutButton->setFocusPolicy(Qt::NoFocus);
     m_requireLogoutButton->setAccessibleName("RequireLogoutButton");
     m_requireLogoutButton->setObjectName("RequireLogoutButton");
     m_requireLogoutButton->setAutoExclusive(true);
-    m_requireLogoutButton->setVisible(!m_dconfig->value("hideLogoutButton", false).toBool());
     updateTr(m_requireLogoutButton, "Log out");
 
     m_requireSwitchUserBtn = new RoundItemButton(tr("Switch user"));
+    setPic(m_requireSwitchUserBtn, "userswitch");
     m_requireSwitchUserBtn->setFocusPolicy(Qt::NoFocus);
     m_requireSwitchUserBtn->setAccessibleName("RequireSwitchUserButton");
     m_requireSwitchUserBtn->setObjectName("RequireSwitchUserButton");
@@ -258,6 +264,7 @@ void ShutdownWidget::initUI()
 
     if (m_switchosInterface->isDualOsSwitchAvail()) {
         m_requireSwitchSystemBtn = new RoundItemButton(tr("Switch system"));
+        setPic(m_requireSwitchSystemBtn, "osswitch");
         m_requireSwitchSystemBtn->setAccessibleName("SwitchSystemButton");
         m_requireSwitchSystemBtn->setFocusPolicy(Qt::NoFocus);
         m_requireSwitchSystemBtn->setObjectName("RequireSwitchSystemButton");
@@ -265,8 +272,26 @@ void ShutdownWidget::initUI()
         updateTr(m_requireSwitchSystemBtn, "Switch system");
     }
 
+    m_updateAndShutdownButton = new RoundItemButton(tr("Update and Shut Down"));
+    setPic(m_updateAndShutdownButton, "poweroff");
+    m_updateAndShutdownButton->setFocusPolicy(Qt::NoFocus);
+    m_updateAndShutdownButton->setAccessibleName("UpdateAndShutdownButton");
+    m_updateAndShutdownButton->setObjectName("UpdateAndShutdownButton");
+    m_updateAndShutdownButton->setAutoExclusive(true);
+    m_updateAndShutdownButton->setVisible(false);
+
+    m_updateAndRebootButton = new RoundItemButton(tr("Update and Reboot"));
+    setPic(m_updateAndRebootButton, "reboot");
+    m_updateAndRebootButton->setFocusPolicy(Qt::NoFocus);
+    m_updateAndRebootButton->setAccessibleName("UpdateAndRebootButton");
+    m_updateAndRebootButton->setObjectName("UpdateAndRebootButton");
+    m_updateAndRebootButton->setAutoExclusive(true);
+    m_updateAndRebootButton->setVisible(false);
+
     m_btnList.append(m_requireShutdownButton);
+    m_btnList.append(m_updateAndShutdownButton);
     m_btnList.append(m_requireRestartButton);
+    m_btnList.append(m_updateAndRebootButton);
     m_btnList.append(m_requireSuspendButton);
     m_btnList.append(m_requireHibernateButton);
     m_btnList.append(m_requireLockButton);
@@ -281,7 +306,9 @@ void ShutdownWidget::initUI()
     m_shutdownLayout->setSpacing(10);
     m_shutdownLayout->addStretch();
     m_shutdownLayout->addWidget(m_requireShutdownButton);
+    m_shutdownLayout->addWidget(m_updateAndShutdownButton);
     m_shutdownLayout->addWidget(m_requireRestartButton);
+    m_shutdownLayout->addWidget(m_updateAndRebootButton);
     m_shutdownLayout->addWidget(m_requireSuspendButton);
     m_shutdownLayout->addWidget(m_requireHibernateButton);
     m_shutdownLayout->addWidget(m_requireLockButton);
@@ -295,18 +322,17 @@ void ShutdownWidget::initUI()
     m_shutdownFrame = new QFrame;
     m_shutdownFrame->setAccessibleName("ShutdownFrame");
     m_shutdownFrame->setLayout(m_shutdownLayout);
+    m_shutdownFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     m_actionLayout = new QVBoxLayout;
     m_actionLayout->setContentsMargins(0, 0, 0, 0);
     m_actionLayout->setSpacing(10);
     m_actionLayout->addStretch();
     m_actionLayout->addWidget(m_shutdownFrame);
-    m_actionLayout->setAlignment(m_shutdownFrame, Qt::AlignCenter);
     m_actionLayout->addStretch();
 
     if (findValueByQSettings<bool>(DDESESSIONCC::session_ui_configs, "Shutdown", "enableSystemMonitor", true)) {
-        QFile file("/usr/bin/deepin-system-monitor");
-        if (file.exists()) {
+        if (!QStandardPaths::findExecutable("deepin-system-monitor").isEmpty()) {
             m_systemMonitor = new SystemMonitor;
             m_systemMonitor->setAccessibleName("SystemMonitor");
             m_systemMonitor->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -317,9 +343,9 @@ void ShutdownWidget::initUI()
         }
     }
 
-    m_actionFrame = new QFrame;
+    m_actionFrame = new QFrame(this);
     m_actionFrame->setAccessibleName("ActionFrame");
-    m_actionFrame->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    m_actionFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_actionFrame->setFocusPolicy(Qt::NoFocus);
     m_actionFrame->setLayout(m_actionLayout);
 
@@ -327,17 +353,14 @@ void ShutdownWidget::initUI()
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
     m_mainLayout->setSpacing(0);
     m_mainLayout->addWidget(m_actionFrame);
-    m_mainLayout->setAlignment(m_actionFrame, Qt::AlignCenter);
     setLayout(m_mainLayout);
 
-    updateStyle(":/skin/requireshutdown.qss", this);
+    // updateStyle(":/skin/requireshutdown.qss", this);
 
     // refresh language
     for (auto it = m_trList.constBegin(); it != m_trList.constEnd(); ++it) {
         it->first(qApp->translate("ShutdownWidget", it->second.toUtf8()));
     }
-
-    this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
 void ShutdownWidget::leftKeySwitch()
@@ -359,9 +382,8 @@ void ShutdownWidget::leftKeySwitch()
     }
 
     m_currentSelectedBtn = m_btnList.at(m_index);
-    m_currentSelectedBtn->updateState(RoundItemButton::Checked);
-
-    m_frameDataBind->updateValue("ShutdownWidget", m_index);
+    if (m_currentSelectedBtn)
+        m_currentSelectedBtn->updateState(RoundItemButton::Checked);
 
     if (m_systemMonitor && m_systemMonitor->isVisible()) {
         m_systemMonitor->setState(SystemMonitor::Leave);
@@ -390,8 +412,6 @@ void ShutdownWidget::rightKeySwitch()
     m_currentSelectedBtn = m_btnList.at(m_index);
     m_currentSelectedBtn->updateState(RoundItemButton::Checked);
 
-    m_frameDataBind->updateValue("ShutdownWidget", m_index);
-
     if (m_systemMonitor && m_systemMonitor->isVisible()) {
         m_systemMonitor->setState(SystemMonitor::Leave);
     }
@@ -400,14 +420,62 @@ void ShutdownWidget::rightKeySwitch()
 void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
     RoundItemButton *roundItemButton;
+    if (m_modeStatus == status) {
+        qCInfo(DDE_SHELL) << "Shutdown widget status not being changed";
+        return;
+    }
+    m_modeStatus = status;
+    setButtonsVisible();
+
+    if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
+        // 如果用户点击了更新选项，那么直接开始进入更新
+        if (m_model->updatePowerMode() != SessionBaseModel::UPM_None) {
+            roundItemButton = m_model->updatePowerMode() == SessionBaseModel::UPM_UpdateAndShutdown ?
+                m_updateAndShutdownButton : m_updateAndRebootButton;
+            // 当前流程执行完毕后模拟点击按钮
+            QTimer::singleShot(0, this, [roundItemButton] {
+                Q_EMIT roundItemButton->clicked();
+            });
+        } else {
+            roundItemButton = m_requireLockButton;
+        }
+    } else {
+        roundItemButton = m_requireShutdownButton;
+    }
+
+    m_index = m_btnList.indexOf(roundItemButton);
+    m_currentSelectedBtn = m_btnList.at(m_index);
+    m_currentSelectedBtn->updateState(RoundItemButton::Checked);
+
+    if (m_systemMonitor) {
+        m_systemMonitor->setVisible(status == SessionBaseModel::ModeStatus::ShutDownMode);
+    }
+}
+
+void ShutdownWidget::setButtonsVisible()
+{
+    // 根据lastore的lastore-daemon-status配置决定是否显示更新按钮
+    const int lastoreDaemonStatus = DConfigHelper::instance()->getConfig(LASTORE_DCONFIG_NAME, LASTORE_DCONFIG_NAME, "", LASTORE_DAEMON_STATUS, 0).toInt();
+    qCInfo(DDE_SHELL) << "Lastore daemon status: " << lastoreDaemonStatus;
+    const bool isUpdateReady = lastoreDaemonStatus & IS_UPDATE_READY;
+    const bool isUpdateDisabled = lastoreDaemonStatus & IS_UPDATE_DISABLED;
+    const bool isUpdateForce = lastoreDaemonStatus & IS_UPDATE_FORCE;
+    const bool isUpdateVisible = isUpdateReady && !isUpdateDisabled;
+
     if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
         m_requireLockButton->setVisible(DConfigWatcher::instance()->getStatus("systemLock") != Status_Hidden);
         m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
         if (m_requireSwitchSystemBtn) {
             m_requireSwitchSystemBtn->setVisible(true);
         }
-        m_requireLogoutButton->setVisible(!m_dconfig->value("hideLogoutButton", false).toBool());
-        roundItemButton = m_requireLockButton;
+        if (m_model->appType() == AppType::Lock) {
+            const bool hideLogoutButton = DConfigHelper::instance()->getConfig("hideLogoutButton", false).toBool();
+            m_requireLogoutButton->setVisible(!hideLogoutButton);
+        }
+        m_updateAndRebootButton->setVisible(isUpdateVisible);
+        m_updateAndRebootButton->setRedPointVisible(isUpdateVisible);
+        m_updateAndShutdownButton->setVisible(isUpdateVisible);
+        m_updateAndShutdownButton->setRedPointVisible(isUpdateVisible);
     } else {
         m_requireLockButton->setVisible(false);
         m_requireSwitchUserBtn->setVisible(false);
@@ -415,70 +483,75 @@ void ShutdownWidget::onStatusChanged(SessionBaseModel::ModeStatus status)
             m_requireSwitchSystemBtn->setVisible(false);
         }
         m_requireLogoutButton->setVisible(false);
-        roundItemButton = m_requireShutdownButton;
+        m_updateAndShutdownButton->setVisible(false);
+        m_updateAndRebootButton->setVisible(false);
     }
 
-    int index = m_btnList.indexOf(roundItemButton);
-    roundItemButton->updateState(RoundItemButton::Checked);
-    m_frameDataBind->updateValue("ShutdownWidget", index);
-
-    if (m_systemMonitor) {
-        m_systemMonitor->setVisible(status == SessionBaseModel::ModeStatus::ShutDownMode);
+    if (isUpdateForce && isUpdateVisible) {
+        qCInfo(DDE_SHELL) << "Force update is enabled, hide shutdown button and reboot button";
+        m_requireShutdownButton->setVisible(false);
+        m_requireRestartButton->setVisible(false);
     }
 }
 
 void ShutdownWidget::runSystemMonitor()
 {
-    auto launchProcessByAM = []() {
-        QDBusMessage message = QDBusMessage::createMethodCall(
-                "org.desktopspec.ApplicationManager1",
-                "/org/desktopspec/ApplicationManager1/deepin_2dsystem_2dmonitor",
-                "org.desktopspec.ApplicationManager1.Application",
-                "Launch"
-        );
-
-        message << QString("") << QStringList() << QVariantMap();
-
-        QDBusMessage reply = QDBusConnection::sessionBus().call(message);
-        if (reply.type() == QDBusMessage::ReplyMessage) {
-            qDebug() << "Launch deepin-system-monitor successful!";
-        } else {
-            qWarning() << "Launch deepin-system-monitor main process error:" << reply.errorMessage();
-        }
-    };
-
-    launchProcessByAM();
+    QProcess::startDetached("deepin-system-monitor", {});
 
     if (m_systemMonitor) {
         m_systemMonitor->clearFocus();
         m_systemMonitor->setState(SystemMonitor::Leave);
     }
 
-    hideToplevelWindow();
+    m_model->setVisible(false);
 }
 
 void ShutdownWidget::recoveryLayout()
 {
-    //关机或重启确认前会隐藏所有按钮,取消重启或关机后隐藏界面时重置按钮可见状态
-    //同时需要判断切换用户按钮是否允许可见
+    // 关机或重启确认前会隐藏所有按钮,取消重启或关机后隐藏界面时重置按钮可见状态
+    // 同时需要判断切换用户按钮是否允许可见
     m_requireShutdownButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemShutdown") != Status_Hidden));
     m_requireRestartButton->setVisible(DConfigWatcher::instance()->getStatus("systemReboot") != Status_Hidden);
     enableHibernateBtn(m_model->hasSwap());
     enableSleepBtn(m_model->canSleep());
-    m_requireLockButton->setVisible(true && (DConfigWatcher::instance()->getStatus("systemLock") != Status_Hidden));
+    if (m_modeStatus == SessionBaseModel::ModeStatus::PowerMode)
+        return;
+
     m_requireSwitchUserBtn->setVisible(m_switchUserEnable);
-
-    if (m_systemMonitor) {
-        m_systemMonitor->setVisible(false);
-    }
-
     m_mainLayout->setCurrentWidget(m_actionFrame);
     setFocusPolicy(Qt::StrongFocus);
 }
 
+void ShutdownWidget::onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm)
+{
+    qCInfo(DDE_SHELL) << "Require power action: " << powerAction << ", need confirm: " << needConfirm;
+    //锁屏或关机模式时，需要确认是否关机或检查是否有阻止关机
+    if (m_model->appType() == Lock) {
+        switch (powerAction) {
+        //更新前检查是否允许关机
+        case SessionBaseModel::PowerAction::RequireUpdateShutdown:
+        case SessionBaseModel::PowerAction::RequireUpdateRestart:
+        case SessionBaseModel::PowerAction::RequireShutdown:
+        case SessionBaseModel::PowerAction::RequireRestart:
+        case SessionBaseModel::PowerAction::RequireSwitchSystem:
+        case SessionBaseModel::PowerAction::RequireLogout:
+        case SessionBaseModel::PowerAction::RequireSuspend:
+        case SessionBaseModel::PowerAction::RequireHibernate:
+            emit m_model->shutdownInhibit(powerAction, needConfirm);
+            break;
+        default:
+            m_model->setPowerAction(powerAction);
+            break;
+        }
+    } else {
+        //登录模式直接操作
+        m_model->setPowerAction(powerAction);
+    }
+}
+
 void ShutdownWidget::setUserSwitchEnable(bool enable)
 {
-    //接收到用户列表变更信号号,记录切换用户是否允许可见,再根据当前是锁屏还是关机设置切换按钮可见状态
+    // 接收到用户列表变更信号号,记录切换用户是否允许可见,再根据当前是锁屏还是关机设置切换按钮可见状态
     if (m_switchUserEnable == enable) {
         return;
     }
@@ -492,7 +565,7 @@ bool ShutdownWidget::eventFilter(QObject *watched, QEvent *event)
     Q_UNUSED(watched)
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_Tab) {
+        if (keyEvent->key() == Qt::Key_Tab && m_modeStatus == SessionBaseModel::ShutDownMode) {
             if (m_systemMonitor && m_systemMonitor->isVisible() && m_currentSelectedBtn && m_currentSelectedBtn->isVisible()) {
                 if (m_currentSelectedBtn->isChecked()) {
                     m_currentSelectedBtn->setChecked(false);
@@ -504,7 +577,16 @@ bool ShutdownWidget::eventFilter(QObject *watched, QEvent *event)
             }
             return true;
         }
+    } else if (event->type() == QEvent::FocusOut && m_currentSelectedBtn && m_currentSelectedBtn->isVisible() && m_modeStatus != SessionBaseModel::ShutDownMode) {
+        m_currentSelectedBtn->setChecked(false);
+    } else if (event->type() == QEvent::FocusIn && m_currentSelectedBtn && m_currentSelectedBtn->isVisible() && m_modeStatus != SessionBaseModel::ShutDownMode) {
+        m_currentSelectedBtn->setChecked(true);
     }
+
+    if (event->type() == QEvent::Hide && m_modeStatus == SessionBaseModel::PowerMode) {
+        m_currentSelectedBtn = m_requireShutdownButton;
+    }
+
     return false;
 }
 
@@ -534,16 +616,9 @@ bool ShutdownWidget::event(QEvent *e)
         for (auto it = m_trList.constBegin(); it != m_trList.constEnd(); ++it) {
             it->first(qApp->translate("ShutdownWidget", it->second.toUtf8()));
         }
-    }
-
-    if (e->type() == QEvent::FocusIn) {
-        if (m_index < 0) {
-            m_index = 0;
-        }
-        m_frameDataBind->updateValue("ShutdownWidget", m_index);
-        m_btnList.at(m_index)->updateState(RoundItemButton::Checked);
-    } else if (e->type() == QEvent::FocusOut) {
-        m_btnList.at(m_index)->updateState(RoundItemButton::Normal);
+    } else if (e->type() == QEvent::Hide) {
+        // 隐藏的时候重置状态，避免下次进入的时候默认选中了更新按钮
+        m_model->setUpdatePowerMode(SessionBaseModel::UPM_None);
     }
 
     return QFrame::event(e);
@@ -571,11 +646,16 @@ void ShutdownWidget::setModel(SessionBaseModel *const model)
 {
     m_model = model;
 
+    connect(model, &SessionBaseModel::onRequirePowerAction, this, &ShutdownWidget::onRequirePowerAction);
+
     connect(model, &SessionBaseModel::onHasSwapChanged, this, &ShutdownWidget::enableHibernateBtn);
     enableHibernateBtn(model->hasSwap());
 
     connect(model, &SessionBaseModel::canSleepChanged, this, &ShutdownWidget::enableSleepBtn);
     connect(model, &SessionBaseModel::currentUserChanged, this, &ShutdownWidget::updateLocale);
+    connect(m_model, &SessionBaseModel::visibleChanged, this, [this](bool visible) {
+        m_modeStatus = visible? m_modeStatus : SessionBaseModel::ModeStatus::NoStatus;
+    });
 
     enableSleepBtn(model->canSleep());
 }

@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "rounditembutton.h"
-
-#include <QtCore/QObject>
+#include <QPainter>
 #include <QSvgRenderer>
+#include "rounditembutton.h"
 
 #include <DFontSizeManager>
 
 DWIDGET_USE_NAMESPACE
+
+const int iconWidthHeight = 74;
+const int iconTextGap = 11;
 
 RoundItemButton::RoundItemButton(QWidget *parent)
     : RoundItemButton("", parent)
@@ -61,19 +63,14 @@ void RoundItemButton::initConnect()
     connect(this, &RoundItemButton::stateChanged, this, static_cast<void (RoundItemButton::*)()>(&RoundItemButton::update));
     connect(this, &RoundItemButton::iconChanged, this, &RoundItemButton::updateIcon);
     connect(this, &RoundItemButton::toggled, this, &RoundItemButton::setChecked);
-    //    connect(signalManager, &SignalManager::setButtonHover, [this] (const QString &text) {
-    //        if (m_itemText->text() != text && !isChecked() && !isDisabled()) {
-    //            updateState(Normal);
-    //        }
-    //    });
 }
 
 void RoundItemButton::initUI()
 {
     setFocusPolicy(Qt::NoFocus);
-    setFixedSize(144, 164);
+    setFixedSize(144, 230);
     setCheckable(true);
-    DFontSizeManager::instance()->bind(this, DFontSizeManager::T6);
+    DFontSizeManager::instance()->bind(this, DFontSizeManager::T5);
 }
 
 void RoundItemButton::enterEvent(QEnterEvent* event)
@@ -134,7 +131,7 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 计算文本行数
     QStringList textList;
     QString str = m_text;
-    while (fontMetrics().boundingRect(str).width() > width() - 20 && str.length() > 0) {
+    while (fontMetrics().horizontalAdvance(str) > width() - 20 && str.length() > 0) {
         int lastSpacePos = str.lastIndexOf(" ");
         if (lastSpacePos == -1) {
             str = fontMetrics().elidedText(str, Qt::ElideRight, width() - 2 * padding);
@@ -147,28 +144,30 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     if (str.length() != m_text.length() && m_text.contains(str)) {
         textList.append(fontMetrics().elidedText(m_text.mid(m_text.indexOf(str) + str.length()), Qt::ElideRight, width() - 20));
     }
+    // 计算图标绘制的区域
+    QRect iconRect;
+    iconRect.setX((width() - iconWidthHeight) / 2);
+    iconRect.setY((height() - 2 * lineHeight- iconWidthHeight) / 2);
+    iconRect.setWidth(iconWidthHeight);
+    iconRect.setHeight(iconWidthHeight);
 
     // 计算文本绘制的区域
     int textWidth = 0;
     for (auto text : textList) {
-        textWidth = qMax(textWidth, fontMetrics().boundingRect(text).width());
+        textWidth = qMax(textWidth, fontMetrics().horizontalAdvance(text));
     }
     QRect textRect;
     textRect.setX((width() - qMin(width(), textWidth + 2 * padding)) / 2);
-    textRect.setY(rect().y() + height() - 2 * lineHeight);
+    textRect.setY(iconRect.bottom() + iconTextGap);
     textRect.setWidth(qMin(width(), textWidth + 2 * padding));
     textRect.setHeight(textList.size() * lineHeight);
 
-    // 计算图标绘制的区域
-    const int minSize = qMin(width(), height() - 2 * lineHeight - 2 * padding);
-    QRect iconRect;
-    iconRect.setX((width() - minSize) / 2);
-    iconRect.setY((height() - 2 * lineHeight- minSize) / 2);
-    iconRect.setWidth(minSize);
-    iconRect.setHeight(minSize);
 
     if (m_state == Checked) {
-        painter.setBrush(QColor(0, 15, 39, 178));
+        QColor color(Qt::white);
+        color.setAlphaF(0.03);
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(color);
         painter.setRenderHint(QPainter::Antialiasing, true);
 
         // 绘制图标背景
@@ -179,9 +178,10 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
         painter.drawRoundedRect(itemTextRect, m_rectRadius, m_rectRadius);
 
         QPen pen;
-        QColor penColor(151, 151, 151, 127);
+        QColor penColor(Qt::white);
+        penColor.setAlphaF(0.5);
         pen.setColor(penColor);
-        pen.setWidth(m_penWidth * 2);
+        pen.setWidth(m_penWidth * 3);
         painter.setPen(pen);
         painter.setRenderHint(QPainter::Antialiasing, true);
 
@@ -190,6 +190,8 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
         painter.drawEllipse(iconBackgroundRect);
 
         // 绘制文本区域边框
+        pen.setWidth(m_penWidth * 2);
+        painter.setPen(pen);
         QRect textBackgroundRect(textRect.marginsRemoved(QMargins(m_penWidth, m_penWidth, m_penWidth, m_penWidth)));
         painter.drawRoundedRect(textBackgroundRect, m_rectRadius, m_rectRadius);
     } else if (m_state == Hover) {
@@ -203,7 +205,9 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     } else if (m_state == Normal) {
         // 绘制鼠标选中的白色背景
         painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(255, 255, 255, int(0.1 * 255)));
+        QColor color(Qt::white);
+        color.setAlphaF(0.15);
+        painter.setBrush(color);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.drawEllipse(iconRect);
     }
@@ -235,6 +239,17 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
             painter.setPen(Qt::gray);
 
         painter.drawText(lineRect, Qt::AlignCenter, textList.at(i));
+    }
+
+    // 绘制文字旁的小红点
+    if (m_redPointVisible) {
+        QRect textRt(textRect.x(), textRect.y(), textRect.width(), textList.size() * lineHeight);
+        const int spaceToText = 4;     //文字和红点的距离
+        const int radius = 3;          //红点的半径
+        QPoint centerOfCircle=textRt.topRight() + QPoint(spaceToText, textRt.height() / 2);
+        painter.setBrush(QBrush(Qt::red));
+        painter.setPen(Qt::red);
+        painter.drawEllipse(centerOfCircle, radius, radius);
     }
 }
 
@@ -283,4 +298,11 @@ void RoundItemButton::setPressPic(const QString &path)
     m_pressedIcon = path;
 
     updateIcon();
+}
+
+void RoundItemButton::setRedPointVisible(bool visible)
+{
+    m_redPointVisible = visible;
+
+    update();
 }

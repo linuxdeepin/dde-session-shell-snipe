@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Alimentazione</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Tastiera</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Energie</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Touch-Tastatur</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

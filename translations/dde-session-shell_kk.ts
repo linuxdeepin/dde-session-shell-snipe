@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Қорек</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

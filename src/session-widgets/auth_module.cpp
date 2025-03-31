@@ -4,7 +4,7 @@
 
 #include "auth_module.h"
 
-#include <DHiDPIHelper>
+#include <DIcon>
 
 #include <QDateTime>
 #include <QTimer>
@@ -29,9 +29,9 @@ AuthModule::AuthModule(const AuthCommon::AuthType type, QWidget *parent)
     , m_limitsInfo(new LimitsInfo())
     , m_aniTimer(new QTimer(this))
     , m_unlockTimer(new QTimer(this))
-    , m_showAuthState(true)
     , m_isAuthing(false)
     , m_authFactorType(DDESESSIONCC::SingleAuthFactor)
+    , m_showAuthState(false)
 {
     setMinimumHeight(37);
 
@@ -56,7 +56,7 @@ AuthModule::~AuthModule()
 void AuthModule::initConnections()
 {
     /* 认证解锁时间 */
-    connect(m_unlockTimer, &QTimer::timeout, this, [ this ] {
+    connect(m_unlockTimer, &QTimer::timeout, this, [this] {
         updateIntegerMinutes();
         if (m_integerMinutes == 0)
             m_unlockTimer->stop();
@@ -82,7 +82,7 @@ void AuthModule::setAnimationState(const bool start)
  * @param state
  * @param result
  */
-void AuthModule::setAuthState(const int state, const QString &result)
+void AuthModule::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
     Q_UNUSED(result)
 
@@ -102,7 +102,7 @@ void AuthModule::setAuthStateStyle(const QString &path)
     if (!m_authStateLabel)
         return;
 
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(path);
+    QPixmap pixmap = DIcon::loadNxPixmap(path);
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_authStateLabel->setPixmap(pixmap);
 }
@@ -118,15 +118,11 @@ void AuthModule::setLimitsInfo(const LimitsInfo &info)
     updateUnlockTime();
 }
 
-void AuthModule::setShowAuthState(bool showAuthState)
-{
-    m_showAuthState = showAuthState;
-}
-
 void AuthModule::setAuthStatueVisible(bool visible)
 {
-    if (m_authStateLabel)
+    if (m_authStateLabel) {
         m_authStateLabel->setVisible(visible);
+    }
 }
 
 /**
@@ -134,7 +130,7 @@ void AuthModule::setAuthStatueVisible(bool visible)
  */
 void AuthModule::updateUnlockPrompt()
 {
-    qInfo() << m_type << "has" << m_integerMinutes << "minutes left to unlock.";
+    qCInfo(DDE_SHELL) << "Update unlock prompt, type: " << m_type << ", which has " << m_integerMinutes << " minutes left to unlock.";
 }
 
 /**

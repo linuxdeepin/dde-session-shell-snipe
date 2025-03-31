@@ -18,7 +18,6 @@ public:
     LoadSlider(QWidget *parent = nullptr);
 
 public:
-    QColor loadSliderColor() const;
     void setLoadSliderColor(const QColor &color);
 
 protected:

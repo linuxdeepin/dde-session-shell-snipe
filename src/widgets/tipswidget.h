@@ -16,11 +16,11 @@ public:
     inline QWidget *getContent() const { return m_content; }
     void resizeFromContent();
 
-public slots:
-    /*!
-     * @brief slot to show the tips widget, x and y is for bottom center point of the widget
-     */
-    void show(int x, int y);
+    public slots:
+        /*!
+         * @brief slot to show the tips widget, x and y is for bottom center point of the widget
+         */
+        void show(int x, int y);
 
 protected:
     bool eventFilter(QObject *o, QEvent *e) override;

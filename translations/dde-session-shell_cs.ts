@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Napájení</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Na základní desce</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

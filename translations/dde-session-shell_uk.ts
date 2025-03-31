@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Живлення</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Клавіатура</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

@@ -7,7 +7,7 @@
 #include "authcommon.h"
 #include "dlineeditex.h"
 
-#include <DHiDPIHelper>
+#include <DIcon>
 
 #include <QKeyEvent>
 #include <QTimer>
@@ -49,12 +49,13 @@ void AuthUKey::initUI()
     /* 缩放因子 */
     UKeyLayout->addStretch(1);
     /* 大小写状态 */
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(CAPS_LOCK);
+    QPixmap pixmap = DIcon::loadNxPixmap(CAPS_LOCK);
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_capsLock->setPixmap(pixmap);
     UKeyLayout->addWidget(m_capsLock, 0, Qt::AlignRight | Qt::AlignVCenter);
     /* 认证状态 */
     m_authStateLabel = new DLabel(m_lineEdit);
+    m_authStateLabel->setVisible(false);
     setAuthStateStyle(LOGIN_WAIT);
     UKeyLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
 
@@ -70,7 +71,7 @@ void AuthUKey::initConnections()
     /* PIN 码输入框 */
     connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
         if (!focus) m_lineEdit->setAlert(false);
-        m_authStateLabel->setVisible(!focus);
+        m_authStateLabel->setVisible(!focus && m_showAuthState);
         emit focusChanged(focus);
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
@@ -78,7 +79,7 @@ void AuthUKey::initConnections()
         m_lineEdit->hideAlertMessage();
         emit lineEditTextChanged(text);
     });
-    connect(m_lineEdit, &DLineEditEx::returnPressed, this, [ this ] {
+    connect(m_lineEdit, &DLineEditEx::returnPressed, this, [this] {
         if (!m_lineEdit->lineEdit()->isReadOnly())
             emit requestAuthenticate();
     });
@@ -102,9 +103,8 @@ void AuthUKey::reset()
  * @param state
  * @param result
  */
-void AuthUKey::setAuthState(const int state, const QString &result)
+void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
-    qDebug() << "AuthUKey::setAuthResult:" << state << result;
     m_state = state;
     switch (state) {
     case AuthCommon::AS_Success:
@@ -199,7 +199,7 @@ void AuthUKey::setAuthState(const int state, const QString &result)
         setAuthStateStyle(LOGIN_WAIT);
         setLineEditInfo(result, AlertText);
         m_showPrompt = true;
-        qWarning() << "Error! The state of UKey Auth is wrong!" << state << result;
+        qCWarning(DDE_SHELL) << "The state of ukey auth is wrong, state:" << state << ", result: " << result;
         break;
     }
     update();
@@ -232,7 +232,7 @@ void AuthUKey::setCapsLockVisible(const bool on)
  */
 void AuthUKey::setLimitsInfo(const LimitsInfo &info)
 {
-    qDebug() << "AuthUKey::setLimitsInfo" << info.unlockTime;
+    qCDebug(DDE_SHELL) << "Set limits info: " << info.numFailures;
     AuthModule::setLimitsInfo(info);
 }
 
@@ -304,7 +304,7 @@ void AuthUKey::updateUnlockPrompt()
         QTimer::singleShot(1000, this, [this] {
             emit activeAuth(m_type);
         });
-        qInfo() << "Waiting authentication service...";
+        qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
     update();
 }
@@ -325,5 +325,14 @@ bool AuthUKey::eventFilter(QObject *watched, QEvent *event)
 
 void AuthUKey::hide()
 {
+    m_lineEdit->setAlert(false);
+    m_lineEdit->hideAlertMessage();
+    setLineEditInfo(tr("Enter your PIN"), PlaceHolderText);
     AuthModule::hide();
+}
+
+void AuthUKey::setAuthStatueVisible(bool visible)
+{
+    m_showAuthState = visible;
+    m_authStateLabel->setVisible(visible && !hasFocus());
 }

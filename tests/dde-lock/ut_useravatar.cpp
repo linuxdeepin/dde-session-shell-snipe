@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -37,5 +37,8 @@ TEST_F(UT_UserAvatar, BasicTest)
     m_avatar->borderColor();
     m_avatar->setBorderWidth(10);
     m_avatar->borderWidth();
+    m_avatar->setSelected(true); m_avatar->setDeleteable(true);
+    m_avatar->deleteable();
+    m_avatar->setColor(QColor());
     //m_avatar->paintEvent(new QPaintEvent(m_avatar->rect()));
 }

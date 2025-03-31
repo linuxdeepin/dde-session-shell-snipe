@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Güç</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Ekran Klavyesi</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

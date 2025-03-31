@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -68,6 +68,10 @@ TEST_F(UT_SessionBaseModel, init)
     SessionBaseModel::ModeStatus currentmodethr = m_sessionBaseModel->currentModeState();
     m_sessionBaseModel->onStatusChanged(SessionBaseModel::ModeStatus::UserMode);
     EXPECT_EQ(m_sessionBaseModel->currentModeState(), currentmodethr);
+
+    SessionBaseModel::ModeStatus currentmodefor = m_sessionBaseModel->currentModeState();
+    m_sessionBaseModel->onStatusChanged(SessionBaseModel::ModeStatus::SessionMode);
+    EXPECT_EQ(m_sessionBaseModel->currentModeState(), currentmodefor);
 
     SessionBaseModel::ModeStatus currentmodefiv = m_sessionBaseModel->currentModeState();
     m_sessionBaseModel->onStatusChanged(SessionBaseModel::ModeStatus::PowerMode);

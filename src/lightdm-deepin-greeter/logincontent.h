@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,25 +6,31 @@
 #define LOGINCONTENT_H
 
 #include "lockcontent.h"
+#include "userswiththesamename.h"
 
+class SessionWidget;
 class LoginTipsWindow;
-class ChangePasswordWidget;
+
 class LoginContent : public LockContent
 {
     Q_OBJECT
-public:
-    explicit LoginContent(SessionBaseModel *const model, QWidget *parent = nullptr);
 
+public:
+    explicit LoginContent(QWidget *parent = nullptr);
+    static LoginContent *instance();
+    void init(SessionBaseModel *model);
     void onCurrentUserChanged(std::shared_ptr<User> user) override;
     void onStatusChanged(SessionBaseModel::ModeStatus status) override;
-
-    bool tryPushTipsFrame();
-    void pushLoginFrame();
-    void pushChangePasswordFrame();
+    void pushSessionFrame();
+    void pushTipsFrame();
+    void popTipsFrame();
+    void showUsersWithTheSameName(const QString &nativeUserName, const QString &doMainAccountDetail);
 
 private:
-    QSharedPointer<LoginTipsWindow> m_loginTipsWindow;
-    QSharedPointer<ChangePasswordWidget> m_resetPasswordWidget;
+    SessionWidget *m_sessionFrame;
+    LoginTipsWindow *m_loginTipsWindow;
+    bool m_showTipsWidget = true;
+    UsersWithTheSameName *m_usersWithTheSameName;
 };
 
 #endif // LOGINCONTENT_H

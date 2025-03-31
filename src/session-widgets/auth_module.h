@@ -24,12 +24,13 @@
 #define AUTH_LOCK QStringLiteral(":/misc/images/unlock/unlock_1.svg")
 #define UnionID_Auth QStringLiteral(":/misc/images/auth/UnionID.svg")
 #define ResetPassword_Exe_Path QStringLiteral("/usr/lib/dde-control-center/reset-password-dialog")
+#define DEEPIN_DEEPINID_DAEMON_PATH QStringLiteral("/usr/lib/deepin-deepinid-daemon/deepin-deepinid-daemon")
 
 DWIDGET_USE_NAMESPACE
 using namespace DDESESSIONCC;
 
 struct LimitsInfo {
-    bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁
+    bool locked = false;        // 认证锁定状态 --- true: 锁定  false: 解锁
     uint maxTries;      // 最大重试次数
     uint numFailures;   // 失败次数，一直累加
     uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少
@@ -64,14 +65,13 @@ public:
     explicit AuthModule(const AuthCommon::AuthType type, QWidget *parent = nullptr);
     ~AuthModule() override;
 
-    inline int authType() const { return m_type; }
-    inline int authState() const { return m_state; }
+    inline AuthCommon::AuthType authType() const { return m_type; }
+    inline AuthCommon::AuthState authState() const { return m_state; }
 
     virtual void setAnimationState(const bool start);
-    virtual void setAuthState(const int state, const QString &result);
+    virtual void setAuthState(const AuthCommon::AuthState state, const QString &result);
     void setAuthStateStyle(const QString &path);
     virtual void setLimitsInfo(const LimitsInfo &info);
-    void setShowAuthState(bool showAuthState);
     void setAuthStatueVisible(bool visible);
     void setAuthStateLabel(DLabel *label);
     virtual void setAuthFactorType(AuthFactorType authFactorType);
@@ -79,8 +79,8 @@ public:
     bool isLocked() const;
 
 signals:
-    void activeAuth(const int);
-    void authFinished(const int);
+    void activeAuth(const AuthCommon::AuthType);
+    void authFinished(const AuthCommon::AuthState);
     void requestAuthenticate();
     void unlockTimeChanged();
 
@@ -93,17 +93,17 @@ protected:
 
 protected:
     int m_inputType;          // 认证信息输入设备类型
-    int m_state;              // 认证状态
-    int m_type;               // 认证类型
+    AuthCommon::AuthState m_state;  // 认证状态
+    AuthCommon::AuthType m_type;   // 认证类型
     bool m_showPrompt;        // 是否显示默认提示文案
     uint m_integerMinutes;    // 认证剩余解锁的整数分钟
     LimitsInfo *m_limitsInfo; // 认证限制相关信息
     QPointer<DLabel> m_authStateLabel; // 认证状态图标
     QTimer *m_aniTimer;       // 动画执行定时器
     QTimer *m_unlockTimer;    // 认证解锁定时器
-    bool m_showAuthState;     // 是否显示认证状态
     bool m_isAuthing;         // 是否正在验证
     AuthFactorType m_authFactorType;    // 验证因子类型
+    bool m_showAuthState;     // 是否显示验证状态控件
 };
 
 #endif // AUTHMODULE_H

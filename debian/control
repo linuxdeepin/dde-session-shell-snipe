@@ -22,8 +22,6 @@ Build-Depends: debhelper-compat (=12), pkg-config,
  libgtest-dev,
  libx11-xcb-dev,
  libssl-dev,
- libdeepin-pw-check-dev,
- libxcb-util0-dev|libxcb-util1-dev
 Standards-Version: 3.9.4
 Homepage: http://www.deepin.org/
 

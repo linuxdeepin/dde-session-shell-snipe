@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Daya</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Pada papan</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

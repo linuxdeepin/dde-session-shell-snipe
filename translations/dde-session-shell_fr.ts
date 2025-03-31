@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Alimentation</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Clavier virtuel</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

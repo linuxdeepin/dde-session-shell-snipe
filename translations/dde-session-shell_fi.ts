@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Virta</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Näppäimistö</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

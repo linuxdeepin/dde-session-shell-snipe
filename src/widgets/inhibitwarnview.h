@@ -8,10 +8,17 @@
 #include "warningview.h"
 #include "rounditembutton.h"
 #include "sessionbasemodel.h"
+#include "inhibitbutton.h"
 
 #include <QWidget>
 
-class QPushButton;
+namespace Dtk {
+namespace Widget {
+class DSpinner;
+}
+}
+
+class QVBoxLayout;
 class InhibitorRow : public QWidget
 {
     Q_OBJECT
@@ -40,37 +47,40 @@ public:
     };
 
     void setInhibitorList(const QList<InhibitorData> & list);
-    void setInhibitConfirmMessage(const QString &text);
+    void setInhibitConfirmMessage(const QString &text, bool showLoading = false);
+    void setDelayView(bool showDelay);
+    bool delayView() const;
     void setAcceptReason(const QString &reason) override;
     void setAcceptVisible(const bool acceptable);
-
-    void toggleButtonState() Q_DECL_OVERRIDE;
-    void buttonClickHandle() Q_DECL_OVERRIDE;
-
-    SessionBaseModel::PowerAction inhibitType() const;
-
-protected:
-    void updateIcon();
-    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
-    void setCurrentButton(const ButtonType btntype) Q_DECL_OVERRIDE;
-    void keyPressEvent(QKeyEvent *event) override;
+    bool hasInhibit() const;
 
 signals:
     void cancelled() const;
     void actionInvoked() const;
 
+protected:
+    QString iconString();
+    bool focusNextPrevChild(bool next) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+
 private:
-    void onOtherPageDataChanged(const QVariant &value);
+    void initUi();
+    void initConnection();
+
+private slots:
+    void onAccept();
 
 private:
     SessionBaseModel::PowerAction m_inhibitType;
     QList<QWidget*> m_inhibitorPtrList;
     QVBoxLayout *m_inhibitorListLayout = nullptr;
+    Dtk::Widget::DSpinner *m_loading;
     QLabel *m_confirmTextLabel = nullptr;
-    QPushButton *m_acceptBtn;
-    QPushButton *m_cancelBtn;
-    QPushButton *m_currentBtn;
+    InhibitButton *m_acceptBtn;
+    InhibitButton *m_cancelBtn;
+    QWidget *m_bottomWidget;
     int m_dataBindIndex;
+    bool m_showDelay;
 };
 
 #endif // INHIBITWARNVIEW_H

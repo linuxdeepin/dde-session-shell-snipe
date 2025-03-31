@@ -1,21 +1,34 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "keyboardmonitor.h"
+
 #include <DGuiApplicationHelper>
+
+#include <QFile>
 
 DGUI_USE_NAMESPACE
 
-KeyboardMonitor::KeyboardMonitor() : QThread()
+KeyboardMonitor::KeyboardMonitor()
+    : QThread()
+    , m_keyBoardPlatform(nullptr)
 {
     if (DGuiApplicationHelper::isXWindowPlatform()) {
-        keyBoardPlatform = new KeyboardPlantformX11();
+        m_keyBoardPlatform = new KeyboardPlatformX11();
     } else {
-        keyBoardPlatform = new KeyboardPlantformWayland();
+#ifdef USE_DEEPIN_WAYLAND
+        m_keyBoardPlatform = new KeyboardPlatformWayland();
+#endif
     }
-    connect(keyBoardPlatform, &KeyBoardPlatform::capslockStatusChanged, this, &KeyboardMonitor::capslockStatusChanged);
-    connect(keyBoardPlatform, &KeyBoardPlatform::numlockStatusChanged, this, &KeyboardMonitor::numlockStatusChanged);
+
+    if (m_keyBoardPlatform) {
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::capsLockStatusChanged, this, &KeyboardMonitor::capsLockStatusChanged);
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::numLockStatusChanged, this, &KeyboardMonitor::numLockStatusChanged);
+        connect(m_keyBoardPlatform, &KeyBoardPlatform::initialized, this, &KeyboardMonitor::initialized);
+    }
+
+    start(QThread::LowestPriority);
 }
 
 KeyboardMonitor *KeyboardMonitor::instance()
@@ -29,22 +42,44 @@ KeyboardMonitor *KeyboardMonitor::instance()
     return KeyboardMonitorInstance;
 }
 
-bool KeyboardMonitor::isCapslockOn()
+bool KeyboardMonitor::isCapsLockOn()
 {
-    return keyBoardPlatform->isCapslockOn();
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->isCapsLockOn();
 }
 
-bool KeyboardMonitor::isNumlockOn()
+bool KeyboardMonitor::isNumLockOn()
 {
-    return keyBoardPlatform->isNumlockOn();
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->isNumLockOn();
 }
 
-bool KeyboardMonitor::setNumlockStatus(const bool &on)
+bool KeyboardMonitor::setNumLockStatus(const bool &on)
 {
-    return keyBoardPlatform->setNumlockStatus(on);
+    if (!m_keyBoardPlatform)
+        return false;
+
+    return m_keyBoardPlatform->setNumLockStatus(on);
 }
 
 void KeyboardMonitor::run()
 {
-    keyBoardPlatform->run();
+    if (!m_keyBoardPlatform)
+        return;
+
+    m_keyBoardPlatform->run();
+}
+
+void KeyboardMonitor::ungrabKeyboard()
+{
+    if (!m_keyBoardPlatform)
+        return;
+
+    if (!(QFile::exists(DPMS_STATE_FILE) && QFile(DPMS_STATE_FILE).readAll() == "1")) {
+        m_keyBoardPlatform->ungrabKeyboard();
+    }
 }

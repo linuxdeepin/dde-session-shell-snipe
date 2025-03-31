@@ -3,21 +3,26 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "userinfo.h"
-
+#include "dconfig_helper.h"
 #include "constants.h"
-
-#include <QImageReader>
 
 #include <grp.h>
 #include <memory>
 #include <pwd.h>
-#include <unistd.h>
+
+#include <QFile>
+#include <QDBusConnection>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 #define DEFAULT_AVATAR ":/img/default_avatar.svg"
 #define DEFAULT_BACKGROUND "/usr/share/backgrounds/default_background.jpg"
 
+using namespace DDESESSIONCC;
+
 User::User(QObject *parent)
     : QObject(parent)
+    , m_accountType(Admin)
     , m_isAutomaticLogin(false)
     , m_isLogin(false)
     , m_isNoPasswordLogin(false)
@@ -25,11 +30,10 @@ User::User(QObject *parent)
     , m_isUse24HourFormat(true)
     , m_expiredDayLeft(0)
     , m_expiredState(ExpiredNormal)
-    , m_lastAuthType(0)
+    , m_lastAuthType(AuthCommon::AT_Password)
     , m_shortDateFormat(0)
     , m_shortTimeFormat(0)
     , m_weekdayFormat(0)
-    , m_accountType(-1)
     , m_uid(INT_MAX)
     , m_avatar(DEFAULT_AVATAR)
     , m_greeterBackground(DEFAULT_BACKGROUND)
@@ -42,6 +46,7 @@ User::User(QObject *parent)
 
 User::User(const User &user)
     : QObject(user.parent())
+    , m_accountType(user.m_accountType)
     , m_isAutomaticLogin(user.m_isAutomaticLogin)
     , m_isLogin(user.m_isLogin)
     , m_isNoPasswordLogin(user.m_isNoPasswordLogin)
@@ -49,11 +54,10 @@ User::User(const User &user)
     , m_isUse24HourFormat(user.m_isUse24HourFormat)
     , m_expiredDayLeft(user.m_expiredDayLeft)
     , m_expiredState(user.m_expiredState)
-    , m_lastAuthType(0)
+    , m_lastAuthType(AuthCommon::AT_Password)
     , m_shortDateFormat(user.m_shortDateFormat)
     , m_shortTimeFormat(user.m_shortTimeFormat)
     , m_weekdayFormat(user.m_weekdayFormat)
-    , m_accountType(user.m_accountType)
     , m_uid(user.m_uid)
     , m_avatar(user.m_avatar)
     , m_fullName(user.m_fullName)
@@ -65,6 +69,7 @@ User::User(const User &user)
     , m_desktopBackgrounds(user.m_desktopBackgrounds)
     , m_keyboardLayoutList(user.m_keyboardLayoutList)
     , m_limitsInfo(new QMap<int, LimitsInfo>(*user.m_limitsInfo))
+    , m_groups(user.groups())
 {
 }
 
@@ -76,6 +81,39 @@ User::~User()
 bool User::operator==(const User &user) const
 {
     return user.uid() == m_uid && user.name() == m_name;
+}
+
+/**
+ * @brief 检查用户是否是LDAP用户
+ * @return true 是 false 否
+ */
+bool User::isLdapUser()
+{
+    struct group *grp = getgrnam("udcp");
+    if (!grp) {
+        return false;
+    }
+
+    for (char **member = grp->gr_mem; member && *member; ++member) {
+        if (*member == m_name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool User::isDomainUser()
+{
+    /* 域账户判断条件：
+     * 1.用户组包含“domain”（外部Linux上游）
+     * 2.用户组包含“udcp” 且 uid大于10000（统信域管）
+     * 3.用户组包含“domain users”且uid大于10000（windows AD域）
+     */
+    bool isDomainUser = this->groups().contains("domain")
+            || (this->groups().contains("udcp") && this->uid() > 10000)
+            || (this->groups().contains("domain users") && this->uid() > 10000);
+
+    return this->isUserValid() && isDomainUser;
 }
 
 /**
@@ -109,6 +147,7 @@ void User::updateLimitsInfo(const QString &info)
         limitsInfoTmp.numFailures = limitsInfoObj["numFailures"].toVariant().toUInt();
         limitsInfoTmp.locked = limitsInfoObj["locked"].toBool();
         limitsInfoTmp.unlockTime = limitsInfoObj["unlockTime"].toString();
+        limitsInfoTmp.flag = limitsInfoObj["flag"].toInt();
         m_limitsInfo->insert(limitsInfoObj["flag"].toInt(), limitsInfoTmp);
     }
     emit limitsInfoChanged(m_limitsInfo);
@@ -119,12 +158,24 @@ void User::updateLimitsInfo(const QString &info)
  *
  * @param type
  */
-void User::setLastAuthType(const int type)
+void User::setLastAuthType(const AuthCommon::AuthType type)
 {
     if (m_lastAuthType == type) {
         return;
     }
     m_lastAuthType = type;
+}
+
+void User::updatePasswordExpiredState(User::ExpiredState state, int dayLeft)
+{
+    m_expiredState = state;
+    m_expiredDayLeft = dayLeft;
+    emit passwordExpiredInfoChanged();
+}
+
+bool User::allowToChangePassword() const
+{
+    return m_accountType == Admin || DConfigHelper::instance()->getConfig(CHANGE_PASSWORD_FOR_NORMAL_USER, true).toBool() || m_expiredState != ExpiredAlready;
 }
 
 bool User::checkUserIsNoPWGrp(const User *user) const
@@ -144,7 +195,7 @@ bool User::checkUserIsNoPWGrp(const User *user) const
     /* Fetch passwd structure (contains first group ID for user) */
     pw = getpwnam(user->name().toUtf8().data());
     if (pw == nullptr) {
-        qDebug() << "fetch passwd structure failed, username: " << user->name();
+        qCDebug(DDE_SHELL) << "Fetch password structure failed, username: " << user->name();
         return false;
     }
 
@@ -223,6 +274,7 @@ NativeUser::NativeUser(const NativeUser &user)
 void NativeUser::initConnections()
 {
     connect(m_userInter, &UserInter::AutomaticLoginChanged, this, &NativeUser::updateAutomaticLogin);
+    connect(m_userInter, &UserInter::DesktopBackgroundsChanged, this, &NativeUser::updateDesktopBackgrounds);
     connect(m_userInter, &UserInter::FullNameChanged, this, &NativeUser::updateFullName);
     connect(m_userInter, &UserInter::GreeterBackgroundChanged, this, &NativeUser::updateGreeterBackground);
     connect(m_userInter, &UserInter::HistoryLayoutChanged, this, &NativeUser::updateKeyboardLayoutList);
@@ -231,17 +283,16 @@ void NativeUser::initConnections()
     connect(m_userInter, &UserInter::LocaleChanged, this, &NativeUser::updateLocale);
     connect(m_userInter, &UserInter::NoPasswdLoginChanged, this, &NativeUser::updateNoPasswordLogin);
     connect(m_userInter, &UserInter::PasswordHintChanged, this, &NativeUser::updatePasswordHint);
-    connect(m_userInter, &UserInter::PasswordStatusChanged, this, &NativeUser::updatePasswordStatus);
-    connect(m_userInter, &UserInter::PasswordHintChanged, this, &NativeUser::updatePasswordHint);
+    connect(m_userInter, &UserInter::PasswordStatusChanged, this, &NativeUser::updatePasswordState);
     connect(m_userInter, &UserInter::ShortDateFormatChanged, this, &NativeUser::updateShortDateFormat);
     connect(m_userInter, &UserInter::ShortTimeFormatChanged, this, &NativeUser::updateShortTimeFormat);
     connect(m_userInter, &UserInter::WeekdayFormatChanged, this, &NativeUser::updateWeekdayFormat);
-    connect(m_userInter, &UserInter::AccountTypeChanged, this, &NativeUser::updateAccountType);
     connect(m_userInter, &UserInter::UidChanged, this, &NativeUser::updateUid);
     connect(m_userInter, &UserInter::UserNameChanged, this, &NativeUser::updateName);
     connect(m_userInter, &UserInter::Use24HourFormatChanged, this, &NativeUser::updateUse24HourFormat);
     connect(m_userInter, &UserInter::PasswordLastChangeChanged, this, &NativeUser::updatePasswordExpiredInfo);
     connect(m_userInter, &UserInter::MaxPasswordAgeChanged, this, &NativeUser::updatePasswordExpiredInfo);
+    connect(m_userInter, &UserInter::AccountTypeChanged, this, &NativeUser::updateAccountType);
 }
 
 void NativeUser::initData()
@@ -250,20 +301,19 @@ void NativeUser::initData()
     m_isNoPasswordLogin = m_userInter->noPasswdLogin();
     m_isPasswordValid = (m_userInter->passwordStatus() == "P");
     m_isUse24HourFormat = m_userInter->use24HourFormat();
-
     m_expiredState = m_userInter->PasswordExpiredInfo(m_expiredDayLeft).value();
     m_shortDateFormat = m_userInter->shortDateFormat();
     m_shortTimeFormat = m_userInter->shortTimeFormat();
     m_weekdayFormat = m_userInter->weekdayFormat();
-    m_accountType = m_userInter->accountType();
+    m_groups = m_userInter->groups();
 
     const QString avatarPath = toLocalFile(m_userInter->iconFile());
-    if (!avatarPath.isEmpty() && QFile(avatarPath).exists() && QFile(avatarPath).size() && QImageReader(avatarPath).canRead()) {
+    if (!avatarPath.isEmpty() && QFile(avatarPath).exists() && QFile(avatarPath).size() && checkPictureCanRead(avatarPath)) {
         m_avatar = avatarPath;
     }
     m_fullName = m_userInter->fullName();
     const QString backgroundPath = toLocalFile(m_userInter->greeterBackground());
-    if (!backgroundPath.isEmpty() && QFile(backgroundPath).exists() && QFile(backgroundPath).size() && QImageReader(backgroundPath).canRead()) {
+    if (!backgroundPath.isEmpty() && QFile(backgroundPath).exists() && QFile(backgroundPath).size() && checkPictureCanRead(backgroundPath)) {
         m_greeterBackground = backgroundPath;
     }
     m_keyboardLayout = m_userInter->layout();
@@ -273,6 +323,15 @@ void NativeUser::initData()
     m_desktopBackgrounds = m_userInter->desktopBackgrounds();
     m_keyboardLayoutList = m_userInter->historyLayout();
     m_uid = m_userInter->uid().toUInt();
+    m_accountType = m_userInter->accountType();
+
+    qCDebug(DDE_SHELL) << "Init data, user name:" << m_userInter->userName()
+            << ", Is no password login:" << m_isNoPasswordLogin
+            << ", Is auto login:" << m_isAutomaticLogin
+            << ", Is password valid:" << m_isPasswordValid
+            << ", Password expired state:" << m_expiredState
+            << ", Locale:" << m_locale
+            << ", AccountType:" << m_userInter->accountType();
 }
 
 /**
@@ -294,7 +353,7 @@ void NativeUser::initConfiguration(const QString &config)
     if (desktopBackgrounds.size() >= index && index > 0) {
         // m_desktopBackgrounds = toLocalFile(desktopBackgrounds.at(index - 1));
     } else {
-        qDebug() << "configAccountInfo get error index:" << index << ", backgrounds:" << desktopBackgrounds;
+        qCDebug(DDE_SHELL) << "configAccountInfo get error index:" << index << ", backgrounds:" << desktopBackgrounds;
     }
 }
 
@@ -320,7 +379,7 @@ void NativeUser::updateAvatar(const QString &path)
         return;
     }
 
-    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && QImageReader(pathTmp).canRead()) {
+    if (!pathTmp.isEmpty() && QFile(pathTmp).exists() && QFile(pathTmp).size() && checkPictureCanRead(pathTmp)) {
         m_avatar = pathTmp;
     } else {
         m_avatar = DEFAULT_AVATAR;
@@ -335,11 +394,33 @@ void NativeUser::updateAvatar(const QString &path)
  */
 void NativeUser::updateAutomaticLogin(const bool autoLoginState)
 {
+    qCInfo(DDE_SHELL) << "Update automatic login: " << autoLoginState;
     if (autoLoginState == m_isAutomaticLogin) {
         return;
     }
     m_isAutomaticLogin = autoLoginState;
     emit autoLoginStateChanged(autoLoginState);
+}
+
+/**
+ * @brief 更新桌面背景
+ *
+ * @param backgrounds
+ */
+void NativeUser::updateDesktopBackgrounds(const QStringList &backgrounds)
+{
+    QSettings settings(DDESESSIONCC::CONFIG_FILE + m_name, QSettings::IniFormat);
+    settings.beginGroup("User");
+
+    int index = settings.value("Workspace").toInt();
+    //刚安装的系统中返回的Workspace为0
+    index = index <= 0 ? 1 : index;
+    if (backgrounds.size() >= index && index > 0) {
+        // m_desktopBackgrounds = toLocalFile(backgrounds.at(index - 1));
+        // emit desktopBackgroundChanged(m_desktopBackgrounds);
+    } else {
+        qCDebug(DDE_SHELL) << "DesktopBackgroundsChanged get error index:" << index << ", paths:" << backgrounds;
+    }
 }
 
 /**
@@ -364,6 +445,10 @@ void NativeUser::updateFullName(const QString &fullName)
 void NativeUser::updateGreeterBackground(const QString &path)
 {
     const QString pathTmp = toLocalFile(path);
+    if (pathTmp.isEmpty() || !QFile(pathTmp).exists() || !QFile(pathTmp).size() || !checkPictureCanRead(pathTmp)) {
+        qCWarning(DDE_SHELL) << "Update greeter background, path is invalid: " << pathTmp;
+        return;
+    }
     if (pathTmp == m_greeterBackground) {
         return;
     }
@@ -434,6 +519,7 @@ void NativeUser::updateName(const QString &name)
  */
 void NativeUser::updateNoPasswordLogin(const bool isNoPasswordLogin)
 {
+    qCInfo(DDE_SHELL) << "Update user no password login flag: " << isNoPasswordLogin;
     if (isNoPasswordLogin == m_isNoPasswordLogin) {
         return;
     }
@@ -462,8 +548,43 @@ void NativeUser::updatePasswordHint(const QString &hint)
 void NativeUser::updatePasswordExpiredInfo()
 {
     m_expiredState = m_userInter->PasswordExpiredInfo(m_expiredDayLeft).value();
+    qCInfo(DDE_SHELL) << "User expired state: " << m_expiredState << ", expired day left: " << m_expiredDayLeft;
 
     emit passwordExpiredInfoChanged();
+}
+
+/**
+ * @brief 更新账户的所有信息
+ */
+void NativeUser::updateUserInfo()
+{
+    qCDebug(DDE_SHELL) << "Update user info";
+    if (!m_userInter) {
+        qCWarning(DDE_SHELL) << "User interface is null";
+        return;
+    }
+    updateAutomaticLogin(m_userInter->automaticLogin());
+    updateNoPasswordLogin(m_userInter->noPasswdLogin());
+    updatePasswordState(m_userInter->passwordStatus());
+    updateUse24HourFormat(m_userInter->use24HourFormat());
+    updatePasswordExpiredInfo();
+    updateShortDateFormat(m_userInter->shortDateFormat());
+    updateShortTimeFormat(m_userInter->shortTimeFormat());
+    updateWeekdayFormat(m_userInter->weekdayFormat());
+    updateAvatar(m_userInter->iconFile());
+    updateFullName(m_userInter->fullName());
+    updateGreeterBackground(m_userInter->greeterBackground());
+    updateKeyboardLayout(m_userInter->layout());
+    updateLocale(m_userInter->locale());
+    updatePasswordHint(m_userInter->passwordHint());
+    updateKeyboardLayoutList(m_userInter->historyLayout());
+    updateAccountType();
+}
+
+void NativeUser::updateAccountType()
+{
+    m_accountType = m_userInter->accountType();
+    qCInfo(DDE_SHELL) << "User account type: " << m_accountType;
 }
 
 /**
@@ -471,9 +592,10 @@ void NativeUser::updatePasswordExpiredInfo()
  *
  * @param state 有密码：P 无密码：NP
  */
-void NativeUser::updatePasswordStatus(const QString &state)
+void NativeUser::updatePasswordState(const QString &state)
 {
-    const bool isPasswordValidTmp = ((state == "P") ? true : false);
+    const bool isPasswordValidTmp = state == "P" ? true : false;
+    qCInfo(DDE_SHELL) << "Password state: " << isPasswordValidTmp;
     if (isPasswordValidTmp == m_isPasswordValid) {
         return;
     }
@@ -520,15 +642,6 @@ void NativeUser::updateWeekdayFormat(const int format)
     }
     m_weekdayFormat = format;
     emit weekdayFormatChanged(format);
-}
-
-void NativeUser::updateAccountType(const int type)
-{
-    if (m_accountType == type)
-        return;
-
-    m_accountType = type;
-    emit accountTypeChanged(type);
 }
 
 /**

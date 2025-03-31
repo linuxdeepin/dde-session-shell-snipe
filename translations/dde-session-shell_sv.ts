@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Stäng av</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Virtuellt</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

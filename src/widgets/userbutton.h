@@ -8,11 +8,11 @@
 #include <QGraphicsOpacityEffect>
 #include <QtGui/QPaintEvent>
 #include <QVBoxLayout>
+
 #include <memory>
 
-#include "useravatar.h"
-
 #include "userinterface.h"
+#include "useravatar.h"
 
 using UserInter = org::deepin::dde::accounts1::User;
 
@@ -70,11 +70,8 @@ private:
     UserAvatar* m_userAvatar;
     QLabel* m_userNameLabel;
     QLabel *m_checkedMark;
-    QHBoxLayout* m_buttonLayout;
     QHBoxLayout *m_nameLayout;
     QVBoxLayout* m_centralLayout;
-
-    int m_borderWidth = 0;
 
     double m_opacity;
 

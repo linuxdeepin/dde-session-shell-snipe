@@ -6,11 +6,8 @@
 #include "sessionbasemodel.h"
 #include "userinfo.h"
 
-#include <grp.h>
-#include <libintl.h>
-#include <pwd.h>
-#include <unistd.h>
 #include <QProcessEnvironment>
+#include <QFile>
 
 #define POWER_CAN_SLEEP "POWER_CAN_SLEEP"
 #define POWER_CAN_HIBERNATE "POWER_CAN_HIBERNATE"
@@ -24,7 +21,6 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
     , m_loginedInter(new LoginedInter("org.deepin.dde.Accounts1", "/org/deepin/dde/Logined", QDBusConnection::systemBus(), this))
     , m_login1Inter(new DBusLogin1Manager("org.freedesktop.login1", "/org/freedesktop/login1", QDBusConnection::systemBus(), this))
     , m_powerManagerInter(new PowerManagerInter("org.deepin.dde.PowerManager1", "/org/deepin/dde/PowerManager1", QDBusConnection::systemBus(), this))
-    , m_authenticateInter(new Authenticate("org.deepin.dde.Authenticate1", "/org/deepin/dde/Authenticate1", QDBusConnection::systemBus(), this))
     , m_dbusInter(new DBusObjectInter("org.freedesktop.DBus", "/org/freedesktop/DBus", QDBusConnection::systemBus(), this))
     , m_lastLogoutUid(0)
     , m_currentUserUid(0)
@@ -51,7 +47,7 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
             m_login1SessionSelf->setSync(false);
         }
     } else {
-        qWarning() << "m_login1Inter:" << m_login1Inter->lastError().type();
+        qCWarning(DDE_SHELL) << "Login interface is invalid, error:" << m_login1Inter->lastError().type();
     }
 }
 
@@ -82,6 +78,8 @@ void AuthInterface::onUserListChanged(const QStringList &list)
             onUserRemove(u);
         }
     }
+
+    m_loginedInter->userList();
 }
 
 void AuthInterface::onUserAdded(const QString &user)
@@ -106,8 +104,9 @@ void AuthInterface::onUserRemove(const QString &user)
 void AuthInterface::initData()
 {
     onUserListChanged(m_accountsInter->userList());
-    onLastLogoutUserChanged(m_loginedInter->lastLogoutUser());
     onLoginUserListChanged(m_loginedInter->userList());
+    // m_accountsInter->userList();
+    // m_loginedInter->lastLogoutUser();
 
     checkConfig();
     checkPowerInfo();
@@ -115,27 +114,14 @@ void AuthInterface::initData()
 
 void AuthInterface::initDBus()
 {
+    // m_accountsInter->setSync(false);
+    // m_loginedInter->setSync(false);
+
     connect(m_accountsInter, &AccountsInter::UserListChanged, this, &AuthInterface::onUserListChanged, Qt::QueuedConnection);
     connect(m_accountsInter, &AccountsInter::UserAdded, this, &AuthInterface::onUserAdded, Qt::QueuedConnection);
     connect(m_accountsInter, &AccountsInter::UserDeleted, this, &AuthInterface::onUserRemove, Qt::QueuedConnection);
 
-    connect(m_loginedInter, &LoginedInter::LastLogoutUserChanged, this, &AuthInterface::onLastLogoutUserChanged);
     connect(m_loginedInter, &LoginedInter::UserListChanged, this, &AuthInterface::onLoginUserListChanged);
-}
-
-void AuthInterface::onLastLogoutUserChanged(uint uid)
-{
-    m_lastLogoutUid = uid;
-
-    QList<std::shared_ptr<User>> userList = m_model->userList();
-    for (auto it = userList.constBegin(); it != userList.constEnd(); ++it) {
-        if ((*it)->uid() == uid) {
-            m_model->updateLastLogoutUser((*it));
-            return;
-        }
-    }
-
-    m_model->updateLastLogoutUser(std::shared_ptr<User>(nullptr));
 }
 
 void AuthInterface::onLoginUserListChanged(const QString &list)
@@ -158,10 +144,10 @@ void AuthInterface::onLoginUserListChanged(const QString &list)
 
         auto find_it = std::find_if(
             availableUidList.begin(), availableUidList.end(),
-            [ = ] (const uint addomainUid) { return addomainUid == uid; });
+            [=](const uint find_adDomain_uid) { return find_adDomain_uid == uid; });
 
         if (haveDisplay && find_it == availableUidList.end()) {
-            // init addoman user
+            // init adDomain user
             std::shared_ptr<User> u(new ADDomainUser(uid));
             u->updateLoginState(true);
 
@@ -211,7 +197,8 @@ QVariant AuthInterface::getDconfigValue(const QString &key, const QVariant &fall
 
 bool AuthInterface::isLogined(uint uid)
 {
-    return std::any_of(m_loginUserList.begin(), m_loginUserList.end(), [uid](const uint UID) { return UID == uid; });
+    return std::any_of(m_loginUserList.begin(), m_loginUserList.end(),
+                       [uid](const uint UID) { return UID == uid; });
 }
 
 bool AuthInterface::isDeepin()
@@ -242,4 +229,10 @@ void AuthInterface::checkPowerInfo()
                                                            : getDconfigValue("hibernate", true).toBool() && m_powerManagerInter->CanHibernate();
 
     m_model->setHasSwap(can_hibernate);
+}
+
+bool AuthInterface::checkIsADDomain()
+{
+    //只有加入AD域后，才会生成此文件
+    return QFile::exists("/etc/krb5.keytab");
 }

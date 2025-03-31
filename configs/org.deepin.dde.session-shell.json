@@ -35,6 +35,17 @@
       "permissions": "readwrite",
       "visibility": "private"
     },
+    "checkpwd": {
+      "value": false,
+      "serial": 0,
+      "flags": [],
+      "name": "check password, check password before reboot or shutdown",
+      "name[zh_CN]": "检查密码, 在重启或关机前检查密码, 定制化配置, 默认false",
+      "description[zh_CN]": "是否检查密码。",
+      "description": "check password",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
     "sleep": {
       "value": true,
       "serial": 0,

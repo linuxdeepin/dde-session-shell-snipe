@@ -46,11 +46,36 @@ find_package(Dtk${DTK_VERSION_MAJOR} REQUIRED COMPONENTS Widget Core Tools)
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
 pkg_check_modules(Greeter REQUIRED liblightdm-qt6-3)
+pkg_check_modules(SSL REQUIRED IMPORTED_TARGET libcrypto libssl openssl)
 
-## qm files
-file(GLOB TS_FILES "translations/*.ts")
-qt_add_translation(QM_FILES ${TS_FILES})
-add_custom_target(dde-session-shell_language ALL DEPENDS ${QM_FILES})
+if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
+    ## qm files
+    file(GLOB TS_FILES "translations/*.ts")
+    qt_add_translation(QM_FILES ${TS_FILES})
+    add_custom_target(dde-session-shell_language ALL DEPENDS ${QM_FILES})
+endif ()
+
+
+try_compile(USE_GM
+        ${CMAKE_CURRENT_BINARY_DIR}/try_compile
+    SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gm.cc
+    LINK_LIBRARIES
+        PkgConfig::SSL
+    OUTPUT_VARIABLE
+        GM_MESSAGE
+)
+
+message(STATUS "check GM: ${USE_GM}")
+
+if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    message(${GM_MESSAGE})
+endif()
+
+if(USE_GM)
+    # 优先使用国密
+    add_definitions(-DPREFER_USING_GM)
+endif()
 
 set(Qt_LIBS
     Qt${QT_VERSION_MAJOR}::Core
@@ -106,6 +131,7 @@ endforeach()
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util)
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util/dbus)
 include_directories(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor)
+include_directories(${PROJECT_SOURCE_DIR}/src/global_util/plugin_manager)
 include_directories(${PROJECT_SOURCE_DIR}/src/widgets)
 include_directories(${PROJECT_SOURCE_DIR}/src/session-widgets)
 include_directories(${PROJECT_SOURCE_DIR}/src/libdde-auth)
@@ -118,9 +144,11 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/dbus GLOBAL_UTILS_DBU
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor GLOBAL_UTILS_KEYBOARDMONITOR)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/widgets WIDGETS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/session-widgets SESSION_WIDGETS)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src/libdde-auth AUTHENTICATE)
+## 需要把libdde-auth中的.h编译出moc文件，故采用这种方式
+file(GLOB AUTHENTICATE ${PROJECT_SOURCE_DIR}/src/libdde-auth/*.h ${PROJECT_SOURCE_DIR}/src/libdde-auth/*.cpp)
 aux_source_directory(${PROJECT_SOURCE_DIR}/interface INTERFACE)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/dbus/types DBUS_DATA_TYPES)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/plugin_manager PLUGIN_MANAGER)
 
 set(QRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/resources.qrc
@@ -138,14 +166,23 @@ set(LOCK_SRCS
     ${INTERFACE}
     ${QT_DBUS_EXTENDED}
     ${DBUS_DATA_TYPES}
+
+    ${PLUGIN_MANAGER}
     src/app/dde-lock.cpp
     src/dde-lock/lockframe.cpp
     src/dde-lock/lockworker.cpp
+    src/dde-lock/updateworker.cpp
     src/dde-lock/dbus/dbuslockagent.cpp
     src/dde-lock/dbus/dbuslockfrontservice.cpp
     src/dde-lock/dbus/dbusshutdownagent.cpp
     src/dde-lock/dbus/dbusshutdownfrontservice.cpp
+    src/global_util/signal_bridge.h
 )
+
+link_libraries(
+    Threads::Threads
+)
+
 add_executable(dde-lock
     ${LOCK_SRCS}
     ${QRCS}
@@ -166,10 +203,8 @@ target_link_libraries(dde-lock PRIVATE
     Dtk${DTK_VERSION_MAJOR}::Widget
     Dtk${DTK_VERSION_MAJOR}::Core
     ${Greeter_LIBRARIES}
-    ${DEEPIN_PW_CHECK}
+    PkgConfig::SSL
 )
-
-set(DEEPIN_PW_CHECK libdeepin_pw_check.so)
 
 set(GREETER_SRCS
     ${GLOBAL_UTILS}
@@ -179,15 +214,15 @@ set(GREETER_SRCS
     ${SESSION_WIDGETS}
     ${AUTHENTICATE}
     ${INTERFACE}
+    ${PLUGIN_MANAGER}
     ${DBUS_DATA_TYPES}
     src/app/lightdm-deepin-greeter.cpp
-    src/lightdm-deepin-greeter/loginframe.cpp
+    src/lightdm-deepin-greeter/sessionwidget.h
+    src/lightdm-deepin-greeter/sessionwidget.cpp
+    src/lightdm-deepin-greeter/loginwindow.cpp
     src/lightdm-deepin-greeter/greeterworker.cpp
     src/lightdm-deepin-greeter/logincontent.cpp
     src/lightdm-deepin-greeter/logintipswindow.cpp
-    src/lightdm-deepin-greeter/pwqualitymanager.cpp
-    src/lightdm-deepin-greeter/passwordlevelwidget.cpp
-    src/lightdm-deepin-greeter/changepasswordwidget.cpp
 )
 add_executable(lightdm-deepin-greeter
     ${GREETER_SRCS}
@@ -218,7 +253,7 @@ target_link_libraries(lightdm-deepin-greeter PRIVATE
     Dtk${DTK_VERSION_MAJOR}::Widget
     Dtk${DTK_VERSION_MAJOR}::Core
     ${Greeter_LIBRARIES}
-    ${DEEPIN_PW_CHECK}
+    PkgConfig::SSL
 )
 
 if(CONTRAST_BACKGROUND)
@@ -228,7 +263,8 @@ endif()
 
 # plugins
 add_subdirectory(modules)
-
+#add_subdirectory(plugins)
+add_subdirectory(src/pam-inhibit-autologin)
 add_subdirectory(tests)
 
 if(NOT DSS_CHECK_ACCESSIBILITY)

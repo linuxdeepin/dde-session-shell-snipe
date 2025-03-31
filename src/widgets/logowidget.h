@@ -5,8 +5,6 @@
 #ifndef LOGOWIDGET
 #define LOGOWIDGET
 
-#include <QLabel>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <DLabel>
 
@@ -20,6 +18,7 @@ public:
     ~LogoWidget() override;
 
     void updateLocale(const QString &locale);
+    static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject* objPtr);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -27,11 +26,16 @@ protected:
 private:
     void initUI();
     QPixmap loadSystemLogo();
+    void loadCustomLogo();
     QString getVersion();
+    void updateCustomLogoPos();
 
 private:
     QLabel *m_logoLabel;
     DLabel *m_logoVersionLabel;
     QString m_locale;
+
+    // 第三方logo配置控制显示
+    QLabel *m_customLogoLabel;
 };
 #endif // LOGOFRAME

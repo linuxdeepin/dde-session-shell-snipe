@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Elektrik qidalanması</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Ekran Klaviaturası</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

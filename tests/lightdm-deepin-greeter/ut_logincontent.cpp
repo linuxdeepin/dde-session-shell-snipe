@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,29 +22,30 @@ void UT_LoginContent::SetUp()
     m_model = new SessionBaseModel();
     std::shared_ptr<User> user_ptr(new User);
     m_model->updateCurrentUser(user_ptr);
-
-    m_content = new LoginContent(m_model);
+    LoginContent::instance()->init(m_model);
 }
 
 void UT_LoginContent::TearDown()
 {
-    delete m_content;
+
 }
 
 TEST_F(UT_LoginContent, BasicTest)
 {
-    m_content->onCurrentUserChanged(m_model->currentUser());
-    m_content->tryPushTipsFrame();
-    m_content->pushLoginFrame();
+    LoginContent::instance()->onCurrentUserChanged(m_model->currentUser());
+    LoginContent::instance()->pushSessionFrame();
+    LoginContent::instance()->pushTipsFrame();
+    LoginContent::instance()->popTipsFrame();
 }
 
 TEST_F(UT_LoginContent, ModeTest)
 {
-    m_content->onStatusChanged(SessionBaseModel::NoStatus);
-    m_content->onStatusChanged(SessionBaseModel::PowerMode);
-    m_content->onStatusChanged(SessionBaseModel::ConfirmPasswordMode);
-    m_content->onStatusChanged(SessionBaseModel::UserMode);
-    m_content->onStatusChanged(SessionBaseModel::PowerMode);
-    m_content->onStatusChanged(SessionBaseModel::ShutDownMode);
-    m_content->restoreMode();
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::NoStatus);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::PowerMode);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::ConfirmPasswordMode);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::UserMode);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::SessionMode);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::PowerMode);
+    LoginContent::instance()->onStatusChanged(SessionBaseModel::ShutDownMode);
+    LoginContent::instance()->restoreMode();
 }

@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Kikapcsolás</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Képernyő billentyűzet</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

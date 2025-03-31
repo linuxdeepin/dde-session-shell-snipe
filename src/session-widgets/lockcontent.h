@@ -5,14 +5,16 @@
 #ifndef LOCKCONTENT_H
 #define LOCKCONTENT_H
 
-#include <QLocalServer>
-
-#include <memory>
-
 #include "mediawidget.h"
 #include "sessionbasemodel.h"
 #include "sessionbasewindow.h"
+#include "centertopwidget.h"
+#include "popupwindow.h"
 
+#include <QWidget>
+#include <QLocalServer>
+
+#include <memory>
 #include "wminterface.h"
 
 class AuthWidget;
@@ -20,38 +22,41 @@ class MFAWidget;
 class SFAWidget;
 class UserFrameList;
 class ControlWidget;
-class UserInputWidget;
 class User;
 class ShutdownWidget;
 class LogoWidget;
-class TimeWidget;
-class QDBusInterface;
+class FullManagedAuthWidget;
 
 class LockContent : public SessionBaseWindow
 {
     Q_OBJECT
 
 public:
-    explicit LockContent(SessionBaseModel *const model, QWidget *parent = nullptr);
-
+    explicit LockContent(QWidget *parent = nullptr);
+    static LockContent *instance();
+    void init(SessionBaseModel *model);
     virtual void onCurrentUserChanged(std::shared_ptr<User> user);
     virtual void onStatusChanged(SessionBaseModel::ModeStatus status);
     virtual void restoreMode();
     void updateGreeterBackgroundPath(const QString &path);
     void updateDesktopBackgroundPath(const QString &path);
+    void hideEvent(QHideEvent *event) override;
+    static void OnDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
 signals:
     void requestBackground(const QString &path);
     void requestSwitchToUser(std::shared_ptr<User> user);
-    void requestSetKeyboardLayout(std::shared_ptr<User> user, const QString &value);
-
-    void requestStartAuthentication(const QString &account, const int authType);
-    void sendTokenToAuth(const QString &account, const int authType, const QString &token);
-    void requestEndAuthentication(const QString &account, const int authType);
+    void requestSetLayout(std::shared_ptr<User> user, const QString &value);
+    void unlockActionFinish();
+    void requestStartAuthentication(const QString &account, const AuthFlags authType);
+    void sendTokenToAuth(const QString &account, const AuthType authType, const QString &token);
+    void requestEndAuthentication(const QString &account, const AuthFlags authType);
     void authFinished();
-
-    void requestCheckAccount(const QString &account);
+    void requestCheckSameNameAccount(const QString &account, bool switchUser);
+    void requestCheckAccount(const QString &account, bool switchUser);
     void requestLockFrameHide();
+    void parentChanged();
+    void noPasswordLoginChanged(const QString &account, bool noPassword);
 
 public slots:
     void pushPasswordFrame();
@@ -61,21 +66,24 @@ public slots:
     void setMPRISEnable(const bool state);
     void onNewConnection();
     void onDisConnect();
-    void onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm);
+    void showUserList();
+    void showLockScreen();
+    void showShutdown();
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
-    void hideEvent(QHideEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
     void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *e) Q_DECL_OVERRIDE;
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
-    void updateTimeFormat(bool use24);
-    void toggleModule(const QString &name);
+    void toggleVirtualKB();
+    void showModule(const QString &name, const bool callShowForce = false);
+    void updateVirtualKBPosition();
     void onUserListChanged(QList<std::shared_ptr<User>> list);
-    void tryGrabKeyboard();
-    void hideToplevelWindow();
+    void tryGrabKeyboard(bool exitIfFalied = true);
     void currentWorkspaceChanged();
     void updateWallpaper(const QString &path);
     void refreshBackground(SessionBaseModel::ModeStatus status);
@@ -85,40 +93,41 @@ protected:
     void initConnections();
     void initMFAWidget();
     void initSFAWidget();
+    void initFMAWidget();
     void initUserListWidget();
-
-private slots:
-    void onValueChanged(const QDBusMessage &dbusMessage);
-
-private:
-    QString configPath(std::shared_ptr<User>) const;
-    QString regionValue(const QString& key) const;
-    void buildConnect();
-    void disconnect(std::shared_ptr<User> user);
+    void enableSystemShortcut(const QStringList &shortcuts, bool enabled, bool isPersistent);
 
 protected:
     SessionBaseModel *m_model;
-    ControlWidget *m_controlWidget;                 // 右下角图标
-    QSharedPointer<ShutdownWidget> m_shutdownFrame; // 关机界面
-    LogoWidget *m_logoWidget;                       // logo显示
-    TimeWidget *m_timeWidget;                       // 时间日期显示
-    QSharedPointer<MediaWidget> m_mediaWidget;      // 多媒体信息显示
-    UserFrameList *m_userListWidget;                // 账户展示区域
-
+    ControlWidget *m_controlWidget;
+    CenterTopWidget *m_centerTopWidget;
+    ShutdownWidget *m_shutdownFrame;
+    QPointer<QWidget> m_virtualKB;
     std::shared_ptr<User> m_user;
     QList<QMetaObject::Connection> m_currentUserConnects;
-    com::deepin::wm *m_wmInter;                     // 用户更新工作区壁纸
+    LogoWidget *m_logoWidget;
+    MediaWidget *m_mediaWidget = nullptr;
+    com::deepin::wm *m_wmInter;
+    QWidget *m_loginWidget;
 
     SFAWidget *m_sfaWidget;
     MFAWidget *m_mfaWidget;
     AuthWidget *m_authWidget;
+    FullManagedAuthWidget *m_fmaWidget;
+    UserFrameList *m_userListWidget;
 
-    int m_lockFailTimes;                             // 尝试锁屏时失败的次数
+    int m_failures = 0;
     QLocalServer *m_localServer;
+    SessionBaseModel::ModeStatus m_currentModeStatus;
+    bool m_initialized;
+    bool m_isUserSwitchVisible;
+    PopupWindow *m_popWin;
+    QPointer<QWidget> m_currentTray;
 
-    QString m_localeName;
-    QString m_shortTimeFormat;
-    QString m_longDateFormat;
+    bool m_isPANGUCpu;
+    bool m_MPRISEnable;
+    bool m_showMediaWidget;
+    bool m_hasResetPasswordDialog;
 };
 
 #endif // LOCKCONTENT_H

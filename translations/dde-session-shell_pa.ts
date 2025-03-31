@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>ਊਰਜਾ</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>ਆਨ-ਬੋਰਡ</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

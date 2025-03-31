@@ -6,17 +6,16 @@
 #define AUTHPASSWORD_H
 
 #include "auth_module.h"
+#include "assist_login_widget.h"
+#include "passworderrortipswidget.h"
 
 #include <DIconButton>
 #include <DLabel>
-#include <DLineEdit>
 #include <DPushButton>
 #include <DFloatingMessage>
-#include <DSuggestButton>
-#include <DMessageManager>
+#include <DAlertControl>
 
 #define Password_Auth QStringLiteral(":/misc/images/auth/password.svg")
-//const QString Password_Auth = ":/misc/images/auth/password.svg";
 
 class DLineEditEx;
 DWIDGET_USE_NAMESPACE
@@ -30,8 +29,11 @@ public:
     void reset();
     QString lineEditText() const;
 
+    inline bool passwordLineEditEnabled() const { return m_passwordLineEditEnabled; }
+    void setPasswordLineEditEnabled(const bool enable);
+
     void setAnimationState(const bool start) override;
-    void setAuthState(const int state, const QString &result) override;
+    void setAuthState(const AuthCommon::AuthState state, const QString &result) override;
     void setCapsLockVisible(const bool on);
     void setLimitsInfo(const LimitsInfo &info) override;
     void setLineEditEnabled(const bool enable);
@@ -40,6 +42,27 @@ public:
     void setCurrentUid(uid_t uid);
     void showResetPasswordMessage();
     void closeResetPasswordMessage();
+    void setAuthStatueVisible(bool visible);
+
+    bool isShowResetPasswordMessage();
+    void updatePluginConfig();
+    void startPluginAuth();
+    void hidePlugin();
+
+    bool isPasswdAuthWidgetReplaced() const
+    {
+        return m_isPasswdAuthWidgetReplaced;
+    }
+
+    void setPasswdAuthWidgetReplaced(bool isPasswdAuthWidgetReplaced)
+    {
+        m_isPasswdAuthWidgetReplaced = isPasswdAuthWidgetReplaced;
+    }
+    bool isShowPasswrodErrorTip();
+    bool canShowPasswrodErrorTip();
+    void showErrorTip(const QString &text);
+    void clearPasswrodErrorTip(bool isClear);
+    void updatePasswrodErrorTipUi();
 
 signals:
     void focusChanged(const bool);
@@ -47,35 +70,54 @@ signals:
     void requestChangeFocus();                 // 切换焦点
     void requestShowKeyboardList();            // 显示键盘布局列表
     void resetPasswordMessageVisibleChanged(const bool isVisible);
+    void notifyLockedStateChanged(bool isLocked);
+    void requestPluginConfigChanged(const LoginPlugin::PluginConfig &PluginConfig);
+    void requestHidePlugin();
+    void requestPluginAuthToken(const QString accout, const QString token);
+    void requestUpdateBlurEffectGeometry();
+    void passwordErrorTipsClearChanged(const bool isClear);
 
 public slots:
-    void setResetPasswordMessageVisible(const bool isVisible);
+    void setResetPasswordMessageVisible(const bool isVisible, bool fromResetDialog = false);
     void updateResetPasswordUI();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void hideEvent(QHideEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
+    void moveEvent(QMoveEvent *event) Q_DECL_OVERRIDE;
 
 private:
     void initUI();
     void initConnections();
     void updateUnlockPrompt() override;
-    void togglePassword();
-    void setTogglePasswordBtnIcon();
     void showPasswordHint();
     void setPasswordHintBtnVisible(const bool isVisible);
     bool isUserAccountBinded();
+    void showAlertMessage(const QString &text);
+    void hidePasswordHintWidget();
+    void updatePasswordTextMargins();
 
 private:
-    DLabel *m_capsLock;                 // 大小写状态
-    DLineEditEx *m_passwordEdit;        // 密码输入框
-    DIconButton *m_passwordHintBtn;     // 密码提示按钮
-    QString m_passwordHint;             // 密码提示
-    DIconButton *m_togglePasswordBtn;   // 显示/隐藏密码按钮
+    bool m_passwordLineEditEnabled;
+    DLabel *m_capsLock;             // 大小写状态
+    DLineEditEx *m_lineEdit;        // 密码输入框
+    DIconButton *m_passwordShowBtn; // 密码显示按钮
+    DIconButton *m_passwordHintBtn; // 密码提示按钮
+    PasswordErrorTipsWidget* m_passwordTipsWidget;  // 认证错误提示窗口
+    QString m_passwordHint;         // 密码提示
     bool m_resetPasswordMessageVisible;
     DFloatingMessage *m_resetPasswordFloatingMessage;
     uid_t m_currentUid; // 当前用户uid
     QTimer *m_bindCheckTimer;
+    DAlertControl *m_passwordHintWidget;
+    DIconButton *m_iconButton;
+    bool m_resetDialogShow;
+
+    bool m_isPasswdAuthWidgetReplaced;
+    AssistLoginWidget *m_assistLoginWidget;
+    DConfig *m_authenticationDconfig;
 };
 
 #endif // AUTHPASSWORD_H

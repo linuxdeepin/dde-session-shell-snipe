@@ -15,13 +15,13 @@ set(GREETER_TEST_SRCS
     ${AUTHENTICATE}
     ${QT_DBUS_EXTENDED}
     ${DBUS_DATA_TYPES}
-    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/loginframe.cpp
+    ${PLUGIN_MANAGER}
+    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/loginwindow.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/greeterworker.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/logincontent.cpp
     ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/logintipswindow.cpp
-    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/pwqualitymanager.cpp
-    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/passwordlevelwidget.cpp
-    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/changepasswordwidget.cpp
+    ${PROJECT_SOURCE_DIR}/src/lightdm-deepin-greeter/sessionwidget.cpp
+    ${PROJECT_SOURCE_DIR}/src/global_util/signal_bridge.h
 )
 
 add_executable(${BIN_NAME}
@@ -54,4 +54,5 @@ target_link_libraries(${BIN_NAME} PRIVATE
     ${DEEPIN_PW_CHECK}
     -lpthread
     -lm
+    -lcrypto
 )

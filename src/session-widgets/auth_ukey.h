@@ -25,12 +25,13 @@ public:
     QString lineEditText() const;
 
     void setAnimationState(const bool start) override;
-    void setAuthState(const int state, const QString &result) override;
+    void setAuthState(const AuthCommon::AuthState state, const QString &result) override;
     void setCapsLockVisible(const bool on);
     void setLimitsInfo(const LimitsInfo &info) override;
     void setLineEditEnabled(const bool enable);
     void setLineEditInfo(const QString &text, const TextType type);
     void hide();
+    void setAuthStatueVisible(bool visible);
 
 signals:
     void focusChanged(const bool);

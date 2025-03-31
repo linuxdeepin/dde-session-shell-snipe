@@ -9,16 +9,17 @@
 
 typedef struct _XDisplay Display;
 
-class KeyboardPlantformX11 : public KeyBoardPlatform
+class KeyboardPlatformX11 : public KeyBoardPlatform
 {
     Q_OBJECT
 public:
-    KeyboardPlantformX11(QObject *parent = nullptr);
+    KeyboardPlatformX11(QObject *parent = nullptr);
 
-    bool isCapslockOn() override;
-    bool isNumlockOn() override;
-    bool setNumlockStatus(const bool &on) override;
+    bool isCapsLockOn() override;
+    bool isNumLockOn() override;
+    bool setNumLockStatus(const bool &on) override;
     void run() override;
+    void ungrabKeyboard() override;
 
 private:
     int listen(Display *display);

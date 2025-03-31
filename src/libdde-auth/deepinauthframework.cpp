@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "deepinauthframework.h"
+#include "encrypt_helper.h"
 
 #include "authcommon.h"
 #include "public_func.h"
 
 #include <dlfcn.h>
 
-#include <QThread>
 #include <QTimer>
 
-#include <grp.h>
-#include <pwd.h>
 #include <security/pam_appl.h>
-#include <signal.h>
 #include <unistd.h>
 
 #ifdef PAM_SUN_CODEBASE
@@ -26,54 +23,51 @@
 
 #define PAM_SERVICE_SYSTEM_NAME "password-auth"
 #define PAM_SERVICE_DEEPIN_NAME "dde-lock"
-#define PKCS1_HEADER "-----BEGIN RSA PUBLIC KEY-----"
-#define PKCS8_HEADER "-----BEGIN PUBLIC KEY-----"
-#define OPENSSLNAME "ssl"
-#define OPENSSLVERSION 3
-
-Q_LOGGING_CATEGORY(auth, "dss.auth")
 
 using namespace AuthCommon;
 
 DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     : QObject(parent)
-    , m_authenticateInter(new AuthInter(AUTHRNTICATESERVICE, "/org/deepin/dde/Authenticate1", QDBusConnection::systemBus(), this))
-    , m_watcher(new QDBusServiceWatcher(AUTHRNTICATESERVICE, QDBusConnection::systemBus(), QDBusServiceWatcher::WatchForOwnerChange, this))
+    , m_authenticateInter(new AuthInter(AUTHENTICATE_SERVICE, "/org/deepin/dde/Authenticate1", QDBusConnection::systemBus(), this))
     , m_PAMAuthThread(0)
     , m_authenticateControllers(new QMap<QString, AuthControllerInter *>())
     , m_cancelAuth(false)
     , m_waitToken(true)
-    , m_retryActivateFramework(false)
-    , m_encryptionHandle(nullptr)
-    , m_AES(new AES_KEY)
-    , m_BIO(nullptr)
-    , m_RSA(nullptr)
+    , m_isDAStartupCompleted(false)
 {
-    connect(m_watcher, &QDBusServiceWatcher::serviceOwnerChanged, this, [=](const QString &service, const QString &oldOwner, const QString &newOwner){
-        qCInfo(auth) << "Service " << service << "owner changed, old owner:" << oldOwner << ", new owner:" << newOwner;
-        if (newOwner.isEmpty()) {
-            if (m_retryActivateFramework) {
-                Q_EMIT this->FrameworkStateChanged(Unavailable);
-                return;
-            } else {
-                m_retryActivateFramework = true;
-                GetFrameworkState();
-            }
-        } else if (oldOwner.isEmpty() && !newOwner.isEmpty()) {
-            if (m_retryActivateFramework)
-                m_retryActivateFramework = false;
-            Q_EMIT this->FrameworkStateChanged(GetFrameworkState());
-        } else {
-            Q_EMIT this->FrameworkStateChanged(GetFrameworkState());
-        }
-    });
-    connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FrameworkStateChanged);
+    connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FramworkStateChanged);
     connect(m_authenticateInter, &AuthInter::LimitUpdated, this, &DeepinAuthFramework::LimitsInfoChanged);
     connect(m_authenticateInter, &AuthInter::SupportedFlagsChanged, this, &DeepinAuthFramework::SupportedMixAuthFlagsChanged);
     connect(m_authenticateInter, &AuthInter::SupportEncryptsChanged, this, &DeepinAuthFramework::SupportedEncryptsChanged);
+    QDBusConnection::systemBus().connect(AUTHENTICATE_SERVICE, "/org/deepin/dde/Authenticate1", "org.deepin.dde.Authenticate1", "DeviceChange", this, SLOT(onDeviceChanged(const int, const int)));
 
-    /* 暂时将加密方式固定，后续有修改再调整 */
-    setEncryption(0, {1});
+    if (m_authenticateInter->isValid()) {
+        m_isDAStartupCompleted = true;
+    } else{
+        // 异步拉起DA，避免阻塞主线程
+        QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "StartServiceByName");
+        message << "org.deepin.dde.Authenticate1" << 0u;
+        QDBusPendingCall async = QDBusConnection::systemBus().asyncCall(message);
+        auto *watcher = new QDBusPendingCallWatcher(async);
+        QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher](QDBusPendingCallWatcher *callWatcher) {
+            QDBusPendingReply<void> reply = *callWatcher;
+            if (!reply.isError()) {
+                m_isDAStartupCompleted = true;
+                Q_EMIT startupCompleted();
+            } else {
+                qCWarning(DDE_SHELL) << "DA startup has error: " << reply.error().message();
+            }
+
+            callWatcher->deleteLater();
+            watcher->deleteLater();
+        });
+    }
+}
+
+void DeepinAuthFramework::onDeviceChanged(const int authType, const int state)
+{
+    qCInfo(DDE_SHELL) << "Device changed, auth type:" << authType << ", state:" << state;
+    Q_EMIT DeviceChanged(authType, state);
 }
 
 DeepinAuthFramework::~DeepinAuthFramework()
@@ -82,8 +76,6 @@ DeepinAuthFramework::~DeepinAuthFramework()
         m_authenticateControllers->remove(key);
     }
     delete m_authenticateControllers;
-    delete m_AES;
-
     DestroyAuthenticate();
 }
 
@@ -97,7 +89,7 @@ void DeepinAuthFramework::CreateAuthenticate(const QString &account)
     if (account == m_account && m_PAMAuthThread != 0) {
         return;
     }
-    qInfo() << "Create PAM authenticate thread:" << account << m_PAMAuthThread;
+    qCInfo(DDE_SHELL) << "Create PAM authenticate thread, accout: " << account << "PAM auth thread: " << m_PAMAuthThread;
     m_account = account;
     DestroyAuthenticate();
     m_cancelAuth = false;
@@ -105,7 +97,7 @@ void DeepinAuthFramework::CreateAuthenticate(const QString &account)
     int rc = pthread_create(&m_PAMAuthThread, nullptr, &PAMAuthWorker, this);
 
     if (rc != 0) {
-        qCritical() << "failed to create the authentication thread: %s" << strerror(errno);
+        qCritical() << "ERROR: failed to create the authentication thread: %s" << strerror(errno);
     }
 }
 
@@ -121,7 +113,7 @@ void *DeepinAuthFramework::PAMAuthWorker(void *arg)
     if (authFramework != nullptr) {
         authFramework->PAMAuthentication(authFramework->m_account);
     } else {
-        qCritical() << "pam auth worker deepin framework is nullptr";
+        qCritical() << "ERROR: pam auth worker deepin framework is nullptr";
     }
     return nullptr;
 }
@@ -139,24 +131,30 @@ void DeepinAuthFramework::PAMAuthentication(const QString &account)
 
     int ret = pam_start(serviceName, account.toLocal8Bit().data(), &conv, &m_pamHandle);
     if (ret != PAM_SUCCESS) {
-        qCritical() << "PAM start failed:" << pam_strerror(m_pamHandle, ret) << ret;
+        qCritical() << "ERROR: PAM start failed, error: " << pam_strerror(m_pamHandle, ret) << ", start infomation: " << ret;
     } else {
-        qDebug() << "PAM start...";
+        qCDebug(DDE_SHELL) << "PAM start...";
     }
 
     int rc = pam_authenticate(m_pamHandle, 0);
     if (rc != PAM_SUCCESS) {
-        qWarning() << "PAM authenticate failed:" << pam_strerror(m_pamHandle, rc) << rc;
-        if (m_message.isEmpty()) m_message = pam_strerror(m_pamHandle, rc);
+        qCWarning(DDE_SHELL) << "PAM authenticate failed, error: " << pam_strerror(m_pamHandle, rc) << ", PAM authenticate: " << rc;
+	if (m_message.isEmpty()){
+            if(rc == PAM_AUTH_ERR){
+                m_message = tr("Wrong Password");
+            }else{
+                m_message = pam_strerror(m_pamHandle, rc);
+            }
+        }
     } else {
-        qDebug() << "PAM authenticate finished.";
+        qCDebug(DDE_SHELL) << "PAM authenticate finished.";
     }
 
     int re = pam_end(m_pamHandle, rc);
     if (re != PAM_SUCCESS) {
-        qCritical() << "PAM end failed:" << pam_strerror(m_pamHandle, re) << re;
+        qCritical() << "PAM end failed:" << pam_strerror(m_pamHandle, re) << "PAM end infomation: " << re;
     } else {
-        qDebug() << "PAM end...";
+        qCDebug(DDE_SHELL) << "PAM end...";
     }
 
     if (rc == 0) {
@@ -186,17 +184,17 @@ int DeepinAuthFramework::PAMConversation(int num_msg, const pam_message **msg, p
 
     QPointer<DeepinAuthFramework> isThreadAlive(app_ptr);
     if (!isThreadAlive) {
-        qWarning() << "pam: application is null";
+        qCWarning(DDE_SHELL) << "PAM conversation: application is null";
         return PAM_CONV_ERR;
     }
 
     if (num_msg <= 0 || num_msg > PAM_MAX_NUM_MSG) {
-        qWarning() << "PAM_CONV_ERR :" << num_msg;
+        qCWarning(DDE_SHELL) << "PAM conversation: message num error :" << num_msg;
         return PAM_CONV_ERR;
     }
 
     if ((aresp = static_cast<struct pam_response *>(calloc(static_cast<size_t>(num_msg), sizeof(*aresp)))) == nullptr) {
-        qWarning() << "PAM_BUF_ERR";
+        qCWarning(DDE_SHELL) << "PAM conversation buffer error: " << aresp;
         return PAM_BUF_ERR;
     }
     const QString message = QString::fromLocal8Bit(PAM_MSG_MEMBER(msg, idx, msg));
@@ -204,11 +202,11 @@ int DeepinAuthFramework::PAMConversation(int num_msg, const pam_message **msg, p
         switch (PAM_MSG_MEMBER(msg, idx, msg_style)) {
         case PAM_PROMPT_ECHO_ON:
         case PAM_PROMPT_ECHO_OFF: {
-            qDebug() << "pam auth echo:" << message;
+            qCDebug(DDE_SHELL) << "PAM auth echo:" << message;
             app_ptr->UpdateAuthState(AS_Prompt, message);
             /* 等待用户输入密码 */
             while (app_ptr->m_waitToken) {
-                qDebug() << "Waiting for the password...";
+                qCDebug(DDE_SHELL) << "Waiting for the password...";
                 if (app_ptr->m_cancelAuth) {
                     app_ptr->m_cancelAuth = false;
                     return PAM_ABORT;
@@ -218,7 +216,7 @@ int DeepinAuthFramework::PAMConversation(int num_msg, const pam_message **msg, p
             app_ptr->m_waitToken = true;
 
             if (!QPointer<DeepinAuthFramework>(app_ptr)) {
-                qCritical() << "pam: deepin auth framework is null";
+                qCritical() << "ERROR: PAM deepin auth framework is null";
                 return PAM_CONV_ERR;
             }
 
@@ -232,14 +230,14 @@ int DeepinAuthFramework::PAMConversation(int num_msg, const pam_message **msg, p
             break;
         }
         case PAM_ERROR_MSG: {
-            qDebug() << "pam auth error: " << message;
+            qCDebug(DDE_SHELL) << "PAM auth error: " << message;
             app_ptr->m_message = message;
             app_ptr->UpdateAuthState(AS_Failure, message);
             aresp[idx].resp_retcode = PAM_SUCCESS;
             break;
         }
         case PAM_TEXT_INFO: {
-            qDebug() << "pam auth info: " << message;
+            qCDebug(DDE_SHELL) << "PAM auth info: " << message;
             app_ptr->m_message = message;
             app_ptr->UpdateAuthState(AS_Prompt, message);
             aresp[idx].resp_retcode = PAM_SUCCESS;
@@ -272,7 +270,7 @@ void DeepinAuthFramework::SendToken(const QString &token)
     if (!m_waitToken) {
         return;
     }
-    qInfo() << "Send token to PAM";
+    qCInfo(DDE_SHELL) << "Send token to PAM, token: " << token;
     m_token = token;
     m_waitToken = false;
 }
@@ -283,7 +281,7 @@ void DeepinAuthFramework::SendToken(const QString &token)
  * @param state
  * @param message
  */
-void DeepinAuthFramework::UpdateAuthState(const int state, const QString &message)
+void DeepinAuthFramework::UpdateAuthState(const AuthState state, const QString &message)
 {
     emit AuthStateChanged(AT_PAM, state, message);
 }
@@ -296,74 +294,16 @@ void DeepinAuthFramework::DestroyAuthenticate()
     if (m_PAMAuthThread == 0) {
         return;
     }
-    qInfo() << "Destroy PAM authenticate thread";
+    qCInfo(DDE_SHELL) << "Destroy PAM authenticate thread";
     m_cancelAuth = true;
     pthread_cancel(m_PAMAuthThread);
     pthread_join(m_PAMAuthThread, nullptr);
     m_PAMAuthThread = 0;
 }
 
-/**
- * @brief 设置加密类型和加密方式
- *
- * @param type
- * @param method
- */
-void DeepinAuthFramework::setEncryption(const int type, ArrayInt method)
+bool DeepinAuthFramework::IsUsingPamAuth()
 {
-    m_encryptType = type;
-    m_encryptMethod = method;
-}
-
-/**
- * @brief 初始化加密服务
- */
-void DeepinAuthFramework::initEncryptionService()
-{
-    m_encryptionHandle = new QLibrary(OPENSSLNAME, OPENSSLVERSION);
-    if (!m_encryptionHandle->load()) {
-        qCritical() << "Failed to load library name: " << OPENSSLNAME << ", version: " << OPENSSLVERSION;
-        return;
-    }
-    m_F_AES_cbc_encrypt = reinterpret_cast<FUNC_AES_CBC_ENCRYPT>(m_encryptionHandle->resolve( "AES_cbc_encrypt"));
-    m_F_AES_set_encrypt_key = reinterpret_cast<FUNC_AES_SET_ENCRYPT_KEY>(m_encryptionHandle->resolve("AES_set_encrypt_key"));
-    m_F_BIO_new = reinterpret_cast<FUNC_BIO_NEW>(m_encryptionHandle->resolve("BIO_new"));
-    m_F_BIO_puts = reinterpret_cast<FUNC_BIO_PUTS>(m_encryptionHandle->resolve("BIO_puts"));
-    m_F_BIO_s_mem = reinterpret_cast<FUNC_BIO_S_MEM>(m_encryptionHandle->resolve("BIO_s_mem"));
-    m_F_PEM_read_bio_RSAPublicKey = reinterpret_cast<FUNC_PEM_READ_BIO_RSAPUBLICKEY>(m_encryptionHandle->resolve("PEM_read_bio_RSAPublicKey"));
-    m_F_PEM_read_bio_RSA_PUBKEY = reinterpret_cast<FUNC_PEM_READ_BIO_RSA_PUBKEY>(m_encryptionHandle->resolve("PEM_read_bio_RSA_PUBKEY"));
-    m_F_RSA_public_encrypt = reinterpret_cast<FUNC_RSA_PUBLIC_ENCRYPT>(m_encryptionHandle->resolve("RSA_public_encrypt"));
-    m_F_RSA_size = reinterpret_cast<FUNC_RSA_SIZE>(m_encryptionHandle->resolve("RSA_size"));
-    m_F_RSA_free = reinterpret_cast<FUNC_RSA_FREE>(m_encryptionHandle->resolve("RSA_free"));
-    m_F_BIO_free = reinterpret_cast<FUNC_RSA_FREE>(m_encryptionHandle->resolve("BIO_free"));
-
-    m_BIO = m_F_BIO_new(m_F_BIO_s_mem());
-    m_F_BIO_puts(m_BIO, m_publicKey.toLatin1().data());
-
-    if (strncmp(m_publicKey.toLatin1().data(), PKCS8_HEADER, strlen(PKCS8_HEADER)) == 0) {
-        m_RSA = m_F_PEM_read_bio_RSA_PUBKEY(m_BIO, nullptr, nullptr, nullptr);
-    } else if (strncmp(m_publicKey.toLatin1().data(), PKCS1_HEADER, strlen(PKCS1_HEADER)) == 0) {
-        m_RSA = m_F_PEM_read_bio_RSAPublicKey(m_BIO, nullptr, nullptr, nullptr);
-    }
-
-    /* 生成对称加密的密钥 */
-    srand(static_cast<unsigned int>(time(nullptr)));
-    int randNum = (10000000 + rand() % 10000000) % 100000000;
-    m_symmetricKey = QString::number(randNum) + QString::number(randNum);
-}
-
-/**
- * @brief 加密对称加密的密钥并发送给认证服务
- *
- * @param account
- */
-void DeepinAuthFramework::encryptSymmtricKey(const QString &account)
-{
-    int size = m_F_RSA_size(m_RSA);
-    char *ciphertext = new char[static_cast<unsigned long>(size)];
-    m_F_RSA_public_encrypt(m_symmetricKey.length(), reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), reinterpret_cast<unsigned char *>(ciphertext), m_RSA, 1);
-    m_authenticateControllers->value(account)->SetSymmetricKey(QByteArray(ciphertext, size));
-    delete[] ciphertext;
+    return m_PAMAuthThread != 0;
 }
 
 /**
@@ -373,13 +313,16 @@ void DeepinAuthFramework::encryptSymmtricKey(const QString &account)
  * @param authType    认证方式（多因、单因，一种或多种）
  * @param encryptType 加密方式
  */
-void DeepinAuthFramework::CreateAuthController(const QString &account, const int authType, const int appType)
+void DeepinAuthFramework::CreateAuthController(const QString &account, const AuthFlags authType, const int appType)
 {
     if (m_authenticateControllers->contains(account) && m_authenticateControllers->value(account)->isValid()) {
         return;
     }
     const QString authControllerInterPath = m_authenticateInter->Authenticate(account, authType, appType);
-    qInfo() << "Create Authenticate Session:" << account << authType << appType << authControllerInterPath;
+    qCInfo(DDE_SHELL) << "Create auth controller, account:" << account
+            << ", Auth type:"<< authType
+            << ", App type:" << appType
+            << ", Authentication session path: " << authControllerInterPath;
     AuthControllerInter *authControllerInter = new AuthControllerInter("org.deepin.dde.Authenticate1", authControllerInterPath, QDBusConnection::systemBus(), this);
     m_authenticateControllers->insert(account, authControllerInter);
 
@@ -389,37 +332,46 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const int
     connect(authControllerInter, &AuthControllerInter::PINLenChanged, this, &DeepinAuthFramework::PINLenChanged);
     connect(authControllerInter, &AuthControllerInter::PromptChanged, this, &DeepinAuthFramework::PromptChanged);
     connect(authControllerInter, &AuthControllerInter::Status, this, [this](int flag, int state, const QString &msg) {
-        emit AuthStateChanged(flag, state, msg);
+        const AuthType type = AUTH_TYPE_CAST(flag);
+        const AuthState authState = AUTH_STATE_CAST(state);
+        emit AuthStateChanged(type, authState, msg);
 
         // 当人脸或者虹膜认证成功 或者 指纹识别失败/成功 时唤醒屏幕
-        if (((AT_Face == flag || AT_Iris == flag) && AS_Success == state)
-            || (AT_Fingerprint == flag && (AS_Failure == state || AS_Success == state))) {
+        if (((AT_Face == type || AT_Iris == type) && AS_Success == authState)
+            || (AT_Fingerprint == type && (AS_Failure == authState || AS_Success == authState))
+            || (AT_Passkey == type && (AS_Failure == authState || AS_Success == authState))) {
             system("xset dpms force on");
         }
     });
 
+    emit SessionCreated();
     emit MFAFlagChanged(authControllerInter->isMFA());
     emit FactorsInfoChanged(authControllerInter->factorsInfo());
     emit FuzzyMFAChanged(authControllerInter->isFuzzyMFA());
     emit PINLenChanged(authControllerInter->pINLen());
     emit PromptChanged(authControllerInter->prompt());
 
-    int encryptType;
-    ArrayInt encryptMethod;
-    QDBusReply<int> reply = authControllerInter->EncryptKey(m_encryptType, m_encryptMethod, encryptMethod, m_publicKey);
-    encryptType = reply.value();
-    if (encryptType != m_encryptType || encryptMethod != m_encryptMethod) {
-        qWarning() << "The current encryption method is not supported, use the default encryption method.";
-        m_encryptType = encryptType;
-        m_encryptMethod = encryptMethod;
-    }
-    if (m_publicKey.isEmpty()) {
-        qCritical() << "Failed to get the public key!";
+
+    int DAEncryptType;
+    ArrayInt DAEncryptMethod;
+    QString publicKey;
+    // 获取非对称加密公钥
+    QDBusReply<int> reply = authControllerInter->EncryptKey(
+        EncryptHelper::ref().encryptType(),
+        EncryptHelper::ref().encryptMethod(),
+        DAEncryptMethod,
+        publicKey);
+    DAEncryptType = reply.value();
+
+    // 使用DA返回的加密算法； 例如，如果是没有适配SM2算法的DA，那么就使用RSA
+    EncryptHelper::ref().setEncryption(DAEncryptType, DAEncryptMethod);
+    if (publicKey.isEmpty()) {
+        qCritical() << "ERROR: Failed to get the public key!";
         return;
     }
-
-    initEncryptionService();
-    encryptSymmtricKey(account);
+    EncryptHelper::ref().setPublicKey(publicKey);
+    EncryptHelper::ref().initEncryptionService();
+    m_authenticateControllers->value(account)->SetSymmetricKey(EncryptHelper::ref().encryptSymmetricalKey());
 }
 
 /**
@@ -433,17 +385,12 @@ void DeepinAuthFramework::DestroyAuthController(const QString &account)
         return;
     }
     AuthControllerInter *authControllerInter = m_authenticateControllers->value(account);
-    qInfo() << "Destroy Authenticate Session:" << account << authControllerInter->path();
+    qCInfo(DDE_SHELL) << "Destroy authenticate session:" << account  << ", interface path: " << authControllerInter->path();
     authControllerInter->End(AT_All);
     authControllerInter->Quit();
     m_authenticateControllers->remove(account);
     delete authControllerInter;
-
-    if (m_encryptionHandle) {
-        m_F_RSA_free(m_RSA);
-        m_F_BIO_free(m_BIO);
-        delete m_encryptionHandle;
-    }
+    EncryptHelper::ref().releaseResources();
 }
 
 /**
@@ -453,13 +400,16 @@ void DeepinAuthFramework::DestroyAuthController(const QString &account)
  * @param authType  认证类型（可传入一种或多种）
  * @param timeout   设定超时时间（默认 -1）
  */
-void DeepinAuthFramework::StartAuthentication(const QString &account, const int authType, const int timeout)
+void DeepinAuthFramework::StartAuthentication(const QString &account, const AuthFlags authType, const int timeout)
 {
     if (!m_authenticateControllers->contains(account)) {
         return;
     }
+
     int ret = m_authenticateControllers->value(account)->Start(authType, timeout);
-    qInfo() << "Start Authenticate Session:" << account << authType << ret;
+    qCInfo(DDE_SHELL) << "Start authentication, account:" << account << ", auth type" << authType << ", ret:" << ret;
+
+    m_lastAuthUser = account;
 }
 
 /**
@@ -468,12 +418,12 @@ void DeepinAuthFramework::StartAuthentication(const QString &account, const int 
  * @param account   账户
  * @param authType  认证类型
  */
-void DeepinAuthFramework::EndAuthentication(const QString &account, const int authType)
+void DeepinAuthFramework::EndAuthentication(const QString &account, const AuthFlags authType)
 {
     if (!m_authenticateControllers->contains(account)) {
         return;
     }
-    qInfo() << "End Authentication:" << account << authType;
+    qCInfo(DDE_SHELL) << "End authentication:" << ", account: " << account << "auth type: " << authType;
     m_authenticateControllers->value(account)->End(authType).waitForFinished();
 }
 
@@ -484,36 +434,19 @@ void DeepinAuthFramework::EndAuthentication(const QString &account, const int au
  * @param authType  认证类型
  * @param token     密文
  */
-void DeepinAuthFramework::SendTokenToAuth(const QString &account, const int authType, const QString &token)
+void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
     if (!m_authenticateControllers->contains(account)) {
+        qCWarning(DDE_SHELL) << "account not included";
+        // 无论出于什么原因到这个逻辑，必须更新前端当前认证状态
+        // 否则将导致登录停在这里
+        Q_EMIT TokenAccountMismatch(m_lastAuthUser);
         return;
     }
-    qInfo() << "Send token to authentication:" << account << authType;
+    qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type:" << authType;
 
-    const int tokenSize = token.size();
-    const int padding = AES_BLOCK_SIZE - tokenSize % AES_BLOCK_SIZE;
-    const int blockCount = token.length() / AES_BLOCK_SIZE + 1;
-    const int bufferSize = blockCount * AES_BLOCK_SIZE;
-    char *tokenBuffer = new char[static_cast<size_t>(bufferSize)];
-    memset(tokenBuffer, padding, static_cast<size_t>(bufferSize));
-    memcpy(tokenBuffer, token.toLatin1().data(), static_cast<size_t>(tokenSize));
-    char *ciphertext = new char[static_cast<size_t>(bufferSize)];
-    memset(ciphertext, 0, static_cast<size_t>(bufferSize));
-    int ret = m_F_AES_set_encrypt_key(reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), m_symmetricKey.length() * 8, m_AES);
-    if (ret < 0) {
-        qCritical() << "Failed to set symmetric key!";
-        delete[] tokenBuffer;
-        delete[] ciphertext;
-        return;
-    }
-    unsigned char *iv = new unsigned char[AES_BLOCK_SIZE];
-    memset(iv, 0, AES_BLOCK_SIZE);
-    m_F_AES_cbc_encrypt(reinterpret_cast<unsigned char *>(tokenBuffer), reinterpret_cast<unsigned char *>(ciphertext), static_cast<size_t>(bufferSize), m_AES, iv, AES_ENCRYPT);
-    m_authenticateControllers->value(account)->SetToken(authType, QByteArray(ciphertext, bufferSize));
-    delete[] tokenBuffer;
-    delete[] ciphertext;
-    delete[] iv;
+    QByteArray ba = EncryptHelper::ref().getEncryptedToken(token);
+    m_authenticateControllers->value(account)->SetToken(authType, ba);
 }
 
 /**
@@ -535,9 +468,9 @@ void DeepinAuthFramework::SetAuthQuitFlag(const QString &account, const int flag
  *
  * @return int
  */
-int DeepinAuthFramework::GetSupportedMixAuthFlags() const
+AuthFlags DeepinAuthFramework::GetSupportedMixAuthFlags() const
 {
-    return m_authenticateInter->supportedFlags();
+    return AUTH_FLAGS_CAST(m_authenticateInter->supportedFlags());
 }
 
 /**
@@ -650,7 +583,13 @@ bool DeepinAuthFramework::SetPrivilegesEnable(const QString &account, const QStr
     if (!m_authenticateControllers->contains(account)) {
         return false;
     }
-    return m_authenticateControllers->value(account)->PrivilegesEnable(path);
+
+    QDBusPendingReply<bool> reply = m_authenticateControllers->value(account)->PrivilegesEnable(path);
+    reply.waitForFinished();
+    if(reply.isError()) {
+        return false;
+    }
+    return reply.value();
 }
 
 /**
@@ -706,9 +645,6 @@ bool DeepinAuthFramework::authSessionExist(const QString &account) const
  */
 bool DeepinAuthFramework::isDeepinAuthValid() const
 {
-    qDebug() << Q_FUNC_INFO
-             << ", frameworkState" << m_authenticateInter->frameworkState()
-             << ", isServiceRegistered: " << QDBusConnection::systemBus().interface()->isServiceRegistered(AUTHRNTICATESERVICE);
-    return QDBusConnection::systemBus().interface()->isServiceRegistered(AUTHRNTICATESERVICE)
-            && Available == GetFrameworkState();
+    return QDBusConnection::systemBus().interface()->isServiceRegistered(AUTHENTICATE_SERVICE)
+            && (Available == GetFrameworkState());
 }

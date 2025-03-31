@@ -23,8 +23,8 @@ class MultiScreenManager : public QObject
 public:
     explicit MultiScreenManager(QObject *parent = nullptr);
 
-    void register_for_mutil_screen(std::function<QWidget* (QScreen *, int)> function);
-    void startRaiseContentFrame();
+    void register_for_multi_screen(std::function<QWidget* (QScreen *, int)> function);
+    void startRaiseContentFrame(const bool visible = true);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -34,6 +34,7 @@ private:
     void onScreenRemoved(QPointer<QScreen> screen);
     void raiseContentFrame();
     int getDisplayModeByConfig(const QString &config) const;
+    void updateFrame();
 
 private slots:
     void onDisplayModeChanged(const QString &);

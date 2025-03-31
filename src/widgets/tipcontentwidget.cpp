@@ -21,12 +21,12 @@ void TipContentWidget::setText(const QString &text, bool multiLine)
 {
     QString showText = text;
     // 去掉所有行尾换行符
-    while (showText.count() && showText.endsWith(NEWLINE_FLAG)) {
+    while (showText.length() && showText.endsWith(NEWLINE_FLAG)) {
         showText.chop(1);
     }
 
     // 去掉行首换行符
-    while (showText.count() && showText.at(0) == NEWLINE_FLAG) {
+    while (showText.length() && showText.at(0) == NEWLINE_FLAG) {
         showText.remove(0, 1);
     }
 

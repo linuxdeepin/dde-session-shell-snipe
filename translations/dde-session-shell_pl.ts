@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Zasilanie</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Klawiatura ekranowa</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

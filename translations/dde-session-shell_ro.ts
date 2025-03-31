@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Energie</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>La bord</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

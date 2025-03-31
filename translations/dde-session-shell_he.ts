@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>צריכת חשמל</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation type="unfinished"/>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

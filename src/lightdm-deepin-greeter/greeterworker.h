@@ -10,9 +10,8 @@
 #include "deepinauthframework.h"
 #include "sessionbasemodel.h"
 
-
 #include <QLightDM/Greeter>
-
+#include <QLightDM/SessionsModel>
 #include <QObject>
 
 class GreeterWorker : public Auth::AuthInterface
@@ -36,23 +35,29 @@ signals:
     void requestUpdateBackground(const QString &path);
     void requestShowPrompt(const QString &prompt);
     void requestShowMessage(const QString &message);
+    void requestShowUsersWithTheSameName(const QString nativeUserName, const QString &doMainAccountDetail);
 
 public slots:
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destroyAuthentication(const QString &account);
-    void startAuthentication(const QString &account, const int authType);
-    void endAuthentication(const QString &account, const int authType);
-    void sendTokenToAuth(const QString &account, const int authType, const QString &token);
+    void startAuthentication(const QString &account, const AuthFlags authType);
+    void endAuthentication(const QString &account, const AuthFlags authType);
+    void sendTokenToAuth(const QString &account, const AuthType authType, const QString &token);
 
-    void checkAccount(const QString &account);
+    void checkAccount(const QString &account, bool switchUser);
+    void checkSameNameAccount(const QString &account, bool switchUser);
     void restartResetSessionTimer();
     void onAuthFinished();
+    void onNoPasswordLoginChanged(const QString &account, bool noPassword);
 
 private slots:
     void onAuthStateChanged(const int type, const int state, const QString &message);
     void onReceiptChanged(bool state);
     void onCurrentUserChanged(const std::shared_ptr<User> &user);
+    void onSessionCreated();
+    void terminalLockedChanged(const QDBusMessage &msg);
+    void resetAuth(const QString &);
 
 private:
     void initConnections();
@@ -66,17 +71,20 @@ private:
     void showPrompt(const QString &text, const QLightDM::Greeter::PromptType type);
     void showMessage(const QString &text, const QLightDM::Greeter::MessageType type);
     void authenticationComplete();
-    void saveNumlockState(std::shared_ptr<User> user, bool on);
+    void saveNumLockState(std::shared_ptr<User> user, bool on);
     int getNumLockState(const QString &userName);
     void recoveryUserKBState(std::shared_ptr<User> user);
     void startGreeterAuth(const QString &account = QString());
     void changePasswd();
+    void screenSwitchByWldpms(bool active);
+    void updatePasswordExpiredStateBySPName(const QString &account);
     void prepareShutdownSound();
 
 private:
-    QLightDM::Greeter *m_greeter;
     DeepinAuthFramework *m_authFramework;
+    QLightDM::Greeter *m_greeter;
     DBusLockService *m_lockInter;
+    QDBusInterface *m_systemDaemon;
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;

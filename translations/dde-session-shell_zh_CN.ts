@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>电源</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>屏幕键盘</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

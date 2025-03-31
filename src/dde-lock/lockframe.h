@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,30 +25,25 @@ class DBusLockService;
 class LockContent;
 class WarningContent;
 class User;
-class LockFrame: public FullscreenBackground
+class LockFrame: public FullScreenBackground
 {
     Q_OBJECT
 public:
-    LockFrame(SessionBaseModel *const model, QWidget *parent = nullptr);
+    explicit LockFrame(SessionBaseModel *const model, QWidget *parent = nullptr);
+    ~LockFrame();
 
 signals:
     void requestSwitchToUser(std::shared_ptr<User> user);
-    void requestSetKeyboardLayout(std::shared_ptr<User> user, const QString &layout);
+    void requestSetLayout(std::shared_ptr<User> user, const QString &layout);
     void requestEnableHotzone(bool disable);
     void sendKeyValue(QString keyValue);
 
     void requestStartAuthentication(const QString &account, const int authType);
-    void sendTokenToAuth(const QString &account, const int authType, const QString &token);
+    void sendTokenToAuth(const QString &account, const AuthType authType, const QString &token);
     void requestEndAuthentication(const QString &account, const int authType);
-    void authFinished();
-    void requestCheckAccount(const QString &account);
 
-public slots:
-    void showUserList();
-    void showLockScreen();
-    void showShutdown();
-    void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
-    void cancelShutdownInhibit(bool hideFrame);
+private slots:
+    void prepareForSleep(bool isSleep);
 
 protected:
     void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
@@ -62,8 +57,6 @@ private:
 
 private:
     SessionBaseModel *m_model;
-    LockContent *m_lockContent;
-    WarningContent *m_warningContent;
     bool m_enablePowerOffKey;
     QTimer *m_autoExitTimer;
 };

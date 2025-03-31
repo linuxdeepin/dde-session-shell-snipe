@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Kiwashio</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Ndani ya</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

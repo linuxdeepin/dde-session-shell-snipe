@@ -4,94 +4,144 @@
 
 #include "lockcontent.h"
 
-#include "base_module_interface.h"
 #include "controlwidget.h"
 #include "logowidget.h"
 #include "mfa_widget.h"
 #include "modules_loader.h"
+#include "popupwindow.h"
 #include "sessionbasemodel.h"
 #include "sfa_widget.h"
 #include "shutdownwidget.h"
-#include "timewidget.h"
 #include "userframelist.h"
+#include "virtualkbinstance.h"
+#include "plugin_manager.h"
+#include "fullmanagedauthwidget.h"
+#include "keyboardmonitor.h"
+#include "dconfig_helper.h"
+#include "constants.h"
 
 #include <DDBusSender>
 
+#include <QWindow>
 #include <QLocalSocket>
 #include <QMouseEvent>
 
 using namespace dss;
 using namespace dss::module;
+DCORE_USE_NAMESPACE
 
-static const QString dsg_config = "org.desktopspec.ConfigManager";
-static const QString localeName_key = "localeName";
-static const QString longDateFormat_key = "longDateFormat";
-static const QString shortTimeFormat_key = "shortTimeFormat";
-
-LockContent::LockContent(SessionBaseModel *const model, QWidget *parent)
+LockContent::LockContent(QWidget *parent)
     : SessionBaseWindow(parent)
-    , m_model(model)
-    , m_controlWidget(new ControlWidget(m_model, this))
-    , m_logoWidget(new LogoWidget(this))
-    , m_timeWidget(new TimeWidget(this))
-    , m_userListWidget(nullptr)
+    , m_model(nullptr)
+    , m_controlWidget(nullptr)
+    , m_centerTopWidget(nullptr)
+    , m_virtualKB(nullptr)
     , m_wmInter(new com::deepin::wm("com.deepin.wm", "/com/deepin/wm", QDBusConnection::sessionBus(), this))
     , m_sfaWidget(nullptr)
     , m_mfaWidget(nullptr)
     , m_authWidget(nullptr)
-    , m_lockFailTimes(0)
+    , m_fmaWidget(nullptr)
+    , m_userListWidget(nullptr)
     , m_localServer(new QLocalServer(this))
+    , m_currentModeStatus(SessionBaseModel::ModeStatus::NoStatus)
+    , m_initialized(false)
+    , m_isUserSwitchVisible(false)
+    , m_popWin(nullptr)
+    , m_isPANGUCpu(false)
+    , m_MPRISEnable(false)
+    , m_showMediaWidget(DConfigHelper::instance()->getConfig(SHOW_MEDIA_WIDGET, false).toBool())
+    , m_hasResetPasswordDialog(false)
 {
-    if (m_model->appType() == AppType::Login) {
-        // 管理员账户且密码过期的情况下，设置当前状态为ResetPasswdMode，从而方便直接跳转到重置密码界面
-        bool showReset = m_model->currentUser()->expiredState() == User::ExpiredState::ExpiredAlready && m_model->currentUser()->accountType() == User::AccountType::Admin;
-        m_model->setCurrentModeState(showReset ? SessionBaseModel::ModeStatus::ResetPasswdMode : SessionBaseModel::ModeStatus::PasswordMode);
-    } else {
+
+}
+
+LockContent* LockContent::instance()
+{
+    static LockContent* lockContent = nullptr;
+    if (!lockContent) {
+        lockContent = new LockContent();
+    }
+
+    return lockContent;
+}
+
+void LockContent::init(SessionBaseModel *model)
+{
+    if (m_initialized) {
+        qCWarning(DDE_SHELL) << "Has been initialized, don't do it again";
+        return;
+    }
+    m_initialized = true;
+    m_model = model;
+    // 异步获取CPU硬件信息，判断是否为PANGU CPU
+    // FIXME: CPU硬件信息可能会改且其它的机型也可能会有PANGU CPU，这里的判断不准确
+    if (m_model->appType() == AuthCommon::Lock) {
+        QDBusInterface interface("org.deepin.dde.SystemInfo1",
+            "/org/deepin/dde/SystemInfo1",
+            "org.freedesktop.DBus.Properties",
+            QDBusConnection::sessionBus(),
+            this);
+        QDBusPendingReply<QDBusVariant> reply = interface.asyncCall("Get", "org.deepin.dde.SystemInfo1", "CPUHardware");
+        QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(reply, this);
+        connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher] {
+            QDBusPendingReply<QDBusVariant> reply = *watcher;
+            if (reply.isValid()) {
+                QString cpuHardware = reply.value().variant().toString();
+                qCInfo(DDE_SHELL) << "Current cpu hardware:" << cpuHardware;
+                if (cpuHardware.contains("PANGU")) {
+                    m_isPANGUCpu = true;
+                }
+            } else {
+                qCWarning(DDE_SHELL) << "Failed to get CPU hardware:" << reply.error().message();
+            }
+            watcher->deleteLater();
+        });
+    }
+    // 在已显示关机或用户列表界面时，再插入另外一个显示器，会新构建一个LockContent，此时会设置为PasswordMode造成界面状态异常
+    if (!m_model->visible()) {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
     }
 
     initUI();
     initConnections();
 
-    if (model->appType() == AppType::Lock) {
+    if (model->appType() == AuthCommon::Lock) {
         setMPRISEnable(model->currentModeState() != SessionBaseModel::ModeStatus::ShutDownMode);
     }
 
-    QTimer::singleShot(0, this, [ = ] {
-        onCurrentUserChanged(model->currentUser());
-        onUserListChanged(model->isServerModel() ? model->loginedUserList() : model->userList());
+    QTimer::singleShot(0, this, [this] {
+        onCurrentUserChanged(m_model->currentUser());
     });
 
+    // 创建套接字连接，用于与重置密码弹窗通讯
     m_localServer->setMaxPendingConnections(1);
     m_localServer->setSocketOptions(QLocalServer::WorldAccessOption);
-    static bool once = false;
-    if (!once) {
-        // 将greeter和lock的服务名称分开
-        // 如果服务相同，但是创建套接字文件的用户不一样，greeter和lock不能删除对方的套接字文件，造成锁屏无法监听服务。
-        QString serverName = QString("GrabKeyboard_") + (m_model->appType() == Login ? "greeter" : ("lock_" + m_model->currentUser()->name()));
-        // 将之前的server删除，如果是旧文件，即使监听成功，客户端也无法连接。
-        QLocalServer::removeServer(serverName);
-        if (!m_localServer->listen(serverName)) { // 监听特定的连接
-            qWarning() << "listen failed!" << m_localServer->errorString();
-        } else {
-            qDebug() << "listen success!";
-        }
+    // 将greeter和lock的服务名称分开
+    // 如果服务相同，但是创建套接字文件的用户不一样，greeter和lock不能删除对方的套接字文件，造成锁屏无法监听服务。
+    QString serverName = QString("GrabKeyboard_") + (m_model->appType() == AuthCommon::Login ? "greeter" : ("lock_" + m_model->currentUser()->name()));
+    // 将之前的server删除，如果是旧文件，即使监听成功，客户端也无法连接。
+    QLocalServer::removeServer(serverName);
+    if (!m_localServer->listen(serverName)) { // 监听特定的连接
+        qCWarning(DDE_SHELL) << "Listen local server failed!" << m_localServer->errorString();
     }
-    once = true;
 
-    QString localeName = regionValue(localeName_key);
-    m_timeWidget->updateLocale(localeName);
+    DConfigHelper::instance()->bind(this, SHOW_MEDIA_WIDGET, &LockContent::OnDConfigPropertyChanged);
 }
 
 void LockContent::initUI()
 {
-    m_timeWidget->setAccessibleName("TimeWidget");
-    m_timeWidget->setVisible(false);            // 处理时间制跳转策略，获取到时间制再显示时间窗口
-    setTopWidget(m_timeWidget);
+    m_centerTopWidget = new CenterTopWidget(this);
+    setCenterTopWidget(m_centerTopWidget);
 
+    m_shutdownFrame = new ShutdownWidget;
+    m_shutdownFrame->setAccessibleName("ShutdownFrame");
+    m_shutdownFrame->setModel(m_model);
+
+    m_logoWidget = new LogoWidget;
     m_logoWidget->setAccessibleName("LogoWidget");
     setLeftBottomWidget(m_logoWidget);
 
+    m_controlWidget = new ControlWidget(m_model, this);
     m_controlWidget->setAccessibleName("ControlWidget");
     setRightBottomWidget(m_controlWidget);
 
@@ -103,37 +153,80 @@ void LockContent::initUI()
     m_authWidget->hide();
 
     initUserListWidget();
+
+    initFMAWidget();
 }
 
 void LockContent::initConnections()
 {
-    connect(m_model, &SessionBaseModel::onRequirePowerAction, this, &LockContent::onRequirePowerAction);
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
-    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [ = ] (std::shared_ptr<User> user) {
-        Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AT_All);
-        Q_EMIT requestSwitchToUser(user);
+    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] (std::shared_ptr<User> user) {
+        if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
+            emit requestSwitchToUser(m_model->currentUser());
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+        } else {
+            Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
+            Q_EMIT requestSwitchToUser(user);
+        }
     });
-    connect(m_controlWidget, &ControlWidget::requestShutdown, this, [ = ] {
+    connect(m_controlWidget, &ControlWidget::requestShutdown, this, [this] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });
+    connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
+    connect(m_controlWidget, &ControlWidget::requestShowModule, this, &LockContent::showModule);
     connect(m_controlWidget, &ControlWidget::requestTogglePopup, this, &SessionBaseWindow::togglePopup);
     connect(m_controlWidget, &ControlWidget::requestHidePopup, this, &SessionBaseWindow::hidePopup);
 
-    //刷新背景单独与onStatusChanged信号连接，避免在showEvent事件时调用onStatusChanged而重复刷新背景，减少刷新次数
+    // 刷新背景单独与onStatusChanged信号连接，避免在showEvent事件时调用onStatusChanged而重复刷新背景，减少刷新次数
     connect(m_model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
 
+    //在锁屏显示时，启动onboard进程，锁屏结束时结束onboard进程
+    auto initVirtualKB = [&](bool hasVirtualKB) {
+        if (hasVirtualKB && !m_virtualKB) {
+            connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {
+                m_virtualKB = VirtualKBInstance::Instance().virtualKBWidget();
+                m_controlWidget->setVirtualKBVisible(true);
+            }, Qt::QueuedConnection);
+            VirtualKBInstance::Instance().init();
+        } else {
+            VirtualKBInstance::Instance().stopVirtualKBProcess();
+            m_virtualKB = nullptr;
+            m_controlWidget->setVirtualKBVisible(false);
+        }
+    };
+
+    connect(m_model, &SessionBaseModel::hasVirtualKBChanged, this, initVirtualKB, Qt::QueuedConnection);
     connect(m_model, &SessionBaseModel::userListChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
-    connect(m_model, &SessionBaseModel::authFinished, this, &LockContent::restoreMode);
+    connect(m_model, &SessionBaseModel::authFinished, this, [this](bool successful) {
+        if (successful)
+            setVisible(false);
+        restoreMode();
+    });
     connect(m_model, &SessionBaseModel::MFAFlagChanged, this, [this](const bool isMFA) {
         isMFA ? initMFAWidget() : initSFAWidget();
         // 当前中间窗口为空或者中间窗口就是验证窗口的时候显示验证窗口
-        if (!centerWidget() || centerWidget() == m_authWidget)
-            setCenterContent(m_authWidget, Qt::AlignTop, m_authWidget->getTopSpacing());
+        if (!m_centerWidget || m_centerWidget == m_authWidget)
+            setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
     });
 
     connect(m_wmInter, &com::deepin::wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
     connect(m_localServer, &QLocalServer::newConnection, this, &LockContent::onNewConnection);
+    connect(m_controlWidget, &ControlWidget::notifyKeyboardLayoutHidden, this, [this]{
+        if (!m_model->isUseWayland() && isVisible() && window()->windowHandle()) {
+            qCDebug(DDE_SHELL) << "Grab keyboard after keyboard layout hidden";
+            window()->windowHandle()->setKeyboardGrabEnabled(true);
+        }
+    });
+
+    connect(m_model, &SessionBaseModel::showUserList, this, &LockContent::showUserList);
+    connect(m_model, &SessionBaseModel::showLockScreen, this, &LockContent::showLockScreen);
+    connect(m_model, &SessionBaseModel::showShutdown, this, &LockContent::showShutdown);
+
+    // 连续按两次电源键导致锁屏界面失焦，无法接收到event，需重新抓取焦点
+    connect(m_model, &SessionBaseModel::onPowerActionChanged, this, [this] {
+        tryGrabKeyboard();
+    });
 }
 
 /**
@@ -141,7 +234,7 @@ void LockContent::initConnections()
  */
 void LockContent::initMFAWidget()
 {
-    qDebug() << "LockContent::initMFAWidget:" << m_sfaWidget << m_mfaWidget;
+    qCDebug(DDE_SHELL) << "Init MFA widget, sfa widget: " << m_sfaWidget << ", mfa widget: " << m_mfaWidget;
     if (m_sfaWidget) {
         m_sfaWidget->hide();
         delete m_sfaWidget;
@@ -159,6 +252,7 @@ void LockContent::initMFAWidget()
     connect(m_mfaWidget, &MFAWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
     connect(m_mfaWidget, &MFAWidget::requestEndAuthentication, this, &LockContent::requestEndAuthentication);
     connect(m_mfaWidget, &MFAWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
+    connect(m_mfaWidget, &MFAWidget::requestCheckSameNameAccount, this, &LockContent::requestCheckSameNameAccount);
 }
 
 /**
@@ -166,7 +260,6 @@ void LockContent::initMFAWidget()
  */
 void LockContent::initSFAWidget()
 {
-    qDebug() << "LockContent::initSFAWidget:" << m_sfaWidget << m_mfaWidget;
     if (m_mfaWidget) {
         m_mfaWidget->hide();
         delete m_mfaWidget;
@@ -184,11 +277,37 @@ void LockContent::initSFAWidget()
     connect(m_sfaWidget, &SFAWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
     connect(m_sfaWidget, &SFAWidget::requestEndAuthentication, this, &LockContent::requestEndAuthentication);
     connect(m_sfaWidget, &SFAWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
+    connect(m_sfaWidget, &SFAWidget::requestCheckSameNameAccount, this, &LockContent::requestCheckSameNameAccount);
     connect(m_sfaWidget, &SFAWidget::authFinished, this, &LockContent::authFinished);
     connect(m_sfaWidget, &SFAWidget::updateParentLayout, this, [this] {
-        if (centerWidget() == m_sfaWidget)
-            changeCenterSpaceSize(0, m_sfaWidget->getTopSpacing());
+        if (!m_sfaWidget->isVisible())
+            return;
+        m_centerSpacerItem->changeSize(0, calcTopSpacing(m_sfaWidget->getTopSpacing()));
+        m_centerVLayout->invalidate();
     });
+    connect(m_sfaWidget, &AuthWidget::noPasswordLoginChanged, this, &LockContent::noPasswordLoginChanged);
+}
+
+// init full managed plugin widget
+void LockContent::initFMAWidget()
+{
+    if (m_fmaWidget) {
+        m_fmaWidget->hide();
+        delete m_fmaWidget;
+        m_fmaWidget = nullptr;
+    }
+
+    m_fmaWidget = new FullManagedAuthWidget();
+    m_fmaWidget->setModel(m_model);
+    if (m_fmaWidget->isPluginLoaded()) {
+        setFullManagedLoginWidget(m_fmaWidget);
+    }
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestStartAuthentication, this, &LockContent::requestStartAuthentication);
+    connect(m_fmaWidget, &FullManagedAuthWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestEndAuthentication, this, &LockContent::requestEndAuthentication);
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
+    connect(m_fmaWidget, &FullManagedAuthWidget::requestCheckSameNameAccount, this, &LockContent::requestCheckSameNameAccount);
+    connect(m_fmaWidget, &FullManagedAuthWidget::authFinished, this, &LockContent::authFinished);
 }
 
 /**
@@ -207,201 +326,199 @@ void LockContent::initUserListWidget()
     connect(m_userListWidget, &UserFrameList::requestSwitchUser, this, &LockContent::requestSwitchToUser);
 }
 
-void LockContent::onValueChanged(const QDBusMessage &dbusMessage)
-{
-    QList<QVariant> arguments = dbusMessage.arguments();
-    if (1 != arguments.count())
-        return;
-
-    QString interfaceName = dbusMessage.arguments().at(0).toString();
-    if (interfaceName == localeName_key) {
-        m_localeName = regionValue(localeName_key);
-    } else if (interfaceName == shortTimeFormat_key) {
-        m_shortTimeFormat = regionValue(shortTimeFormat_key);
-    } else if (interfaceName == longDateFormat_key) {
-        m_longDateFormat = regionValue(longDateFormat_key);
-    }
-    m_timeWidget->updateLocale(m_localeName, m_shortTimeFormat, m_longDateFormat);
-}
-
-QString LockContent::configPath(std::shared_ptr<User> user) const
-{
-    if (!user)
-        return QString();
-
-    QDBusInterface configInter(dsg_config, "/", "org.desktopspec.ConfigManager", QDBusConnection::systemBus());
-    if (!configInter.isValid()) {
-        qWarning("Can't acquire config manager. error:\"%s\"",
-                 qPrintable(QDBusConnection::systemBus().lastError().message()));
-        return QString();
-    }
-    QDBusReply<QDBusObjectPath> dbusReply = configInter.call("acquireManagerV2",
-                                                             (uint)user->uid(),
-                                                             QString(QCoreApplication::applicationName()),
-                                                             QString("org.deepin.region-format"),
-                                                             QString(""));
-    if (configInter.lastError().isValid() ) {
-        qWarning("Call failed: %s", qPrintable(configInter.lastError().message()));
-        return QString();
-    }
-    return dbusReply.value().path();
-}
-
-QString LockContent::regionValue(const QString &key) const
-{
-    QString dbusPath = configPath(m_user);
-    if (dbusPath.isEmpty())
-        return QString();
-    QDBusInterface managerInter(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager", QDBusConnection::systemBus());
-    QDBusReply<QVariant> reply = managerInter.call("value", key);
-    if (managerInter.lastError().isValid() ) {
-        qWarning("Call failed: %s", qPrintable(managerInter.lastError().message()));
-        return QString();
-    }
-    return reply.value().toString();
-}
-
-void LockContent::buildConnect()
-{
-    QString dbusPath = configPath(m_user);
-    if (dbusPath.isEmpty())
-        return;
-    QDBusConnection::systemBus().connect(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager",
-                                         "valueChanged", "s", this,
-                                         SLOT(onValueChanged(const QDBusMessage&)));
-}
-
-void LockContent::disconnect(std::shared_ptr<User> user)
-{
-    if (!user)
-        return;
-
-    QString dbusPath = configPath(user);
-    if (dbusPath.isEmpty())
-        return;
-    QDBusConnection::systemBus().disconnect(dsg_config, dbusPath, "org.desktopspec.ConfigManager.Manager",
-                                            "valueChanged", "s", this,
-                                            SLOT(onValueChanged(const QDBusMessage&)));
-}
-
 void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
-    if (!user)
-        return;
+    if (user.get() == nullptr) return; // if dbus is async
+
+    //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
+    auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
+    m_logoWidget->updateLocale(locale);
 
     for (auto connect : m_currentUserConnects) {
         m_user.get()->disconnect(connect);
     }
-    disconnect(m_user);
+
     m_currentUserConnects.clear();
 
     m_user = user;
 
-    m_localeName = regionValue(localeName_key);
-    QLocale locale = m_localeName.isEmpty() ? QLocale(user->locale()) : QLocale(m_localeName);
-    m_shortTimeFormat = regionValue(shortTimeFormat_key);
-    m_longDateFormat = regionValue(longDateFormat_key);
-    buildConnect();
-
-    auto logoLocale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
-    m_logoWidget->updateLocale(logoLocale);
-    m_timeWidget->updateLocale(locale.name(), m_shortTimeFormat, m_longDateFormat);
-
-    m_timeWidget->set24HourFormat(user->isUse24HourFormat());
-    m_timeWidget->setWeekdayFormatType(user->weekdayFormat());
-    m_timeWidget->setShortDateFormat(user->shortDateFormat());
-    m_timeWidget->setShortTimeFormat(user->shortTimeFormat());
-
     m_currentUserConnects << connect(user.get(), &User::greeterBackgroundChanged, this, &LockContent::updateGreeterBackgroundPath, Qt::UniqueConnection)
-                          << connect(user.get(), &User::use24HourFormatChanged, this, &LockContent::updateTimeFormat, Qt::UniqueConnection)
-                          << connect(user.get(), &User::weekdayFormatChanged, m_timeWidget, &TimeWidget::setWeekdayFormatType)
-                          << connect(user.get(), &User::shortDateFormatChanged, m_timeWidget, &TimeWidget::setShortDateFormat)
-                          << connect(user.get(), &User::shortTimeFormatChanged, m_timeWidget, &TimeWidget::setShortTimeFormat);
+                          << connect(user.get(), &User::desktopBackgroundChanged, this, &LockContent::updateDesktopBackgroundPath, Qt::UniqueConnection);
 
-    //TODO: refresh blur image
-    QMetaObject::invokeMethod(this, [ = ] {
-        updateTimeFormat(user->isUse24HourFormat());
-    }, Qt::QueuedConnection);
+    m_centerTopWidget->setCurrentUser(user.get());
+    m_logoWidget->updateLocale(locale);
 
-    m_logoWidget->updateLocale(logoLocale);
+    onUserListChanged(m_model->isServerModel() ? m_model->loginedUserList() : m_model->userList());
 }
 
 void LockContent::pushPasswordFrame()
 {
-    setCenterContent(m_authWidget, Qt::AlignTop | Qt::AlignHCenter, m_authWidget->getTopSpacing());
+    if (!m_model->userlistVisible()) {
+        if (m_model->currentUser()->name() == "...") {
+            m_controlWidget->setUserSwitchEnable(false);
+        } else {
+            m_controlWidget->setUserSwitchEnable(m_isUserSwitchVisible);
+        }
+    }
+
+    setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
 
     m_authWidget->syncResetPasswordUI();
+
+    if (!m_fmaWidget->isPluginLoaded()) {
+        showDefaultFrame();
+        return;
+    }
+
+    showPasswdFrame();
 }
 
 void LockContent::pushUserFrame()
 {
+    qCInfo(DDE_SHELL) << "Push user frame";
+
+    if (!m_model->userlistVisible()) {
+        std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
+        if (user_ptr) {
+            m_controlWidget->setUserSwitchEnable(false);
+            emit requestSwitchToUser(user_ptr);
+            return;
+        }
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+        return;
+    }
+
     if(m_model->isServerModel())
         m_controlWidget->setUserSwitchEnable(false);
 
-    m_userListWidget->updateLayout();
+    m_userListWidget->updateLayout(width());
     setCenterContent(m_userListWidget);
+
+    auto config = PluginConfigMap::instance().getConfig();
+    if (config) {
+        m_controlWidget->setUserSwitchEnable(config->isUserSwitchButtonVisiable());
+    } else {
+        m_controlWidget->setUserSwitchEnable(m_isUserSwitchVisible);
+    }
+
+   showDefaultFrame();
+
+   // fix: 解决用户界面多账户区域无焦点问题
+   // showDefaultFrame() -> hideStackedWidgets() -> 会将焦点置为空
+   // 导致默认用户无选中状态，多账户区域无键盘事件
+   setFocus();
 }
 
 void LockContent::pushConfirmFrame()
 {
-    setCenterContent(m_authWidget, Qt::AlignTop | Qt::AlignHCenter, m_authWidget->getTopSpacing());
+    setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+    showDefaultFrame();
 }
 
 void LockContent::pushShutdownFrame()
 {
-    //设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
-    m_shutdownFrame.reset(new ShutdownWidget(this));
-    connect(m_shutdownFrame.get(), &ShutdownWidget::onRequirePowerAction, this, &LockContent::onRequirePowerAction);
+    qCInfo(DDE_SHELL) << "Push shutdown frame";
+    // 设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
+    auto config = PluginConfigMap::instance().getConfig();
+    if (config) {
+        m_shutdownFrame->setUserSwitchEnable(config->isUserSwitchButtonVisiable());
+        m_controlWidget->setUserSwitchEnable(config->isUserSwitchButtonVisiable());
+    } else {
+        m_shutdownFrame->setUserSwitchEnable(m_isUserSwitchVisible);
+        m_controlWidget->setUserSwitchEnable(m_isUserSwitchVisible);
+    }
 
-    m_shutdownFrame->setAccessibleName("ShutdownFrame");
-    m_shutdownFrame->setModel(m_model);
-    m_shutdownFrame->move(0, 0);
+    //设置关机选项界面大小为中间区域的大小,并移动到左上角，避免显示后出现移动现象
     m_shutdownFrame->onStatusChanged(m_model->currentModeState());
-    onUserListChanged(m_model->isServerModel() ? m_model->loginedUserList() : m_model->userList());
-    setCenterContent(m_shutdownFrame.get());
+    setCenterContent(m_shutdownFrame);
+    showDefaultFrame();
 }
 
 void LockContent::setMPRISEnable(const bool state)
 {
+    m_MPRISEnable = state;
+
+    if (!m_showMediaWidget) {
+        return;
+    }
+
     if (!m_mediaWidget) {
-        m_mediaWidget.reset(new MediaWidget(this));
+        m_mediaWidget = new MediaWidget;
         m_mediaWidget->setAccessibleName("MediaWidget");
         m_mediaWidget->initMediaPlayer();
     }
 
     m_mediaWidget->setVisible(state);
-    setCenterBottomWidget(m_mediaWidget.get());
+    setCenterBottomWidget(m_mediaWidget);
+}
+
+void LockContent::enableSystemShortcut(const QStringList &shortcuts, bool enabled, bool isPersistent)
+{
+    QDBusInterface inter("org.deepin.dde.Keybinding1", "/org/deepin/dde/Keybinding1", "org.deepin.dde.Keybinding1", QDBusConnection::sessionBus());
+    QList<QVariant> argumentList;
+    argumentList << QVariant::fromValue(shortcuts) << QVariant::fromValue(enabled) << QVariant::fromValue(isPersistent);
+    inter.asyncCallWithArgumentList(QStringLiteral("EnableSystemShortcut"), argumentList);
 }
 
 void LockContent::onNewConnection()
 {
-    if (!m_localServer->hasPendingConnections())
-        return;
+    // 重置密码界面显示前需要隐藏插件右键菜单，避免抢占键盘
+    Q_EMIT m_model->hidePluginMenu();
 
     // 重置密码程序启动连接成功锁屏界面才释放键盘，避免点击重置密码过程中使用快捷键切走锁屏
     if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(false)) {
-        qDebug() << "setKeyboardGrabEnabled(false) success！";
+        qCDebug(DDE_SHELL) << "Set keyboard grab enabled to false success!";
     }
 
-    QLocalSocket *socket = m_localServer->nextPendingConnection();
-    connect(socket, &QLocalSocket::disconnected, this, &LockContent::onDisConnect);
-    connect(socket, &QLocalSocket::readyRead, this, [socket, this] {
-        auto content = socket->readAll();
-        if (content == "close") {
-            m_sfaWidget->syncPasswordResetPasswordVisibleChanged(QVariant::fromValue(true));
-            m_sfaWidget->syncResetPasswordUI();
-        }
-    });
+    if (m_localServer->hasPendingConnections()) {
+        QLocalSocket *socket = m_localServer->nextPendingConnection();
+        connect(socket, &QLocalSocket::disconnected, this, &LockContent::onDisConnect);
+    }
+
+    // 仅在锁屏界面使用
+    if (m_model->appType() == AuthCommon::Lock) {
+        enableSystemShortcut(QStringList() << "screenshot"
+                                           << "screenshot-window"
+                                           << "screenshot-delayed"
+                                           << "screenshot-ocr"
+                                           << "screenshot-scroll"
+                                           << "deepin-screen-recorder",
+            false, false);
+    }
+    m_hasResetPasswordDialog = true;
 }
 
 void LockContent::onDisConnect()
 {
-    tryGrabKeyboard();
+    if (m_authWidget) {
+        m_authWidget->syncPasswordResetPasswordVisibleChanged(QVariant::fromValue(true));
+        m_authWidget->syncResetPasswordUI();
+    }
+    // 这种情况下不必强制要求可以抓取到键盘，因为可能是网络弹窗抓取了键盘
+    tryGrabKeyboard(false);
+    enableSystemShortcut(QStringList() << "screenshot" << "screenshot-window" << "screenshot-delayed"
+                                    << "screenshot-ocr" << "screenshot-scroll" << "deepin-screen-recorder", true, false);
+    m_hasResetPasswordDialog = false;
 }
 
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
+    qCInfo(DDE_SHELL) << "Incoming status:" << status << ", current status:" << m_currentModeStatus;
     refreshLayout(status);
+
+    // select plugin config
+    if (m_fmaWidget && m_fmaWidget->isPluginLoaded()) {
+        PluginConfigMap::instance().requestAddConfig(PluginConfigMap::ConfigIndex::FullManagePlugin, m_fmaWidget);
+    } else {
+        PluginConfigMap::instance().requestRemoveConfig(PluginConfigMap::ConfigIndex::FullManagePlugin);
+    }
+
+    if(m_model->isServerModel())
+        onUserListChanged(m_model->loginedUserList());
+
+    if (!m_isPANGUCpu && m_currentModeStatus == status)
+        return;
+    m_currentModeStatus = status;
 
     switch (status) {
     case SessionBaseModel::ModeStatus::PasswordMode:
@@ -428,67 +545,73 @@ void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
 
 void LockContent::mouseReleaseEvent(QMouseEvent *event)
 {
-    // 如果是重置密码界面，不做处理
+    // 如果是设置密码界面，不做处理
     if (m_model->currentModeState() == SessionBaseModel::ResetPasswdMode)
         return SessionBaseWindow::mouseReleaseEvent(event);
 
     //在关机界面没有点击按钮直接点击界面时，直接隐藏关机界面
     if (m_model->currentModeState() == SessionBaseModel::ShutDownMode) {
-        hideToplevelWindow();
+        m_model->setVisible(false);
     }
 
     if (m_model->currentModeState() == SessionBaseModel::UserMode
-            || m_model->currentModeState() == SessionBaseModel::PowerMode) {
-        // 触屏点击空白处不退出用户列表界面
-        if (event->source() == Qt::MouseEventSynthesizedByQt)
-            return SessionBaseWindow::mouseReleaseEvent(event);
+        || m_model->currentModeState() == SessionBaseModel::PowerMode) {
 
-        // 点击空白处的时候切换到当前用户，恢复对应状态（如密码过期）并开启验证。
-        restoreMode();
+        // 在用户列表界面，用户达到一定数量需要支持滚动，触屏滚动容易触发回到当前用户界面
+        // ，所以这个界面触屏点击空白处不退出用户列表界面
+        if (event->source() == Qt::MouseEventSynthesizedByQt
+                && m_model->currentModeState() == SessionBaseModel::UserMode) {
+            return SessionBaseWindow::mouseReleaseEvent(event);
+        }
+
+        // 点击空白处的时候切换到当前用户，以开启验证。
         emit requestSwitchToUser(m_model->currentUser());
     }
 
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 
-    return SessionBaseWindow::mouseReleaseEvent(event);
+    SessionBaseWindow::mouseReleaseEvent(event);
 }
 
 void LockContent::showEvent(QShowEvent *event)
 {
-    SessionBaseWindow::showEvent(event);
-
     onStatusChanged(m_model->currentModeState());
+    // 重新设置一下焦点，否则用户列表界面切换屏幕的时候焦点异常
+    if (m_centerWidget)
+        m_centerWidget->setFocus();
+
     tryGrabKeyboard();
+    QFrame::showEvent(event);
 }
 
 void LockContent::hideEvent(QHideEvent *event)
 {
-    if (!m_shutdownFrame.isNull())
-        m_shutdownFrame->recoveryLayout();
-    // explicitly hide popup in case fake window layer is shown next time
-    hidePopup();
-    return SessionBaseWindow::hideEvent(event);
+    m_shutdownFrame->recoveryLayout();
+    QFrame::hideEvent(event);
 }
 
 void LockContent::resizeEvent(QResizeEvent *event)
 {
+    QTimer::singleShot(0, this, [this] {
+        if (m_virtualKB && m_virtualKB->isVisible()) {
+            updateVirtualKBPosition();
+        }
+    });
+
     if (SessionBaseModel::PasswordMode == m_model->currentModeState() || (SessionBaseModel::ConfirmPasswordMode == m_model->currentModeState())) {
-        changeCenterSpaceSize(0, m_authWidget->getTopSpacing());
+        m_centerSpacerItem->changeSize(0, calcTopSpacing(m_authWidget->getTopSpacing()));
+        m_centerVLayout->invalidate();
+        QTimer::singleShot(0, this, [ = ] {
+            m_authWidget->updatePasswordErrortipUi();
+        });
     }
 
     SessionBaseWindow::resizeEvent(event);
-    m_userListWidget->setMaximumSize(getCenterContentSize());
 }
 
 void LockContent::restoreMode()
 {
-    if (m_model->appType() == AppType::Login) {
-        // 管理员账户且密码过期的情况下，设置当前状态为ResetPasswdMode，从而方便直接跳转到重置密码界面
-        bool showReset = m_model->currentUser()->expiredState() == User::ExpiredState::ExpiredAlready && m_model->currentUser()->accountType() == User::AccountType::Admin;
-        m_model->setCurrentModeState(showReset ? SessionBaseModel::ModeStatus::ResetPasswdMode : SessionBaseModel::ModeStatus::PasswordMode);
-    } else {
-        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-    }
+    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 }
 
 void LockContent::updateGreeterBackgroundPath(const QString &path)
@@ -497,9 +620,7 @@ void LockContent::updateGreeterBackgroundPath(const QString &path)
         return;
     }
 
-    if (m_model->currentModeState() != SessionBaseModel::ModeStatus::ShutDownMode) {
-        emit requestBackground(path);
-    }
+    emit requestBackground(path);
 }
 
 void LockContent::updateDesktopBackgroundPath(const QString &path)
@@ -508,122 +629,276 @@ void LockContent::updateDesktopBackgroundPath(const QString &path)
         return;
     }
 
-    if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-        emit requestBackground(path);
+    emit requestBackground(path);
+}
+
+void LockContent::OnDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr)
+{
+    auto obj = qobject_cast<LockContent*>(objPtr);
+    if (!obj)
+        return;
+
+    if (key == SHOW_MEDIA_WIDGET) {
+        if (value.toBool()) {
+            if (!obj->m_mediaWidget) {
+                obj->m_mediaWidget = new MediaWidget;
+                obj->m_mediaWidget->setAccessibleName("MediaWidget");
+                obj->m_mediaWidget->initMediaPlayer();
+            }
+
+            obj->m_mediaWidget->setVisible(obj->m_MPRISEnable);
+            obj->setCenterBottomWidget(obj->m_mediaWidget);
+        } else {
+            if (obj->m_mediaWidget) {
+                obj->m_mediaWidget->setVisible(false);
+                obj->m_mediaWidget->deleteLater();
+                obj->m_mediaWidget = nullptr;
+            }
+        }
     }
 }
 
-void LockContent::updateTimeFormat(bool use24)
+void LockContent::toggleVirtualKB()
 {
-    if (m_user != nullptr) {
-        m_timeWidget->set24HourFormat(use24);
-        m_timeWidget->setVisible(true);
-    }
-}
-
-void LockContent::toggleModule(const QString &name)
-{
-    BaseModuleInterface *module = ModulesLoader::instance().findModuleByName(name);
-    if (!module) {
+    if (!m_virtualKB) {
+        VirtualKBInstance::Instance();
+        QTimer::singleShot(500, this, [this] {
+            m_virtualKB = VirtualKBInstance::Instance().virtualKBWidget();
+            qCDebug(DDE_SHELL) << "Init virtual keyboard over: " << m_virtualKB;
+            toggleVirtualKB();
+        });
         return;
     }
 
-    switch (module->type()) {
-    case BaseModuleInterface::LoginType:
-        setCenterContent(module->content());
+    m_virtualKB->setParent(this);
+    m_virtualKB->raise();
+    // m_userLoginInfo->getUserLoginWidget()->setPassWordEditFocus();
+
+    updateVirtualKBPosition();
+    m_virtualKB->setVisible(!m_virtualKB->isVisible());
+}
+
+void LockContent::showModule(const QString &name, const bool callShowForce)
+{
+    PluginBase * plugin = PluginManager::instance()->findPlugin(name);
+    if (!plugin) {
+        return;
+    }
+
+    switch (plugin->type()) {
+    case PluginBase::ModuleType::LoginType:
+        m_loginWidget = plugin->content();
+        setCenterContent(m_loginWidget);
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         break;
-    case BaseModuleInterface::TrayType:
-        return;
+    case PluginBase::ModuleType::TrayType: {
+        m_currentTray = m_controlWidget->getTray(name);
+        if (!m_currentTray || !plugin->content()) {
+            qCWarning(DDE_SHELL) << "TrayButton or plugin`s content is null";
+            return;
+        }
+
+        if (!m_popWin) {
+            m_popWin = new PopupWindow(this);
+            connect(m_model, &SessionBaseModel::visibleChanged, this, [this] (const bool visible) {
+                if (!visible) {
+                    m_popWin->hide();
+                }
+            });
+            connect(m_popWin, &PopupWindow::visibleChanged, this, [this] (bool visible) {
+                m_controlWidget->setCanShowMenu(!visible);
+            });
+            connect(qobject_cast<FloatingButton*>(m_currentTray), &FloatingButton::buttonHide, m_popWin, &PopupWindow::hide);
+            connect(this, &LockContent::parentChanged, this, [this] {
+                if (m_popWin && m_popWin->isVisible()) {
+                    const QPoint &point = mapFromGlobal(m_currentTray->mapToGlobal(QPoint(m_currentTray->size().width() / 2, 0)));
+                    m_popWin->show(point);
+                }
+            });
+        }
+
+        // 隐藏后需要removeEventFilter，后期优化
+        for (auto child : this->findChildren<QWidget*>()) {
+            child->removeEventFilter(this);
+            child->installEventFilter(this);
+        }
+
+        if (!m_popWin->getContent() || m_popWin->getContent() != plugin->content())
+            m_popWin->setContent(plugin->content());
+        const QPoint &point = mapFromGlobal(m_currentTray->mapToGlobal(QPoint(m_currentTray->size().width() / 2, 0)));
+        // 插件图标不显示，窗口不显示
+        if (m_currentTray->isVisible())
+            callShowForce ? m_popWin->show(point) : m_popWin->toggle(point);
+        break;
     }
+    default:
+        // 扩展插件类型 FullManagedLoginType，不在此处处理
+        break;
+    }
+}
+
+bool LockContent::eventFilter(QObject *watched, QEvent *e)
+{
+    // 点击插件弹窗以外区域，隐藏插件弹窗
+    if (m_popWin && m_currentTray && m_popWin->isVisible()) {
+        QWidget * w = qobject_cast<QWidget*>(watched);
+        if (!w)
+            return false;
+        const bool isChild = m_currentTray->findChildren<QWidget*>().contains(w);
+        if ((watched == m_currentTray || isChild) && e->type() == QEvent::Enter) {
+            Q_EMIT qobject_cast<FloatingButton*>(m_currentTray)->requestHideTips();
+        } else if (watched != m_currentTray && !isChild && e->type() == QEvent::MouseButtonRelease) {
+            if (!m_popWin->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
+                m_popWin->hide();
+            }
+        }
+    }
+
+    return false;
+}
+
+bool LockContent::event(QEvent *event)
+{
+    if (event->type() == QEvent::WindowDeactivate) {
+        if (m_popWin && m_currentTray && m_popWin->isVisible()) {
+            m_popWin->activateWindow();
+        }
+    }
+    return SessionBaseWindow::event(event);
+}
+
+void LockContent::updateVirtualKBPosition()
+{
+    const QPoint point = mapToParent(QPoint((width() - m_virtualKB->width()) / 2, height() - m_virtualKB->height() - 50));
+    m_virtualKB->move(point);
 }
 
 void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
 {
     const bool allowShowUserSwitchButton = m_model->allowShowUserSwitchButton();
     const bool alwaysShowUserSwitchButton = m_model->alwaysShowUserSwitchButton();
-    bool haveLogindUser = true;
+    bool haveLoginedUser = true;
 
-    if (m_model->isServerModel() && m_model->appType() == Login) {
-        haveLogindUser = !m_model->loginedUserList().isEmpty();
+    if (m_model->isServerModel() && m_model->appType() == AuthCommon::Login) {
+        haveLoginedUser = !m_model->loginedUserList().isEmpty();
     }
 
-    bool enable = (alwaysShowUserSwitchButton ||
-                   (allowShowUserSwitchButton &&
-                    (list.size() > (m_model->isServerModel() ? 0 : 1)))) &&
-            haveLogindUser;
+    int userList = list.size();
+    if (!m_model->isServerModel() && !m_model->userlistVisible()) {
+        foreach (auto user, list) {
+            if (user->name() == "...") {
+                userList--;
+            }
+        }
+    }
 
-    m_controlWidget->setUserSwitchEnable(enable);
+    bool enable = (alwaysShowUserSwitchButton || (allowShowUserSwitchButton && (userList > (m_model->isServerModel() ? 0 : 1)))) && haveLoginedUser;
 
-    if (m_shutdownFrame)
-        m_shutdownFrame->setUserSwitchEnable(enable);
+    bool controlEnable = enable && (m_model->userlistVisible() || m_model->currentUser()->name() != "...");
+    m_controlWidget->setUserSwitchEnable(controlEnable);
+    m_shutdownFrame->setUserSwitchEnable(enable);
+
+    m_isUserSwitchVisible = enable;
 }
 
-void LockContent::tryGrabKeyboard()
+/**
+ * @brief 抓取键盘,失败后继续抓取,最多尝试15次.
+ *
+ * @param exitIfFailed true: 发送失败通知，并隐藏锁屏。 false：不做任何处理。
+ */
+void LockContent::tryGrabKeyboard(bool exitIfFailed)
 {
 #ifndef QT_DEBUG
+    if (!isVisible()) {
+        return;
+    }
+
     if (m_model->isUseWayland()) {
-        return;
+        static QDBusInterface *kwinInter = new QDBusInterface("org.kde.KWin","/KWin","org.kde.KWin", QDBusConnection::sessionBus());
+        if (!kwinInter || !kwinInter->isValid()) {
+            qCWarning(DDE_SHELL) << "Kwin interface is invalid";
+            m_failures = 0;
+            return;
+        }
+        // wayland下判断是否有应用发起grab
+        QDBusReply<bool> reply = kwinInter->call("xwaylandGrabed");
+        if (!reply.isValid() || !reply.value()) {
+            m_failures = 0;
+            return;
+        }
+    } else {
+        if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(true)) {
+            m_failures = 0;
+            return;
+        }
     }
 
-    if (window()->windowHandle() && window()->windowHandle()->setKeyboardGrabEnabled(true)) {
-        m_lockFailTimes = 0;
-        return;
+    if (m_failures > 5) {
+        qCWarning(DDE_SHELL) << "Trying ungrab keyboard in lock content";
+        KeyboardMonitor::instance()->ungrabKeyboard();
     }
 
-    m_lockFailTimes++;
+    m_failures++;
 
-    if (m_lockFailTimes == 15) {
-        qWarning() << "Trying grabkeyboard has exceeded the upper limit. dde-lock will quit.";
+    if (m_failures == 15) {
+        qCWarning(DDE_SHELL) << "Trying to grab keyboard has exceeded the upper limit";
 
-        m_lockFailTimes = 0;
+        m_failures = 0;
+
+        if (!exitIfFailed) {
+            return;
+        }
+
+        if (m_hasResetPasswordDialog) {
+            qCWarning(DDE_SHELL) << "There is a reset password dialog, can not grab keyboard";
+            return;
+        }
 
         DDBusSender()
-                .service("org.freedesktop.Notifications")
-                .path("/org/freedesktop/Notifications")
-                .interface("org.freedesktop.Notifications")
-                .method(QString("Notify"))
-                .arg(tr("Lock Screen"))
-                .arg(static_cast<uint>(0))
-                .arg(QString(""))
-                .arg(QString(""))
-                .arg(tr("Failed to lock screen"))
-                .arg(QStringList())
-                .arg(QVariantMap())
-                .arg(5000)
-                .call();
+            .service("org.freedesktop.Notifications")
+            .path("/org/freedesktop/Notifications")
+            .interface("org.freedesktop.Notifications")
+            .method(QString("Notify"))
+            .arg(tr("Lock Screen"))
+            .arg(static_cast<uint>(0))
+            .arg(QString(""))
+            .arg(QString(""))
+            .arg(tr("Failed to lock screen"))
+            .arg(QStringList())
+            .arg(QVariantMap())
+            .arg(5000)
+            .call();
 
+        DDBusSender()
+            .service("org.freedesktop.ScreenSaver")
+            .path("/org/freedesktop/ScreenSaver")
+            .interface("org.freedesktop.ScreenSaver")
+            .method(QString("SimulateUserActivity"))
+            .call();
+
+        qCInfo(DDE_SHELL) << "Request hide lock frame";
         emit requestLockFrameHide();
         return;
     }
 
-    QTimer::singleShot(100, this, &LockContent::tryGrabKeyboard);
+    QTimer::singleShot(100, this, [this, exitIfFailed] {
+        tryGrabKeyboard(exitIfFailed);
+    });
 #endif
-}
-
-void LockContent::hideToplevelWindow()
-{
-    QWidgetList widgets = qApp->topLevelWidgets();
-    for (QWidget *widget : widgets) {
-        if (widget->isVisible()) {
-            widget->hide();
-        }
-    }
 }
 
 void LockContent::currentWorkspaceChanged()
 {
     QDBusPendingCall call = m_wmInter->GetCurrentWorkspaceBackgroundForMonitor(QGuiApplication::primaryScreen()->name());
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, [ = ] {
+    connect(watcher, &QDBusPendingCallWatcher::finished, [=] {
         if (!call.isError()) {
             QDBusReply<QString> reply = call.reply();
             updateWallpaper(reply.value());
         } else {
-            qWarning() << "get current workspace background error: " << call.error().message();
+            qCWarning(DDE_SHELL) << "Get current workspace background error: " << call.error().message();
             updateWallpaper("/usr/share/backgrounds/deepin/desktop.jpg");
         }
-
         watcher->deleteLater();
     });
 }
@@ -669,9 +944,10 @@ void LockContent::keyPressEvent(QKeyEvent *event)
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ConfirmPasswordMode) {
             m_model->setAbortConfirm(false);
             m_model->setPowerAction(SessionBaseModel::PowerAction::None);
-        } else if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
-            hideToplevelWindow();
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+        } else if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode) {
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+            m_model->setVisible(false);
         } else if (m_model->currentModeState() == SessionBaseModel::ModeStatus::PowerMode) {
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         }
@@ -679,26 +955,29 @@ void LockContent::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void LockContent::onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm)
+void LockContent::showUserList()
 {
-    //锁屏或关机模式时，需要确认是否关机或检查是否有阻止关机
-    if (m_model->appType() == Lock) {
-        switch (powerAction) {
-        case SessionBaseModel::PowerAction::RequireShutdown:
-        case SessionBaseModel::PowerAction::RequireRestart:
-        case SessionBaseModel::PowerAction::RequireSwitchSystem:
-        case SessionBaseModel::PowerAction::RequireLogout:
-        case SessionBaseModel::PowerAction::RequireSuspend:
-        case SessionBaseModel::PowerAction::RequireHibernate:
-            m_model->setIsCheckedInhibit(false);
-            emit m_model->shutdownInhibit(powerAction, needConfirm);
-            break;
-        default:
-            m_model->setPowerAction(powerAction);
-            break;
-        }
+    if (m_model->userlistVisible()) {
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
+        QTimer::singleShot(10, this, [ = ] {
+            m_model->setVisible(true);
+        });
     } else {
-        //登录模式直接操作
-        m_model->setPowerAction(powerAction);
+        std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
+        if (user_ptr) {
+            emit requestSwitchToUser(user_ptr);
+        }
     }
+}
+
+void LockContent::showLockScreen()
+{
+    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    m_model->setVisible(true);
+}
+
+void LockContent::showShutdown()
+{
+    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
+    m_model->setVisible(true);
 }

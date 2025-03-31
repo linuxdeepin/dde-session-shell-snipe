@@ -19,8 +19,6 @@ class WarningView : public QFrame
 {
 public:
     explicit WarningView(QWidget *parent = nullptr) : QFrame(parent) {}
-    virtual void toggleButtonState() = 0;
-    virtual void buttonClickHandle() = 0;
     virtual void setAcceptReason(const QString &reason) = 0;
 
 protected:
@@ -28,7 +26,6 @@ protected:
      * \brief setCurrentButton 设置当前的按钮
      * \param btntype 按钮枚举
      */
-    virtual void setCurrentButton(const ButtonType btntype) = 0;
 };
 
 #endif // WARNINGVIEW_H

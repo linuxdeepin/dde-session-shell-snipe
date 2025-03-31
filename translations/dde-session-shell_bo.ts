@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>གློག་ཁུངས།</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>བརྙན་ཡོལ་མཐེབ་གཞོང་།</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

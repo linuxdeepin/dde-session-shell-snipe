@@ -4,28 +4,32 @@
 
 #include "mediawidget.h"
 #include "util_updateui.h"
+#include "constants.h"
+#include "dbusmediaplayer2.h"
+
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QWheelEvent>
 
 MediaWidget::MediaWidget(QWidget *parent) : QWidget(parent)
+    , m_dmprisWidget(nullptr)
 {
-    initUI();
-    initConnect();
 }
 
 void MediaWidget::initUI()
 {
+    if (m_dmprisWidget)
+        return;
     m_dmprisWidget = new DMPRISControl;
     m_dmprisWidget->setAccessibleName("MPRISWidget");
+    m_dmprisWidget->setFixedHeight(DDESESSIONCC::LOCK_CONTENT_TOP_WIDGET_HEIGHT);
     m_dmprisWidget->setPictureVisible(false);
-    QVBoxLayout *mainlayout = new QVBoxLayout;
-    mainlayout->setContentsMargins(0, 0, 0, 0);
-    mainlayout->addWidget(m_dmprisWidget);
 
-    setLayout(mainlayout);
+    auto mainLayout = new QVBoxLayout;
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(m_dmprisWidget);
+    setLayout(mainLayout);
 
-    //updateStyle(":/skin/mediawidget.qss", this);
+    initConnect();
 }
 
 void MediaWidget::initConnect()
@@ -42,11 +46,9 @@ void MediaWidget::initMediaPlayer()
 
     QDBusPendingCall call = dbusInter.asyncCall("ListNames");
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(call, this);
-    connect(watcher, &QDBusPendingCallWatcher::finished, [ = ] {
+    connect(watcher, &QDBusPendingCallWatcher::finished, [=] {
         if (!call.isError()) {
             QDBusReply<QStringList> reply = call.reply();
-            //qDebug() << "one key Login User Name is : " << reply.value();
-
             const QStringList &serviceList = reply.value();
             QString service = QString();
             for (const QString &serv : serviceList) {
@@ -56,11 +58,11 @@ void MediaWidget::initMediaPlayer()
                 service = serv;
                 break;
             }
+
             if (service.isEmpty()) {
-                qDebug() << "media player dbus has not started, waiting for signal...";
                 QDBusConnectionInterface *dbusDaemonInterface = QDBusConnection::sessionBus().interface();
                 connect(dbusDaemonInterface, &QDBusConnectionInterface::serviceOwnerChanged, this,
-                        [ = ](const QString &name, const QString &oldOwner, const QString &newOwner) {
+                        [=](const QString &name, const QString &oldOwner, const QString &newOwner) {
                             Q_UNUSED(oldOwner)
                             if (name.startsWith("org.mpris.MediaPlayer2.") && !newOwner.isEmpty()) {
                                 initMediaPlayer();
@@ -70,15 +72,15 @@ void MediaWidget::initMediaPlayer()
                 return;
             }
 
-            qDebug() << "got media player dbus service: " << service;
-
-            m_dbusInter = new DBusMediaPlayer2(service, "/org/mpris/MediaPlayer2", QDBusConnection::sessionBus(), this);
-
-            m_dbusInter->MetadataChanged();
-            m_dbusInter->PlaybackStatusChanged();
-            m_dbusInter->VolumeChanged();
+            qCDebug(DDE_SHELL) << "Got media player DBus service:" << service;
+            initUI();
+            auto dbusInter = new DBusMediaPlayer2(service, "/org/mpris/MediaPlayer2", QDBusConnection::sessionBus(), this);
+            dbusInter->MetadataChanged();
+            dbusInter->PlaybackStatusChanged();
+            dbusInter->VolumeChanged();
+            dbusInter->deleteLater();
         } else {
-            qWarning() << "init media player error: " << call.error().message();
+            qCWarning(DDE_SHELL) << "Init media player error: " << call.error().message();
         }
 
         watcher->deleteLater();
@@ -87,6 +89,5 @@ void MediaWidget::initMediaPlayer()
 
 void MediaWidget::changeVisible()
 {
-    const bool isWorking = m_dmprisWidget->isWorking();
-    m_dmprisWidget->setVisible(isWorking);
+    m_dmprisWidget->setVisible(m_dmprisWidget->isWorking());
 }

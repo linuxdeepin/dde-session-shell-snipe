@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Kuasa</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Atas Papan</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

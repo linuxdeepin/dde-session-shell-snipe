@@ -5,7 +5,15 @@
 #ifndef AUTHCOMMON_H
 #define AUTHCOMMON_H
 
+#include <QObject>
+
+#define AUTH_TYPE_CAST(type) static_cast<AuthCommon::AuthType>(type)
+#define AUTH_FLAGS_CAST(flags) static_cast<AuthCommon::AuthFlags>(flags)
+#define AUTH_STATE_CAST(state) static_cast<AuthCommon::AuthState>(state)
+
 namespace AuthCommon {
+
+Q_NAMESPACE;
 
 /**
  * @brief The AuthFrameFlag enum
@@ -43,19 +51,22 @@ enum InputType {
  * 认证类型
  */
 enum AuthType {
-    AT_None = 0,                 // none
-    AT_Password = 1 << 0,        // 密码
-    AT_Fingerprint = 1 << 1,     // 指纹
-    AT_Face = 1 << 2,            // 人脸
-    AT_ActiveDirectory = 1 << 3, // AD域
-    AT_Ukey = 1 << 4,            // ukey
-    AT_FingerVein = 1 << 5,      // 指静脉
-    AT_Iris = 1 << 6,            // 虹膜
-    AT_PIN = 1 << 7,             // PIN
-    AT_PAM = 1 << 29,            // PAM
-    AT_Custom = 1 << 30,         // 自定义
-    AT_All = -1                  // all
+    AT_None            = 0,         // none
+    AT_Password        = 1 << 0,    // 密码
+    AT_Fingerprint     = 1 << 1,    // 指纹
+    AT_Face            = 1 << 2,    // 人脸
+    AT_ActiveDirectory = 1 << 3,    // AD域
+    AT_Ukey            = 1 << 4,    // ukey
+    AT_FingerVein      = 1 << 5,    // 指静脉
+    AT_Iris            = 1 << 6,    // 虹膜
+    AT_Passkey         = 1 << 7,    // Passkey
+    AT_PAM             = 1 << 29,   // PAM
+    AT_Custom          = 1 << 30,   // 自定义
+    AT_All             = -1         // all
 };
+Q_DECLARE_FLAGS(AuthFlags, AuthType)
+Q_FLAG_NS(AuthFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(AuthFlags)
 
 /**
  * @brief The AuthStatus enum
@@ -77,6 +88,7 @@ enum AuthState {
     AS_Recover,     // 设备恢复，需要调用 Start 重新开启认证，对应 AS_Exception
     AS_Unlocked     // 认证解锁，对应 AS_Locked
 };
+Q_ENUM_NS(AuthState)
 
 } // namespace AuthCommon
 #endif // AUTHCOMMON_H

@@ -8,7 +8,6 @@
 #include <QtXml>
 #include <QtXmlDepends>
 #include <QObject>
-#include <QFile>
 
 class XkbParser: public QObject
 {

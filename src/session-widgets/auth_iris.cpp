@@ -66,7 +66,7 @@ void AuthIris::reset()
  * @param state
  * @param result
  */
-void AuthIris::setAuthState(const int state, const QString &result)
+void AuthIris::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
     m_state = state;
     switch (state) {
@@ -148,7 +148,7 @@ void AuthIris::setAuthState(const int state, const QString &result)
         setAnimationState(false);
         setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
         m_textLabel->setText(result);
-        qWarning() << "Error! The state of Iris Auth is wrong!" << state << result;
+        qCWarning(DDE_SHELL) << "The state of iris auth is wrong, state: " << state << ", result: " << result;
         break;
     }
     update();
@@ -192,7 +192,7 @@ void AuthIris::updateUnlockPrompt()
         QTimer::singleShot(1000, this, [this] {
             emit activeAuth(m_type);
         });
-        qInfo() << "Waiting authentication service...";
+        qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
     update();
 }

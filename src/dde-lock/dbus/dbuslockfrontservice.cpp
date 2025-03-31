@@ -18,7 +18,7 @@ DBusLockFrontService::~DBusLockFrontService()
 {
 }
 
-bool DBusLockFrontService::Visible()
+bool DBusLockFrontService::visible() const
 {
     return parent()->Visible();
 }

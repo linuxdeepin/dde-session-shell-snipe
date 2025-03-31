@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -42,6 +42,7 @@ TEST_F(UT_Interface, user)
     nativeUser->updateAutomaticLogin(false);
     QStringList backgrounds;
     backgrounds << "";
+    nativeUser->updateDesktopBackgrounds(backgrounds);
     nativeUser->updateFullName("");
     nativeUser->updateGreeterBackground("");
     nativeUser->updateKeyboardLayout("");
@@ -51,7 +52,7 @@ TEST_F(UT_Interface, user)
     nativeUser->updateLocale("");
     nativeUser->updateName("");
     nativeUser->updateNoPasswordLogin(false);
-    nativeUser->updatePasswordStatus("P");
+    nativeUser->updatePasswordState("P");
     nativeUser->updateShortDateFormat(0);
     nativeUser->updateShortTimeFormat(0);
     nativeUser->updateWeekdayFormat(0);

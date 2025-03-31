@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -41,20 +41,21 @@ public slots:
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destroyAuthentication(const QString &account);
-    void startAuthentication(const QString &account, const int authType);
-    void endAuthentication(const QString &account, const int authType);
-    void endAccountAuthentication(const QString &account, const int authType);
-    void sendTokenToAuth(const QString &account, const int authType, const QString &token);
+    void startAuthentication(const QString &account, const AuthFlags authType);
+    void endAuthentication(const QString &account, const AuthFlags authType);
+    void sendTokenToAuth(const QString &account, const AuthType authType, const QString &token);
+    void onEndAuthentication(const QString &account, const AuthFlags authType);
 
     void switchToUser(std::shared_ptr<User> user) override;
     void restartResetSessionTimer();
     void onAuthFinished();
     void onAuthStateChanged(const int type, const int state, const QString &message);
-    void onFrameworkStateChanged(const int state);
 
     void disableGlobalShortcutsForWayland(const bool enable);
+    void checkAccount(const QString &account, bool switchUser);
+    void authFinishedAction();
 
-    void checkAccount(const QString &account);
+    void onNoPasswordLoginChanged(const QString &account, bool noPassword);
 
 private:
     void initConnections();
@@ -66,21 +67,24 @@ private:
     void setLocked(const bool locked);
 
     // lock
-    void handleServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message);
+    void lockServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message);
     void onUnlockFinished(bool unlocked);
 
+    bool isCheckPwdBeforeRebootOrShut();
+
 private:
+    bool m_authenticating;
     bool m_isThumbAuth;
-    bool m_canAuthenticate;
     DeepinAuthFramework *m_authFramework;
     DBusLockService *m_lockInter;
     DBusHotzone *m_hotZoneInter;
-    SessionManagerInter *m_sessionManagerInter;
-    HuaWeiSwitchOSInterface *m_switchosInterface;
-
-    QMap<std::shared_ptr<User>, bool> m_lockUser;
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
+    QString m_password;
+    QMap<std::shared_ptr<User>, bool> m_lockUser;
+    SessionManagerInter *m_sessionManagerInter;
+    HuaWeiSwitchOSInterface *m_switchosInterface = nullptr;
+
     QString m_account;
     QDBusInterface *m_kglobalaccelInter;
     QDBusInterface *m_kwinInter;

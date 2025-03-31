@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -77,6 +77,13 @@ void DLineEditEx::setPlaceholderTextFont(const QFont &font)
     const QString &text = lineEdit()->placeholderText();
     QFont fontTmp = font;
     while (QFontMetrics(fontTmp).boundingRect(text).width() > width()) {
+        // 防止陷入死循环，setPointSize当参数为负数的时候设置不生效
+        // TODO: font()获取问题，需要继续调查下为啥font为啥会出问题，但是这里也需要增加跳出死循环的条件
+        qDebug() << "Password line edit placeholder text width : " << QFontMetrics(fontTmp).boundingRect(text).width() << " line edit width : " << width();
+        if (fontTmp.pointSize() <= 1) {
+            qWarning() << "Password line edit font size" << font.pointSize() << fontTmp.pointSize();
+            return;
+        }
         fontTmp.setPointSize(fontTmp.pointSize() - 1);
     }
     setFont(fontTmp);
@@ -91,9 +98,9 @@ void DLineEditEx::startAnimation()
         return;
     }
     m_loadSlider->show();
-    m_loadSlider->resize(40, lineEdit()->height());
-    m_animation->setStartValue(QPoint(0 - 40, lineEdit()->y()));
-    m_animation->setEndValue(QPoint(width(), lineEdit()->y()));
+    m_loadSlider->resize(40, height());
+    m_animation->setStartValue(QPoint(0 - 40, 0));
+    m_animation->setEndValue(QPoint(width(), 0));
     m_animation->start();
 }
 
@@ -127,8 +134,7 @@ void DLineEditEx::paintEvent(QPaintEvent *event)
         pa.setPen(col);
         QTextOption option;
         option.setAlignment(Qt::AlignCenter);
-        QRect contentRect(lineEdit()->pos(), lineEdit()->size());
-        pa.drawText(contentRect, lineEdit()->placeholderText(), option);
+        pa.drawText(rect(), lineEdit()->placeholderText(), option);
     }
     QWidget::paintEvent(event);
 }

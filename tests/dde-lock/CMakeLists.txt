@@ -12,8 +12,10 @@ set(LOCK_TEST_SRCS
     ${AUTHENTICATE}
     ${QT_DBUS_EXTENDED}
     ${DBUS_DATA_TYPES}
+    ${PLUGIN_MANAGER}
     ${PROJECT_SOURCE_DIR}/src/dde-lock/lockframe.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/lockworker.cpp
+    ${PROJECT_SOURCE_DIR}/src/dde-lock/updateworker.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbuslockagent.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbuslockfrontservice.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbusshutdownagent.cpp
@@ -46,4 +48,5 @@ target_link_libraries(${BIN_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Test
     -lpthread
     -lm
+    -lcrypto
 )

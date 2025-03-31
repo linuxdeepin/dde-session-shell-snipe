@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -42,14 +42,14 @@ TEST_F(UT_LockWorker, worker)
 TEST_F(UT_LockWorker, auth)
 {
     m_worker->createAuthentication("uos");
-    m_worker->startAuthentication("uos", 0);
-    m_worker->sendTokenToAuth("uos", 0, "123");
-    m_worker->endAuthentication("uos", 0);
+    m_worker->startAuthentication("uos", AuthFlags(AuthState::AS_Success));
+    m_worker->sendTokenToAuth("uos", AuthCommon::AT_None, "123");
+    m_worker->endAuthentication("uos", AuthFlags(AuthState::AS_Success));
     m_worker->destroyAuthentication("uos");
     m_worker->switchToUser(m_model->currentUser());
     m_worker->setLocked(false);
     m_worker->restartResetSessionTimer();
-    m_worker->handleServiceEvent(0, 0, "", "");
+    m_worker->lockServiceEvent(0, 0, "", "");
 }
 
 TEST_F(UT_LockWorker, connection)

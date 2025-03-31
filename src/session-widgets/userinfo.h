@@ -5,11 +5,14 @@
 #ifndef USERINFO_H
 #define USERINFO_H
 
+#include "constants.h"
 #include "public_func.h"
-
-#include "userinterface.h"
+#include "authcommon.h"
 
 #include <QObject>
+#include <QJsonObject>
+
+#include "userinterface.h"
 
 using UserInter = org::deepin::dde::accounts1::User;
 
@@ -17,6 +20,11 @@ class User : public QObject
 {
     Q_OBJECT
 public:
+    // enum AccountType {
+    //     NormalUser,
+    //     Administrator
+    // };
+
     enum UserType {
         Native,
         ADDomain,
@@ -38,10 +46,23 @@ public:
     struct LimitsInfo {
         bool reserved[3];   // 用于内存对齐
         bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁
+        int flag;           // 认证类型
         uint maxTries;      // 最大重试次数
         uint numFailures;   // 失败次数，一直累加
         uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少
         QString unlockTime; // 解锁时间（本地时间）
+
+        inline QJsonObject toJson() const
+        {
+            QJsonObject obj;
+            obj["Locked"] = locked;
+            obj["Flag"] = flag;
+            obj["MaxTries"] = static_cast<int>(maxTries);
+            obj["NumFailures"] = static_cast<int>(numFailures);
+            obj["UnlockSecs"] = static_cast<int>(unlockSecs);;
+            obj["UnlockTime"] = unlockTime;
+            return obj;
+        }
     };
 
     explicit User(QObject *parent = nullptr);
@@ -49,6 +70,10 @@ public:
     virtual ~User() override;
 
     bool operator==(const User &user) const;
+
+    inline int accountType() const { return m_accountType; }
+    bool isLdapUser();
+    bool isDomainUser();
 
     inline bool isAutomaticLogin() const { return m_isAutomaticLogin; }
     inline bool isPasswordValid() const { return m_isPasswordValid; }
@@ -59,11 +84,10 @@ public:
 
     inline int expiredDayLeft() const { return m_expiredDayLeft; }
     inline int expiredState() const { return m_expiredState; }
-    inline int lastAuthType() const { return m_lastAuthType; }
+    inline AuthCommon::AuthType lastAuthType() const { return m_lastAuthType; }
     inline int shortDateFormat() const { return m_shortDateFormat; }
     inline int shortTimeFormat() const { return m_shortTimeFormat; }
     inline int weekdayFormat() const { return m_weekdayFormat; }
-    inline int accountType() const { return m_accountType; }
 
     virtual inline int type() const { return Default; }
     inline QMap<int, LimitsInfo> *limitsInfo() const { return m_limitsInfo; }
@@ -80,17 +104,24 @@ public:
     inline QStringList desktopBackgrounds() const { return m_desktopBackgrounds; }
     inline QStringList keyboardLayoutList() const { return m_keyboardLayoutList; }
     inline uid_t uid() const { return m_uid; }
+    inline QStringList groups() const { return m_groups; }
+    inline QString lastCustomAuth() const { return m_lastCustomAuth; }
 
     void updateLimitsInfo(const QString &info);
     void updateLoginState(const bool isLogin);
-    void setLastAuthType(const int type);
+    void setLastAuthType(const AuthCommon::AuthType type);
+    void setLastCustomAuth(const QString &key) { m_lastCustomAuth = key; }
+    bool allowToChangePassword() const;
 
     virtual void setKeyboardLayout(const QString &keyboard) { Q_UNUSED(keyboard) }
     virtual void updatePasswordExpiredInfo() { }
+    virtual void updatePasswordExpiredState(ExpiredState state, int dayLeft);
+    virtual void updateUserInfo() { }
 
 signals:
     void avatarChanged(const QString &);
     void autoLoginStateChanged(const bool);
+    void desktopBackgroundChanged(const QString &);
     void displayNameChanged(const QString &);
     void greeterBackgroundChanged(const QString &);
     void keyboardLayoutChanged(const QString &);
@@ -103,7 +134,6 @@ signals:
     void shortDateFormatChanged(const int);
     void shortTimeFormatChanged(const int);
     void weekdayFormatChanged(const int);
-    void accountTypeChanged(const int);
     void use24HourFormatChanged(const bool);
     void passwordExpiredInfoChanged();
 
@@ -114,6 +144,7 @@ protected:
     QString userPwdName(const uid_t uid) const;
 
 protected:
+    int m_accountType;                   // 账户类型
     bool m_isAutomaticLogin;             // 自动登录
     bool m_isLogin;                      // 登录状态
     bool m_isNoPasswordLogin;            // 无密码登录
@@ -121,11 +152,10 @@ protected:
     bool m_isUse24HourFormat;            // 24小时制
     int m_expiredDayLeft;                // 密码过期剩余天数
     int m_expiredState;                  // 密码过期状态
-    int m_lastAuthType;                  // 上次成功的认证
+    AuthCommon::AuthType m_lastAuthType; // 上次成功的认证
     int m_shortDateFormat;               // 短日期格式
     int m_shortTimeFormat;               // 短时间格式
     int m_weekdayFormat;                 // 星期显示格式
-    int m_accountType;                   // 账户类型 1:管理员 0:标准用户 2:域账户
     uid_t m_uid;                         // 用户 uid
     QString m_avatar;                    // 用户头像
     QString m_fullName;                  // 用户全名
@@ -134,9 +164,11 @@ protected:
     QString m_locale;                    // 语言环境
     QString m_name;                      // 用户名
     QString m_passwordHint;              // 密码提示
+    QString m_lastCustomAuth;            // 上次成功的认证插件的 key
     QStringList m_desktopBackgrounds;    // 桌面背景（不同工作区壁纸不同，故是个 List）
     QStringList m_keyboardLayoutList;    // 键盘布局列表
     QMap<int, LimitsInfo> *m_limitsInfo; // 认证限制信息
+    QStringList m_groups;                // 用户组
 };
 
 class NativeUser : public User
@@ -155,10 +187,12 @@ public:
     void setKeyboardLayout(const QString &keyboard) override;
 
     void updatePasswordExpiredInfo() override;
+    virtual void updateUserInfo() override;
 
 private slots:
     void updateAvatar(const QString &path);
     void updateAutomaticLogin(const bool autoLoginState);
+    void updateDesktopBackgrounds(const QStringList &backgrounds);
     void updateFullName(const QString &fullName);
     void updateGreeterBackground(const QString &path);
     void updateKeyboardLayout(const QString &keyboardLayout);
@@ -167,13 +201,13 @@ private slots:
     void updateName(const QString &name);
     void updateNoPasswordLogin(const bool isNoPasswordLogin);
     void updatePasswordHint(const QString &hint);
-    void updatePasswordStatus(const QString &state);
+    void updatePasswordState(const QString &state);
     void updateShortDateFormat(const int format);
     void updateShortTimeFormat(const int format);
     void updateWeekdayFormat(const int format);
-    void updateAccountType(const int type);
     void updateUid(const QString &uid);
     void updateUse24HourFormat(const bool is24HourFormat);
+    void updateAccountType();
 
 private:
     void initConnections();

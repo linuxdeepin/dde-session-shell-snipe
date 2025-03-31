@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef SESSIONWIDGET_H
-#define SESSIONWIDGET_H
+#ifndef SESSIONMANAGER_H
+#define SESSIONMANAGER_H
 
 #include <QLightDM/SessionsModel>
 #include <QLightDM/UsersModel>
@@ -40,4 +40,4 @@ private:
     QLightDM::UsersModel *m_userModel;
 };
 
-#endif // SESSIONWIDGET_H
+#endif // SESSIONMANAGER_H

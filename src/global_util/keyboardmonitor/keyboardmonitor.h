@@ -7,7 +7,11 @@
 
 #include <QThread>
 #include "keyboardplantform_x11.h"
+#ifdef USE_DEEPIN_WAYLAND
 #include "keyboardplantform_wayland.h"
+#endif
+
+#define DPMS_STATE_FILE "/tmp/dpms-state" //black screen state;bug:222049
 
 class KeyboardMonitor : public QThread
 {
@@ -15,20 +19,22 @@ class KeyboardMonitor : public QThread
 public:
     static KeyboardMonitor *instance();
 
-    bool isCapslockOn();
-    bool isNumlockOn();
-    bool setNumlockStatus(const bool &on);
+    bool isCapsLockOn();
+    bool isNumLockOn();
+    bool setNumLockStatus(const bool &on);
+    void ungrabKeyboard();
 
 signals:
-    void capslockStatusChanged(bool on);
-    void numlockStatusChanged(bool on);
+    void capsLockStatusChanged(bool on);
+    void numLockStatusChanged(bool on);
+    void initialized();
 
 protected:
     void run() Q_DECL_OVERRIDE;
 
 private:
     KeyboardMonitor();
-    KeyBoardPlatform* keyBoardPlatform = nullptr;
+    KeyBoardPlatform* m_keyBoardPlatform;
 };
 
 #endif // KEYBOARDMONITOR_H

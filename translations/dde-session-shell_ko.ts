@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>전원</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>온보드</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

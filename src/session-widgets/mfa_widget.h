@@ -17,10 +17,13 @@ public:
     explicit MFAWidget(QWidget *parent = nullptr);
 
     void setModel(const SessionBaseModel *model) override;
-    void setAuthType(const int type) override;
-    void setAuthState(const int type, const int state, const QString &message) override;
+    void setAuthType(const AuthCommon::AuthFlags type) override;
+    void setAuthState(const AuthCommon::AuthType type, const AuthCommon::AuthState state, const QString &message) override;
     void autoUnlock();
     int getTopSpacing() const override;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     void initUI();
@@ -32,13 +35,14 @@ private:
     void initFaceAuth();
     void initIrisAuth();
 
-    void checkAuthResult(const int type, const int state) override;
+    void checkAuthResult(const AuthCommon::AuthType type, const AuthCommon::AuthState state) override;
 
     void updateFocusPosition();
 
 private:
     int m_index;
     QVBoxLayout *m_mainLayout;
+    QVBoxLayout *m_authLayout;
     QList<QWidget *> m_widgetList;
 };
 

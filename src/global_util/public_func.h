@@ -7,10 +7,14 @@
 
 #include "constants.h"
 
+#include <QPixmap>
 #include <QApplication>
 #include <QIcon>
+#include <QImageReader>
 #include <QSettings>
 #include <QString>
+
+class QJsonDocument;
 
 #define ACCOUNTS_DBUS_PREFIX "/org/deepin/dde/Accounts1/User"
 
@@ -18,6 +22,8 @@ static const int APP_TYPE_LOCK = 0;
 static const int APP_TYPE_LOGIN = 1;
 
 QPixmap loadPixmap(const QString &file, const QSize& size = QSize());
+void loadPixmap(const QString &fileName, QPixmap &pixmap);
+bool checkPictureCanRead(const QString &fileName);
 
 template <typename T>
 T findValueByQSettings(const QStringList &configFiles,
@@ -41,6 +47,9 @@ T findValueByQSettings(const QStringList &configFiles,
     return fallback.value<T>();
 }
 
+int setRootWindowCursor();
+void setPointer();
+
 /**
  * @brief 是否使用深度认证，不使用域管认证。
  *
@@ -49,9 +58,10 @@ T findValueByQSettings(const QStringList &configFiles,
  */
 bool isDeepinAuth();
 
-QVariant getDConfigValue(const QString &configFileName, const QString &key, const QVariant &defaultValue);
-
-void setDConfigValue(const QString &configFileName, const QString &key, const QVariant &value);
+/**
+ * @brief 把字符串解析成时间，然后转换为Unix时间戳
+ */
+uint timeFromString(QString time);
 
 /**
  * @brief 设置app类型，让程序知道应该获取哪个配置文件
@@ -64,6 +74,16 @@ void setAppType(int type);
 QString getDefaultConfigFileName();
 
 void loadTranslation(const QString &locale);
+QString findSymLinTarget(const QString &symLink);
+
+QString toJson(const QJsonObject &jsonObj);
+
+bool checkVersion(const QString &target, const QString &base);
+
+/**
+ * @brief 配置 qwebengine 相关环境
+ */
+void configWebEngine();
 
 bool isSleepLock();
 

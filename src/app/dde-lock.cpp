@@ -13,8 +13,9 @@
 #include "lockworker.h"
 #include "modules_loader.h"
 #include "multiscreenmanager.h"
-#include "propertygroup.h"
 #include "sessionbasemodel.h"
+#include "warningcontent.h"
+#include "plugin_manager.h"
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
@@ -22,7 +23,6 @@
 #include <DPlatformTheme>
 
 #include <QDBusInterface>
-
 #include <unistd.h>
 
 DCORE_USE_NAMESPACE
@@ -37,20 +37,19 @@ int main(int argc, char *argv[])
     app = DApplication::globalApplication(argc, argv);
 #endif
 
-    //解决Qt在Retina屏幕上图片模糊问题
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    // qt默认当最后一个窗口析构后，会自动退出程序，这里设置成false，防止插拔时，没有屏幕，导致进程退出
+    QApplication::setQuitOnLastWindowClosed(false);
     app->setOrganizationName("deepin");
     app->setApplicationName("org.deepin.dde.lock");
     app->setApplicationVersion("2015.1.0");
-
-    DLogManager::registerConsoleAppender();
-    DLogManager::registerFileAppender();
 
     //注册全局事件过滤器
     AppEventFilter appEventFilter;
     app->installEventFilter(&appEventFilter);
     setAppType(APP_TYPE_LOCK);
+    qApp->setProperty("dssAppType", APP_TYPE_LOCK);
 
+    DGuiApplicationHelper::instance()->setSizeMode(DGuiApplicationHelper::SizeMode::NormalMode);
     DGuiApplicationHelper::instance()->setPaletteType(DGuiApplicationHelper::LightType);
     DPalette pa = DGuiApplicationHelper::instance()->applicationPalette();
     pa.setColor(QPalette::Normal, DPalette::WindowText, QColor("#FFFFFF"));
@@ -70,14 +69,16 @@ int main(int argc, char *argv[])
     DGuiApplicationHelper::instance()->setApplicationPalette(pa);
 
     // follow system active color
-    QObject::connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, [] (const QColor &color) {
+    QObject::connect(DGuiApplicationHelper::instance()->systemTheme(), &DPlatformTheme::activeColorChanged, [](const QColor &color) {
         auto palette = DGuiApplicationHelper::instance()->applicationPalette();
         palette.setColor(QPalette::Highlight, color);
         DGuiApplicationHelper::instance()->setApplicationPalette(palette);
     });
 
-    /* load translation files */
-    loadTranslation(QLocale::system().name());
+    DLogManager::setLogFormat("%{time}{yyyy-MM-dd, HH:mm:ss.zzz} [%{type:-7}] [ %{function:-35} %{line}] %{message}\n");
+    DLogManager::registerConsoleAppender();
+    DLogManager::registerFileAppender();
+    DLogManager::registerJournalAppender();
 
     QCommandLineParser cmdParser;
     cmdParser.addHelpOption();
@@ -91,28 +92,20 @@ int main(int argc, char *argv[])
     QCommandLineOption shutdown(QStringList() << "t" << "shutdown", "show shut down");
     cmdParser.addOption(shutdown);
 
-    QCommandLineOption lockscreen(QStringList() << "l" << "lockscreen", "show lock screen");
-    cmdParser.addOption(lockscreen);
+    QCommandLineOption lockScreen(QStringList() << "l" << "lockscreen", "show lock screen");
+    cmdParser.addOption(lockScreen);
 
-    QCommandLineOption modulePath("p", "Paths to load modules from, separated by semicolon. This option will override default module loading paths including local and global.", "paths", QString());
-    cmdParser.addOption(modulePath);
+    QCommandLineOption quickLoginProcess(QStringList() << "q" << "quicklogin", "show for quick login");
+    cmdParser.addOption(quickLoginProcess);
 
+    QStringList xddd = app->arguments();
     cmdParser.process(*app);
-
-    dss::module::ModulesLoader *modulesLoader = &dss::module::ModulesLoader::instance();
-
-    if (cmdParser.isSet(modulePath)) {
-        QString modulePathValue = cmdParser.value(modulePath);
-        QStringList paths = modulePathValue.split(":");
-        modulesLoader->setModulePaths(paths);
-    }
-
-    modulesLoader->start(QThread::LowestPriority);
 
     bool runDaemon = cmdParser.isSet(backend);
     bool showUserList = cmdParser.isSet(switchUser);
     bool showShutdown = cmdParser.isSet(shutdown);
-    bool showLockScreen = cmdParser.isSet(lockscreen);
+    bool showLockScreen = cmdParser.isSet(lockScreen);
+    bool isQuickLoginProcess= cmdParser.isSet(quickLoginProcess);
 
 #ifdef  QT_DEBUG
     showLockScreen = true;
@@ -120,9 +113,10 @@ int main(int argc, char *argv[])
 
     SessionBaseModel *model = new SessionBaseModel();
     model->setAppType(Lock);
+    //是否为快速登录拉起判断
+    model->setQuickLoginProcess(isQuickLoginProcess);
     LockWorker *worker = new LockWorker(model);
     QObject::connect(&appEventFilter, &AppEventFilter::userIsActive, worker, &LockWorker::restartResetSessionTimer);
-    PropertyGroup *property_group = new PropertyGroup(worker);
 
     if (worker->isLocked()) {
         //如果当前Session被锁定，则启动dde-lock时直接进入锁屏状态
@@ -130,8 +124,6 @@ int main(int argc, char *argv[])
         //同时避免在desktop文件中添加-l启动参数在正常启动时就直接进入锁屏而无法调用任务栏关机按钮中接口的问题,BUG92030
         showLockScreen = true;
     }
-
-    property_group->addProperty("contentVisible");
 
     DBusLockAgent lockAgent;
     lockAgent.setModel(model);
@@ -141,36 +133,108 @@ int main(int argc, char *argv[])
     shutdownAgent.setModel(model);
     DBusShutdownFrontService shutdownServices(&shutdownAgent);
 
-    auto createFrame = [&] (QScreen *screen, int count) -> QWidget* {
+    // 这里提前进行单实例判断，避免后面数据初始化后再进行单实例判断而导致各种问题（例如：多次调用LockContent::instance()->init(model) 导致的localserver失效）
+    auto isSingle = app->setSingleInstance(QString("dde-lock%1").arg(getuid()), DApplication::UserScope);
+    QDBusConnection conn = QDBusConnection::sessionBus();
+    if (!conn.registerService(DBUS_LOCK_NAME) ||
+        !conn.registerObject(DBUS_LOCK_PATH, &lockAgent) ||
+        !conn.registerService(DBUS_SHUTDOWN_NAME) ||
+        !conn.registerObject(DBUS_SHUTDOWN_PATH, &shutdownAgent) ||
+        !isSingle) {
+        qCWarning(DDE_SHELL) << "Register DBus failed, maybe lock front is running, error: " << conn.lastError();
+
+        if (!runDaemon) {
+            const char *lockFrontInter = "org.deepin.dde.LockFront1";
+            const char *shutdownFrontInter = "org.deepin.dde.ShutdownFront1";
+            if (showUserList) {
+                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
+                ifc.asyncCall("ShowUserList");
+            } else if (showShutdown) {
+                QDBusInterface ifc(DBUS_SHUTDOWN_NAME, DBUS_SHUTDOWN_PATH, shutdownFrontInter, QDBusConnection::sessionBus(), nullptr);
+                ifc.asyncCall("Show");
+            } else if (showLockScreen) {
+                do {
+                    // 当前会话被锁定时，强制等待10ms后再获取一次锁定状态，如果变了直接退出，避免快速锁屏解锁时，lock状态未及时更新导致再启动dde-lock直接进入了锁屏状态,From bug: 200415
+                    if (worker->isLocked()) {
+                        QThread::msleep(10);
+                        if (!worker->isLocked())
+                            return 0;
+                    }
+                } while (false);
+
+                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
+                ifc.asyncCall("Show");
+            }
+        }
+
+        return 0;
+    }
+
+    /* load translation files */
+    loadTranslation(QLocale::system().name());
+
+    ModulesLoader::instance().setLoadLoginModule(true);
+    ModulesLoader::instance().start(QThread::LowestPriority);
+
+    PluginManager::instance()->setModel(model);
+
+    LockContent::instance()->init(model);
+    WarningContent::instance()->setModel(model);
+
+    QObject::connect(LockContent::instance(), &LockContent::requestSwitchToUser, worker, &LockWorker::switchToUser);
+    QObject::connect(LockContent::instance(), &LockContent::requestSetLayout, worker, &LockWorker::setKeyboardLayout);
+    QObject::connect(LockContent::instance(), &LockContent::requestStartAuthentication, worker, &LockWorker::startAuthentication);
+    QObject::connect(LockContent::instance(), &LockContent::sendTokenToAuth, worker, &LockWorker::sendTokenToAuth);
+    QObject::connect(LockContent::instance(), &LockContent::requestEndAuthentication, worker, &LockWorker::onEndAuthentication);
+    QObject::connect(LockContent::instance(), &LockContent::authFinished, worker, &LockWorker::authFinishedAction);
+    QObject::connect(LockContent::instance(), &LockContent::requestCheckAccount, worker, &LockWorker::checkAccount);
+    QObject::connect(LockContent::instance(), &LockContent::requestLockFrameHide, [model] {
+        model->setVisible(false);
+    });
+    QObject::connect(LockContent::instance(), &LockContent::noPasswordLoginChanged, worker, &LockWorker::onNoPasswordLoginChanged);
+    QObject::connect(WarningContent::instance(), &WarningContent::requestLockFrameHide, [model] {
+        model->setVisible(false);
+    });
+
+    auto createFrame = [&](QPointer<QScreen> screen, int count) -> QWidget* {
         LockFrame *lockFrame = new LockFrame(model);
+        // 创建Frame可能会花费数百毫秒，这个和机器性能有关，在此过程完成后，screen可能已经析构了
+        // 在wayland的环境插拔屏幕或者显卡驱动有问题时可能会出现此类问题
+        if (screen.isNull()) {
+            lockFrame->deleteLater();
+            lockFrame = nullptr;
+            qCWarning(DDE_SHELL) << "Screen was released when the frame was created";
+            return nullptr;
+        }
         lockFrame->setScreen(screen, count <= 0);
-        property_group->addObject(lockFrame);
-        QObject::connect(lockFrame, &LockFrame::requestSwitchToUser, worker, &LockWorker::switchToUser);
-        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, &LockFrame::setVisible);
+        QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame, [lockFrame](const bool visible) {
+            lockFrame->setVisible(visible);
+            QTimer::singleShot(300, lockFrame, [lockFrame] {
+                qCDebug(DDE_SHELL) << "Update frame after lock frame visible changed";
+                lockFrame->update();
+            });
+        });
         QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame,[&](bool visible) {
             emit lockService.Visible(visible);
         });
-        QObject::connect(lockFrame, &LockFrame::requestSetKeyboardLayout, worker, &LockWorker::setKeyboardLayout);
+        QObject::connect(model, &SessionBaseModel::onStatusChanged, lockFrame,[&](SessionBaseModel::ModeStatus status) {
+            emit shutdownServices.Visible(model->visible() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::ShutDownMode));
+        });
         QObject::connect(lockFrame, &LockFrame::requestEnableHotzone, worker, &LockWorker::enableZoneDetected, Qt::UniqueConnection);
-        QObject::connect(lockFrame, &LockFrame::destroyed, property_group, &PropertyGroup::removeObject);
         QObject::connect(lockFrame, &LockFrame::sendKeyValue, [&](QString key) {
              emit lockService.ChangKey(key);
         });
-        QObject::connect(lockFrame, &LockFrame::requestStartAuthentication, worker, &LockWorker::startAuthentication);
-        QObject::connect(lockFrame, &LockFrame::sendTokenToAuth, worker, &LockWorker::sendTokenToAuth);
-        QObject::connect(lockFrame, &LockFrame::requestEndAuthentication, worker, &LockWorker::endAccountAuthentication);
-        QObject::connect(lockFrame, &LockFrame::authFinished, worker, &LockWorker::onAuthFinished);
         if (model->isUseWayland()) {
             QObject::connect(lockFrame, &LockFrame::requestDisableGlobalShortcutsForWayland, worker, &LockWorker::disableGlobalShortcutsForWayland);
         }
-        QObject::connect(lockFrame, &LockFrame::requestCheckAccount, worker, &LockWorker::checkAccount);
+
         lockFrame->setVisible(model->visible());
         emit lockService.Visible(model->visible());
         return lockFrame;
     };
 
     MultiScreenManager multi_screen_manager;
-    multi_screen_manager.register_for_mutil_screen(createFrame);
+    multi_screen_manager.register_for_multi_screen(createFrame);
 
 #if defined(DSS_CHECK_ACCESSIBILITY) && defined(QT_DEBUG)
     AccessibilityCheckerEx checker;
@@ -183,40 +247,18 @@ int main(int argc, char *argv[])
 
     QObject::connect(model, &SessionBaseModel::visibleChanged, &multi_screen_manager, &MultiScreenManager::startRaiseContentFrame);
 
-    QDBusConnection conn = QDBusConnection::sessionBus();
-    int ret = 0;
-    if (!conn.registerService(DBUS_LOCK_NAME) ||
-        !conn.registerObject(DBUS_LOCK_PATH, &lockAgent) ||
-        !conn.registerService(DBUS_SHUTDOWN_NAME) ||
-        !conn.registerObject(DBUS_SHUTDOWN_PATH, &shutdownAgent) ||
-        !app->setSingleInstance(QString("dde-lock%1").arg(getuid()), DApplication::UserScope)) {
-        qDebug() << "register dbus failed"<< "maybe lockFront is running..." << conn.lastError();
+    // 加载Tray插件
+    ModulesLoader::instance().setLoadLoginModule(false);
+    ModulesLoader::instance().start(QThread::LowestPriority);
 
-        if (!runDaemon) {
-            const char *lockFrontInter = "org.deepin.dde.LockFront1";
-            const char *shutdownFrontInter = "org.deepin.dde.ShutdownFront1";
-            if (showUserList) {
-                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
-                ifc.asyncCall("ShowUserList");
-            } else if (showShutdown) {
-                QDBusInterface ifc(DBUS_SHUTDOWN_NAME, DBUS_SHUTDOWN_PATH, shutdownFrontInter, QDBusConnection::sessionBus(), nullptr);
-                ifc.asyncCall("Show");
-            } else if (showLockScreen) {
-                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
-                ifc.asyncCall("Show");
-            }
+    if (!runDaemon) {
+        if (showUserList) {
+            emit model->showUserList();
+        } else if (showShutdown) {
+            emit model->showShutdown();
+        } else if (showLockScreen) {
+            emit model->showLockScreen();
         }
-    } else {
-        if (!runDaemon) {
-            if (showUserList) {
-                emit model->showUserList();
-            } else if (showShutdown) {
-                emit model->showShutdown();
-            } else if (showLockScreen) {
-                emit model->showLockScreen();
-            }
-        }
-        ret = app->exec();
     }
-    return ret;
+    return app->exec();
 }

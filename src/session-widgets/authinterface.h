@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -54,13 +54,13 @@ public:
 protected:
     void initDBus();
     void initData();
-    void onLastLogoutUserChanged(uint uid);
     void onLoginUserListChanged(const QString &list);
 
     bool checkHaveDisplay(const QJsonArray &array);
     bool isLogined(uint uid);
     void checkConfig();
     void checkPowerInfo();
+    bool checkIsADDomain();
     bool isDeepin();
     QVariant getDconfigValue(const QString &key, const QVariant &fallbackValue);
 
@@ -81,7 +81,6 @@ protected:
     DBusLogin1Manager* m_login1Inter;
     Login1SessionSelf* m_login1SessionSelf = nullptr;
     PowerManagerInter* m_powerManagerInter;
-    Authenticate*      m_authenticateInter;
     DBusObjectInter*   m_dbusInter;
     Dtk::Core::DConfig* m_dConfig = nullptr;
     uint               m_lastLogoutUid;

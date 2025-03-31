@@ -7,16 +7,19 @@
 #include <QVBoxLayout>
 #include <QDateTime>
 #include <QFontDatabase>
-#include <QSettings>
 
 const QStringList weekdayFormat = {"dddd", "ddd"};
 const QStringList shortDateFormat = { "yyyy/M/d", "yyyy-M-d", "yyyy.M.d",
                                       "yyyy/MM/dd", "yyyy-MM-dd", "yyyy.MM.dd",
-                                      "yy/M/d", "yy-M-d", "yy.M.d" };
+                                      "MM.dd.yyyy", "dd.MM.yyyy", "yy/M/d",
+                                      "yy-M-d", "yy.M.d" };
 const QStringList shortTimeFormat = { "h:mm", "hh:mm"};
 
 TimeWidget::TimeWidget(QWidget *parent)
     : QWidget(parent)
+    , m_timeLabel(nullptr)
+    , m_dateLabel(nullptr)
+    , m_refreshTimer(nullptr)
     , m_use24HourFormat(true)
 {
     QFont timeFont;
@@ -61,14 +64,9 @@ void TimeWidget::set24HourFormat(bool use24HourFormat)
     refreshTime();
 }
 
-void TimeWidget::updateLocale(const QString &locale, const QString &shortTimeFormat, const QString &longDateFormat)
+void TimeWidget::updateLocale(const QLocale &locale)
 {
-    Q_UNUSED(locale);
-    m_locale = QLocale::system(); // locale.isEmpty() ? QLocale::system() : QLocale(locale);
-    if (!shortTimeFormat.isEmpty())
-        m_shortTimeFormat = shortTimeFormat;
-    if (!longDateFormat.isEmpty())
-        m_longDateFormat = longDateFormat;
+    m_locale = locale;
     refreshTime();
 }
 
@@ -80,16 +78,8 @@ void TimeWidget::refreshTime()
         m_timeLabel->setText(m_locale.toString(QDateTime::currentDateTime(), shortTimeFormat.at(m_shortTimeIndex) + " AP"));
     }
 
-    // "Ap"/"aP"->"AP"
-    m_shortTimeFormat.replace(QRegularExpression("a?p", QRegularExpression::CaseInsensitiveOption), "AP");
-
     QString date_format = shortDateFormat.at(m_shortDateIndex) + " " + weekdayFormat.at(m_weekdayIndex);
     m_dateLabel->setText(m_locale.toString(QDateTime::currentDateTime(), date_format));
-
-    if (!m_shortTimeFormat.isEmpty() && !m_longDateFormat.isEmpty()) {
-        m_timeLabel->setText(m_locale.toString(QTime::currentTime(), m_shortTimeFormat));
-        m_dateLabel->setText(m_locale.toString(QDate::currentDate(), m_longDateFormat));
-    }
 }
 
 /**
@@ -126,4 +116,9 @@ void TimeWidget::setShortTimeFormat(int type)
 
     m_shortTimeIndex = type;
     refreshTime();
+}
+
+QSize TimeWidget::sizeHint() const
+{
+    return QSize(QWidget::sizeHint().width(), m_dateLabel->fontMetrics().height() + m_timeLabel->fontMetrics().height());
 }

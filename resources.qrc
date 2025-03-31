@@ -8,6 +8,7 @@
         <file>misc/images/password_hint.svg</file>
         <file>misc/images/select.svg</file>
         <file>misc/images/auth/face.svg</file>
+        <file>misc/images/auth/passkey.svg</file>
         <file>misc/images/auth/fingerprint.svg</file>
         <file>misc/images/auth/iris.svg</file>
         <file>misc/images/auth/password.svg</file>
@@ -25,10 +26,9 @@
         <file>misc/images/unlock/unlock_10.svg</file>
         <file>misc/images/retry16.svg</file>
         <file>misc/images/retry24.svg</file>
-        <file>src/widgets/img/password_level/dcc_deepin_password_strength_unactive_deep_mode.svg</file>
-        <file>src/widgets/img/password_level/dcc_deepin_password_strength_high.svg</file>
-        <file>src/widgets/img/password_level/dcc_deepin_password_strength_low.svg</file>
-        <file>src/widgets/img/password_level/dcc_deepin_password_strength_middle.svg</file>
-        <file>src/widgets/img/password_level/dcc_deepin_password_strength_unactive_light_mode.svg</file>
+        <file>misc/images/password-hide.svg</file>
+        <file>misc/images/password-shown.svg</file>
+        <file>misc/images/dss_warning.svg</file>
+        <file>misc/images/domainUser.svg</file>
     </qresource>
 </RCC>

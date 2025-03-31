@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Питание</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Экранная Клавиатура</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

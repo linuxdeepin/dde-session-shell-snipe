@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -57,10 +57,5 @@ TEST_F(UT_InhibitWarnView, BasicTest)
     m_inhibitWarnView->setInhibitConfirmMessage("test");
     m_inhibitWarnView->setAcceptReason("test");
     m_inhibitWarnView->setAcceptVisible(false);
-    m_inhibitWarnView->toggleButtonState();
-    m_inhibitWarnView->buttonClickHandle();
-    m_inhibitWarnView->inhibitType();
-    m_inhibitWarnView->focusNextPrevChild(false);
-    m_inhibitWarnView->setCurrentButton(ButtonType::Cancel);
     QTest::keyPress(m_inhibitWarnView, Qt::Key_Return, Qt::KeyboardModifier::NoModifier);
 }

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "multiscreenmanager.h"
 #include "fullscreenbackground.h"
+#include "constants.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -31,24 +32,57 @@ MultiScreenManager::MultiScreenManager(QObject *parent)
     }
 }
 
-void MultiScreenManager::register_for_mutil_screen(std::function<QWidget *(QScreen *, int)> function)
+void MultiScreenManager::register_for_multi_screen(std::function<QWidget *(QScreen *, int)> function)
 {
     m_registerFunction = function;
-    qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode;
+    qCInfo(DDE_SHELL) << "Copy mode:" << m_isCopyMode;
+
+    int maxAttempts = 0;
+    while (true) {
+        if (qApp->screens().count() < 1) {
+            // 没有屏幕数据延时2s再取一次
+            QThread::sleep(2);
+            qWarning() << " #### qApp->screens : " << qApp->screens().count() << ", repeat times : " << maxAttempts++;
+            if (maxAttempts == 50) {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+
     // update all screen
     if (m_isCopyMode) {
-        if (!qApp->screens().isEmpty())
-            onScreenAdded(qApp->screens().first());
+        if (!qApp->screens().isEmpty()) {
+            QScreen *validScreen = nullptr;
+            for (QScreen *screen : qApp->screens()) {
+                // 留下一个可用的屏幕
+                if (!screen->name().isEmpty()) {
+                    validScreen = screen;
+                    break;
+                }
+            }
+            if (!validScreen)
+                return;
+            onScreenAdded(validScreen);
+        }
     } else {
         for (QScreen *screen : qApp->screens()) {
+            // 当greeter刚起来处理第一个屏幕时，第二个屏幕被拔掉，这时第二个屏幕指针被释放，不应该在继续处理，否则会导致崩溃
+            if (!qApp->screens().contains(screen)) {
+                qCWarning(DDE_SHELL) << "Screen pointer has been released";
+                continue;
+            }
             onScreenAdded(screen);
         }
     }
 }
 
-void MultiScreenManager::startRaiseContentFrame()
+void MultiScreenManager::startRaiseContentFrame(const bool visible)
 {
-    m_raiseContentFrameTimer->start();
+    if (visible) {
+        m_raiseContentFrameTimer->start();
+    }
 }
 
 bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
@@ -58,7 +92,7 @@ bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
         QWidget *widget = qobject_cast<QWidget *>(watched);
         if (widget && m_frames.values().contains(widget)) {
             // 显示的时候获取窗口位置信息（调试）
-            QMetaObject::invokeMethod(this, &MultiScreenManager::checkLockFrameLocation, Qt::QueuedConnection);
+            QTimer::singleShot(0, this, &MultiScreenManager::checkLockFrameLocation);
         }
     }
 
@@ -67,7 +101,13 @@ bool MultiScreenManager::eventFilter(QObject *watched, QEvent *event)
 
 void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 {
-    qInfo() << Q_FUNC_INFO << ", is copy mode: " << m_isCopyMode << ", screen: " << screen;
+    qCInfo(DDE_SHELL) << "Is copy mode:" << m_isCopyMode << ", screen: " << screen;
+
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        return;
+    }
+
     if (!m_registerFunction) {
         return;
     }
@@ -86,7 +126,10 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
     // 如果指针为空，则不加入Map中，并析构创建的全屏窗口。
     if (w && !screen.isNull()) {
         m_frames[screen] = w;
-        w->installEventFilter(this);
+        // wayland下没有屏幕时，容易导致qt崩溃
+        if (!QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
+            w->installEventFilter(this);
+        }
     } else if (w) {
         w->deleteLater();
     }
@@ -96,7 +139,13 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
 
 void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
 {
-    qDebug() << Q_FUNC_INFO << " is copy mode: " << m_isCopyMode << ", screen: " << screen;
+    qDebug() << "Is copy mode: " << m_isCopyMode << ", screen: " << screen;
+    // 虚拟屏幕不处理
+    if (screen.isNull() || (screen->name().isEmpty() && (screen->geometry().width() == 0 || screen->geometry().height() == 0))) {
+        qCWarning(DDE_SHELL) << "Remove skipped, screen error";
+        return;
+    }
+
     if (!m_registerFunction) {
         return;
     }
@@ -106,13 +155,24 @@ void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
             QWidget *frame = m_frames[screen];
             m_frames.remove(screen);
             // 如果此时m_frames为空则其它的屏幕继续使用此frame，不重新创建
+            QScreen *validScreen = nullptr;
             if (!qApp->screens().isEmpty() && m_frames.isEmpty()) {
-                QScreen *screen = qApp->screens().first();
+                for (QScreen *screen : qApp->screens()) {
+                    // 留下一个可用的屏幕
+                    if (!screen->name().isEmpty()) {
+                        validScreen = screen;
+                        break;
+                    }
+                }
+                if (!validScreen) {
+                    frame->deleteLater();
+                    return;
+                }
                 // 更新frame绑定的屏幕
-                m_frames[screen] = frame;
-                FullscreenBackground *fullScreenFrame = qobject_cast<FullscreenBackground*>(frame);
-                if (fullScreenFrame) {
-                    fullScreenFrame->setScreen(screen, true);
+                m_frames[validScreen] = frame;
+                AbstractFullBackgroundInterface *fullScreenFrameInterface = dynamic_cast<AbstractFullBackgroundInterface*>(frame);
+                if (fullScreenFrameInterface) {
+                    fullScreenFrameInterface->setScreen(validScreen, true);
                 }
             } else {
                 frame->deleteLater();
@@ -121,16 +181,36 @@ void MultiScreenManager::onScreenRemoved(QPointer<QScreen> screen)
             m_frames[screen]->deleteLater();
             m_frames.remove(screen);
         }
+        updateFrame();
     }
 
     startRaiseContentFrame();
 }
 
+void MultiScreenManager::updateFrame()
+{
+    for (const auto screen : m_frames.keys()) {
+        FullScreenBackground *fullScreenFrame = qobject_cast<FullScreenBackground*>(m_frames[screen]);
+        if (fullScreenFrame) {
+            fullScreenFrame->setScreen(screen, true);
+        }
+    }
+}
+
 void MultiScreenManager::raiseContentFrame()
 {
     for (auto it = m_frames.constBegin(); it != m_frames.constEnd(); ++it) {
-        if (it.value()->property("contentVisible").toBool()) {
+        if (it.value() && it.value()->property("contentVisible").toBool()) {
             it.value()->raise();
+            if (QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
+                it.value()->activateWindow();
+                it.value()->setFocus();
+            }
+
+            // bug189309, 重启或注锁后，后端屏幕变化通知太晚
+            // 触发move事件处理content是否显示
+            it.value()->updateGeometry();
+
             return;
         }
     }
@@ -140,16 +220,21 @@ void MultiScreenManager::onDisplayModeChanged(const QString &)
 {
     m_isCopyMode = (COPY_MODE == getDisplayModeByConfig(m_systemDisplay->GetConfig()));
 
-    qInfo() << Q_FUNC_INFO << ", copy mode: " << m_isCopyMode << ", screen size: " << qApp->screens().size();
+    qCInfo(DDE_SHELL) << "Display mode changed, copy mode: " << m_isCopyMode << ", screen size: " << qApp->screens().size();
     if (m_isCopyMode) {
+        QScreen *validScreen = nullptr;
         for (QScreen *screen : qApp->screens()) {
-            // 留下一个屏即可
-            if (screen != qApp->screens().first())
+            if (screen->name().isEmpty())
+                continue;
+            if (!validScreen)
+                validScreen = screen;
+            // 留下一个可用的屏
+            if (screen != validScreen)
                 onScreenRemoved(screen);
         }
     } else {
         for (QScreen *screen : qApp->screens()) {
-            if (!m_frames[screen])
+            if (!m_frames.contains(screen))
                 onScreenAdded(screen);
         }
     }
@@ -159,8 +244,8 @@ void MultiScreenManager::checkLockFrameLocation()
 {
     for (QScreen *screen : m_frames.keys()) {
         if (screen) {
-            qInfo() << Q_FUNC_INFO << ", screen:" << screen << " location:" << screen->geometry()
-                       << " lockframe:" << m_frames.value(screen) << " location:" << m_frames.value(screen)->geometry();
+            qCInfo(DDE_SHELL) << "Check lock frame location, screen:" << screen << ", location:" << screen->geometry()
+                       << ", lockframe:" << m_frames.value(screen) << ", location:" << m_frames.value(screen)->geometry();
         }
     }
 }

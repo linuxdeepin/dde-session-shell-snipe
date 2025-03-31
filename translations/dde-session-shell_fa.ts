@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>منبع قدرت</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>روی صفحه</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

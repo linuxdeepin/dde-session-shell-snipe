@@ -5,11 +5,9 @@
 #ifndef MEDIAWIDGET_H
 #define MEDIAWIDGET_H
 
-#include "dbusmediaplayer2.h"
+#include <dmpriscontrol.h>
 
 #include <QWidget>
-#include <dimagebutton.h>
-#include <dmpriscontrol.h>
 
 DWIDGET_USE_NAMESPACE
 
@@ -29,7 +27,6 @@ private:
 
 private:
     DMPRISControl *m_dmprisWidget;
-    DBusMediaPlayer2 *m_dbusInter;
 };
 
 #endif // MEDIAWIDGET_H

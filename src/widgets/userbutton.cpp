@@ -3,11 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QtGui/QPainter>
-#include <QDebug>
-#include <QTimer>
-#include <QSettings>
 
-#include "dhidpihelper.h"
+#include <DIcon>
+
 #include "userbutton.h"
 #include "userinfo.h"
 
@@ -36,7 +34,7 @@ void UserButton::initConnect()
 #endif
     connect(m_userAvatar, &UserAvatar::clicked, this, &UserButton::click);
     connect(m_user.get(), &User::displayNameChanged, m_userNameLabel, &QLabel::setText);
-    connect(m_user.get(), &User::avatarChanged, this, [ = ] (const QString avatar) {
+    connect(m_user.get(), &User::avatarChanged, this, [this](const QString &avatar) {
         m_userAvatar->setIcon(avatar);
     });
     connect(m_user.get(), &User::loginStateChanged, m_checkedMark, &QLabel::setVisible);
@@ -73,7 +71,7 @@ void UserButton::initUI()
 
     m_checkedMark = new QLabel;
 
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/select.svg");
+    QPixmap pixmap = Dtk::Gui::DIcon::loadNxPixmap(":/misc/images/select.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_checkedMark->setPixmap(pixmap);
 

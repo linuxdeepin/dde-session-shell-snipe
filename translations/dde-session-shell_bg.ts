@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Захранване</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>На борда</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

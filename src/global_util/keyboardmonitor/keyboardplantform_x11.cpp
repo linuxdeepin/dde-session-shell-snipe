@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "keyboardplantform_x11.h"
+#include "constants.h"
 
 #include <QGuiApplication>
 
@@ -18,7 +19,7 @@
 
 static int xi2_opcode;
 
-int KeyboardPlantformX11::xinput_version(Display *display)
+int KeyboardPlatformX11::xinput_version(Display *display)
 {
     XExtensionVersion *version;
     static int vers = -1;
@@ -55,7 +56,7 @@ int KeyboardPlantformX11::xinput_version(Display *display)
     return vers;
 }
 
-void KeyboardPlantformX11::select_events(Display* display)
+void KeyboardPlatformX11::select_events(Display* display)
 {
     XIEventMask m;
     m.deviceid = XIAllMasterDevices;
@@ -77,7 +78,7 @@ void KeyboardPlantformX11::select_events(Display* display)
     XSync(display, False);
 }
 
-int KeyboardPlantformX11::listen(Display *display)
+int KeyboardPlatformX11::listen(Display *display)
 {
     Window root = DefaultRootWindow(display);
     int root_x, root_y, nouse;
@@ -108,9 +109,9 @@ int KeyboardPlantformX11::listen(Display *display)
                 break;
             case XI_RawKeyRelease:
                 if (event->detail == 66) { // check if the key pressed is capslock first.
-                    emit capslockStatusChanged(isCapslockOn());
+                    emit capsLockStatusChanged(isCapsLockOn());
                 } else if (event->detail == 77) {
-                    emit numlockStatusChanged(isNumlockOn());
+                    emit numLockStatusChanged(isNumLockOn());
                 }
                 /*printf("Key release: Detail(%d), X(%d), Y(%d), Mask(%u)\n", event->detail, root_x, root_y, mask);*/
                 break;
@@ -131,14 +132,14 @@ int KeyboardPlantformX11::listen(Display *display)
     return EXIT_SUCCESS;
 }
 
-KeyboardPlantformX11::KeyboardPlantformX11(QObject *parent)
+KeyboardPlatformX11::KeyboardPlatformX11(QObject *parent)
     : KeyBoardPlatform(parent)
 {
     if (auto x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>())
         m_display = x11Application->display();
 }
 
-bool KeyboardPlantformX11::isCapslockOn()
+bool KeyboardPlatformX11::isCapsLockOn()
 {
     bool result = false;
     unsigned int n = 0;
@@ -150,7 +151,7 @@ bool KeyboardPlantformX11::isCapslockOn()
     return result;
 }
 
-bool KeyboardPlantformX11::isNumlockOn()
+bool KeyboardPlatformX11::isNumLockOn()
 {
     bool result = false;
     unsigned int n = 0;
@@ -163,7 +164,7 @@ bool KeyboardPlantformX11::isNumlockOn()
     return result;
 }
 
-bool KeyboardPlantformX11::setNumlockStatus(const bool &on)
+bool KeyboardPlatformX11::setNumLockStatus(const bool &on)
 {
     if (!m_display)
         return false;
@@ -190,7 +191,7 @@ bool KeyboardPlantformX11::setNumlockStatus(const bool &on)
     return pressExit == 0 && releseExit == 0;
 }
 
-void KeyboardPlantformX11::run()
+void KeyboardPlatformX11::run()
 {
     Display* display = XOpenDisplay(nullptr);
     int event, error;
@@ -207,4 +208,14 @@ void KeyboardPlantformX11::run()
 
     select_events(display);
     listen(display);
+}
+
+void KeyboardPlatformX11::ungrabKeyboard()
+{
+    if (!m_display) {
+        fprintf(stderr, "display pointer is NULL when try ungrab keyboard.\n");
+        return;
+    }
+
+    XUngrabKeyboard(m_display, CurrentTime);
 }

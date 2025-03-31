@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>पॉवर</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>ऑनबोर्ड</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

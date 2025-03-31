@@ -18,7 +18,7 @@ public:
     void reset();
 
     void setAnimationState(const bool start) override;
-    void setAuthState(const int state, const QString &result) override;
+    void setAuthState(const AuthCommon::AuthState state, const QString &result) override;
     void setLimitsInfo(const LimitsInfo &info) override;
     void setAuthFactorType(AuthFactorType authFactorType) override;
     void doAnimation() override;

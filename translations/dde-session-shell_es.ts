@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>Apagar</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>Teclado en pantalla</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

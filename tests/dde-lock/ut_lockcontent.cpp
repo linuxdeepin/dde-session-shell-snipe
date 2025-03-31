@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -24,13 +24,12 @@ void UT_LockContent::SetUp()
     m_model = new SessionBaseModel();
     std::shared_ptr<User> user_ptr(new User);
     m_model->updateCurrentUser(user_ptr);
-
-    m_content = new LockContent(m_model);
+    LockContent::instance()->init(m_model);
+    m_content = LockContent::instance();
 }
 
 void UT_LockContent::TearDown()
 {
-    delete m_content;
     delete m_model;
 }
 
@@ -55,12 +54,13 @@ TEST_F(UT_LockContent, ModeTest)
     m_content->onStatusChanged(SessionBaseModel::PowerMode);
     m_content->onStatusChanged(SessionBaseModel::ConfirmPasswordMode);
     m_content->onStatusChanged(SessionBaseModel::UserMode);
+    m_content->onStatusChanged(SessionBaseModel::SessionMode);
     m_content->onStatusChanged(SessionBaseModel::PowerMode);
     m_content->onStatusChanged(SessionBaseModel::ShutDownMode);
     m_content->restoreMode();
-    m_content->updateTimeFormat(true);
+    m_content->toggleVirtualKB();
     m_content->tryGrabKeyboard();
-    m_content->hideToplevelWindow();
+    m_model->setVisible(false);
     m_content->currentWorkspaceChanged();
     m_content->updateWallpaper("/usr/share/wallpapers/deepin");
     QTest::mouseRelease(m_content, Qt::LeftButton, Qt::KeyboardModifier::NoModifier, QPoint(0, 0));

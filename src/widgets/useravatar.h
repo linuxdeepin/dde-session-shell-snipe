@@ -5,10 +5,11 @@
 #ifndef USERAVATAR_H
 #define USERAVATAR_H
 
-#include <QLabel>
 #include <QPushButton>
 #include <QPainter>
 #include <QPainterPath>
+
+#include <dimagebutton.h>
 
 class UserAvatar : public QPushButton
 {
@@ -25,7 +26,7 @@ public:
     };
     Q_ENUM(AvatarSize)
 
-    explicit UserAvatar(QWidget *parent = nullptr);
+    explicit UserAvatar(QWidget *parent = nullptr, bool deleteable = false);
     void setIcon(const QString &iconPath);
     void setAvatarSize(const int size);
     void setDisabled(bool disable);
@@ -41,7 +42,14 @@ public:
 
     void setSelected(bool selected);
 
-Q_SIGNALS:
+    bool deleteable() const;
+    void setDeleteable(bool deleteable);
+
+    void showButton();
+    void hideButton();
+    void setColor(QColor color);
+
+signals:
     void mousePress();
     void requestDelete();
     void userAvatarClicked();
@@ -55,14 +63,24 @@ protected:
 
 private:
     QImage imageToGray(const QImage &image);
+    void initDeleteButton();
 
-private:
-    QLabel *m_iconLabel;
-    QString m_iconPath;
+    QLabel *m_iconLabel = nullptr;
+    QString m_iconPath = "";
     QColor m_borderColor;
     QColor m_borderSelectedColor;
-    int m_avatarSize;
-    int m_borderWidth;
-    bool m_selected;
+    int m_avatarSize = 90;
+    int m_borderWidth = 0;
+    bool m_selected = false;
+    bool m_deleteable = false;
+
+    const int SMALL_ICON_SIZE = 80;
+    const int NORMAL_ICON_SIZE = 90;
+    const int LARGE_ICON_SIZE = 100;
+    const int AVATAR_ROUND_RADIUS = 18;
+
+    QPalette m_palette;
 };
+
+
 #endif // USERAVATAR_H

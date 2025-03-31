@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -31,7 +31,7 @@ TEST_F(UT_AuthModule, BasicTest)
     m_authModule->authState();
     m_authModule->authType();
     m_authModule->setAnimationState(false);
-    m_authModule->setAuthState(0, "test");
+    m_authModule->setAuthState(AuthCommon::AS_Success, "test");
     // m_authModule->setAuthState("");
     m_authModule->setLimitsInfo(LimitsInfo());
 }

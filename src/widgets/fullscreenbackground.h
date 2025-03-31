@@ -8,39 +8,39 @@
 #include <QWidget>
 #include <QSharedPointer>
 #include <QLoggingCategory>
+#include <QSize>
+#include <QVariantAnimation>
+
+#include "abstractfullbackgroundinterface.h"
+
 Q_DECLARE_LOGGING_CATEGORY(DDE_SS)
-
-#include "imageeffect1interface.h"
-
-using ImageEffectInter = org::deepin::dde::ImageEffect1;
 
 class BlackWidget;
 class SessionBaseModel;
-class FullscreenBackground : public QWidget
+class FullScreenBackground : public QWidget, public AbstractFullBackgroundInterface
 {
     Q_OBJECT
-    Q_PROPERTY(bool contentVisible READ contentVisible WRITE setContentVisible NOTIFY contentVisibleChanged)
+    Q_PROPERTY(bool contentVisible READ contentVisible)
 
 public:
-    explicit FullscreenBackground(SessionBaseModel *model, QWidget *parent = nullptr);
-    ~FullscreenBackground() override;
+    explicit FullScreenBackground(SessionBaseModel *model, QWidget *parent = nullptr);
+    ~FullScreenBackground() override;
 
     bool contentVisible() const;
     void setEnterEnable(bool enable);
+    static void setContent(QWidget *const w);
 
 public slots:
     void updateBackground(const QString &path);
     void updateBlurBackground(const QString &path);
-    void setScreen(QPointer<QScreen> screen, bool isVisible = true);
-    void setContentVisible(bool visible);
+    void setScreen(QPointer<QScreen> screen, bool isVisible = true) override;
     void setIsHibernateMode();
 
 signals:
-    void contentVisibleChanged(bool contentVisible);
     void requestDisableGlobalShortcutsForWayland(bool enable);
+    void requestLockFrameHide();
 
 protected:
-    void setContent(QWidget *const w);
     void keyPressEvent(QKeyEvent *e) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
@@ -53,8 +53,7 @@ private:
     void enterEvent(QEnterEvent *event) Q_DECL_OVERRIDE;
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    const QPixmap pixmapHandle(const QPixmap &pixmap);
-    void updateScreen(QScreen *screen);
+    void updateScreen(QPointer<QScreen> screen);
     void updateGeometry();
     bool isPicture(const QString &file);
     QString getLocalFile(const QString &file);
@@ -64,28 +63,34 @@ private:
     static void updatePixmap();
     bool contains(int type);
     void tryActiveWindow(int count = 9);
+    QMap<QString, QRect> getScreenGeometryByXrandr();
+    double getScaleFactorFromDisplay();
+    static void updateCurrentFrame(FullScreenBackground *frame);
+    bool getScaledBlurImage(const QString &originPath, QString &scaledPath);
+    void setddeGeometry(const QRect &rect);
+    void updateScreenBluBackground(const QString &path);
+
+protected:
+    static QPointer<QWidget> currentContent;
+    static QList<FullScreenBackground *> frameList;
+    static QPointer<FullScreenBackground> currentFrame;
+
+    void handleBackground(const QString &path, int type);
+    static QString sizeToString(const QSize &size);
 
 private:
-    static QString backgroundPath;                             // 高清背景图片路径
-    static QString blurBackgroundPath;                         // 模糊背景图片路径
+    static QString originBackgroundPath; // 原图路径
+    static QString blurBackgroundPath; // 模糊背景图片路径
+    static QMap<QString, QPixmap> blurBackgroundCacheMap;
 
-    static QList<QPair<QSize, QPixmap>> backgroundCacheList;
-    static QList<QPair<QSize, QPixmap>> blurBackgroundCacheList;
-    static QList<FullscreenBackground *> frameList;
-
-    QVariantAnimation *m_fadeOutAni;      // 背景动画
-    ImageEffectInter *m_imageEffectInter; // 获取模糊背景服务
-
-    QPointer<QWidget> m_content;
     QPointer<QScreen> m_screen;
     SessionBaseModel *m_model = nullptr;
-    bool m_primaryShowFinished = false;
     bool m_enableEnterEvent = true;
     bool m_useSolidBackground;
-    bool m_fadeOutAniFinished;
-    bool m_enableAnimation;
 
     BlackWidget *m_blackWidget;
+    QTimer *m_resetGeometryTimer;
+    QRect m_geometryRect;
 };
 
 #endif // FULLSCREENBACKGROUND_H

@@ -7,18 +7,15 @@
 #include "authcommon.h"
 #include "dlineeditex.h"
 
-#include "userinterface.h"
-
-#include <DHiDPIHelper>
+#include <DIcon>
+#include <DDialogCloseButton>
+#include <DSuggestButton>
+#include <DMessageManager>
 
 #include <QKeyEvent>
-#include <QTimer>
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QDBusReply>
 #include <QWindow>
 
-#include <unistd.h>
+#include "userinterface.h"
 
 using namespace AuthCommon;
 
@@ -28,10 +25,10 @@ AuthSingle::AuthSingle(QWidget *parent)
     , m_lineEdit(new DLineEditEx(this))
     , m_keyboardBtn(new DPushButton(this))
     , m_passwordHintBtn(new DIconButton(this))
-    , m_togglePasswordBtn(new DIconButton(this))
     , m_resetPasswordMessageVisible(false)
     , m_resetPasswordFloatingMessage(nullptr)
     , m_bindCheckTimer(nullptr)
+    , m_iconButton(nullptr)
 {
     setObjectName(QStringLiteral("AuthSingle"));
     setAccessibleName(QStringLiteral("AuthSingle"));
@@ -40,6 +37,8 @@ AuthSingle::AuthSingle(QWidget *parent)
     initConnections();
 
     m_lineEdit->installEventFilter(this);
+    m_lineEdit->setCopyEnabled(false);
+    m_lineEdit->setCutEnabled(false);
     setFocusProxy(m_lineEdit);
 }
 
@@ -48,7 +47,7 @@ AuthSingle::AuthSingle(QWidget *parent)
  */
 void AuthSingle::initUI()
 {
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
+    auto *mainLayout = new QHBoxLayout(this);
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -59,7 +58,7 @@ void AuthSingle::initUI()
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
 
-    QHBoxLayout *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
+    auto *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
     passwordLayout->setContentsMargins(0, 0, 10, 0);
     passwordLayout->setSpacing(0);
     /* 键盘布局按钮 */
@@ -72,7 +71,7 @@ void AuthSingle::initUI()
     /* 缩放因子 */
     passwordLayout->addStretch(1);
     /* 大小写状态 */
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/caps_lock.svg");
+    QPixmap pixmap = DIcon::loadNxPixmap(":/misc/images/caps_lock.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_capsLock->setAccessibleName(QStringLiteral("CapsStateLabel"));
     m_capsLock->setPixmap(pixmap);
@@ -85,18 +84,11 @@ void AuthSingle::initUI()
     m_passwordHintBtn->setFlat(true);
     m_passwordHintBtn->setIcon(QIcon(PASSWORD_HINT));
     m_passwordHintBtn->setIconSize(QSize(16, 16));
+    m_passwordHintBtn->setVisible(false);
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
-    // 切换密码显示隐藏
-    m_togglePasswordBtn->setAccessibleName(QStringLiteral("TogglePassword"));
-    m_togglePasswordBtn->setContentsMargins(0, 0, 0, 0);
-    m_togglePasswordBtn->setFocusPolicy(Qt::NoFocus);
-    m_togglePasswordBtn->setCursor(Qt::ArrowCursor);
-    m_togglePasswordBtn->setFlat(true);
-    setTogglePasswordBtnIcon();
-    m_togglePasswordBtn->setIconSize(QSize(16, 16));
-    passwordLayout->addWidget(m_togglePasswordBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -149,9 +141,9 @@ void AuthSingle::reset()
  * @param state
  * @param result
  */
-void AuthSingle::setAuthState(const int state, const QString &result)
+void AuthSingle::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
-    qDebug() << "AuthSingle::setAuthResult:" << state << result;
+    qCDebug(DDE_SHELL) << "Set auth state, state: " << state << ", result: " << result;
     m_state = state;
     switch (state) {
     case AS_Success:
@@ -220,7 +212,7 @@ void AuthSingle::setAuthState(const int state, const QString &result)
     default:
         setAnimationState(false);
         setLineEditInfo(result, AlertText);
-        qWarning() << "Error! The state of Password Auth is wrong!" << state << result;
+        qCWarning(DDE_SHELL) << "The state of password auth is wrong, state:" << state << ", result: " << result;
         break;
     }
     update();
@@ -234,6 +226,7 @@ void AuthSingle::setAuthState(const int state, const QString &result)
 void AuthSingle::setCapsLockVisible(const bool on)
 {
     m_capsLock->setVisible(on);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -253,14 +246,15 @@ void AuthSingle::setAnimationState(const bool start)
  */
 void AuthSingle::setLimitsInfo(const LimitsInfo &info)
 {
-    qDebug() << "AuthSingle::setLimitsInfo" << info.unlockTime;
+    qCDebug(DDE_SHELL) << "Set limits info: " << info.numFailures;
     const bool lockStateChanged = (info.locked != m_limitsInfo->locked);
     AuthModule::setLimitsInfo(info);
     setPasswordHintBtnVisible(info.numFailures > 0 && !m_passwordHint.isEmpty());
-    if (m_limitsInfo->locked) {
-        if (lockStateChanged && this->isVisible() && QFile::exists(ResetPassword_Exe_Path) &&
-            m_currentUid <= 9999) {
-            qDebug() << "begin reset passoword";
+    if (m_limitsInfo->numFailures >= 3) {
+        bool isShow = lockStateChanged && this->isVisible() && QFile::exists(DEEPIN_DEEPINID_DAEMON_PATH) &&
+                QFile::exists(ResetPassword_Exe_Path) && m_currentUid <= 9999 && !IsCommunitySystem;
+        if (isShow) {
+            qCDebug(DDE_SHELL) << "Begin reset passoword";
             setResetPasswordMessageVisible(true);
             updateResetPasswordUI();
         }
@@ -278,15 +272,28 @@ void AuthSingle::setLimitsInfo(const LimitsInfo &info)
 void AuthSingle::setLineEditEnabled(const bool enable)
 {
     // m_lineEdit->setEnabled(enable);
-    if (enable) {
+    if (!m_passwordLineEditEnabled) {
+        m_lineEdit->setFocusPolicy(Qt::NoFocus);
+        m_lineEdit->clearFocus();
+        m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(false);
+    } else if (enable) {
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
         m_lineEdit->setFocus();
         m_lineEdit->lineEdit()->setReadOnly(false);
+        m_lineEdit->lineEdit()->setEnabled(true);
     } else {
         m_lineEdit->setFocusPolicy(Qt::NoFocus);
         m_lineEdit->clearFocus();
         m_lineEdit->lineEdit()->setReadOnly(true);
+        m_lineEdit->lineEdit()->setEnabled(true);
     }
+}
+
+void AuthSingle::setPasswordLineEditEnabled(const bool enable)
+{
+    m_passwordLineEditEnabled = enable;
+    setLineEditEnabled(enable);
 }
 
 /**
@@ -357,25 +364,6 @@ void AuthSingle::setKeyboardButtonVisible(const bool visible)
 }
 
 /**
- * @brief 显示/隐藏密码
- */
-void AuthSingle::togglePassword()
-{
-    m_lineEdit->setEchoMode(m_lineEdit->echoMode() == QLineEdit::Password
-                            ? QLineEdit::Normal
-                            : QLineEdit::Password);
-    setTogglePasswordBtnIcon();
-}
-
-void AuthSingle::setTogglePasswordBtnIcon() {
-    if (m_lineEdit->echoMode() == QLineEdit::Password) {
-        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_ShowPassword));
-    } else {
-        m_togglePasswordBtn->setIcon(DStyle::standardIcon(m_togglePasswordBtn->style(), DStyle::SP_HidePassword));
-    }
-}
-
-/**
  * @brief 设置重置密码消息框的显示状态数据
  *
  * @param visible
@@ -383,6 +371,10 @@ void AuthSingle::setTogglePasswordBtnIcon() {
 void AuthSingle::setResetPasswordMessageVisible(const bool isVisible)
 {
     if (m_resetPasswordMessageVisible == isVisible)
+        return;
+
+    // 如果设置为显示重置按钮，失败次数>=3次就显示重置密码:1060-24505
+    if (isVisible && m_limitsInfo && m_limitsInfo->numFailures < 3)
         return;
 
     m_resetPasswordMessageVisible = isVisible;
@@ -404,7 +396,7 @@ QString AuthSingle::lineEditText() const
  */
 void AuthSingle::updateUnlockPrompt()
 {
-    qDebug() << "AuthSingle::updateUnlockPrompt:" << m_integerMinutes;
+    qCDebug(DDE_SHELL) << "Update unlock prompt, integer minutes: " << m_integerMinutes;
     if (m_integerMinutes == 1) {
         m_lineEdit->setPlaceholderText(tr("Please try again 1 minute later"));
     } else if (m_integerMinutes > 1) {
@@ -413,7 +405,7 @@ void AuthSingle::updateUnlockPrompt()
         QTimer::singleShot(1000, this, [this] {
             emit activeAuth(m_type);
         });
-        qInfo() << "Waiting authentication service...";
+        qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
     update();
 }
@@ -433,6 +425,7 @@ void AuthSingle::showPasswordHint()
 void AuthSingle::setPasswordHintBtnVisible(const bool isVisible)
 {
     m_passwordHintBtn->setVisible(isVisible);
+    updatePasswordTextMargins();
 }
 
 /**
@@ -456,19 +449,34 @@ void AuthSingle::showResetPasswordMessage()
 
     QPalette pa;
     pa.setColor(QPalette::Window, QColor(247, 247, 247, 51));
+    pa.setColor(QPalette::Highlight, Qt::white);
+    pa.setColor(QPalette::HighlightedText, Qt::black);
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
     m_resetPasswordFloatingMessage->setPalette(pa);
-    m_resetPasswordFloatingMessage->setIcon(QIcon::fromTheme("dialog-warning"));
+    // DFloatingMessage 中未放开seticonsize接口，无法设置图标大小，使用缩放会造成图标锯齿
+    // 只能使用findChildren找到对应的图标控件来设置图标大小进行规避
+    // DFloatingMessage中有两个按钮一个是DIconButton,另一个是继承于DIconButton的DDialogCloseButton，需要区分
+    QList<DIconButton *> btnList = m_resetPasswordFloatingMessage->findChildren<DIconButton *>();
+    foreach (const auto iconButton, btnList) {
+        DDialogCloseButton * closeButton = qobject_cast<DDialogCloseButton *>(iconButton);
+        if (closeButton) {
+            continue;
+        }
+        iconButton->installEventFilter(this);
+        m_iconButton = iconButton;
+    }
+    m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
+    suggestButton->setAutoDefault(true);
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
-    connect(suggestButton, &QPushButton::clicked, this, [ this ]{
+    connect(suggestButton, &QPushButton::clicked, this, [this]{
         const QString AccountsService("org.deepin.dde.Accounts1");
         const QString path = QString("/org/deepin/dde/Accounts1/User%1").arg(m_currentUid);
         org::deepin::dde::accounts1::User user(AccountsService, path, QDBusConnection::systemBus());
         auto reply = user.SetPassword("");
         reply.waitForFinished();
-        qWarning() << "reply setpassword:" << reply.error().message();
+        qCWarning(DDE_SHELL) << "Show reset password message: " << reply.error().message();
 
         emit m_resetPasswordFloatingMessage->closeButtonClicked();
     });
@@ -508,10 +516,10 @@ bool AuthSingle::isUserAccountBinded()
         return false;
     }
     QString uosid;
-    if (retUOSID.error().message().isEmpty()) {
+    if (retUOSID.isValid()) {
         uosid = retUOSID.value();
     } else {
-        qWarning() << retUOSID.error().message();
+        qCWarning(DDE_SHELL) << "UOS ID is invalid, error: " << retUOSID.error().message();
         return false;
     }
 
@@ -530,19 +538,18 @@ bool AuthSingle::isUserAccountBinded()
         return false;
     }
     QString ubid;
-    if (retLocalBindCheck.error().message().isEmpty()) {
+    if (retLocalBindCheck.isValid()) {
         ubid = retLocalBindCheck.value();
         if (m_bindCheckTimer) {
             m_bindCheckTimer->stop();
         }
     } else {
-        qWarning() << "UOSID:" << uosid << "uuid:" << uuid;
-        qWarning() << retLocalBindCheck.error().message();
+        qCWarning(DDE_SHELL) << "Local bind check is invalid, UOSID:" << uosid << ", uuid:" << uuid << ", error: " << retLocalBindCheck.error().message();
         if (retLocalBindCheck.error().message().contains("network error")) {
             if (m_bindCheckTimer == nullptr) {
                 m_bindCheckTimer = new QTimer(this);
                 connect(m_bindCheckTimer, &QTimer::timeout, this, [this] {
-                    qWarning() << "BindCheck retry!";
+                    qCWarning(DDE_SHELL) << "BindCheck retry!";
                     if(isUserAccountBinded()) {
                         setResetPasswordMessageVisible(true);
                         updateResetPasswordUI();
@@ -560,6 +567,15 @@ bool AuthSingle::isUserAccountBinded()
     } else {
         return false;
     }
+}
+
+void AuthSingle::updatePasswordTextMargins()
+{
+    // 根据大小写提示是否显示，设置密码框左边距,根据密码提示和显示密码设置密码杠右边距
+    QMargins textMargins = m_lineEdit->lineEdit()->textMargins();
+    textMargins.setLeft(m_capsLock->isVisible() ? m_capsLock->width() : 0);
+    textMargins.setRight(m_passwordHintBtn->isVisible() ? m_passwordHintBtn->width() : 0);
+    m_lineEdit->lineEdit()->setTextMargins(textMargins);
 }
 
 /**
@@ -591,6 +607,20 @@ bool AuthSingle::eventFilter(QObject *watched, QEvent *event)
 
     if (watched == this && event->type() == QEvent::Hide) {
         closeResetPasswordMessage();
+    }
+
+    if (watched == m_iconButton && event->type() == QEvent::Paint) {
+        QPainter painter(m_iconButton);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+        if (!m_iconButton->icon().isNull()) {
+            QRect iconRect(0, 0, 20, 20);
+            iconRect.moveCenter(m_iconButton->rect().center());
+            m_iconButton->icon().paint(&painter, iconRect);
+        }
+
+        return true;
     }
 
     return false;

@@ -7,13 +7,11 @@
 
 #include "authcommon.h"
 #include "userinfo.h"
-#include "mfainfolist.h"
-
-#include <DSysInfo>
 
 #include <QObject>
 
 #include <memory>
+#include <types/mfainfolist.h>
 
 using namespace AuthCommon;
 
@@ -30,6 +28,8 @@ public:
     enum PowerAction {
         None,
         RequireNormal,
+        RequireUpdateShutdown,
+        RequireUpdateRestart,
         RequireShutdown,
         RequireRestart,
         RequireSuspend,
@@ -43,21 +43,39 @@ public:
 
     enum ModeStatus {
         NoStatus,
-        PasswordMode,           // 输入密码验证页面
-        ConfirmPasswordMode,    // 确认密码页面(一般是关机或者重启等操作需要验证用户密码)
-        UserMode,               // 显示用户列表
+        PasswordMode,
+        ConfirmPasswordMode,
+        UserMode,
+        SessionMode,
         PowerMode,
-        ShutDownMode,           // 关机界面
-        ResetPasswdMode         // 重设密码界面
+        ShutDownMode,
+        ResetPasswdMode,
+        UpdateMode,
+        SelectSameNameUserMode,
     };
     Q_ENUM(ModeStatus)
+
+    enum UpdatePowerMode {
+        UPM_None,
+        UPM_UpdateAndShutdown,
+        UPM_UpdateAndReboot
+    };
+    Q_ENUM(UpdatePowerMode)
+
+    enum ContentType {
+        NoContent,
+        WarningContent,
+        LockContent,
+        UpdateContent
+    };
+    Q_ENUM(ContentType)
 
     /* org.deepin.dde.Authenticate1 */
     struct AuthProperty {
         bool FuzzyMFA;          // Reserved
         bool MFAFlag;           // 多因子标志位
         int FrameworkState;     // 认证框架是否可用标志位
-        int AuthType;           // 账户开启的认证类型
+        AuthFlags AuthType;           // 账户开启的认证类型
         int MixAuthFlags;       // 受支持的认证类型
         int PINLen;             // PIN 码的最大长度
         QString EncryptionType; // 加密类型
@@ -65,17 +83,23 @@ public:
         QString UserName;       // 账户名
     };
 
+    struct AuthResult {
+        AuthType authType;       // 认证结果对应的认证类型，AT_ALL时代表所有认证类型
+        AuthState authState;     // 认证结果
+        QString authMessage;     // 认证消息
+    };
+
     explicit SessionBaseModel(QObject *parent = nullptr);
     ~SessionBaseModel() override;
 
     inline std::shared_ptr<User> currentUser() const { return m_currentUser; }
-    inline std::shared_ptr<User> lastLogoutUser() const { return m_lastLogoutUser; }
 
     inline QList<std::shared_ptr<User>> loginedUserList() const { return m_loginedUsers->values(); }
     inline QList<std::shared_ptr<User>> userList() const { return m_users->values(); }
 
     std::shared_ptr<User> findUserByUid(const uint uid) const;
     std::shared_ptr<User> findUserByName(const QString &name) const;
+    std::shared_ptr<User> findUserByPath(const QString &path) const;
 
     inline AppType appType() const { return m_appType; }
     void setAppType(const AppType type);
@@ -126,18 +150,37 @@ public:
     inline bool isHibernateMode() const { return m_isHibernateMode; }
     void setIsHibernateModel(bool is_Hibernate);
 
-    inline bool isCheckedInhibit() const { return m_isCheckedInhibit; }
-    void setIsCheckedInhibit(bool checked);
-
     inline bool allowShowCustomUser() const { return m_allowShowCustomUser; }
     void setAllowShowCustomUser(const bool allowShowCustomUser);
 
     inline const QList<std::shared_ptr<User>> getUserList() const { return m_users->values(); }
 
     inline const AuthProperty &getAuthProperty() const { return m_authProperty; }
-    void setAuthType(const int type);
+    void setAuthType(const AuthFlags type);
 
     std::shared_ptr<User> json2User(const QString &userJson);
+
+    void setUpdatePowerMode(UpdatePowerMode mode) { m_updatePowerMode = mode; }
+    UpdatePowerMode updatePowerMode() const { return m_updatePowerMode; }
+    void setTerminalLocked(bool locked);
+    inline bool terminalLocked() const { return m_isTerminalLocked; }
+    void sendTerminalLockedSignal();
+
+    void setCurrentContentType(ContentType type) { m_currentContentType = type; }
+    ContentType currentContentType() const { return m_currentContentType; }
+
+    bool isLightdmPamStarted() const;
+    void setLightdmPamStarted(bool lightPamStarted);
+
+    inline bool visibleShutdownWhenRebootOrShutdown() const { return m_visibleShutdownWhenRebootOrShutdown; }
+
+    inline const AuthResult &getAuthResult() const { return m_authResult; }
+
+    inline bool userlistVisible() const { return m_userlistVisible; }
+    void setUserlistVisible(bool visible);
+
+    inline bool isQuickLoginProcess() const { return m_isQuickLoginProcess; }
+    void setQuickLoginProcess(bool );
 
 signals:
     /* org.deepin.dde.Accounts1 */
@@ -150,6 +193,8 @@ signals:
     void MFAFlagChanged(const bool);
     /* others */
     void visibleChanged(const bool);
+    //通知前端lightdm pam 已经开启
+    void lightdmPamStartedChanged();
 
 public slots:
     /* org.deepin.dde.Accounts1 */
@@ -160,8 +205,6 @@ public slots:
     bool updateCurrentUser(const QString &userJson);
     bool updateCurrentUser(const std::shared_ptr<User> user);
     void updateUserList(const QStringList &list);
-    void updateLastLogoutUser(const uid_t uid);
-    void updateLastLogoutUser(const std::shared_ptr<User> lastLogoutUser);
     void updateLoginedUserList(const QString &list);
     /* org.deepin.dde.Authenticate1 */
     void updateLimitedInfo(const QString &info);
@@ -169,7 +212,7 @@ public slots:
     void updateSupportedMixAuthFlags(const int flags);
     void updateSupportedEncryptionType(const QString &type);
     /* org.deepin.dde.Authenticate1.Session */
-    void updateAuthState(const int type, const int state, const QString &message);
+    void updateAuthState(const AuthType type, const AuthState state, const QString &message);
     void updateFactorsInfo(const MFAInfoList &infoList);
     void updateFuzzyMFA(const bool fuzzMFA);
     void updateMFAFlag(const bool MFAFlag);
@@ -181,12 +224,15 @@ signals:
     void authFailedMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFinished(bool success);
+    void accountError();
+    void checkAccountFinished();
     void onPowerActionChanged(PowerAction poweraction);
     void onRequirePowerAction(PowerAction poweraction, bool needConfirm);
     void onSessionKeyChanged(const QString &sessionKey);
     void showUserList();
     void showLockScreen();
     void showShutdown();
+    void showUpdate(bool doReboot);
     void onStatusChanged(ModeStatus status);
     void onUserListChanged(QList<std::shared_ptr<User>> list);
     void hasVirtualKBChanged(bool hasVirtualKB);
@@ -201,12 +247,26 @@ signals:
     void HibernateModeChanged(bool is_hibernate); //休眠信号改变
     void prepareForSleep(bool is_Sleep);          //待机信号改变
     void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
-    void cancelShutdownInhibit(bool hideFrame);
-    void requestLoginFrame();
+    void tipsShowed();
     void clearServerLoginWidgetContent();
 
-    void authStateChanged(const int, const int, const QString &);
-    void authTypeChanged(const int type);
+    void authStateChanged(const AuthType, const AuthState, const QString &);
+    void authTypeChanged(const AuthFlags type);
+
+    // 关闭插件右键菜单信号
+    void hidePluginMenu();
+    void terminalLockedChanged(bool isLocked);
+
+protected:
+    template <typename T>
+    T valueByQSettings(const QString & group,
+                       const QString & key,
+                       const QVariant &failback) {
+        return findValueByQSettings<T>(DDESESSIONCC::session_ui_configs,
+                                       group,
+                                       key,
+                                       failback);
+    }
 
 private:
     bool m_hasSwap;
@@ -216,25 +276,31 @@ private:
     bool m_allowShowUserSwitchButton;
     bool m_alwaysShowUserSwitchButton;
     bool m_abortConfirm;
-    bool m_isLockNoPassword;
     bool m_isBlackMode;
     bool m_isHibernateMode;
-    bool m_isLock;
     bool m_allowShowCustomUser;
-    bool m_SEOpen;                                  // 保存等保开启、关闭的状态
+    bool m_SEOpen; // 保存等保开启、关闭的状态
     bool m_isUseWayland;
-    int m_userListSize;
+    int m_userListSize = 0;
+    bool m_isTerminalLocked = false;
+    bool m_userlistVisible = true;
     AppType m_appType;
     QList<std::shared_ptr<User>> m_userList;
     std::shared_ptr<User> m_currentUser;
-    std::shared_ptr<User> m_lastLogoutUser;
     QString m_sessionKey;
     PowerAction m_powerAction;
     ModeStatus m_currentModeState;
-    bool m_isCheckedInhibit;
-    AuthProperty m_authProperty;                    // 认证相关属性的值，初始时通过dbus获取，暂存在model中，供widget初始化界面使用
+    AuthProperty m_authProperty; // 认证相关属性的值，初始时通过dbus获取，暂存在model中，供widget初始化界面使用
     QMap<QString, std::shared_ptr<User>> *m_users;
     QMap<QString, std::shared_ptr<User>> *m_loginedUsers;
+    UpdatePowerMode m_updatePowerMode;
+    ContentType m_currentContentType;
+
+    bool m_lightdmPamStarted; // 标志lightdmpam是否已经开启，主要用于greeter,lock不涉及lightdm
+    AuthResult m_authResult; // 记录认证结果
+    bool m_enableShellBlackMode;
+    bool m_visibleShutdownWhenRebootOrShutdown;
+    bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程
 };
 
 #endif // SESSIONBASEMODEL_H

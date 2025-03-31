@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>পাওয়ার</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>ওনবোর্ড</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

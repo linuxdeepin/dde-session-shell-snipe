@@ -10,7 +10,6 @@
 #include "auth_password.h"
 #include "auth_ukey.h"
 #include "dlineeditex.h"
-#include "framedatabind.h"
 #include "keyboardmonitor.h"
 #include "sessionbasemodel.h"
 #include "useravatar.h"
@@ -19,31 +18,30 @@ MFAWidget::MFAWidget(QWidget *parent)
     : AuthWidget(parent)
     , m_index(0)
     , m_mainLayout(new QVBoxLayout(this))
+    , m_authLayout(new QVBoxLayout)
 {
     setObjectName(QStringLiteral("MFAWidget"));
     setAccessibleName(QStringLiteral("MFAWidget"));
 
     setGeometry(0, 0, 280, 176);
     setMinimumSize(280, 176);
-    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
 void MFAWidget::initUI()
 {
     AuthWidget::initUI();
-    /* 用户名输入框 */
-    std::function<void(QVariant)> accountChanged = std::bind(&MFAWidget::syncAccount, this, std::placeholders::_1);
-    m_registerFunctions["MFAAccount"] = FrameDataBind::Instance()->registerFunction("MFAAccount", accountChanged);
-    FrameDataBind::Instance()->refreshData("MFAAccount");
+    m_authLayout->setSpacing(10);
+    m_authLayout->setContentsMargins(0, 0, 0, 0);
 
+    m_mainLayout->setSpacing(0);
     m_mainLayout->setContentsMargins(10, 0, 10, 0);
-    m_mainLayout->setSpacing(10);
-    m_mainLayout->addWidget(m_userAvatar);
-    m_mainLayout->addWidget(m_nameLabel, 0, Qt::AlignVCenter);
-    m_mainLayout->addWidget(m_accountEdit, 0, Qt::AlignVCenter);
-    m_mainLayout->addSpacing(10);
+    SpacerItemBinder::addWidget(m_userAvatar, m_mainLayout, Qt::AlignVCenter, 0);
+    SpacerItemBinder::addWidget(m_accountEdit, m_mainLayout, Qt::AlignVCenter, 24);
+    SpacerItemBinder::addWidget(m_userNameWidget, m_mainLayout, Qt::AlignVCenter, 24);
+    m_mainLayout->addLayout(m_authLayout);
+    m_mainLayout->addSpacing(20);
     m_mainLayout->addWidget(m_expiredStateLabel);
-    m_mainLayout->addItem(m_expiredSpacerItem);
+    m_mainLayout->addSpacing(10);
     m_mainLayout->addWidget(m_lockButton, 0, Qt::AlignCenter);
 }
 
@@ -52,9 +50,6 @@ void MFAWidget::initConnections()
     AuthWidget::initConnections();
     connect(m_model, &SessionBaseModel::authTypeChanged, this, &MFAWidget::setAuthType);
     connect(m_model, &SessionBaseModel::authStateChanged, this, &MFAWidget::setAuthState);
-    connect(m_accountEdit, &DLineEditEx::textChanged, this, [](const QString &value) {
-        FrameDataBind::Instance()->updateValue("MFAAccount", value);
-    });
 }
 
 void MFAWidget::setModel(const SessionBaseModel *model)
@@ -68,10 +63,9 @@ void MFAWidget::setModel(const SessionBaseModel *model)
     setUser(model->currentUser());
 }
 
-void MFAWidget::setAuthType(const int type)
+void MFAWidget::setAuthType(const AuthFlags type)
 {
-    qDebug() << "MFAWidget::setAuthType:" << type;
-    m_index = 2;
+    m_index = 0;
     /* 面容 */
     if (type & AT_Face) {
         initFaceAuth();
@@ -117,16 +111,16 @@ void MFAWidget::setAuthType(const int type)
         if (m_model->currentUser()->isNoPasswordLogin()) {
             m_lockButton->setEnabled(true);
             m_accountEdit->hide();
-            m_nameLabel->show();
+            m_userNameWidget->show();
         } else {
             m_accountEdit->clear();
             m_accountEdit->show();
-            m_nameLabel->hide();
+            m_userNameWidget->hide();
         }
     } else {
         const bool visible = m_model->isServerModel() && m_model->appType() == Login;
         m_accountEdit->setVisible(visible);
-        m_nameLabel->setVisible(!visible);
+        m_userNameWidget->setVisible(!visible);
     }
 
     updatePasswordExpiredState();
@@ -168,43 +162,32 @@ void MFAWidget::setAuthType(const int type)
  * @param state  认证结果
  * @param message 消息
  */
-void MFAWidget::setAuthState(const int type, const int state, const QString &message)
+void MFAWidget::setAuthState(const AuthCommon::AuthType type, const AuthCommon::AuthState state, const QString &message)
 {
-    qDebug() << "MFAWidget::setAuthState:" << type << state << message;
     switch (type) {
     case AT_Password:
         if (m_passwordAuth) {
             m_passwordAuth->setAuthState(state, message);
-            FrameDataBind::Instance()->updateValue("MFPasswordAuthState", state);
-            FrameDataBind::Instance()->updateValue("MFPasswordAuthMsg", message);
         }
         break;
     case AT_Fingerprint:
         if (m_fingerprintAuth) {
             m_fingerprintAuth->setAuthState(state, message);
-            FrameDataBind::Instance()->updateValue("MFFingerprintAuthState", state);
-            FrameDataBind::Instance()->updateValue("MFFingerprintAuthMsg", message);
         }
         break;
     case AT_Ukey:
         if (m_ukeyAuth) {
             m_ukeyAuth->setAuthState(state, message);
-            FrameDataBind::Instance()->updateValue("MFUKeyAuthState", state);
-            FrameDataBind::Instance()->updateValue("MFUKeyAuthMsg", message);
         }
         break;
     case AT_Face:
         if (m_faceAuth) {
             m_faceAuth->setAuthState(state, message);
-            FrameDataBind::Instance()->updateValue("MFFaceAuthState", state);
-            FrameDataBind::Instance()->updateValue("MFFaceAuthMsg", message);
         }
         break;
     case AT_Iris:
         if (m_irisAuth) {
             m_irisAuth->setAuthState(state, message);
-            FrameDataBind::Instance()->updateValue("MFIrisAuthState", state);
-            FrameDataBind::Instance()->updateValue("MFIrisAuthMsg", message);
         }
         break;
     case AT_All:
@@ -229,14 +212,17 @@ void MFAWidget::initPasswdAuth()
 {
     if (m_passwordAuth) {
         m_passwordAuth->reset();
-        m_mainLayout->insertWidget(m_index, m_passwordAuth);
+        m_authLayout->insertWidget(m_index, m_passwordAuth);
         return;
     }
     m_passwordAuth = new AuthPassword(this);
     m_passwordAuth->setCurrentUid(m_model->currentUser()->uid());
-    m_passwordAuth->setCapsLockVisible(m_capslockMonitor->isCapslockOn());
+    m_passwordAuth->setCapsLockVisible(KeyboardMonitor::instance()->isCapsLockOn());
     m_passwordAuth->setPasswordHint(m_user->passwordHint());
-    m_mainLayout->insertWidget(m_index, m_passwordAuth);
+    m_passwordAuth->setAuthStatueVisible(true);
+    m_passwordAuth->setPasswordLineEditEnabled(m_model->currentUser()->allowToChangePassword() || m_model->appType() != Login);
+
+    m_authLayout->insertWidget(m_index, m_passwordAuth);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Password);
@@ -251,27 +237,11 @@ void MFAWidget::initPasswdAuth()
         m_passwordAuth->setLineEditEnabled(false);
         emit sendTokenToAuth(m_model->currentUser()->name(), AT_Password, text);
     });
-    connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const int value) {
+    connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const AuthState value) {
         checkAuthResult(AT_Password, value);
     });
     connect(m_lockButton, &QPushButton::clicked, m_passwordAuth, &AuthPassword::requestAuthenticate);
-    connect(m_capslockMonitor, &KeyboardMonitor::capslockStatusChanged, m_passwordAuth, &AuthPassword::setCapsLockVisible);
-
-    /* 输入框数据同步 */
-    std::function<void(QVariant)> passwordChanged = std::bind(&MFAWidget::syncPassword, this, std::placeholders::_1);
-    m_registerFunctions["MFPasswordAuth"] = FrameDataBind::Instance()->registerFunction("MFPasswordAuth", passwordChanged);
-    connect(m_passwordAuth, &AuthPassword::lineEditTextChanged, this, [](const QString &value) {
-        FrameDataBind::Instance()->updateValue("MFPasswordAuth", value);
-    });
-    FrameDataBind::Instance()->refreshData("MFPasswordAuth");
-    /* 重置密码可见性数据同步 */
-    std::function<void(QVariant)> resetPasswordVisibleChanged = std::bind(&AuthWidget::syncPasswordResetPasswordVisibleChanged, this, std::placeholders::_1);
-    m_registerFunctions["MFResetPasswordVisible"] = FrameDataBind::Instance()->registerFunction("MFResetPasswordVisible", resetPasswordVisibleChanged);
-    connect(m_passwordAuth, &AuthPassword::resetPasswordMessageVisibleChanged, this, [ = ](const bool value) {
-        FrameDataBind::Instance()->updateValue("MFResetPasswordVisible", value);
-    });
-    FrameDataBind::Instance()->refreshData("MFResetPasswordVisible");
-
+    connect(KeyboardMonitor::instance(), &KeyboardMonitor::capsLockStatusChanged, m_passwordAuth, &AuthPassword::setCapsLockVisible);
     connect(m_passwordAuth, &AuthPassword::requestChangeFocus, this, &MFAWidget::updateFocusPosition);
 }
 
@@ -282,17 +252,17 @@ void MFAWidget::initFingerprintAuth()
 {
     if (m_fingerprintAuth) {
         m_fingerprintAuth->reset();
-        m_mainLayout->insertWidget(m_index, m_fingerprintAuth);
+        m_authLayout->insertWidget(m_index, m_fingerprintAuth);
         return;
     }
     m_fingerprintAuth = new AuthFingerprint(this);
     m_fingerprintAuth->setAuthFactorType(DDESESSIONCC::MultiAuthFactor);
-    m_mainLayout->insertWidget(m_index, m_fingerprintAuth);
+    m_authLayout->insertWidget(m_index, m_fingerprintAuth);
 
     connect(m_fingerprintAuth, &AuthFingerprint::activeAuth, this, [this] {
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Fingerprint);
     });
-    connect(m_fingerprintAuth, &AuthFingerprint::authFinished, this, [this](const int value) {
+    connect(m_fingerprintAuth, &AuthFingerprint::authFinished, this, [this](const AuthState value) {
         checkAuthResult(AT_Fingerprint, value);
     });
 }
@@ -304,12 +274,13 @@ void MFAWidget::initUKeyAuth()
 {
     if (m_ukeyAuth) {
         m_ukeyAuth->reset();
-        m_mainLayout->insertWidget(m_index, m_ukeyAuth);
+        m_authLayout->insertWidget(m_index, m_ukeyAuth);
         return;
     }
     m_ukeyAuth = new AuthUKey(this);
-    m_ukeyAuth->setCapsLockVisible(m_capslockMonitor->isCapslockOn());
-    m_mainLayout->insertWidget(m_index, m_ukeyAuth);
+    m_ukeyAuth->setCapsLockVisible(KeyboardMonitor::instance()->isCapsLockOn());
+    m_ukeyAuth->setAuthStatueVisible(true);
+    m_authLayout->insertWidget(m_index, m_ukeyAuth);
 
     connect(m_ukeyAuth, &AuthUKey::activeAuth, this, [this] {
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Ukey);
@@ -325,22 +296,15 @@ void MFAWidget::initUKeyAuth()
         emit sendTokenToAuth(m_model->currentUser()->name(), AT_Ukey, text);
     });
     connect(m_lockButton, &QPushButton::clicked, m_ukeyAuth, &AuthUKey::requestAuthenticate);
-    connect(m_ukeyAuth, &AuthUKey::authFinished, this, [this](const bool state) {
+    connect(m_ukeyAuth, &AuthUKey::authFinished, this, [this](const AuthState state) {
         checkAuthResult(AT_Ukey, state);
     });
-    connect(m_capslockMonitor, &KeyboardMonitor::capslockStatusChanged, m_ukeyAuth, &AuthUKey::setCapsLockVisible);
-
-    /* 输入框数据同步 */
-    std::function<void(QVariant)> PINChanged = std::bind(&MFAWidget::syncUKey, this, std::placeholders::_1);
-    m_registerFunctions["MFUKeyAuth"] = FrameDataBind::Instance()->registerFunction("MFUKeyAuth", PINChanged);
+    connect(KeyboardMonitor::instance(), &KeyboardMonitor::capsLockStatusChanged, m_ukeyAuth, &AuthUKey::setCapsLockVisible);
     connect(m_ukeyAuth, &AuthUKey::lineEditTextChanged, this, [this](const QString &value) {
-        FrameDataBind::Instance()->updateValue("MFUKeyAuth", value);
         if (m_model->getAuthProperty().PINLen > 0 && value.size() >= m_model->getAuthProperty().PINLen) {
             emit m_ukeyAuth->requestAuthenticate();
         }
     });
-    FrameDataBind::Instance()->refreshData("MFUKeyAuth");
-
     connect(m_ukeyAuth, &AuthUKey::requestChangeFocus, this, &MFAWidget::updateFocusPosition);
 }
 
@@ -351,17 +315,17 @@ void MFAWidget::initFaceAuth()
 {
     if (m_faceAuth) {
         m_faceAuth->reset();
-        m_mainLayout->insertWidget(m_index, m_faceAuth);
+        m_authLayout->insertWidget(m_index, m_faceAuth);
         return;
     }
     m_faceAuth = new AuthFace(this);
     m_faceAuth->setAuthFactorType(DDESESSIONCC::MultiAuthFactor);
-    m_mainLayout->insertWidget(m_index, m_faceAuth);
+    m_authLayout->insertWidget(m_index, m_faceAuth);
 
     connect(m_faceAuth, &AuthFace::activeAuth, this, [this] {
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
     });
-    connect(m_faceAuth, &AuthFace::authFinished, this, [this](const bool state) {
+    connect(m_faceAuth, &AuthFace::authFinished, this, [this](const AuthState state) {
         checkAuthResult(AT_Face, state);
     });
 }
@@ -373,17 +337,17 @@ void MFAWidget::initIrisAuth()
 {
     if (m_irisAuth) {
         m_irisAuth->reset();
-        m_mainLayout->insertWidget(m_index, m_irisAuth);
+        m_authLayout->insertWidget(m_index, m_irisAuth);
         return;
     }
     m_irisAuth = new AuthIris(this);
     m_irisAuth->setAuthFactorType(DDESESSIONCC::MultiAuthFactor);
-    m_mainLayout->insertWidget(m_index, m_irisAuth);
+    m_authLayout->insertWidget(m_index, m_irisAuth);
 
     connect(m_irisAuth, &AuthIris::activeAuth, this, [this] {
         emit requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
     });
-    connect(m_irisAuth, &AuthIris::authFinished, this, [this](const bool state) {
+    connect(m_irisAuth, &AuthIris::authFinished, this, [this](const AuthState state) {
         checkAuthResult(AT_Iris, state);
     });
 }
@@ -394,7 +358,7 @@ void MFAWidget::initIrisAuth()
  * @param type
  * @param succeed
  */
-void MFAWidget::checkAuthResult(const int type, const int state)
+void MFAWidget::checkAuthResult(const AuthType type, const AuthState state)
 {
     if (type == AT_Password && state == AS_Success) {
         if (m_fingerprintAuth && m_fingerprintAuth->authState() == AS_Locked) {
@@ -450,7 +414,7 @@ int MFAWidget::getTopSpacing() const
 {
     const int calcTopHeight = static_cast<int>(topLevelWidget()->geometry().height() * AUTH_WIDGET_TOP_SPACING_PERCENT);
     // 验证类型数量*高度
-    const int authWidgetHeight = (m_index - 2) * 47 + MIN_AUTH_WIDGET_HEIGHT;
+    const int authWidgetHeight = m_index * 47 + MIN_AUTH_WIDGET_HEIGHT;
 
     // 当分辨率过低时，如果仍然保持用户头像到屏幕顶端的距离为屏幕高度的35%，那么验证窗口整体时偏下的。
     // 计算当验证窗口居中时距离屏幕顶端的高度，与屏幕高度*0.35对比取较小值。
@@ -458,8 +422,14 @@ int MFAWidget::getTopSpacing() const
     const int topHeight = qMin(calcTopHeight, centerTop);
 
     // 需要额外增加的顶部间隔高度 = 屏幕高度*0.35 - 验证窗口高度 - 时间控件高度 - 布局间隔
-    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_TOPBOTTOM_WIDGET_HEIGHT)
-            - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
+    const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
 
     return qMax(15, deltaY);
+}
+
+void MFAWidget::resizeEvent(QResizeEvent *event)
+{
+    QTimer::singleShot(0, this, &MFAWidget::updateBlurEffectGeometry);
+
+    AuthWidget::resizeEvent(event);
 }

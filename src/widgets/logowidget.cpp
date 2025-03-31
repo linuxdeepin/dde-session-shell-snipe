@@ -2,14 +2,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <QObject>
-#include <DSysInfo>
+#include <QPalette>
+
 #include "public_func.h"
 #include "util_updateui.h"
 
 #include "logowidget.h"
+#include "dconfig_helper.h"
+#include "constants.h"
 
 DCORE_USE_NAMESPACE
+using namespace DDESESSIONCC;
 
 #define PIXMAP_WIDTH 128
 #define PIXMAP_HEIGHT 132 /* SessionBaseWindow */
@@ -23,7 +26,9 @@ LogoWidget::LogoWidget(QWidget *parent)
     : QFrame(parent)
     , m_logoLabel(new QLabel(this))
     , m_logoVersionLabel(new DLabel(this))
+    , m_customLogoLabel(nullptr)
 {
+    setMinimumHeight(PIXMAP_HEIGHT);
     setObjectName("LogoWidget");
     m_logoLabel->setAccessibleName("LogoLabel");
     //设置QSizePolicy为固定高度,以保证右边版本号内容顶部能和图片对齐
@@ -48,6 +53,9 @@ void LogoWidget::initUI()
     QPixmap pixmap = loadSystemLogo();
     m_logoLabel->setPixmap(pixmap);
     logoLayout->addWidget(m_logoLabel, 0, Qt::AlignBottom | Qt::AlignLeft);
+
+    // custom log
+    loadCustomLogo();
 
     /* version */
     m_logoVersionLabel->setObjectName("LogoVersion");
@@ -77,6 +85,11 @@ void LogoWidget::initUI()
     logoLayout->addWidget(m_logoVersionLabel);
 
     updateStyle(":/skin/login.qss", m_logoVersionLabel);
+    m_logoVersionLabel->setVisible(DConfigHelper::instance()->getConfig(SHOW_SYSTEM_VERSION, true).toBool());
+
+    DConfigHelper::instance()->bind(this, SHOW_SYSTEM_VERSION, &LogoWidget::onDConfigPropertyChanged);
+    DConfigHelper::instance()->bind(this, CUSTOM_LOGO_PATH, &LogoWidget::onDConfigPropertyChanged);
+    DConfigHelper::instance()->bind(this, CUSTOM_LOGO_POS, &LogoWidget::onDConfigPropertyChanged);
 }
 
 QPixmap LogoWidget::loadSystemLogo()
@@ -107,6 +120,9 @@ QString LogoWidget::getVersion()
 void LogoWidget::updateLocale(const QString &locale)
 {
     m_locale = locale;
+    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
+        return;
+    }
     m_logoVersionLabel->setText(getVersion());
 }
 
@@ -121,4 +137,62 @@ void LogoWidget::resizeEvent(QResizeEvent *event)
     QFont font(m_logoVersionLabel->font());
     font.setPixelSize(m_logoLabel->height() / 2);
     m_logoVersionLabel->setFont(font);
+
+    updateCustomLogoPos();
+}
+
+void LogoWidget::onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr)
+{
+    auto obj = qobject_cast<LogoWidget*>(objPtr);
+    if (!obj)
+        return;
+
+    if (key == SHOW_SYSTEM_VERSION) {
+        obj->m_logoVersionLabel->setVisible(value.toBool());
+    } else if (key == CUSTOM_LOGO_PATH) {
+        obj->loadCustomLogo();
+        obj->updateCustomLogoPos();
+    } else if (key == CUSTOM_LOGO_POS) {
+        obj->updateCustomLogoPos();
+    }
+}
+
+void LogoWidget::loadCustomLogo()
+{
+    QString path = DConfigHelper::instance()->getConfig(CUSTOM_LOGO_PATH, "").toString();
+    QFile file(path);
+    if (path.isEmpty() || !file.exists() || file.size() > 500 * 1024) {
+        if (m_customLogoLabel) {
+            m_customLogoLabel->setPixmap(QPixmap());
+        }
+        return;
+    }
+
+    QPixmap pixmap = loadPixmap(path,QSize());
+    if (pixmap.width() > this->rect().width() / 2 || pixmap.height() > PIXMAP_HEIGHT) {
+        pixmap = loadPixmap(path,QSize(PIXMAP_WIDTH, PIXMAP_HEIGHT));
+    }
+
+    if (m_customLogoLabel == nullptr) {
+        m_customLogoLabel = new QLabel(this);
+        m_customLogoLabel->setObjectName("custom_Logo");
+        m_customLogoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    }
+
+    m_customLogoLabel->setPixmap(pixmap);
+    m_customLogoLabel->resize(m_customLogoLabel->sizeHint());
+}
+
+void LogoWidget::updateCustomLogoPos()
+{
+    if (!m_customLogoLabel) {
+        return;
+    }
+    QStringList pos = DConfigHelper::instance()->getConfig(CUSTOM_LOGO_POS, "0,0").toString().split(',');
+    if (pos.size() < 2) {
+        pos = QStringList({"0","0"});
+    }
+
+    QRect rect = m_logoLabel->geometry();
+    m_customLogoLabel->move(rect.x() + rect.width() + pos[0].toInt() , rect.y() - pos[1].toInt() + rect.height() - m_customLogoLabel->height());
 }

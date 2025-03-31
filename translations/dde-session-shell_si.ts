@@ -261,6 +261,10 @@
         <source>Power</source>
         <translation>බලය</translation>
     </message>
+    <message>
+        <source>Onboard</source>
+        <translation>පවතින</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>

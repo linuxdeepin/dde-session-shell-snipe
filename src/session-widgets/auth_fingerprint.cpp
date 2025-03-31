@@ -59,9 +59,8 @@ void AuthFingerprint::reset()
  * @param state
  * @param result
  */
-void AuthFingerprint::setAuthState(const int state, const QString &result)
+void AuthFingerprint::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
-    qDebug() << "AuthFingerprint::setAuthResult:" << state << result;
     m_state = state;
     switch (state) {
     case AuthCommon::AS_Success:
@@ -142,7 +141,7 @@ void AuthFingerprint::setAuthState(const int state, const QString &result)
         setAnimationState(false);
         setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
         m_textLabel->setText(result);
-        qWarning() << "Error! The state of Fingerprint Auth is wrong!" << state << result;
+        qCWarning(DDE_SHELL) << "The state of Fingerprint Auth is wrong, state: " << state << ", result: " << result;
         break;
     }
     update();
@@ -194,7 +193,7 @@ void AuthFingerprint::updateUnlockPrompt()
         QTimer::singleShot(1000, this, [this] {
             emit activeAuth(m_type);
         });
-        qInfo() << "Waiting authentication service...";
+        qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
     update();
 }
