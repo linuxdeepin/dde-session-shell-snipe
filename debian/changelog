@@ -1,3 +1,9 @@
+dde-session-shell (6.0.32) unstable; urgency=medium
+
+  * chore: remove startdde dependency
+
+ -- fuleyi <fuleyi@uniontech.com>  Wed, 02 Apr 2025 11:28:22 +0800
+
 dde-session-shell (6.0.31) unstable; urgency=medium
 
   * fix: lock window just show background widget (#400)

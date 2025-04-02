@@ -31,8 +31,7 @@ Package: dde-session-shell
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  deepin-desktop-schemas (>=5.9.14),
- dde-daemon (>=5.13.12),
- startdde (>=5.8.9),
+ dde-daemon (>=6.1.26),
  x11-xserver-utils,
  deepin-authenticate(>=1.2.27),
  libssl3,
