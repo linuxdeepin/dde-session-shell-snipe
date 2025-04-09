@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -10,15 +10,11 @@
 #include "public_func.h"
 #include "plugin_manager.h"
 #include "dconfig_helper.h"
-#include "roundpopupwidget.h"
-#include "tipcontentwidget.h"
-#include "sessionpopupwidget.h"
-#include "userlistpopupwidget.h"
-#include "sessionmanager.h"
 
 #include <DFloatingButton>
 #include <DArrowRectangle>
 #include <DPushButton>
+#include <dimagebutton.h>
 #include <DRegionMonitor>
 
 #include <QEvent>
@@ -30,9 +26,6 @@
 
 #define BUTTON_ICON_SIZE QSize(26,26)
 #define BUTTON_SIZE QSize(52,52)
-static constexpr int TipsBottomDistance = 10;
-static constexpr int HorizontalMargin = 10;
-static constexpr int VerticalMargin = 10;
 
 const QString NetworkPlugin = "network-item-key";
 
@@ -95,12 +88,14 @@ void FloatingButton::paintEvent(QPaintEvent *event)
 ControlWidget::ControlWidget(const SessionBaseModel *model, QWidget *parent)
     : QWidget(parent)
     , m_contextMenu(new QMenu(this))
-    , m_tipsWidget(new TipsWidget(parent ? parent->window() : nullptr))
-    , m_roundPopupWidget(new RoundPopupWidget(this))
+    , m_tipsWidget(new TipsWidget())
+    , m_arrowRectWidget(new DArrowRectangle(DArrowRectangle::ArrowBottom, this))
+    , m_kbLayoutListView(nullptr)
+    , m_keyboardBtn(nullptr)
+    , m_onboardBtnVisible(true)
+    , m_doGrabKeyboard(true)
+    , m_canShowMenu(true)
 {
-    m_tipsWidget->setVisible(false);
-    m_roundPopupWidget->setVisible(false);
-
     setModel(model);
     initUI();
     initConnect();
@@ -122,7 +117,7 @@ void ControlWidget::setModel(const SessionBaseModel *model)
 
 void ControlWidget::setUser(std::shared_ptr<User> user)
 {
-    for (const QMetaObject::Connection &connection : std::as_const(m_connectionList))
+    for (const QMetaObject::Connection &connection : qAsConst(m_connectionList))
         user.get()->disconnect(connection);
 
     m_connectionList.clear();
@@ -138,7 +133,6 @@ void ControlWidget::initKeyboardLayoutList()
     /* 键盘布局选择菜单 */
     const QString language = m_curUser->keyboardLayout();
     m_kbLayoutListView = new KBLayoutListView(language, this);
-    m_kbLayoutListView->installEventFilter(this);
     m_kbLayoutListView->setAccessibleName(QStringLiteral("KbLayoutlistview"));
     m_kbLayoutListView->initData(m_curUser->keyboardLayoutList());
     m_kbLayoutListView->setMinimumWidth(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH);
@@ -149,6 +143,26 @@ void ControlWidget::initKeyboardLayoutList()
     const QStringList languageList = language.split(";");
     if (!languageList.isEmpty())
         static_cast<QAbstractButton *>(m_keyboardBtn)->setText(languageList.at(0).toUpper());
+
+    // 无特效模式时，让窗口圆角
+    m_arrowRectWidget->setProperty("_d_radius_force", true);
+    m_arrowRectWidget->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::WindowStaysOnTopHint);
+    m_arrowRectWidget->setMargin(0);
+    m_arrowRectWidget->setShadowBlurRadius(20);
+    m_arrowRectWidget->setRadius(6);
+    m_arrowRectWidget->setShadowYOffset(2);
+    m_arrowRectWidget->setShadowXOffset(0);
+    m_arrowRectWidget->setArrowWidth(18);
+    m_arrowRectWidget->setArrowHeight(10);
+    m_arrowRectWidget->setMinimumWidth(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH);
+    m_arrowRectWidget->setMaximumSize(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH, DDESESSIONCC::LAYOUT_BUTTON_HEIGHT * 7);
+    m_arrowRectWidget->setFocusPolicy(Qt::NoFocus);
+    m_arrowRectWidget->setBackgroundColor(QColor(235, 235, 235, int(0.05 * 255)));
+    m_arrowRectWidget->installEventFilter(this);
+
+    QPalette pal = m_arrowRectWidget->palette();
+    pal.setColor(DPalette::Inactive, DPalette::Base, QColor(235, 235, 235, int(0.05 * 255)));
+    setPalette(pal);
 
     connect(m_kbLayoutListView, &KBLayoutListView::itemClicked, this, &ControlWidget::onItemClicked);
 }
@@ -189,7 +203,6 @@ void ControlWidget::initUI()
     m_sessionBtn->setAutoExclusive(true);
     m_sessionBtn->setBackgroundRole(DPalette::Button);
     m_sessionBtn->hide();
-    m_sessionBtn->setTipText(tr("Desktop Environment and Display Protocol"));
 
     m_keyboardBtn = new FloatingButton(this);
     m_keyboardBtn->setAccessibleName("KeyboardLayoutBtn");
@@ -199,7 +212,6 @@ void ControlWidget::initUI()
     m_keyboardBtn->setAutoExclusive(true);
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(QString());
     m_keyboardBtn->installEventFilter(this);
-    m_keyboardBtn->setTipText(tr("Keyboard Layout"));
 
     // 给显示文字的按钮设置样式
     QPalette pal = m_keyboardBtn->palette();
@@ -217,7 +229,6 @@ void ControlWidget::initUI()
     m_virtualKBBtn->setAutoExclusive(true);
     m_virtualKBBtn->setBackgroundRole(DPalette::Button);
     m_virtualKBBtn->installEventFilter(this);
-    m_virtualKBBtn->setTipText(tr("Onboard"));
 
     m_switchUserBtn = new FloatingButton(this);
     m_switchUserBtn->setAccessibleName("SwitchUserBtn");
@@ -227,7 +238,6 @@ void ControlWidget::initUI()
     m_switchUserBtn->setAutoExclusive(true);
     m_switchUserBtn->setBackgroundRole(DPalette::Button);
     m_switchUserBtn->installEventFilter(this);
-    m_switchUserBtn->setTipText(tr("Switch User"));
 
     m_powerBtn = new FloatingButton(this);
     m_powerBtn->setAccessibleName("PowerBtn");
@@ -237,7 +247,6 @@ void ControlWidget::initUI()
     m_powerBtn->setAutoExclusive(true);
     m_powerBtn->setBackgroundRole(DPalette::Button);
     m_powerBtn->installEventFilter(this);
-    m_powerBtn->setTipText(tr("Power"));
 
     m_btnList.append(m_sessionBtn);
     m_btnList.append(m_keyboardBtn);
@@ -264,26 +273,11 @@ void ControlWidget::initUI()
 
 void ControlWidget::initConnect()
 {
-    connect(m_sessionBtn, &FloatingButton::clicked, this, &ControlWidget::showSessionPopup);
-    connect(m_sessionBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_sessionBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
-
-    connect(m_switchUserBtn, &FloatingButton::clicked, this, &ControlWidget::showUserListPopupWidget);
-    connect(m_switchUserBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_switchUserBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
-
-    connect(m_powerBtn, &FloatingButton::clicked, this, &ControlWidget::requestShutdown);
-    connect(m_powerBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_powerBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
-
-    connect(m_keyboardBtn, &FloatingButton::clicked, this, &ControlWidget::setKBLayoutVisible);
-    connect(m_keyboardBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_keyboardBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
-
+    connect(m_sessionBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchSession);
+    connect(m_switchUserBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchUser);
+    connect(m_powerBtn, &DFloatingButton::clicked, this, &ControlWidget::requestShutdown);
     connect(m_virtualKBBtn, &DFloatingButton::clicked, this, &ControlWidget::requestSwitchVirtualKB);
-    connect(m_virtualKBBtn, &FloatingButton::requestShowTips, this, &ControlWidget::showInfoTips);
-    connect(m_virtualKBBtn, &FloatingButton::requestHideTips, this, &ControlWidget::hideInfoTips);
-
+    connect(m_keyboardBtn, &DFloatingButton::clicked, this, &ControlWidget::setKBLayoutVisible);
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &ControlWidget::setUser);
     connect(m_model, &SessionBaseModel::hidePluginMenu, m_contextMenu, [this] {
         m_contextMenu->close();
@@ -320,23 +314,6 @@ QString ControlWidget::messageCallback(const QString &message, void *app_data)
     return message;
 }
 
-void ControlWidget::toggleButtonPopup(const FloatingButton *button, QWidget *popup)
-{
-    if (!m_roundPopupWidget || !button || !topLevelWidget())
-        return;
-    m_roundPopupWidget->setContent(popup);
-    // 设计弹窗离右边距和底部按钮距离
-    QPoint globalPos = mapToGlobal(button->pos()) - QPoint((m_roundPopupWidget->width() - button->width()) / 2,
-                                                              m_roundPopupWidget->height() + VerticalMargin);
-    // 保证页面显示没超出显示屏幕范围
-    QRect topWidgetRect = topLevelWidget()->frameGeometry();
-    if ((globalPos.x() + m_roundPopupWidget->width() + VerticalMargin) > (topWidgetRect.x() + topWidgetRect.width())) {
-        int leftMoveValue = globalPos.x() + m_roundPopupWidget->width() + VerticalMargin - (topWidgetRect.x() + topWidgetRect.width());
-        globalPos.setX(globalPos.x() - leftMoveValue);
-    }
-    Q_EMIT requestTogglePopup(globalPos, m_roundPopupWidget);
-}
-
 QWidget *ControlWidget::getTray(const QString &name)
 {
     for (auto key : m_modules.keys()) {
@@ -363,7 +340,11 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
         trayWidget->setParent(button);
         QHBoxLayout *layout = new QHBoxLayout(button);
         layout->setSpacing(0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         layout->setContentsMargins(0, 0, 0, 0);
+#else
+        layout->setMargin(0);
+#endif
         layout->addWidget(trayWidget);
         button->setVisible(trayWidget->isVisible());
         trayWidget->setObjectName(trayModule->key());
@@ -438,10 +419,15 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
         update();
     });
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(button, &FloatingButton::clicked, this, [this, trayModule] {
+            emit requestShowModule(trayModule->key());
+    });
+#else
     connect(button, &FloatingButton::clicked, this, [this, trayModule] {
         emit requestShowModule(trayModule->key());
-    });
-
+    }, Qt::UniqueConnection);
+#endif
     updateLayout();
 }
 
@@ -475,14 +461,35 @@ void ControlWidget::updateLayout()
     updateTapOrder();
 }
 
+void ControlWidget::showTips()
+{
+#ifndef SHENWEI_PLATFORM
+    m_tipsAni->setStartValue(QPoint(m_tipWidget->width(), 0));
+    m_tipsAni->setEndValue(QPoint());
+    m_tipsAni->start();
+#else
+    m_sessionTip->move(0, 0);
+#endif
+}
+
+void ControlWidget::hideTips()
+{
+#ifndef SHENWEI_PLATFORM
+    //在退出动画时候会出现白边，+1
+    m_tipsAni->setEndValue(QPoint(m_tipWidget->width() + 1, 0));
+    m_tipsAni->setStartValue(QPoint());
+    m_tipsAni->start();
+#else
+    m_sessionTip->move(m_tipWidget->width() + 1, 0);
+#endif
+}
+
 void ControlWidget::setUserSwitchEnable(const bool visible)
 {
     m_switchUserBtn->setVisible(visible);
     if (m_btnList.indexOf(m_switchUserBtn) == m_index) {
         m_index = 0;
     }
-
-    updateTapOrder();
 }
 
 void ControlWidget::setSessionSwitchEnable(const bool visible)
@@ -492,12 +499,51 @@ void ControlWidget::setSessionSwitchEnable(const bool visible)
         return;
     }
 
-    m_sessionBtn->show();
+        m_sessionBtn->show();
+#ifndef SHENWEI_PLATFORM
+        m_sessionBtn->installEventFilter(this);
+#else
+        m_sessionBtn->setProperty("normalIcon", ":/img/sessions/unknown_indicator_normal.svg");
+        m_sessionBtn->setProperty("hoverIcon", ":/img/sessions/unknown_indicator_hover.svg");
+        m_sessionBtn->setProperty("checkedIcon", ":/img/sessions/unknown_indicator_press.svg");
 
-#ifdef SHENWEI_PLATFORM
-    m_sessionBtn->setProperty("normalIcon", ":/img/sessions/unknown_indicator_normal.svg");
-    m_sessionBtn->setProperty("hoverIcon", ":/img/sessions/unknown_indicator_hover.svg");
-    m_sessionBtn->setProperty("checkedIcon", ":/img/sessions/unknown_indicator_press.svg");
+#endif
+
+    if (!m_tipWidget) {
+        m_tipWidget = new QWidget;
+        m_tipWidget->setAccessibleName("TipWidget");
+        m_mainLayout->insertWidget(0, m_tipWidget);
+        m_mainLayout->setAlignment(m_tipWidget, Qt::AlignCenter);
+    }
+
+    if (!m_sessionTip) {
+        m_sessionTip = new QLabel(m_tipWidget);
+        m_sessionTip->setAccessibleName("SessionTip");
+        m_sessionTip->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        m_sessionTip->installEventFilter(this);
+
+#ifndef SHENWEI_PLATFORM
+        m_sessionTip->setStyleSheet("color:white;"
+                                    "font-size:12px;");
+#else
+        QPalette pe;
+        pe.setColor(QPalette::WindowText, Qt::white);
+        m_sessionTip->setPalette(pe);
+#endif
+
+        QGraphicsDropShadowEffect *tipsShadow = new QGraphicsDropShadowEffect(m_sessionTip);
+        tipsShadow->setColor(Qt::white);
+        tipsShadow->setBlurRadius(4);
+        tipsShadow->setOffset(0, 0);
+        m_sessionTip->setGraphicsEffect(tipsShadow);
+
+        m_sessionTip->move(m_tipWidget->width(), 0);
+    }
+
+#ifndef SHENWEI_PLATFORM
+    if (!m_tipsAni) {
+        m_tipsAni = new QPropertyAnimation(m_sessionTip, "pos", this);
+    }
 #endif
 
     updateTapOrder();
@@ -505,32 +551,42 @@ void ControlWidget::setSessionSwitchEnable(const bool visible)
 
 void ControlWidget::chooseToSession(const QString &session)
 {
-    if (!m_sessionBtn || session.isEmpty()) {
-        return;
-    }
+    if (m_sessionBtn && m_sessionTip) {
+        qCDebug(DDE_SHELL) << "Chosen session: " << session;
+        if (session.isEmpty())
+            return;
 
-    const QString sessionId = session.toLower();
-    QString normalIcon = QString(":/img/sessions/%1_indicator_normal.svg").arg(sessionId);
-    if (sessionId == "deepin") {
-        normalIcon = QString(":/img/sessions/%1_indicator_normal.svg").arg("x11");
-    }
+        m_sessionTip->setText(session);
+        if (session == "deepin") {
+            m_sessionTip->setText("X11");
+        }
 
-    if (QFile(normalIcon).exists()) {
+        m_sessionTip->adjustSize();
+        //当session长度改变时，应该移到它的width来隐藏
+        m_sessionTip->move(m_sessionTip->size().width() + 1, 0);
+        const QString sessionId = session.toLower();
+        QString normalIcon = QString(":/img/sessions/%1_indicator_normal.svg").arg(sessionId);
+        if (sessionId == "deepin") {
+            normalIcon = QString(":/img/sessions/%1_indicator_normal.svg").arg("x11");
+        }
+
+        if (QFile(normalIcon).exists()) {
 #ifndef SHENWEI_PLATFORM
-        m_sessionBtn->setIcon(QIcon::fromTheme(normalIcon));
+            m_sessionBtn->setIcon(QIcon::fromTheme(normalIcon));
 #else
-        m_sessionBtn->setProperty("normalIcon", normalIcon);
-        m_sessionBtn->setProperty("hoverIcon", hoverIcon);
-        m_sessionBtn->setProperty("checkedIcon", checkedIcon);
+            m_sessionBtn->setProperty("normalIcon", normalIcon);
+            m_sessionBtn->setProperty("hoverIcon", hoverIcon);
+            m_sessionBtn->setProperty("checkedIcon", checkedIcon);
 #endif
-    } else {
+        } else {
 #ifndef SHENWEI_PLATFORM
-        m_sessionBtn->setIcon(QIcon::fromTheme(":/img/sessions/unknown_indicator_normal.svg"));
+            m_sessionBtn->setIcon(QIcon::fromTheme(":/img/sessions/unknown_indicator_normal.svg"));
 #else
-        m_sessionBtn->setProperty("normalIcon", ":/img/sessions/unknown_indicator_normal.svg");
-        m_sessionBtn->setProperty("hoverIcon", ":/img/sessions/unknown_indicator_hover.svg");
-        m_sessionBtn->setProperty("checkedIcon", ":/img/sessions/unknown_indicator_press.svg");
+            m_sessionBtn->setProperty("normalIcon", ":/img/sessions/unknown_indicator_normal.svg");
+            m_sessionBtn->setProperty("hoverIcon", ":/img/sessions/unknown_indicator_hover.svg");
+            m_sessionBtn->setProperty("checkedIcon", ":/img/sessions/unknown_indicator_press.svg");
 #endif
+        }
     }
 }
 
@@ -576,11 +632,18 @@ void ControlWidget::rightKeySwitch()
 
 void ControlWidget::setKBLayoutVisible()
 {
-    FloatingButton *clickedButton = static_cast<FloatingButton *>(sender());
-    if (!clickedButton)
+    DFloatingButton *layoutButton = static_cast<DFloatingButton *>(sender());
+    if (!layoutButton)
         return;
 
-    toggleButtonPopup(clickedButton, m_kbLayoutListView);
+    if (!m_arrowRectWidget->getContent()) {
+        m_arrowRectWidget->setContent(m_kbLayoutListView);
+    }
+    m_arrowRectWidget->resize(m_kbLayoutListView->size() + QSize(0, 10));
+
+    QPoint pos = QPoint(mapToGlobal(layoutButton->pos()).x() + layoutButton->width() / 2, mapToGlobal(layoutButton->pos()).y());
+    m_arrowRectWidget->move(pos.x(), pos.y());
+    m_arrowRectWidget->setVisible(!m_arrowRectWidget->isVisible());
 }
 
 void ControlWidget::setKeyboardType(const QString &str)
@@ -618,7 +681,7 @@ void ControlWidget::onItemClicked(const QString &str)
         currentText = currentText.split("/").last();
 
     static_cast<QAbstractButton *>(m_keyboardBtn)->setText(currentText.toUpper());
-    Q_EMIT requestHidePopup();
+    m_arrowRectWidget->hide();
     m_curUser->setKeyboardLayout(str);
 }
 
@@ -639,14 +702,27 @@ void ControlWidget::updateModuleVisible()
 bool ControlWidget::eventFilter(QObject *watched, QEvent *event)
 {
 #ifndef SHENWEI_PLATFORM
-    auto *btn = qobject_cast<DFloatingButton *>(watched);
+    if (watched == m_sessionBtn) {
+        if (event->type() == QEvent::Enter)
+            showTips();
+        else if (event->type() == QEvent::Leave)
+            hideTips();
+    }
+
+    if (watched == m_sessionTip) {
+        if (event->type() == QEvent::Resize) {
+            m_tipWidget->setFixedSize(m_sessionTip->size());
+        }
+    }
+
+    DFloatingButton *btn = qobject_cast<DFloatingButton *>(watched);
     if (btn && m_btnList.contains(btn)) {
         if (event->type() == QEvent::Enter) {
             m_index = m_btnList.indexOf(btn);
         }
     }
 
-    if (watched == m_kbLayoutListView && event->type() == QEvent::Hide) {
+    if (watched == m_arrowRectWidget && event->type() == QEvent::Hide) {
         emit notifyKeyboardLayoutHidden();
     }
 
@@ -669,7 +745,11 @@ void ControlWidget::keyReleaseEvent(QKeyEvent *event)
     case Qt::Key_Tab:
         auto it = std::find_if(m_btnList.begin(), m_btnList.end(),
                                [](DFloatingButton *btn) { return btn->hasFocus(); });
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         m_index = it != m_btnList.end() ? m_btnList.indexOf(*it) : 0;
+#else
+        m_index = it != m_btnList.end() ? m_btnList.indexOf(it.i->t()) : 0;
+#endif
         break;
     }
 }
@@ -710,17 +790,6 @@ void ControlWidget::showEvent(QShowEvent *event)
     QWidget::showEvent(event);
 }
 
-void ControlWidget::paintEvent(QPaintEvent *event)
-{
-    // QPainter painter(this);
-    // painter.setRenderHint(QPainter::Antialiasing);
-    // painter.setPen(Qt::NoPen);
-    // painter.setBrush(Qt::red);
-    //
-    // painter.drawRect(rect());
-    QWidget::paintEvent(event);
-}
-
 void ControlWidget::updateTapOrder()
 {
     // 找出所有按钮
@@ -747,62 +816,4 @@ void ControlWidget::onDConfigPropertyChanged(const QString &key, const QVariant 
     if (obj->m_virtualKBBtn && key == "hideOnboard") {
         obj->m_virtualKBBtn->setVisible(obj->m_onboardBtnVisible && !value.toBool());
     }
-}
-
-void ControlWidget::showInfoTips()
-{
-    FloatingButton * button = qobject_cast<FloatingButton *>(sender());
-    if (!button) {
-        return;
-    }
-
-    if (!m_tipContentWidget) {
-        m_tipContentWidget = new TipContentWidget();
-    }
-
-    m_tipContentWidget->setText(button->tipText());
-    m_tipsWidget->setContent(m_tipContentWidget);
-
-    qInfo() << "==============";
-    QPoint p = m_tipsWidget->parentWidget() ? m_tipsWidget->parentWidget()->mapFromGlobal(mapToGlobal(button->pos())) : mapToGlobal(button->pos());
-    m_tipsWidget->show(p.x() + button->width() / 2, p.y() - TipsBottomDistance);
-}
-
-void ControlWidget::hideInfoTips()
-{
-    if (m_tipsWidget->getContent()) {
-        m_tipsWidget->getContent()->setVisible(false);
-        m_tipsWidget->setContent(nullptr);
-    }
-
-    m_tipsWidget->hide();
-}
-
-void ControlWidget::showSessionPopup()
-{
-    if (!m_sessionPopupWidget) {
-        m_sessionPopupWidget = new SessionPopupWidget(this);
-        connect(m_sessionPopupWidget, &SessionPopupWidget::sessionItemClicked, [this](QString session) {
-            Q_EMIT requestHidePopup();
-            Q_EMIT requestSwitchSession(session);
-        });
-
-        m_sessionPopupWidget->setSessionInfo(SessionManager::Reference().sessionInfo(),
-                                             SessionManager::Reference().currentSession());
-    } else {
-        m_sessionPopupWidget->updateCurrentSession(SessionManager::Reference().currentSession());
-    }
-    toggleButtonPopup(m_sessionBtn, m_sessionPopupWidget);
-}
-
-void ControlWidget::showUserListPopupWidget()
-{
-    if (!m_userListPopupWidget) {
-        m_userListPopupWidget = new UserListPopupWidget(m_model, this);
-        connect(m_userListPopupWidget, &UserListPopupWidget::requestSwitchToUser, [ this ](std::shared_ptr<User> user) {
-            Q_EMIT requestHidePopup();
-            Q_EMIT requestSwitchUser(user);
-        });
-    }
-    toggleButtonPopup(m_switchUserBtn, m_userListPopupWidget);
 }

@@ -12,16 +12,26 @@
 
 #include <DSysInfo>
 
+#ifndef ENABLE_DSS_SNIPE
+#include <dde-api/eventlogger.hpp>
+
+#include <QGSettings>
+
+#include <com_deepin_system_systempower.h>
+#else
 #include "systempower1interface.h"
+#endif
 #include <pwd.h>
 #include </usr/include/shadow.h>
 
-#define LOCK_SERVICE_PATH "/org/deepin/dde/LockService1"
-#define LOCK_SERVICE_NAME "org.deepin.dde.LockService1"
 #define SECURITY_ENHANCE_PATH "/com/deepin/daemon/SecurityEnhance"
 #define SECURITY_ENHANCE_NAME "com.deepin.daemon.SecurityEnhance"
 
+#ifndef ENABLE_DSS_SNIPE
+using PowerInter = com::deepin::system::Power;
+#else
 using PowerInter = org::deepin::dde::Power1;
+#endif
 using namespace Auth;
 using namespace AuthCommon;
 DCORE_USE_NAMESPACE
@@ -34,8 +44,11 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     : AuthInterface(model, parent)
     , m_authFramework(new DeepinAuthFramework(this))
     , m_greeter(new QLightDM::Greeter(this))
-    , m_lockInter(new DBusLockService(LOCK_SERVICE_NAME, LOCK_SERVICE_PATH, QDBusConnection::systemBus(), this))
-    , m_systemDaemon(new QDBusInterface("org.deepin.dde.Daemon1", QString("/org/deepin/dde/Daemon1"), "org.deepin.dde.Daemon1", QDBusConnection::systemBus(), this))
+    , m_lockInter(new DBusLockService(DSS_DBUS::lockService, DSS_DBUS::lockServicePath, QDBusConnection::systemBus(), this))
+    , m_systemDaemon(new QDBusInterface(DSS_DBUS::systemDaemonService, DSS_DBUS::systemDaemonPath, DSS_DBUS::systemDaemonService, QDBusConnection::systemBus(), this))
+#ifndef ENABLE_DSS_SNIPE
+    , m_soundPlayerInter(new SoundThemePlayerInter("com.deepin.api.SoundThemePlayer", "/com/deepin/api/SoundThemePlayer", QDBusConnection::systemBus(), this))
+#endif
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
     , m_retryAuth(false)
@@ -57,13 +70,21 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
     //认证超时重启
     m_resetSessionTimer->setInterval(15000);
+#ifndef ENABLE_DSS_SNIPE
+    if (m_gsettings != nullptr && m_gsettings->keys().contains("authResetTime")) {
+        int resetTime = m_gsettings->get("auth-reset-time").toInt();
+        if (resetTime > 0)
+            m_resetSessionTimer->setInterval(resetTime);
+    }
+#else
     if (!m_dConfig) {
         m_dConfig = DConfig::create("org.deepin.dde.session-shell", "org.deepin.dde.session-shell", QString(), this);
-        int resetTime = m_dConfig->value("authResetTime", 15000).toInt();
-        if (resetTime > 0) {
-            m_resetSessionTimer->setInterval(resetTime);
-        }
     }
+    int resetTime = m_dConfig->value("authResetTime", 15000).toInt();
+    if (resetTime > 0) {
+        m_resetSessionTimer->setInterval(resetTime);
+    }
+#endif
 
     m_resetSessionTimer->setSingleShot(true);
     connect(m_resetSessionTimer, &QTimer::timeout, this, [this] {
@@ -119,7 +140,11 @@ void GreeterWorker::initConnections()
             } else {
                 m_model->setAuthType(AT_None);
             }
+#ifndef ENABLE_DSS_SNIPE
+            m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+#else
             prepareShutdownSound();
+#endif
         }
     });
     connect(m_loginedInter, &LoginedInter::UserListChanged, m_model, &SessionBaseModel::updateLoginedUserList);
@@ -189,8 +214,8 @@ void GreeterWorker::initConnections()
             destroyAuthentication(m_account);
         } else {
             if (!m_model->currentUser()->isNoPasswordLogin()) {
-                bool useOnekeyLogin = DConfigHelper::instance()->getConfig("enableOneKeyLogin", false).toBool();
-                if (useOnekeyLogin) {
+                bool useOnekeylogin = DConfigHelper::instance()->getConfig("enableOneKeylogin", false).toBool();
+                if (useOnekeylogin) {
                     // 当有一键登录的时候，需要保证一键登录插件中待机唤醒处理逻辑在此之前；否则greeter待机唤醒一键登录功能异常
                     QTimer::singleShot(0, this, [this]{
                         createAuthentication(m_model->currentUser()->name());
@@ -212,7 +237,11 @@ void GreeterWorker::initConnections()
                 m_model->setAuthType(AT_None);
             }
         }
+#ifndef ENABLE_DSS_SNIPE
+        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+#else
         prepareShutdownSound();
+#endif
     });
     /* com.deepin.dde.LockService */
     connect(m_lockInter, &DBusLockService::UserChanged, this, [this](const QString &json) {
@@ -293,7 +322,7 @@ void GreeterWorker::initConnections()
     });
 
     // 监听terminal锁定状态
-    QDBusConnection::systemBus().connect("org.deepin.dde.Accounts1", "/org/deepin/dde/Accounts1", "org.freedesktop.DBus.Properties",
+    QDBusConnection::systemBus().connect(DSS_DBUS::accountsService, DSS_DBUS::accountsPath, "org.freedesktop.DBus.Properties",
                                          "PropertiesChanged", this, SLOT(terminalLockedChanged(QDBusMessage)));
 }
 
@@ -310,7 +339,7 @@ void GreeterWorker::initData()
 
     m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
     /* com.deepin.udcp.iam */
-    QDBusInterface ifc("com.deepin.udcp.iam", "/com/deepin/udcp/iam", "com.deepin.udcp.iam", QDBusConnection::systemBus(), this);
+    QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
     const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
         ifc.property("Enable").toBool() || checkIsADDomain();
     m_model->setAllowShowCustomUser(allowShowCustomUser);
@@ -331,7 +360,11 @@ void GreeterWorker::initData()
         /* com.deepin.dde.LockService */
         m_model->updateCurrentUser(m_lockInter->CurrentUser());
     }
+#ifndef ENABLE_DSS_SNIPE
+    m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+#else
     prepareShutdownSound();
+#endif
 
     /* com.deepin.daemon.Authenticate */
     if (m_authFramework->isDAStartupCompleted() ) {
@@ -342,14 +375,19 @@ void GreeterWorker::initData()
     }
 
     // 获取terminal锁定状态
-    QDBusInterface accoutsInter("org.deepin.dde.Accounts1", "/org/deepin/dde/Accounts1", "org.deepin.dde.Accounts1", QDBusConnection::systemBus(), this);
+    QDBusInterface accoutsInter(DSS_DBUS::accountsService, DSS_DBUS::accountsPath, DSS_DBUS::accountsService, QDBusConnection::systemBus(), this);
     m_model->setTerminalLocked(accoutsInter.property("IsTerminalLocked").toBool());
 }
 
 void GreeterWorker::initConfiguration()
 {
+#ifndef ENABLE_DSS_SNIPE
+    m_model->setAlwaysShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Always);
+    m_model->setAllowShowUserSwitchButton(getGSettings("", "switchuser").toInt() == AuthInterface::Ondemand);
+#else
     m_model->setAlwaysShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Always);
     m_model->setAllowShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Ondemand);
+#endif
 
     checkPowerInfo();
 
@@ -359,7 +397,7 @@ void GreeterWorker::initConfiguration()
 
     // 当这个配置不存在是，如果是不是笔记本就打开小键盘，否则就关闭小键盘 0关闭键盘 1打开键盘 2默认值（用来判断是不是有这个key）
     if (m_model->currentUser() != nullptr && getNumLockState(m_model->currentUser()->name()) == NUM_LOCK_UNKNOWN) {
-        PowerInter powerInter("org.deepin.dde.Power1", "/org/deepin/dde/Power1", QDBusConnection::systemBus(), this);
+        PowerInter powerInter(DSS_DBUS::powerService, DSS_DBUS::powerPath, QDBusConnection::systemBus(), this);
         if (powerInter.hasBattery()) {
             saveNumLockState(m_model->currentUser(), false);
         } else {
@@ -451,7 +489,11 @@ void GreeterWorker::switchToUser(std::shared_ptr<User> user)
         } else {
             m_model->setAuthType(AT_None);
         }
+#ifndef ENABLE_DSS_SNIPE
+        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+#else
         prepareShutdownSound();
+#endif
     }
 }
 
@@ -638,7 +680,11 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
         passwd *pw = getpwnam(str.c_str());
         if (pw) {
             QString userName = pw->pw_name;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             QString userFullName = userName.left(userName.indexOf(QString("@")));
+#else
+            QString userFullName = userName.leftRef(userName.indexOf(QString("@"))).toString();
+#endif
             user_ptr = std::make_shared<ADDomainUser>(INT_MAX - 1);
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setName(userName);
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setFullName(userFullName);
@@ -684,7 +730,7 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
 void GreeterWorker::checkSameNameAccount(const QString &account, bool switchUser)
 {
     qCInfo(DDE_SHELL) << "Start check same name account, name: " << account;
-    QDBusInterface ifc("com.deepin.udcp.iam", "/com/deepin/udcp/iam", "com.deepin.udcp.iam", QDBusConnection::systemBus());
+    QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus());
     QDBusPendingReply<QString> reply = ifc.asyncCall(QStringLiteral("GetPwName"), account);
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(reply, this);
     connect(watcher, &QDBusPendingCallWatcher::finished, [this, account, switchUser, reply, watcher] {
@@ -793,6 +839,15 @@ void GreeterWorker::authenticationComplete()
     default:
         break;
     }
+
+#ifndef ENABLE_DSS_SNIPE
+    DDE_EventLogger::EventLoggerData data;
+    data.tid = EVENT_LOGGER_GREETER_LOGIN;
+    data.event = "startup";
+    data.target = "dde-session-shell";
+    data.message = {{"startup", "authenticationComplete"}, {"result", QString::number(result)}};
+    DDE_EventLogger::EventLogger::instance().writeEventLog(data);
+#endif
 
     qCInfo(DDE_SHELL) << "Start session: " << m_model->sessionKey();
 
@@ -1149,9 +1204,11 @@ void GreeterWorker::onNoPasswordLoginChanged(const QString &account, bool noPass
     }
 }
 
+#ifdef ENABLE_DSS_SNIPE
 void GreeterWorker::prepareShutdownSound()
 {
     QDBusInterface soundPlayerInter("org.deepin.dde.SoundThemePlayer1", "/org/deepin/dde/SoundThemePlayer1",
         "org.deepin.dde.SoundThemePlayer1", QDBusConnection::systemBus());
     soundPlayerInter.call("PrepareShutdownSound", static_cast<int>(m_model->currentUser()->uid()));
 }
+#endif

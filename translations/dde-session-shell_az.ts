@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Təhlükəsizlik açarını qoşun</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Doğrulama uğurlu oldu</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Doğrulama alınmadı</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Təhlükəsizlik açarı müəyyənləşdirilir</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -108,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform></translation>
+        <translation><numerusform>Lütfən, %n dəqiqə sonra yenidən cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra yenidən cəhd edin</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra cəhd edin</numerusform></translation>
+        <translation><numerusform>Lütfən %n dəqiqə sonra yenidən cəhd edin</numerusform><numerusform>Lütfən %n dəqiqə sonra yenidən cəhd edin</numerusform></translation>
     </message>
 </context>
 <context>
@@ -188,82 +207,23 @@
         <translation><numerusform>Şifrənizin vaxtı %n gün sonra bitəcəkdir, lütfən onu vaxtında dəyişin</numerusform><numerusform>Şifrənizin vaxtı %n gün sonra bitəcəkdir, lütfən onu vaxtında dəyişin</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation>Şifrənizin vaxtı bitib. Onu dəyişmək üçün inzibatçıya müraciət edin.</translation>
+        <source>Password expired, please change</source>
+        <translation>Şifrənin vaxtı bitib, lütfən onu dəyişin</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>Şifrənizin vaxtı bitib. Lütfən onu dəyişin.</translation>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>Şifrənizin vaxtı bitib. Lütfən onu dəyişin və yenidən daxil olun.</translation>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Şifrənizin vaxtı bitib. Onu dəyişmək üçün inzibatçıya müraciət edin</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Saxla</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Köhnə şifrə</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Yeni şifrə</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Yeni şifrənin təkrarı</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Şifrə üçün köməkçi söz (Boş buraxa bilərsiniz)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Şifrələr eyni deyil</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>İpucunu bütün istifadəçilər görür. Buraya şifrəni daxil etməyin.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Yeni şifrə hazırkı şifrədən fərqlənməlidir</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Şifrə dəyişdirildi</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Səhv şifrə</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Terminal kilidləndi, lütfən inzibatçıya bildirin</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>İş masası mühiti və görüntü protokolu</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Klaviatura qatı</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>İstifadıçini dəyiş</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Elektrik qidalanması</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Ekran Klaviaturası</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>İmtina</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>Donmanın səbəbi</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Standart rejim</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Zəif</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Orta</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Güclü</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Şifrə boş ola bilməz</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Şifrə ən az %1 simvoldan ibarət olmalıdır</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Şifrə %1 simvoldan böyük olmamalıdır</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Şifrə yalnız İngilis hərfləri (böyük, kiçik hərfə həsas), saylar və ya xüsusi simvollardan (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/) ibarət olmalıdır</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>%1 palondrom simvoldan artıq olmasın</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>%1 monoton simvoldan çox olmasın</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>%1 təkrarlanan simvoldan artıq olmasın</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Şifrə böyük, kiçik hərflərdən, saylardan və simvollardan (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/) ibarət olmalıdır</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>Şifrə 4 simvoldan çox palindromdan ibarət olmamalıdır</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Şifrə olaraq ümumi sözlərdən və söz birləşmələrindən istifadə etməyin</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Lütfən güclü şifrə yaradın</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Bu, şifrə qaydalarına uyğun deyil</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Sisteminiz aktiv edilmiş yüksək təhlükəsizlik səviyyəsindədir, buna görə də Wayland rejiminə keçmək mümkün deyil. Lütfən Təhlükəsizlik Mərkəzində təhlükəsizlik səviyyəsini söndürün və yenidən cəhd edin.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Çıxış</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>İstifadıçini dəyişmək</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Başqa sistemə keçid</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>İstifadıçini dəyişmək</translation>
+        <source>Update and Shut Down</source>
+        <translation>Yenilə və Söndür</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Yenilə və Yenidən başlat</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Standart istifadəçi</translation>
+        <source>发送验证码</source>
+        <translation>Doğrulama kodunu göndərin</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Administrator</translation>
+        <source>请输入手机号</source>
+        <translation>Lütfən telefon nömrəsini daxil edin</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>Digər istifadəçilər</translation>
+        <source>请输入验证码</source>
+        <translation>Lütfən doğrulama kodunu daxil edin</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Doğrulama kodunu əldə edin</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Ekran Klaviaturası</translation>
+        <source>Update</source>
+        <translation>Yenilə</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Elektrik şəbəkəsinə qoşun və yenilənmələri yenidən quraşdırın.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Sistemdən çıxmaq istədiyinizə əminsiniz?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Yenilə və Söndür</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Yenilə və Yenidən başlat</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Proqramlar bağlanır və söndürülür, lütfən gözləyin...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Proqramlar bağlanır və yenidən başladılır, lütfən gözləyin...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Proqramlar bağlanır və sistemdən çıxılır, lütfən gözləyin...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Birbaşa giriş</translation>
     </message>
 </context>
 <context>

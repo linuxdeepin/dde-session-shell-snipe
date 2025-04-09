@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,9 +6,8 @@
 #define DBUSLOCKFRONTSERVICE_H
 
 #include "dbuslockagent.h"
+
 #include <QDBusAbstractAdaptor>
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
 
 QT_BEGIN_NAMESPACE
 class QByteArray;
@@ -18,13 +17,19 @@ class QString;
 class QVariant;
 QT_END_NAMESPACE
 
+const QString lockFrontService = "org.deepin.dde.LockFront1";
+
 /*
- * Proxy class for interface org.deepin.dde.LockFront1
+ * Proxy class for interface com.deepin.dde.lockFront
  */
 class DBusLockFrontService: public QDBusAbstractAdaptor
 {
     Q_OBJECT
+#ifndef ENABLE_DSS_SNIPE
+    Q_CLASSINFO("D-Bus Interface", "com.deepin.dde.lockFront")
+#else
     Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.LockFront1")
+#endif
 
 public:
     explicit DBusLockFrontService(DBusLockAgent *parent);

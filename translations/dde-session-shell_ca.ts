@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Si us plau, connecteu la clau de seguretat.</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Verificació correcta</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Ha fallat la verificació.</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>S&apos;identifica la clau de seguretat</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -146,7 +165,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Ha fallat la verificació. Resten %n intent.</numerusform><numerusform>Ha fallat la verificació. Resten %n intents.</numerusform></translation>
+        <translation><numerusform>Ha fallat la verificació. Resta %n intent.</numerusform><numerusform>Ha fallat la verificació. Resten %n intents.</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Si us plau, torneu-ho a intentar d&apos;aquí a %n minut.</numerusform><numerusform>Si us plau, torneu-ho a intentar d&apos;aquí a %n minuts.</numerusform></translation>
+        <translation><numerusform>Torneu-ho a intentar d&apos;aquí a %n minut.</numerusform><numerusform>Torneu-ho a intentar d&apos;aquí a %n minuts.</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -188,82 +207,23 @@
         <translation><numerusform>La contrasenya caducarà d&apos;aquí a %d dia; canvieu-la oportunament.</numerusform><numerusform>La contrasenya caducarà d&apos;aquí a %d dies; canvieu-la oportunament.</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation>La contrasenya ha caducat. Poseu-vos en contacte amb l&apos;administrador per canviar-la.</translation>
-    </message>
-    <message>
-        <source>Your password has expired. Please change it.</source>
+        <source>Password expired, please change</source>
         <translation>La contrasenya ha caducat. Si us plau, canvieu-la.</translation>
     </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation> La contrasenya ha caducat. Si us plau, canvieu-la i torneu a iniciar la sessió.</translation>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>La contrasenya ha vençut. Poseu-vos en contacte amb l&apos;administrador per canviar-la.</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Desa</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Contrasenya antiga</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Contrasenya nova</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Repetiu la contrasenya nova.</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Suggeriment de contrasenya (opcional)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Les contrasenyes no coincideixen.</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>La pista és visible per a tots els usuaris. No inclogueu aquí la contrasenya.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>La contrasenya nova hauria de ser diferent de l&apos;actual.</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Contrasenya canviada</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Contrasenya incorrecta</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Terminal blocat, poseu-vos en contacte amb l&apos;administrador.</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>Entorn d&apos;escriptori i protocol de visualització</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Disposició del teclat</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>Canvia d&apos;usuari</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Energia</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Abord</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Cancel·la</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>El motiu de la inhibició</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Mode estàndard</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Dèbil</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Mitjana</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Forta</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>La contrasenya no pot estar en blanc.</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>La contrasenya ha de tenir com a mínim %1 caràcters.</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>La contrasenya no ha de tenir més de %1 caràcters.</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>La contrasenya només pot contenir caràcters en anglès (majúscules o minúscules), números o símbols especials (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/).</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Com a màxim %1 caràcters palíndroms, si us plau.</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Com a màxim %1 caràcters monòtons, si us plau.</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Com a màxim %1 caràcters repetits, si us plau.</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>La contrasenya ha de tenir lletres majúscules, minúscules, números i símbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/).</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>La contrasenya no ha de contenir més de 4 caràcters palíndroms.</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>No useu paraules i combinacions habituals com a contrasenya.</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Si us plau, creeu una contrasenya forta.</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>No compleix les regles de la contrasenya.</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Heu activat el nivell de seguretat del sistema alt i, per tant, no podeu canviar al mode Wayland. Desactiveu el nivell de seguretat alt al Centre de seguretat i torneu-ho a provar.</translation>
     </message>
 </context>
 <context>
@@ -395,11 +307,11 @@
     </message>
     <message>
         <source>Reboot</source>
-        <translation>Reinicia</translation>
+        <translation>Reinicia&apos;t</translation>
     </message>
     <message>
         <source>Suspend</source>
-        <translation>Suspèn</translation>
+        <translation>Suspèn-te</translation>
     </message>
     <message>
         <source>Hibernate</source>
@@ -414,12 +326,20 @@
         <translation>Surt de la sessió</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Canvia d&apos;usuari</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Canvia de sistema</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Canvia d&apos;usuari</translation>
+        <source>Update and Shut Down</source>
+        <translation>Actualitza i atura&apos;t</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Actualitza i reinicia&apos;t</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Usuari estàndard</translation>
+        <source>发送验证码</source>
+        <translation>Envieu el codi de verificació</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Administrador/a</translation>
+        <source>请输入手机号</source>
+        <translation>Introduïu el número de telèfon</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>Altres usuaris</translation>
+        <source>请输入验证码</source>
+        <translation>Introduïu el codi de verificació</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>obtenir el codi de verificació</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Abord</translation>
+        <source>Update</source>
+        <translation>Actualitza</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Si us plau, endolleu l&apos;ordinador i després instal·leu les actualitzacions.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation>Retorn</translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>Si us plau, seleccioneu el compte per entrar-hi.</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>Compte local</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>Compte del domini</translation>
     </message>
 </context>
 <context>
@@ -483,11 +430,11 @@
     </message>
     <message>
         <source>Reboot</source>
-        <translation>Reinicia</translation>
+        <translation>Reinicia&apos;t</translation>
     </message>
     <message>
         <source>Suspend</source>
-        <translation>Suspèn</translation>
+        <translation>Suspèn-te</translation>
     </message>
     <message>
         <source>Hibernate</source>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Segur que voleu sortir de la sessió?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Actualitza i atura&apos;t</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Actualitza i reinicia&apos;t</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Es tanquen els programes i s&apos;atura. Espereu, si us plau...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Es tanquen els programes i es reinicia. Espereu, si us plau...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Es tanquen els programes i se surt de la sessió. Espereu, si us plau...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Entrada automàtica</translation>
     </message>
 </context>
 <context>

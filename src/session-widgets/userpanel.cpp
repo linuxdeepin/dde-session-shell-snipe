@@ -41,7 +41,11 @@ void UserPanel::initUI()
     QWidget *rightWidget = new QWidget;
     QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
     rightLayout->setSpacing(0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     rightLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    rightLayout->setMargin(0);
+#endif
     rightLayout->addStretch();
     rightLayout->addWidget(m_displayNameLabel);
     rightLayout->addSpacing(6);

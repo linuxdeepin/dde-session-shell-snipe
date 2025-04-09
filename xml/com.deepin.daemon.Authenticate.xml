@@ -1,0 +1,23 @@
+<interface name="com.deepin.daemon.Authenticate">
+    <property name="SupportedFlags" type="i" access="read"/>
+    <property name="FailureCount" type="s" access="read"/>
+    <signal name="Status">
+        <arg name="id" type="s" direction="out"/>
+        <arg name="code" type="i" direction="out"/>
+        <arg name="msg" type="s" direction="out"/>
+    </signal>
+    <method name="Authenticate">
+        <arg name="username" type="s" direction="in"/>
+        <arg name="flag" type="i" direction="in"/>
+        <arg name="timeout" type="i" direction="in"/>
+        <arg name="id" type="s" direction="out"/>
+    </method>
+    <method name="CancelAuthenticate">
+        <arg name="id" type="s" direction="in"/>
+    </method>
+    <method name="SetPassword">
+        <arg name="id" type="s" direction="in"/>
+        <arg name="password" type="s" direction="in"/>
+    </method>
+</interface>
+

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -31,7 +31,11 @@ void MFAWidget::initUI()
 {
     AuthWidget::initUI();
     m_authLayout->setSpacing(10);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_authLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_authLayout->setMargin(0);
+#endif
 
     m_mainLayout->setSpacing(0);
     m_mainLayout->setContentsMargins(10, 0, 10, 0);

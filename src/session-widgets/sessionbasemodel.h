@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -9,6 +9,11 @@
 #include "userinfo.h"
 
 #include <QObject>
+#ifndef ENABLE_DSS_SNIPE
+#include <QGSettings>
+#else
+#include <DConfig>
+#endif
 
 #include <memory>
 #include <types/mfainfolist.h>
@@ -70,7 +75,7 @@ public:
     };
     Q_ENUM(ContentType)
 
-    /* org.deepin.dde.Authenticate1 */
+    /* com.deepin.daemon.Authenticate */
     struct AuthProperty {
         bool FuzzyMFA;          // Reserved
         bool MFAFlag;           // 多因子标志位
@@ -183,13 +188,13 @@ public:
     void setQuickLoginProcess(bool );
 
 signals:
-    /* org.deepin.dde.Accounts1 */
+    /* com.deepin.daemon.Accounts */
     void currentUserChanged(const std::shared_ptr<User>);
     void userAdded(const std::shared_ptr<User>);
     void userRemoved(const std::shared_ptr<User>);
     void userListChanged(const QList<std::shared_ptr<User>>);
     void loginedUserListChanged(const QList<std::shared_ptr<User>>);
-    /* org.deepin.dde.Authenticate1 */
+    /* com.deepin.daemon.Authenticate */
     void MFAFlagChanged(const bool);
     /* others */
     void visibleChanged(const bool);
@@ -197,7 +202,7 @@ signals:
     void lightdmPamStartedChanged();
 
 public slots:
-    /* org.deepin.dde.Accounts1 */
+    /* com.deepin.daemon.Accounts */
     void addUser(const QString &path);
     void addUser(const std::shared_ptr<User> user);
     void removeUser(const QString &path);
@@ -206,12 +211,12 @@ public slots:
     bool updateCurrentUser(const std::shared_ptr<User> user);
     void updateUserList(const QStringList &list);
     void updateLoginedUserList(const QString &list);
-    /* org.deepin.dde.Authenticate1 */
+    /* com.deepin.daemon.Authenticate */
     void updateLimitedInfo(const QString &info);
     void updateFrameworkState(const int state);
     void updateSupportedMixAuthFlags(const int flags);
     void updateSupportedEncryptionType(const QString &type);
-    /* org.deepin.dde.Authenticate1.Session */
+    /* com.deepin.daemon.Authenticate.Session */
     void updateAuthState(const AuthType type, const AuthState state, const QString &message);
     void updateFactorsInfo(const MFAInfoList &infoList);
     void updateFuzzyMFA(const bool fuzzMFA);
@@ -219,6 +224,9 @@ public slots:
     void updatePINLen(const int PINLen);
     void updatePrompt(const QString &prompt);
 
+#ifndef ENABLE_DSS_SNIPE
+    QVariant getPowerGSettings(const QString &node, const QString &key);
+#endif
 signals:
     void authTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedMessage(const QString &message, AuthFailedType type = KEYBOARD);
@@ -295,7 +303,11 @@ private:
     QMap<QString, std::shared_ptr<User>> *m_loginedUsers;
     UpdatePowerMode m_updatePowerMode;
     ContentType m_currentContentType;
-
+#ifndef ENABLE_DSS_SNIPE
+    QGSettings* m_powerGsettings = nullptr;
+#else
+    Dtk::Core::DConfig *m_powerConfig = nullptr;
+#endif
     bool m_lightdmPamStarted; // 标志lightdmpam是否已经开启，主要用于greeter,lock不涉及lightdm
     AuthResult m_authResult; // 记录认证结果
     bool m_enableShellBlackMode;

@@ -1,0 +1,306 @@
+{
+    "magic": "dsg.config.meta",
+    "version": "1.0",
+    "contents": {
+        "useSolidBackground": {
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "UseSolidBackground",
+            "name[zh_CN]": "使用纯色背景",
+            "description": "是否使用纯色背景，默认为否。开启配置时，那么将不会加载背景图片，降低内存占用。禁用设置时，加载背景图片，比较美观，但是会增加内存占用。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "allowSwitchingToWayland": {
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "AllowSwitchingToWayland",
+            "name[zh_CN]": "允许用户切换到wayland",
+            "description": "是否允许用户切换到wayland，默认为否。开启配置时，如果用户安装了wayland和其它桌面环境，登录界面会显示桌面环境切换按钮，点击后用户可以选择wayland桌面环境。关闭配置时，就算用户安装了wayland环境，也会默认隐藏起来，不让用户切换到wayland环境",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultSession": {
+            "value": "deepin",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "DefaultSessionName",
+            "name[zh_CN]": "默认桌面环境名称",
+            "description": "默认的桌面环境名称，默认为deepin。新建用户首次登录的时候，默认的桌面由此配置决定",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "numLockState": {
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "NumLockState",
+            "name[zh_CN]": "数字键盘状态",
+            "description": "用户的小键盘状态，True为打开，False为关闭，与用户绑定，格式为：\"用户名:状态\"，例如\"uos:True\"。当用户改变状态时会记录下来，切换用户时会跟随用户改变。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "hideOnboard":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "HideOnboard",
+            "name[zh_CN]": "隐藏屏幕键盘",
+            "description": "登录界面隐藏屏幕键盘；false：不隐藏，true：隐藏。默认值为false；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableOneKeyLogin":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "EnableOneKeyLogin",
+            "name[zh_CN]": "是否加载华为自动登录插件",
+            "description[zh_CN]": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultScaleFactors":{
+            "value": 1,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "DefaultScaleFactors",
+            "name[zh_CN]": "登录页面默认缩放",
+            "description[zh_CN]": "配置greeter界面默认的缩放比例",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showTopTip":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "showTopTip",
+            "name[zh_CN]": "是否显示顶部的提示信息，默认不开启",
+            "description[zh_CN]": "顶部提示信息一般用于定制项目，主线默认不开启",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "topTipText":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "topTipText",
+            "name[zh_CN]": "顶部的提示信息的文案",
+            "description[zh_CN]": "顶部的提示信息的文案，不支持多语言",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showUserName":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "showUserName",
+            "name[zh_CN]": "锁屏是否展示用户名",
+            "description[zh_CN]": "锁屏是否展示用户名，默认不展示",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "changePasswordForNormalUser":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "changePasswordForNormalUser",
+            "name[zh_CN]": "密码过期后普通用户是否可以在登录界面修改密码",
+            "description[zh_CN]": "密码过期后普通用户是否可以在登录界面修改密码，默认允许",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "topTipTextFont":{
+            "value": 5,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "TopTipTextFont",
+            "name[zh_CN]": "顶部的提示信息的文案的字体大小",
+            "description[zh_CN]": "顶部的提示信息的文案的字体大小，默认为5，有效值为0~9，数字越大字体越小。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "userFrameMaxWidth":{
+            "value": 226,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "UserNameMaxWidth",
+            "name[zh_CN]": "用户名界面最大宽度",
+            "description[zh_CN]": "显示用户名界面的最大宽度，默认为226，小于226不生效。开启后根据用户名长度调整宽度，如果无法完整显示则用省略号补充。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "fullNameFont":{
+            "value": 5,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "FullNameFont",
+            "name[zh_CN]": "全名的字体大小",
+            "description[zh_CN]": "设置全名的字体大小，默认为5，有效值为0~9，数字越大字体越小。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultGreeterSession":{
+            "value": "x",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "DefaultGreeterSession",
+            "name[zh_CN]": "Greeter以x还是wayland的模式启动",
+            "description[zh_CN]": "Greeter以x还是wayland的模式启动，目前仅x和wayland两种模式.部分机型不适用，修改后可能导致登录黑屏，谨慎修改",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableLighterGreeter":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "enableLighterGreeter",
+            "name[zh_CN]": "是否启用轻量Greeter",
+            "description[zh_CN]": "是否启用轻量Greeter",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "lastUser":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "lastUser",
+            "name[zh_CN]": "上一次登录的用户",
+            "description[zh_CN]": "上一次登录的用户，LighterGreeter登录后会保存登录的用户到此配置项目中(避免对外部服务依赖，自行存储)，用于下次登录时选择为默认用户",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "pluginBlackList":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Plugin black list",
+            "name[zh_CN]": "插件黑名单",
+            "description[zh_CN]": "插件黑名单（包括托盘插件和认证插件），在加载插件的阶段进行判断。系统级配置，默认为空，需要重启电脑。数据结构为数组，内部填充字符串（插件的key值）",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "customLogoPath":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "CustomLogoPath",
+            "name[zh_CN]": "第三方系统logo水印路径",
+            "description[zh_CN]": "第三方系统logo水印路径,图片最大不超过500k",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "customLogoPos":{
+            "value": "0,0",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "CustomLogoPos",
+            "name[zh_CN]": "第三方系统logo水印位置",
+            "description[zh_CN]": "第三方系统logo水印位置，系统LOGO右上角为原点,(10,0)表示 OEM LOGO 在系统LOGO右侧水平间隔10像素",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showSystemVersion":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowSystemVersion",
+            "name[zh_CN]": "是否显示系统版本",
+            "description[zh_CN]": "系统版本显示；false：不显示，true：显示。默认值为true；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "designatedLoginPlugin":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Designated login plugin",
+            "name[zh_CN]": "指定的认证插件",
+            "description[zh_CN]": "指定使用哪一种认证插件，优先级最高。默认为空，重启后生效。\n（**deprecated**）此配置不推荐使用，使用 designatedLoginPlugins 配置替代",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultLoginPlugin":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Default login plugin",
+            "name[zh_CN]": "默认的认证插件",
+            "description[zh_CN]": "默认使用的认证插件，默认为空，重启后生效。\n（**deprecated**）此配置不推荐使用，使用 defaultLoginPlugins 配置替代",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "designatedLoginPlugins":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Designated login plugin",
+            "name[zh_CN]": "指定的认证插件",
+            "description[zh_CN]": "指定使用的认证插件，优先级最高，会覆盖 defaultLoginPlugins 的值\n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultLoginPlugins":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Default login plugin",
+            "name[zh_CN]": "默认的认证插件",
+            "description[zh_CN]": "默认使用的认证插件，优先级次于 designatedLoginPlugins \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "loginPluginsDisplayOrder":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Login plugin display order",
+            "name[zh_CN]": "认证插件的优先级",
+            "description[zh_CN]": "认证插件的显示顺序 \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "loginPluginsAuthOrder":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Login plugin auth order",
+            "name[zh_CN]": "认证插件的优先级",
+            "description[zh_CN]": "认证插件的认证优先级，此配置优先级最高，会覆盖其它的优先级设置 \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showMediaWidget":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowMediaWidget",
+            "name[zh_CN]": "是否显示多媒体控制界面",
+            "description": "是否显示多媒体控制界面，true-显示，false-隐藏",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "accountExpression":{
+            "value": "[a-zA-Z0-9-_@.]+$",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "AccountExpression",
+            "name[zh_CN]": "账户名命名规则",
+            "description": "账户名命名规则",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "longPressDisplayPassword":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "LongPressDisplayPassword",
+            "name[zh_CN]": "是否长按小眼睛显示密码",
+            "description": "是否长按小眼睛显示密码，true-鼠按长按小眼睛才显示密码，false-鼠标点击一下就一直显示密码",
+            "permissions": "readwrite",
+            "visibility": "private"
+        }
+    }
+}

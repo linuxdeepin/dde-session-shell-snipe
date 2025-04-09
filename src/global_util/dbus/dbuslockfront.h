@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -10,8 +10,10 @@
 #include <QMetaObject>
 #include <QMetaProperty>
 
+#include "dbusconstant.h"
+
 /*
- * Proxy class for interface org.deepin.dde.LockFront1
+ * Proxy class for interface com.deepin.dde.lockFront
  */
 class DBusLockFront: public QDBusAbstractInterface
 {
@@ -23,7 +25,7 @@ class DBusLockFront: public QDBusAbstractInterface
         if (3 != arguments.count())
             return;
         QString interfaceName = msg.arguments().at(0).toString();
-        if (interfaceName !="org.deepin.dde.LockFront1")
+        if (interfaceName != DSS_DBUS::lockFrontService)
             return;
         QVariantMap changedProps = qdbus_cast<QVariantMap>(arguments.at(1).value<QDBusArgument>());
         foreach(const QString &prop, changedProps.keys()) {
@@ -38,7 +40,7 @@ class DBusLockFront: public QDBusAbstractInterface
    }
 public:
     static inline const char *staticInterfaceName()
-    { return "org.deepin.dde.LockFront1"; }
+    { return DSS_DBUS::lockFrontService.toStdString().c_str(); }
 
 public:
     explicit DBusLockFront(QObject *parent = 0);

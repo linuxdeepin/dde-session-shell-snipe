@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>ར་སྤྲོད་ཐུབ་མ་སོང་། ཁྱེད་ཀྱིས་ད་དུང་ལྟ་ཚོད་%nབྱེད་ཆོག</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>སྒྲིག་ཆས་སྤྱོད་མི་རུང་།</translation>
     </message>
 </context>
 <context>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>ར་སྤྲོད་ཐུབ་མ་སོང་། ཁྱེད་ཀྱིས་ད་དུང་ལྟ་ཚོད་%nབྱེད་ཆོག</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>ར་སྤྲོད་ཐུབ་མ་སོང་། ཁྱེད་ཀྱིས་ད་དུང་ལྟ་ཚོད་%nབྱེད་ཆོག</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>བདེ་འཇགས་གསང་ལྡེ་འཇུག་རོགས།</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>ར་འཕྲོད་པ།</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>ར་སྤྲོད་བྱེད་མ་ཐུབ།</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>བདེ་འཇགས་གསང་ལྡེ་དབྱེ་འབྱེད་བྱེད་བཞིན་པ།</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -88,7 +107,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>ར་སྤྲོད་ཐུབ་མ་སོང་། ཁྱེད་ཀྱིས་ད་དུང་ལྟ་ཚོད་%nབྱེད་ཆོག</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>སྐར་མ་%nརྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད།</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>སྐར་མ་%nརྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད།</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +165,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>ར་སྤྲོད་ཐུབ་མ་སོང་། ཁྱེད་ཀྱིས་ད་དུང་ལྟ་ཚོད་%nབྱེད་ཆོག</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>སྐར་མ་ %n རྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད།</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>སྐར་མ་%nརྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་བྱེད།</numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,85 +204,26 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>གསང་ཨང་ཉིན་%nརྗེས་དུས་ཚད་འཐིམ་པས་དུས་ཐོག་ཏུ་བཟོ་བཅོས་བྱོས།</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation type="unfinished"/>
+        <source>Password expired, please change</source>
+        <translation>གསང་ཨང་དུས་ཚོད་ཡོལ་ཟིན་པས། བཟོ་བཅོས་བྱེད་རོགས།</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation type="unfinished"/>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>ཁྱེད་ཀྱི་གསང་ཨང་དུས་ཚད་འཐིམས་པས་དོ་དམ་པ་དང་འབྲེལ་བ་བྱས་ནས་གསང་ཨང་བཟོ་བཅོས་བྱོས།</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>ཉར་ཚགས། </translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>གསང་ཨང་གསར་པ། </translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>གསང་ཨང་མི་མཐུན་བ། </translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>གསང་ཨང་ཚང་མས་མཐོང་ཐུབ་པས། གསང་ཨང་གི་ཞིབ་ཕྲའི་ཆ་འཕྲིན་མ་འབྲི།</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>གསང་ཨང་གསར་པ་དང་རྙིང་པ་གཅིག་མཚུངས་ཡིན་མི་རུང་། </translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>གསང་ཨང་བཅོས་ཐུབ་སོང་།</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>གསང་ཨང་ནོར་འདུག</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>སྒྲིག་ཆས་འདི་བཀག་ཟིན་པས། དོ་དམ་པར་འབྲེལ་བ་གནང་རོགས།</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>མཐེབ་གཞོང་བཀོད་པ།</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>གློག་ཁུངས།</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>བརྙན་ཡོལ་མཐེབ་གཞོང་།</translation>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>འདོར་བ།</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>The reason of inhibit.</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>ཚད་ལྡན་དཔེ་རྣམ།</translation>
     </message>
 </context>
 <context>
@@ -322,76 +293,17 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>དཀའ་ཚད་དམའ་བ།</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>དཀའ་ཚད་འབྲིང་བ།</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>དཀའ་ཚད་མཐོ་བ།</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>གསང་ཨང་སྟོང་པ་ཡིན་མི་རུང་། </translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>གསང་ཨང་རིང་ཚད་གྲངས་གནས་%1ལས་ཉུང་མི་རུང་།</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>གསང་ཨང་གི་རིང་ཚད་%1གཉིས་ལས་བརྒལ་མི་རུང་། </translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>གསང་ཨང་ནི་དབྱིན་ཡིག་(ཡིག་ཆེན་དང་ཡིག་ཆུང་གི་དབྱེ་བ་འབྱེད་དགོས། )དང་། ཨང་ཀི། ཡང་ན་དམིགས་བསལ་མཚོན་རྟགས་(~!@#$%^&amp;*()[]{}\|/?,.&lt;&gt;)བཅས་ལས་གྲུབ་དགོས།</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>སྐོར་ཟློས་ཡིག་འབྲུ་%1ལས་བརྒལ་མི་རུང་།</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>གཅིག་རྐྱང་ཅན་གྱི་ཡིག་འབྲུ་%1ལས་བརྒལ་མི་རུང་།</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>བསྐྱར་ཟློས་ཡིག་འབྲུ་%1ལས་བརྒལ་མི་རུང་།</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>གསང་ཨང་ནི་ངེས་པར་དུ་ཡིག་ཆེན་དང་། ཡིག་ཆུང་། གྲངས་ཀ མཚོན་རྟགས་（~!@#$%^&amp;*-+=`|\(){}[]:;&quot;&apos;&lt;&gt;,.?/）བཅས་རིགས་བཞི་ལས་གྲུབ་དགོས།</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>གསང་ཨང་ནང་བསྟུད་མར་ཟུང་ལྡན་གྱི་ཡིག་འབྲུ་4ཡན་ཡོད་མི་ཆོག </translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>གསང་ཨང་ནི་རྒྱུན་མཐོང་གི་མིང་དང་ཚིག་གྲུབ་ཡིན་མི་ཆོག </translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>གསང་ཨང་སྟབས་བདེ་དྲགས་པས། གསང་ཨང་རྙོག་འཛིང་ཆེ་རུ་གཏོང་།</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>གསང་ཨང་བདེ་འཇགས་ཀྱི་བླང་བྱ་དང་མི་འཚམ་པ།</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>ཁྱེད་ཀྱིས་རིམ་པ་མཐོ་བའི་སྲུང་སྐྱོབ་ཁ་ཕྱེ་ཡོད་པས། Waylandལ་བརྗེ་ཐབས་མེད། ཁྱེད་ཀྱིས་“བདེ་འཇགས་ལྟེ་གནས་”ནས་རིམ་པ་མཐོ་བའི་སྲུང་སྐྱོབ་ཁ་བརྒྱབ་རྗེས་ཚོད་ལྟ་བྱེད་དང་།</translation>
     </message>
 </context>
 <context>
     <name>ShutdownWidget</name>
     <message>
         <source>Shut down</source>
-        <translation>རྩིས་འཁོར་གློག་གསོད།</translation>
+        <translation>ཁ་བརྒྱབ།</translation>
     </message>
     <message>
         <source>Reboot</source>
@@ -407,19 +319,27 @@
     </message>
     <message>
         <source>Lock</source>
-        <translation>ཟྭ་རྒྱག</translation>
+        <translation>བརྙན་ཡོལ་སྒོ་ལྕགས་བརྒྱབ།</translation>
     </message>
     <message>
         <source>Log out</source>
         <translation>ཐོ་སུབ་པ།</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>སྤྱོད་མཁན་བརྗེ་བ།</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>རྒྱུད་ཁོངས་བརྗེ་བ།</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>སྤྱོད་མཁན་བརྗེ་བ།</translation>
+        <source>Update and Shut Down</source>
+        <translation>གསར་སྒྱུར་དང་སྦྲགས་སྒོ་རྒྱག་པ།</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>གསར་སྒྱུར་དང་སྦྲགས་བསྐྱར་དུ་འགོ་སློང་བ།</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>ཚད་ལྡན་སྤྱོད་མཁན།</translation>
+        <source>发送验证码</source>
+        <translation>ར་སྤྲོད་ཨང་རྟགས་བསྐུར་རོགས།</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>དོ་དམ་པ། </translation>
+        <source>请输入手机号</source>
+        <translation>ཁ་པར་ཨང་གྲངས་འཇུག་རོགས།</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation type="unfinished"/>
+        <source>请输入验证码</source>
+        <translation>ར་སྤྲོད་ཨང་རྟགས་འཇུག་རོགས།</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>ར་སྤྲོད་ཨང་རྟགས་ལེན་པ།</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>བརྙན་ཡོལ་མཐེབ་གཞོང་།</translation>
+        <source>Update</source>
+        <translation>གསར་སྒྱུར། </translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>གློག་ཁུངས་དང་གཏུགས་རྗེས་གསར་སྒྱུར་བྱེད་འགོ་རྩོམ།</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>ཁྱོད་ཀྱི་ཐོ་འདོར་རྒྱུ་གཏན་ཁེལ་ལམ།</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>གསར་སྒྱུར་དང་སྦྲགས་སྒོ་རྒྱག་པ།</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>གསར་སྒྱུར་དང་སྦྲགས་བསྐྱར་དུ་འགོ་སློང་བ།</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>གོང་གི་བྱ་རིམ་ཁ་བརྒྱབ་ནས་གློ་སྒོ་བརྒྱབ་བཞིན་ཡོད་པས། ཏོག་ཙམ་སྒུག་རོགས།</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>གོང་གི་བྱ་རིམ་ཁ་བརྒྱབ་ནས་བསྐྱར་སློང་བྱ་བཞིན་ཡོད་པས། ཏོག་ཙམ་སྒུག་རོགས།</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>གོང་གི་བྱ་རིམ་ཁ་བརྒྱབ་ནས་རྩིས་ཐོ་བསུབ་བཞིན་ཡོད་པས། ཏོག་ཙམ་སྒུག་རོགས།</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Liitä suojausavain</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Tarkistus onnistui</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Tarkistus epäonnistui</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Suojausavaimella tunnistaminen</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -88,7 +107,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +165,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform><numerusform>Tarkistus epäonnistui, %n yritystä jäljellä</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform><numerusform>Yritä uudelleen %n minuuttia myöhemmin</numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,85 +204,26 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Salasanasi vanhenee %n päivän kuluttua, vaihda se ajoissa</numerusform><numerusform>Salasanasi vanhenee %n päivän kuluttua, vaihda se ajoissa</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation type="unfinished"/>
+        <source>Password expired, please change</source>
+        <translation>Salasana vanhentunut, vaihda</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation type="unfinished"/>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Salasanasi on vanhentunut. Ota yhteyttä järjestelmänvalvojaan muuttaaksesi sitä</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Tallenna</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Vanha salasana</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Uusi salasana</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Salasanat eivät täsmää</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Vihje näkyy kaikille käyttäjille. Älä lisää salasanaa tähän.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Uusi salasana ei saa olla sama kuin nykyinen</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Salasana vaihdettu</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Väärä salasana</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Pääte on lukittu, ota yhteyttä järjestelmänvalvojaan</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Näppäimistön asettelu</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Virta</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Näppäimistö</translation>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Peruuta</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>Estämisen syy.</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Vakiotila</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Heikko</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Keskitaso</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Vahva</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Salasana ei voi olla tyhjä</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Salasanassa on oltava vähintään %1 merkkiä</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Salasanassa saa olla enintään %1 merkkiä</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Salasana voi sisältää vain englanninkielisiä kirjaimia (isot ja pienet kirjaimet), numeroita tai erikoismerkkejä (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Enintään %1 merkkiä palindromina</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Enintään %1 monotonista merkkiä peräkkäin</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Enintään %1 samaa merkkiä peräkkäin</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Salasanassa on oltava isoja kirjaimia, pieniä kirjaimia, numeroita ja symboleja (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>Salasana ei saa sisältää takaperin enempää kuin 4 -merkkiä</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Älä käytä yleisiä sanoja ja yhdistelmiä salasanassa</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Luo vahva salasana</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Tämä ei täytä salasanan sääntöjä</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Olet ottanut käyttöön korkean järjestelmän suojaustason, joten et voi vaihtaa Wayland-tilaan. Poista suojaustaso Turvakeskuksesta ja yritä uudelleen.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Kirjaudu ulos</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Vaihda käyttäjää</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Vaihda järjestelmää</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Vaihda käyttäjää</translation>
+        <source>Update and Shut Down</source>
+        <translation>Päivitä ja sammuta</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Päivitä ja käynnistä</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Tavallinen käyttäjä</translation>
+        <source>发送验证码</source>
+        <translation>Lähetä vahvistuskoodi</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Järjestelmänvalvoja</translation>
+        <source>请输入手机号</source>
+        <translation>Anna puhelinnumero</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation type="unfinished"/>
+        <source>请输入验证码</source>
+        <translation>Anna vahvistuskoodi</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Hanki vahvistuskoodi</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Näppäimistö</translation>
+        <source>Update</source>
+        <translation>Päivitä</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Kytke kone sähköverkkoon ja asenna sitten päivitykset.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation>Palaa</translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>Valitse tili kirjautumiseen</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>Paikallinen tili</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>Toimialueen tili</translation>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Haluatko kirjautua ulos?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Päivitä ja sammuta</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Päivitä ja käynnistä</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Suljetaan ohjelmat ja sammutetaan, odota...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Suljetaan ohjelmat ja käynnistetään uudelleen, odota...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Suljetaan ohjelmat ja kirjaudutaan ulos, odota...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Kirjaudu automaattisesti</translation>
     </message>
 </context>
 <context>

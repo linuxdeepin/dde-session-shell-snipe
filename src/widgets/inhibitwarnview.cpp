@@ -1,14 +1,15 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "inhibitwarnview.h"
 
+#include <DStyle>
 #include <DFontSizeManager>
 #include <DSpinner>
+#include <DLabel>
 #include <DToolTip>
 
-#include <QKeyEvent>
 #include <QHBoxLayout>
 
 DWIDGET_USE_NAMESPACE
@@ -29,7 +30,7 @@ InhibitorRow::InhibitorRow(const QString &who, const QString &why, const QIcon &
 
     if (!icon.isNull()) {
         QLabel *iconLabel = new QLabel(this);
-        QPixmap pixmap = icon.pixmap(QSize(48, 48), topLevelWidget()->devicePixelRatioF());
+        QPixmap pixmap = icon.pixmap(topLevelWidget()->windowHandle(), QSize(48, 48));
         iconLabel->setPixmap(pixmap);
         iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         layout->addWidget(iconLabel);
@@ -86,7 +87,11 @@ void InhibitWarnView::setInhibitorList(const QList<InhibitorData> &list)
         QIcon icon;
 
         if (inhibitor.icon.isEmpty() && inhibitor.pid) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             QFileInfo executable_info(QFile::symLinkTarget(QString("/proc/%1/exe").arg(inhibitor.pid)));
+#else
+            QFileInfo executable_info(QFile::readLink(QString("/proc/%1/exe").arg(inhibitor.pid)));
+#endif
 
             if (executable_info.exists()) {
                 icon = QIcon::fromTheme(executable_info.fileName());
@@ -219,7 +224,11 @@ void InhibitWarnView::initUi()
     auto inhibitorListWidget = new QWidget(this);
     inhibitorListWidget->setFixedWidth(FIXED_INHIBITOR_WIDTH);
     m_inhibitorListLayout = new QVBoxLayout(inhibitorListWidget);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_inhibitorListLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_inhibitorListLayout->setMargin(0);
+#endif
     m_inhibitorListLayout->setSpacing(10);
     QVBoxLayout *buttonLayout = new QVBoxLayout(m_bottomWidget);
     buttonLayout->setAlignment(Qt::AlignBottom);

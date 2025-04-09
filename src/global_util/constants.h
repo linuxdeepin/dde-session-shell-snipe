@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,7 +18,6 @@ namespace DDESESSIONCC
 static const QString CONFIG_FILE("/var/lib/AccountsService/deepin/users/");
 static const QString DEFAULT_CURSOR_THEME("/usr/share/icons/default/index.theme");
 static const QString LAST_USER_CONFIG("/var/lib/lightdm/lightdm-deepin-greeter");
-static const int PASSWDLINEEIDT_WIDTH = 280;
 static const int PASSWD_EDIT_WIDTH = 280;
 static const int PASSWD_EDIT_HEIGHT = 36;
 static const int LOCK_CONTENT_TOP_WIDGET_HEIGHT = 132; // 顶部控件（日期）的高度
@@ -69,7 +68,7 @@ const QString USE_SOLID_BACKGROUND = QStringLiteral("useSolidBackground");
 const QString AUTO_EXIT = QStringLiteral("autoExit");
 const QString HIDE_LOGOUT_BUTTON = QStringLiteral("hideLogoutButton");
 const QString HIDE_ONBOARD = QStringLiteral("hideOnboard");
-const QString ENABLE_ONE_KEY_LOGIN = QStringLiteral("enableOneKeyLogin");
+const QString ENABLE_ONE_KEY_LOGIN = QStringLiteral("enableOneKeylogin");
 const QString ENABLE_SHORTCUT_FOR_LOCK = QStringLiteral("enableShortcutForLock");
 const QString SHOW_TOP_TIP = QStringLiteral("showTopTip");
 const QString TOP_TIP_TEXT = QStringLiteral("topTipText");
@@ -89,11 +88,5 @@ const QString CUSTOM_LOGO_PATH = QStringLiteral("customLogoPath");
 const QString CUSTOM_LOGO_POS = QStringLiteral("customLogoPos");
 }
 
-
-namespace Popup
-{
-    static constexpr int HorizontalMargin = 10;
-    static constexpr int VerticalMargin = 10;
-}
 
 #endif // CONSTANTS_H

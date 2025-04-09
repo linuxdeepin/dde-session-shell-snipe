@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,6 @@
 #include <QSpacerItem>
 #include <QMap>
 
-class FakeWindowLayer;
 class SessionBaseWindow : public QFrame
 {
     Q_OBJECT
@@ -35,11 +34,6 @@ public:
     void showPasswdFrame();
     void showDefaultFrame();
 
-    void showPopup(QPoint globalPos, QWidget *popup);
-    inline void showPopup(int globalX, int globalY, QWidget *popup) { showPopup(QPoint(globalX, globalY), popup); }
-    void hidePopup();
-    void togglePopup(QPoint globalPos, QWidget *popup);
-
 protected:
     void setTopFrameVisible(bool visible);
     void setBottomFrameVisible(bool visible);
@@ -55,11 +49,6 @@ protected:
     QFrame *m_centerTopFrame;
     QFrame *m_centerFrame;
     QFrame *m_bottomFrame;
-
-    // An overlay layer used to emulate window like popups.
-    // When this layer is visible, it will catch all events for its parent SessionBaseWindow.
-    FakeWindowLayer *m_fakeWindowLayer;
-
     QVBoxLayout *m_mainLayout;
     QHBoxLayout *m_centerTopLayout;
     QHBoxLayout *m_centerLayout;

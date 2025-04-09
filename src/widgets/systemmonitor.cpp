@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,7 +6,7 @@
 
 #include <QHBoxLayout>
 
-#include <DIcon>
+#include <DHiDPIHelper>
 #include <DFontSizeManager>
 
 DWIDGET_USE_NAMESPACE
@@ -30,7 +30,7 @@ void SystemMonitor::initUI()
     mainLayout->setSpacing(10);
     mainLayout->setContentsMargins(35, 0, 35, 0);
 
-    m_icon->setPixmap(Dtk::Gui::DIcon::loadNxPixmap(":/img/deepin-system-monitor.svg"));
+    m_icon->setPixmap(DHiDPIHelper::loadNxPixmap(":/img/deepin-system-monitor.svg"));
     m_text->setText(tr("Start system monitor"));
 
     mainLayout->addWidget(m_icon, 0, Qt::AlignVCenter | Qt::AlignRight);

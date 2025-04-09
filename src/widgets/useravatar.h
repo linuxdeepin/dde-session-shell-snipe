@@ -1,13 +1,18 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef USERAVATAR_H
 #define USERAVATAR_H
 
+#include <QWidget>
+#include <QLabel>
 #include <QPushButton>
+#include <QVBoxLayout>
 #include <QPainter>
 #include <QPainterPath>
+#include <QDebug>
+#include <QPropertyAnimation>
 
 #include <dimagebutton.h>
 

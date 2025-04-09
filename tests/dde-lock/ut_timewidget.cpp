@@ -4,6 +4,7 @@
 
 #include "timewidget.h"
 #include "userinfo.h"
+#include "dbusconstant.h"
 
 #include <gtest/gtest.h>
 
@@ -28,7 +29,7 @@ void UT_TimeWidget::TearDown()
 
 TEST_F(UT_TimeWidget, init)
 {
-    std::shared_ptr<NativeUser> nativeUser(new NativeUser("/org/deepin/dde/Accounts1/User"+QString::number((getuid()))));
+    std::shared_ptr<NativeUser> nativeUser(new NativeUser(QString(DSS_DBUS::accountsUserPath).arg(QString::number(getuid()))));
     bool format = nativeUser->isUse24HourFormat();
     // nativeUser->userInter()->Use24HourFormatChanged(!format);
     timeWidget->set24HourFormat(!format);

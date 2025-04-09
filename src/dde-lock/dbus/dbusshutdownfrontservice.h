@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,9 +6,8 @@
 #define DBUSSHUTDOWNFRONTSERVICE_H
 
 #include "dbusshutdownagent.h"
+
 #include <QDBusAbstractAdaptor>
-#include <QtCore/QObject>
-#include <QtDBus/QtDBus>
 
 QT_BEGIN_NAMESPACE
 class QByteArray;
@@ -19,12 +18,16 @@ class QVariant;
 QT_END_NAMESPACE
 
 /*
- * Proxy class for interface org.deepin.dde.ShutdownFront1
+ * Proxy class for interface com.deepin.dde.shutdownFront
  */
 
 class DBusShutdownFrontService : public QDBusAbstractAdaptor {
     Q_OBJECT
+#ifndef ENABLE_DSS_SNIPE
+    Q_CLASSINFO("D-Bus Interface", "com.deepin.dde.shutdownFront")
+#else
     Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.ShutdownFront1")
+#endif
 
 public:
     explicit DBusShutdownFrontService(DBusShutdownAgent *parent);

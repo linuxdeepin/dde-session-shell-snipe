@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -21,10 +21,12 @@
 #include "constants.h"
 
 #include <DDBusSender>
+#include <DConfig>
 
-#include <QWindow>
 #include <QLocalSocket>
 #include <QMouseEvent>
+
+#include "dbusconstant.h"
 
 using namespace dss;
 using namespace dss::module;
@@ -76,12 +78,12 @@ void LockContent::init(SessionBaseModel *model)
     // 异步获取CPU硬件信息，判断是否为PANGU CPU
     // FIXME: CPU硬件信息可能会改且其它的机型也可能会有PANGU CPU，这里的判断不准确
     if (m_model->appType() == AuthCommon::Lock) {
-        QDBusInterface interface("org.deepin.dde.SystemInfo1",
-            "/org/deepin/dde/SystemInfo1",
+        QDBusInterface interface(DSS_DBUS::systemInfoService,
+            DSS_DBUS::systemInfoPath,
             "org.freedesktop.DBus.Properties",
             QDBusConnection::sessionBus(),
             this);
-        QDBusPendingReply<QDBusVariant> reply = interface.asyncCall("Get", "org.deepin.dde.SystemInfo1", "CPUHardware");
+        QDBusPendingReply<QDBusVariant> reply = interface.asyncCall("Get", DSS_DBUS::systemInfoService, "CPUHardware");
         QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher] {
             QDBusPendingReply<QDBusVariant> reply = *watcher;
@@ -141,7 +143,7 @@ void LockContent::initUI()
     m_logoWidget->setAccessibleName("LogoWidget");
     setLeftBottomWidget(m_logoWidget);
 
-    m_controlWidget = new ControlWidget(m_model, this);
+    m_controlWidget = new ControlWidget(m_model);
     m_controlWidget->setAccessibleName("ControlWidget");
     setRightBottomWidget(m_controlWidget);
 
@@ -160,13 +162,13 @@ void LockContent::initUI()
 void LockContent::initConnections()
 {
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
-    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] (std::shared_ptr<User> user) {
+    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] {
         if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
             emit requestSwitchToUser(m_model->currentUser());
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         } else {
-            Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
-            Q_EMIT requestSwitchToUser(user);
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
+            emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
         }
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [this] {
@@ -174,8 +176,6 @@ void LockContent::initConnections()
     });
     connect(m_controlWidget, &ControlWidget::requestSwitchVirtualKB, this, &LockContent::toggleVirtualKB);
     connect(m_controlWidget, &ControlWidget::requestShowModule, this, &LockContent::showModule);
-    connect(m_controlWidget, &ControlWidget::requestTogglePopup, this, &SessionBaseWindow::togglePopup);
-    connect(m_controlWidget, &ControlWidget::requestHidePopup, this, &SessionBaseWindow::hidePopup);
 
     // 刷新背景单独与onStatusChanged信号连接，避免在showEvent事件时调用onStatusChanged而重复刷新背景，减少刷新次数
     connect(m_model, &SessionBaseModel::onStatusChanged, this, &LockContent::onStatusChanged);
@@ -454,7 +454,7 @@ void LockContent::setMPRISEnable(const bool state)
 
 void LockContent::enableSystemShortcut(const QStringList &shortcuts, bool enabled, bool isPersistent)
 {
-    QDBusInterface inter("org.deepin.dde.Keybinding1", "/org/deepin/dde/Keybinding1", "org.deepin.dde.Keybinding1", QDBusConnection::sessionBus());
+    QDBusInterface inter(DSS_DBUS::keybindingService, DSS_DBUS::keybindingPath, DSS_DBUS::keybindingService, QDBusConnection::sessionBus());
     QList<QVariant> argumentList;
     argumentList << QVariant::fromValue(shortcuts) << QVariant::fromValue(enabled) << QVariant::fromValue(isPersistent);
     inter.asyncCallWithArgumentList(QStringLiteral("EnableSystemShortcut"), argumentList);
@@ -748,6 +748,7 @@ bool LockContent::eventFilter(QObject *watched, QEvent *e)
         if ((watched == m_currentTray || isChild) && e->type() == QEvent::Enter) {
             Q_EMIT qobject_cast<FloatingButton*>(m_currentTray)->requestHideTips();
         } else if (watched != m_currentTray && !isChild && e->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent *ev = static_cast<QMouseEvent *>(e);
             if (!m_popWin->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
                 m_popWin->hide();
             }
@@ -870,7 +871,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
             .call();
 
         DDBusSender()
-            .service("org.freedesktop.ScreenSaver")
+            .service(DSS_DBUS::screenSaveService)
             .path("/org/freedesktop/ScreenSaver")
             .interface("org.freedesktop.ScreenSaver")
             .method(QString("SimulateUserActivity"))

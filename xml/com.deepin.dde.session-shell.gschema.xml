@@ -72,5 +72,15 @@
             <summary>delaytime</summary>
             <range min="100" max="1000"/>
         </key>
+        <key name='checkpwd' type='b'>
+            <default>false</default>
+            <summary>check password before beboot or shutdown </summary>
+            <description>default is false</description>
+        </key>
+        <key name="system-reboot" enum="com.deepin.dde.session-shell.StatusMode">
+            <default>'Enabled'</default>
+            <summary>change system reboot status</summary>
+            <description>default is Enabled</description>
+        </key>
     </schema>
 </schemalist>

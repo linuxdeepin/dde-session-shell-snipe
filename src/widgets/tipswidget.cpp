@@ -1,74 +1,58 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <DWindowManagerHelper>
 #include "tipswidget.h"
-#include <QEvent>
+
 #include <QTimer>
 
 DWIDGET_USE_NAMESPACE
-
-static constexpr int BlurMaskAlpha = 70;
-static constexpr int BlurRadius = 6;
+DGUI_USE_NAMESPACE
 
 TipsWidget::TipsWidget(QWidget *parent)
-    : DBlurEffectWidget(parent)
-    , m_content(nullptr)
+    : DArrowRectangle(DArrowRectangle::ArrowBottom, parent)
 {
-    setMaskColor(DBlurEffectWidget::LightColor);
-    setMaskAlpha(BlurMaskAlpha);
-    setBlurRectXRadius(BlurRadius);
-    setBlurRectYRadius(BlurRadius);
-    setWindowFlag(Qt::WindowDoesNotAcceptFocus);
+    if (DWindowManagerHelper::instance()->hasComposite()) {
+        setRadiusArrowStyleEnable(true);
+        setProperty("_d_radius_force", true);
+        setShadowBlurRadius(20);
+        setRadius(6);
+    } else {
+        setProperty("_d_radius_force", false);
+    }
+    setShadowYOffset(2);
+    setShadowXOffset(0);
+    setArrowWidth(20);
+    setArrowHeight(10);
 }
 
 void TipsWidget::setContent(QWidget *content)
 {
-    if (m_content)
-        m_content->removeEventFilter(this);
-    if (content) {
-        content->installEventFilter(this);
-        content->setParent(this);
-        content->show();
-        content->move(0, 0);
-    }
-    m_content = content;
-    resizeFromContent();
-}
-
-void TipsWidget::resizeFromContent()
-{
-    if (m_content.isNull()) {
-        resize(0, 0);
-        return;
-    }
-    const QRect contentRect = m_content->rect();
-    const QMargins margins{5, 5, 5, 5};
-    resize(contentRect.marginsAdded(margins).size());
-    m_content->move(margins.left(), margins.top());
+    QWidget *lastWidget = getContent();
+    if (lastWidget)
+        lastWidget->removeEventFilter(this);
+    content->installEventFilter(this);
+    DArrowRectangle::setContent(content);
 }
 
 void TipsWidget::show(int x, int y)
 {
     m_lastPos = QPoint(x, y);
-    move(x - width() / 2, y - height()); // Position passed in is the bottom center of tips widget
-    DBlurEffectWidget::show();
+    DArrowRectangle::show(x, y);
 }
 
 bool TipsWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (o != m_content || e->type() != QEvent::Resize)
+    if (o != getContent() || e->type() != QEvent::Resize)
         return false;
 
     if (isVisible()) {
-
-        QTimer::singleShot(10, this, [ = ] {
-            if (isVisible()) {
-                resizeFromContent();
+        QTimer::singleShot(10, this, [this] {
+            if (isVisible())
                 show(m_lastPos.x(), m_lastPos.y());
-            }
         });
     }
 
-    return DBlurEffectWidget::eventFilter(o, e);
+    return DArrowRectangle::eventFilter(o, e);
 }

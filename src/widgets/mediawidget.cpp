@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,7 +25,11 @@ void MediaWidget::initUI()
     m_dmprisWidget->setPictureVisible(false);
 
     auto mainLayout = new QVBoxLayout;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     mainLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    mainLayout->setMargin(0);
+#endif
     mainLayout->addWidget(m_dmprisWidget);
     setLayout(mainLayout);
 

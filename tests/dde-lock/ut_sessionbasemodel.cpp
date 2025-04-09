@@ -4,6 +4,7 @@
 
 #include "sessionbasemodel.h"
 #include "userinfo.h"
+#include "dbusconstant.h"
 
 #include <QSignalSpy>
 
@@ -30,7 +31,7 @@ void UT_SessionBaseModel::TearDown()
 
 TEST_F(UT_SessionBaseModel, init)
 {
-    std::shared_ptr<NativeUser> nativeUser(new NativeUser("/org/deepin/dde/Accounts1/User"+QString::number((getuid()))));
+    std::shared_ptr<NativeUser> nativeUser(new NativeUser(QString(DSS_DBUS::accountsUserPath).arg(QString::number(getuid()))));
     ASSERT_TRUE(m_sessionBaseModel);
     m_sessionBaseModel->updateCurrentUser(nativeUser);
     EXPECT_EQ(m_sessionBaseModel->currentUser(), nativeUser);

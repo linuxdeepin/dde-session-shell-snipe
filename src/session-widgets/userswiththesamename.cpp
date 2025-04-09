@@ -8,7 +8,7 @@
 #include "userpanel.h"
 
 #include <DFontSizeManager>
-#include <DIcon>
+#include <DHiDPIHelper>
 
 #include <QVBoxLayout>
 #include <QKeyEvent>
@@ -34,9 +34,9 @@ UsersWithTheSameName::UsersWithTheSameName(SessionBaseModel *model, QWidget *par
 void UsersWithTheSameName::initUI()
 {
     m_backButton->setText(tr("Return"));
-    const QPixmap &normalBackPixmap = Dtk::Gui::DIcon::loadNxPixmap(":/img/back-normal.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const QPixmap &normalBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-normal.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     m_backButton->setNormalPixmap(normalBackPixmap);
-    const QPixmap &hoverBackPixmap = Dtk::Gui::DIcon::loadNxPixmap(":/img/back-hover.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const QPixmap &hoverBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-hover.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     m_backButton->setHoverPixmap(hoverBackPixmap);
     m_backButton->setFixedSize(200, 64);
     DFontSizeManager::instance()->bind(m_backButton, DFontSizeManager::T4);

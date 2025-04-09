@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -83,7 +83,11 @@ void AuthWidget::initUI()
     // 账户名有效字符使用dsg配置
     const QString accountExpression = DConfigHelper::instance()->getConfig("accountExpression", "[a-zA-Z0-9-_@]+$").toString();
     if (!accountExpression.isEmpty()) {
+#ifndef ENABLE_DSS_SNIPE
+        m_accountEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp(accountExpression), this));
+#else
         m_accountEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression(accountExpression), this));
+#endif
     }
     // 用户名
     m_userNameWidget = new UserNameWidget(false, true, this);
@@ -154,7 +158,7 @@ void AuthWidget::setModel(const SessionBaseModel *model)
  */
 void AuthWidget::setUser(std::shared_ptr<User> user)
 {
-    for (const QMetaObject::Connection &connection : std::as_const(m_connectionList)) {
+    for (const QMetaObject::Connection &connection : qAsConst(m_connectionList)) {
         m_user->disconnect(connection);
     }
     m_connectionList.clear();

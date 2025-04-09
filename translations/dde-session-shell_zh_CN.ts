@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>请插入安全密钥</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>验证成功</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>验证失败</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>正在识别安全密钥</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -181,96 +200,37 @@
     <name>AuthWidget</name>
     <message>
         <source>Account</source>
-        <translation>帐户</translation>
+        <translation>账户</translation>
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
         <translation><numerusform>密码将于%n天后过期，请及时修改密码</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
+        <source>Password expired, please change</source>
+        <translation>密码已过期，请修改</translation>
+    </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
         <translation>您的密码已过期，请联系管理员修改密码</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>密码已过期，请修改</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>该设备已被锁定，请联系管理员</translation>
     </message>
 </context>
 <context>
-    <name>ChangePasswordWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>您的密码已过期，请修改密码后重新登录</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>保 存</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>旧密码</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>新密码</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>重复新密码</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>密码提示（选填）</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>密码不一致</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>密码提示对所有人可见，切勿包含具体密码信息</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>新密码和旧密码不能相同</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>密码修改成功</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>密码错误</translation>
-    </message>
-</context>
-<context>
-    <name>ControlWidget</name>
-    <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>桌面环境与显示协议</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>键盘布局</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>切换用户</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>电源</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>屏幕键盘</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
     <name>GreeterWorker</name>
     <message>
         <source>Wrong account</source>
-        <translation>帐户错误</translation>
+        <translation>账户错误</translation>
     </message>
     <message>
         <source>Wrong Password</source>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>标准模式</translation>
     </message>
 </context>
 <context>
@@ -314,77 +285,18 @@
     </message>
     <message>
         <source>The above users are still logged in and data will be lost due to shutdown, are you sure you want to shut down?</source>
-        <translation>此电脑还有以上帐户在登录，关闭电脑会导致其数据丢失，是否要关闭此电脑？</translation>
+        <translation>此电脑还有以上账户在登录，关闭电脑会导致其数据丢失，是否要关闭此电脑？</translation>
     </message>
     <message>
         <source>The above users are still logged in and data will be lost due to reboot, are you sure you want to reboot?</source>
-        <translation>此电脑还有以上帐户在登录，重启电脑会导致其数据丢失，是否要重启此电脑？</translation>
+        <translation>此电脑还有以上账户在登录，重启电脑会导致其数据丢失，是否要重启此电脑？</translation>
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>强度低</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>强度中</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>强度高</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>密码不能为空</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>密码长度不能少于%1个字符</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>密码长度不能超过%1个字符</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>密码只能由英文（区分大小写）、数字或特殊符号（~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/）组成</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>回文字符长度不超过%1位</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>单调性字符不超过%1位</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>重复字符不超过%1位</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>密码必须由大写字母、小写字母、数字、符号（~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/）三种类型组成</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>密码不得含有连续4个以上的回文字符</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>密码不能是常见单词及组合</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>密码过于简单，请增加密码复杂度</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>密码不符合安全要求</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>您已开启高级别等级保护，无法切换Wayland模式，请于“安全中心”关闭高级别等级保护后再试</translation>
     </message>
 </context>
 <context>
@@ -407,19 +319,27 @@
     </message>
     <message>
         <source>Lock</source>
-        <translation>锁定</translation>
+        <translation>锁屏</translation>
     </message>
     <message>
         <source>Log out</source>
         <translation>注销</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>切换用户</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>切换系统</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>切换用户</translation>
+        <source>Update and Shut Down</source>
+        <translation>更新并关机</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>更新并重启</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>标准用户</translation>
+        <source>发送验证码</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>管理员</translation>
+        <source>请输入手机号</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>其他用户</translation>
+        <source>请输入验证码</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>屏幕键盘</translation>
+        <source>Update</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>请插入电源后再开始更新</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation>返回</translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>请选择登录的账户</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>本地账户</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>域账户</translation>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>您确定要注销吗？</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>更新并关机</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>更新并重启</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>正在关闭以上程序并关机，请稍后...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>正在关闭以上程序并重启，请稍后...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>正在关闭以上程序并注销，请稍后...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

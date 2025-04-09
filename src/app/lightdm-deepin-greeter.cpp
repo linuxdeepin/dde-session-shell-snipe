@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -14,6 +14,9 @@
 #include "public_func.h"
 #include "plugin_manager.h"
 
+#ifndef ENABLE_DSS_SNIPE
+#include <dde-api/eventlogger.hpp>
+#endif
 #include <DApplication>
 #include <DGuiApplicationHelper>
 #include <DLog>
@@ -26,6 +29,8 @@
 #include <X11/Xlib.h>
 #include <cstdlib>
 #include <cmath>
+
+#include "dbusconstant.h"
 
 DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
@@ -40,6 +45,9 @@ int main(int argc, char* argv[])
         setenv("XDG_CURRENT_DESKTOP", "Deepin", 1);
     }
 
+    // 配置 qwebengine
+    configWebEngine();
+
     DGuiApplicationHelper::setAttribute(DGuiApplicationHelper::UseInactiveColorGroup, false);
 
     // 以下4行为解决登录和锁屏的默认字体不一致的情况，gsettings默认值为10.5，
@@ -52,8 +60,12 @@ int main(int argc, char* argv[])
 
     DApplication a(argc, argv);
 
+#ifndef ENABLE_DSS_SNIPE
+    DDE_EventLogger::EventLogger::instance().init("org.deepin.dde.lightdm-deepin-greeter", false);
+#endif
     // qt默认当最后一个窗口析构后，会自动退出程序，这里设置成false，防止插拔时，没有屏幕，导致进程退出
     QApplication::setQuitOnLastWindowClosed(false);
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     qApp->setOrganizationName("deepin");
     qApp->setApplicationName("org.deepin.dde.lightdm-deepin-greeter");
 
@@ -86,13 +98,12 @@ int main(int argc, char* argv[])
     DLogManager::setLogFormat("%{time}{yyyy-MM-dd, HH:mm:ss.zzz} [%{type:-7}] [ %{function:-35} %{line}] %{message}\n");
     DLogManager::registerConsoleAppender();
 
-    const QString serviceName = "org.deepin.dde.Accounts1";
     QDBusConnectionInterface *interface = QDBusConnection::systemBus().interface();
-    if (!interface->isServiceRegistered(serviceName)) {
-        qCWarning(DDE_SHELL) << "Accounts1 service is not registered wait...";
-        QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(serviceName, QDBusConnection::systemBus());
-        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceUnregistered, [serviceName](const QString &service) {
-            if (service == serviceName) {
+    if (!interface->isServiceRegistered(DSS_DBUS::accountsService)) {
+        qCWarning(DDE_SHELL) << "Accounts service is not registered wait...";
+        QDBusServiceWatcher *serviceWatcher = new QDBusServiceWatcher(DSS_DBUS::accountsService, QDBusConnection::systemBus());
+        QObject::connect(serviceWatcher, &QDBusServiceWatcher::serviceUnregistered, [](const QString &service) {
+            if (service == DSS_DBUS::accountsService) {
                 qCritical() << "ERROR: accounts service unregistered";
             }
         });

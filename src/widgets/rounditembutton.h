@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,7 +6,15 @@
 #define ROUNDITEMBUTTON
 
 #include <QObject>
+#include <QFrame>
 #include <QAbstractButton>
+#include <QLabel>
+#include <QtWidgets>
+#include <QFocusEvent>
+#include <QLabel>
+#include <QMouseEvent>
+#include <QGraphicsDropShadowEffect>
+#include <QGraphicsOpacityEffect>
 
 /* The RoundItemButton is used by shutdownButton, restartButton, and so on... */
 
@@ -50,7 +58,11 @@ private slots:
 
 protected:
     void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
-    void enterEvent(QEnterEvent* event) Q_DECL_OVERRIDE;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *e) override;
+#else
+    void enterEvent(QEvent *e) override;
+#endif
     void leaveEvent(QEvent* event) Q_DECL_OVERRIDE;
     void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
     void mouseReleaseEvent(QMouseEvent* e) Q_DECL_OVERRIDE;

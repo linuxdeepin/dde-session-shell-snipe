@@ -4,6 +4,7 @@
 
 #include "updateworker.h"
 #include "constants.h"
+#include "dbusconstant.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -53,7 +54,7 @@ void UpdateWorker::doUpdate(bool powerOff)
 bool UpdateWorker::checkPower()
 {
     qCInfo(DDE_SHELL) << "Check power";
-    PowerInter powerInter("org.deepin.dde.Power1", "/org/deepin/dde/Power1", QDBusConnection::systemBus(), this);
+    PowerInter powerInter(DSS_DBUS::powerService, DSS_DBUS::powerPath, QDBusConnection::systemBus(), this);
     bool onBattery = powerInter.onBattery();
     if (!onBattery) {
         qCInfo(DDE_SHELL) << "No battery";
@@ -71,9 +72,9 @@ void UpdateWorker::prepareFullScreenUpgrade(bool powerOff)
     qCInfo(DDE_SHELL) << "Do update after restart lightdm";
 
     QJsonObject content;
-    QDBusInterface managerInter("org.deepin.dde.Lastore1",
-        "/org/deepin/dde/Lastore1",
-        "org.deepin.dde.Lastore1.Manager",
+    QDBusInterface managerInter(DSS_DBUS::lastoreService,
+        DSS_DBUS::lastorePath,
+        DSS_DBUS::lastoreInterface,
         QDBusConnection::systemBus());
     content["DoUpgradeMode"] = managerInter.property("CheckUpdateMode").toInt();
     content["IsPowerOff"] = powerOff;

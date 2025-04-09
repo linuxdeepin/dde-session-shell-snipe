@@ -4,7 +4,14 @@ Comment=Deepin Lock
 Encoding=UTF-8
 Exec=/usr/bin/dde-lock
 NoDisplay=true
-OnlyShowIn=DDE
+OnlyShowIn=Deepin
 Type=Application
 X-Deepin-Vendor=user-custom
 X-Deepin-TurboType=dtkwidget
+
+Name[en_US]=Lock screen
+Name[zh_CN]=锁屏
+Name[zh_TW]=鎖定螢幕
+Name[zh_HK]=鎖定螢幕
+Name[ug]=ئېكران قۇلۇپى
+Name[bo]=བརྙན་ཡོལ་སྒོ་ལྕགས་རྒྱག་པ།

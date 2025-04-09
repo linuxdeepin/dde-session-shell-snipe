@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <QtGui/QPainter>
+#include <QTimer>
 
-#include <DIcon>
-
+#include "dhidpihelper.h"
 #include "userbutton.h"
 #include "userinfo.h"
 
@@ -71,20 +71,28 @@ void UserButton::initUI()
 
     m_checkedMark = new QLabel;
 
-    QPixmap pixmap = Dtk::Gui::DIcon::loadNxPixmap(":/misc/images/select.svg");
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/select.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_checkedMark->setPixmap(pixmap);
 
     m_nameLayout = new QHBoxLayout;
     m_nameLayout->setSpacing(5);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_nameLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_nameLayout->setMargin(0);
+#endif
     m_nameLayout->addStretch();
     m_nameLayout->addWidget(m_checkedMark);
     m_nameLayout->addWidget(m_userNameLabel);
     m_nameLayout->addStretch();
 
     m_centralLayout = new QVBoxLayout;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_centralLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_centralLayout->setMargin(0);
+#endif
     m_centralLayout->setSpacing(0);
     m_centralLayout->addWidget(m_userAvatar);
     m_centralLayout->setAlignment(m_userAvatar, Qt::AlignHCenter);

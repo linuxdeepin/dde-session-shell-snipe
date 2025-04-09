@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,22 +7,31 @@
 
 #include "authcommon.h"
 #include "dlineeditex.h"
+#include "dstyle.h"
+#include "dbusconstant.h"
 
-#include <DIcon>
+#include <DHiDPIHelper>
 #include <DLabel>
 #include <DPaletteHelper>
 #include <DDialogCloseButton>
 #include <DFontSizeManager>
-#include <DSuggestButton>
-#include <DMessageManager>
-#include <DConfig>
 
 #include <QKeyEvent>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusReply>
 #include <QWindow>
+#include <QValidator>
 
+#include <DConfig>
+#ifndef ENABLE_DSS_SNIPE
+#include <QRegExp>
+#include <com_deepin_daemon_accounts_user.h>
+#else
 #include "userinterface.h"
+#endif
 
 const QString PASSWORD_HIDE = QStringLiteral(":/misc/images/password-hide.svg");
 const QString PASSWORD_SHOWN = QStringLiteral(":/misc/images/password-shown.svg");
@@ -71,14 +80,16 @@ void AuthPassword::initUI()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(5);
 
-    m_lineEdit->setCopyEnabled(false);
-    m_lineEdit->setCutEnabled(false);
     m_lineEdit->setClearButtonEnabled(false);
     m_lineEdit->setEchoMode(QLineEdit::Password);
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
+#else
+    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+#endif
     DFontSizeManager::instance()->bind(m_lineEdit, DFontSizeManager::T6);
 
     setLineEditInfo(tr("Password"), PlaceHolderText);
@@ -87,7 +98,7 @@ void AuthPassword::initUI()
     passwordLayout->setContentsMargins(10, 0, 10, 0);
     passwordLayout->setSpacing(5);
     /* 大小写状态 */
-    QPixmap pixmap = DIcon::loadNxPixmap(CAPS_LOCK);
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(CAPS_LOCK);
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_capsLock->setPixmap(pixmap);
     passwordLayout->addWidget(m_capsLock, 0, Qt::AlignLeft | Qt::AlignVCenter);
@@ -178,21 +189,21 @@ void AuthPassword::initConnections()
     });
 
     if (DConfigHelper::instance()->getConfig(DConfig_LongPressDisplayPassword, true).toBool()) {
-        connect(m_passwordShowBtn, &DIconButton::pressed, this, [this] {
+        connect(m_passwordShowBtn, &DSuggestButton::pressed, this, [this] {
             m_passwordShowBtn->setIcon(QIcon(PASSWORD_HIDE));
             if (m_lineEdit) {
                 m_lineEdit->setEchoMode(QLineEdit::Normal);
             }
         });
 
-        connect(m_passwordShowBtn, &DIconButton::released, this, [this] {
+        connect(m_passwordShowBtn, &DSuggestButton::released, this, [this] {
             m_passwordShowBtn->setIcon(QIcon(PASSWORD_SHOWN));
             if (m_lineEdit) {
                 m_lineEdit->setEchoMode(QLineEdit::Password);
             }
         });
     } else {
-        connect(m_passwordShowBtn, &DIconButton::clicked, this, [this] {
+        connect(m_passwordShowBtn, &DSuggestButton::clicked, this, [this] {
             if (m_lineEdit->echoMode() == QLineEdit::EchoMode::Password) {
                 m_passwordShowBtn->setIcon(QIcon(PASSWORD_HIDE));
                 m_lineEdit->lineEdit()->setEchoMode(QLineEdit::Normal);
@@ -604,7 +615,11 @@ void AuthPassword::showResetPasswordMessage()
     }
 
     QPalette pa;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     pa.setColor(QPalette::Window, QColor(247, 247, 247, 51));
+#else
+    pa.setColor(QPalette::Background, QColor(247, 247, 247, 51));
+#endif
     pa.setColor(QPalette::Highlight, Qt::white);
     pa.setColor(QPalette::HighlightedText, Qt::black);
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
@@ -627,9 +642,12 @@ void AuthPassword::showResetPasswordMessage()
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [this] {
-        const QString AccountsService("org.deepin.dde.Accounts1");
-        const QString path = QString("/org/deepin/dde/Accounts1/User%1").arg(m_currentUid);
-        org::deepin::dde::accounts1::User user(AccountsService, path, QDBusConnection::systemBus());
+#ifndef ENABLE_DSS_SNIPE
+    com::deepin::daemon::accounts::User
+#else
+    org::deepin::dde::accounts1::User
+#endif
+        user(DSS_DBUS::accountsService, QString(DSS_DBUS::accountsUserPath).arg(m_currentUid), QDBusConnection::systemBus());
         auto reply = user.SetPassword("");
         m_resetDialogShow = true;
         reply.waitForFinished();
@@ -684,9 +702,9 @@ bool AuthPassword::isUserAccountBinded()
         return false;
     }
 
-    QDBusInterface accountsInter("org.deepin.dde.Accounts1",
-                                 QString("/org/deepin/dde/Accounts1/User%1").arg(m_currentUid),
-                                 "org.deepin.dde.Accounts1.User",
+    QDBusInterface accountsInter(DSS_DBUS::accountsService,
+                                 QString(DSS_DBUS::accountsUserPath).arg(m_currentUid),
+                                 DSS_DBUS::accountsUserInterface,
                                  QDBusConnection::systemBus());
     QVariant retUUID = accountsInter.property("UUID");
     if (!accountsInter.isValid()) {
@@ -738,12 +756,11 @@ void AuthPassword::updateResetPasswordUI()
         return;
     }
 
-    // TODO 暂时屏蔽通过UniodID重置密码功能，V23上面UOSID还未集成，此功能不可用
-    // if (m_resetPasswordMessageVisible) {
-    //     showResetPasswordMessage();
-    // } else {
-    //     closeResetPasswordMessage();
-    // }
+    if (m_resetPasswordMessageVisible) {
+        showResetPasswordMessage();
+    } else {
+        closeResetPasswordMessage();
+    }
 }
 
 bool AuthPassword::isShowResetPasswordMessage()
@@ -852,7 +869,11 @@ void AuthPassword::updatePasswordTextMargins()
     // 左侧控件宽度
     const int leftWidth = (m_capsLock->isVisible() ? m_capsLock->width() + 5: 0);
     textMargins.setRight(rightWidth);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
     const int displayTextWidth = m_lineEdit->lineEdit()->fontMetrics().horizontalAdvance(m_lineEdit->lineEdit()->displayText());
+#else
+    const int displayTextWidth = m_lineEdit->lineEdit()->fontMetrics().width(m_lineEdit->lineEdit()->displayText());
+#endif
     // 计算当前文字长度+图标+间距所需长度 和 编辑框长度的差值，如果空间不足，则缩减左边的margin，但是不小于左侧控件的宽度
     const int diff = m_lineEdit->lineEdit()->width() - 10 /*borer padding等宽度*/ - (displayTextWidth + 15 /*content margin*/ + textMargins.right() * 2);
     textMargins.setLeft(qMax(leftWidth, rightWidth + (diff < 0 ? diff : 0)));

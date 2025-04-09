@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.deepin.dde.shutdownFront
+Exec=/usr/bin/dbus-send --print-reply --session --dest=com.deepin.SessionManager /com/deepin/StartManager com.deepin.StartManager.LaunchApp string:/usr/share/applications/dde-lock.desktop uint32:0 array:string:--daemon

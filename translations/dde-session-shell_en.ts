@@ -32,7 +32,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"></translation>
+        <translation>Device unavailable!</translation>
     </message>
 </context>
 <context>
@@ -89,6 +89,25 @@
     <message>
         <source>Iris ID locked, use password please</source>
         <translation>Iris ID locked, use password please</translation>
+    </message>
+</context>
+<context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation type="unfinished">Verification successful</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -223,16 +242,31 @@
         <source>Password expired, please change</source>
         <translation>Password expired, please change</translation>
     </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Your password has expired. Please contact the administrator to change it</translation>
+    </message>
+    <message>
+        <source>Terminal locked, please contact administrator</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DeepinAuthFramework</name>
+    <message>
+        <source>Wrong Password</source>
+        <translation type="unfinished">Wrong Password</translation>
+    </message>
 </context>
 <context>
     <name>GreeterWorker</name>
     <message>
         <source>Wrong account</source>
-        <translation type="unfinished">Wrong account</translation>
+        <translation>Wrong account</translation>
     </message>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished">Wrong Password</translation>
+        <translation>Wrong Password</translation>
     </message>
 </context>
 <context>
@@ -240,6 +274,17 @@
     <message>
         <source>Cancel</source>
         <translation>Cancel</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -320,12 +365,69 @@
         <source>Switch system</source>
         <translation>Switch system</translation>
     </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SystemMonitor</name>
     <message>
         <source>Start system monitor</source>
         <translation>Start system monitor</translation>
+    </message>
+</context>
+<context>
+    <name>UdcpMFALoginWidget</name>
+    <message>
+        <source>发送验证码</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>请输入手机号</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>请输入验证码</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UpdateWorker</name>
+    <message>
+        <source>Update</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -385,6 +487,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Are you sure you want to log out?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

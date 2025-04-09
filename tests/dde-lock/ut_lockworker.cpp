@@ -42,9 +42,9 @@ TEST_F(UT_LockWorker, worker)
 TEST_F(UT_LockWorker, auth)
 {
     m_worker->createAuthentication("uos");
-    m_worker->startAuthentication("uos", AuthFlags(AuthState::AS_Success));
+    m_worker->startAuthentication("uos", AT_None);
     m_worker->sendTokenToAuth("uos", AuthCommon::AT_None, "123");
-    m_worker->endAuthentication("uos", AuthFlags(AuthState::AS_Success));
+    m_worker->endAuthentication("uos", AT_None);
     m_worker->destroyAuthentication("uos");
     m_worker->switchToUser(m_model->currentUser());
     m_worker->setLocked(false);

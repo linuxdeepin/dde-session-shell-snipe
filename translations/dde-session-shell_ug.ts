@@ -11,7 +11,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -23,11 +23,11 @@
     </message>
     <message>
         <source>Face ID locked, use password please</source>
-        <translation>چىرايدا قۇلۇپ ئېچىش قۇلۇپلىنىپ قالدى، پارولنى كىرگۈزۈپ ئېچىڭ</translation>
+        <translation>چىرايدا قۇلۇپ ئېچىش قۇلۇپلىنىپ قالدى، پارولنى كىرگۈزۈڭ</translation>
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation type="unfinished"/>
+        <translation>ئۈسكۈنىنى ئىشلەتكىلى بولمايدۇ!</translation>
     </message>
 </context>
 <context>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -50,7 +50,7 @@
     </message>
     <message>
         <source>Fingerprint locked, use password please</source>
-        <translation>بارماق ئىزى قۇلۇپلاندى، پارول كىرگۈزۈڭ</translation>
+        <translation>بارماق ئىزىدا ئېچىش قۇلۇپلىنىپ قالدى، پارولنى كىرگۈزۈڭ</translation>
     </message>
 </context>
 <context>
@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -77,7 +77,26 @@
     </message>
     <message>
         <source>Iris ID locked, use password please</source>
-        <translation> كۆز رەڭدار پەردىسىنى تونۇپ قۇلۇپنى ئېچىش مەغلۇپ بولدى ، پارولنى كىرگۈزۈڭ </translation>
+        <translation> كۆز رەڭدار پەردىسىنى تونۇپ قۇلۇپنى ئېچىش قۇلۇپلىنىپ قالدى، پارولنى كىرگۈزۈڭ</translation>
+    </message>
+</context>
+<context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>بىخەتەرلىك ئاچقۇچىنى كىرگۈزۈڭ</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>دەلىللەندى</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>دەلىللەش مەغلۇپ بولدى</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>بىخەتەرلىك ئاچقۇچىنى تونۇۋاتىدۇ</translation>
     </message>
 </context>
 <context>
@@ -88,7 +107,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -108,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +165,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform><numerusform>دەلىللەش مەغلۇپ بولدى، يەنە %n قېتىم سىنىيالايسىز</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -166,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform><numerusform>%n مىنۇتتىن كېيىن قايتا سىناڭ</numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,85 +204,26 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>پارولنىڭ ۋاقتى %n كۈندىن كېيىن توشىدۇ، پارولنى ۋاقتىدا ئۆزگەرتىڭ</numerusform><numerusform>پارولنىڭ ۋاقتى %n كۈندىن كېيىن توشىدۇ، پارولنى ۋاقتىدا ئۆزگەرتىڭ</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation type="unfinished"/>
+        <source>Password expired, please change</source>
+        <translation>پارولنىڭ ۋاقتى ئۆتتى، ئۆزگەرتىڭ</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation type="unfinished"/>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>پارولىڭىزنىڭ ۋاقتى ئۆتۈپ كەتتى، باشقۇرغۇچى بىلەن ئالاقىلىشىپ پارول ئۆزگەرتىڭ</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>ساقلاش</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>يېڭى پارول</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>پارول بىردەك ئەمەس</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>پارول ئەسكەرتمىسى ھەممە ئادەمگە كۆرۈنىدۇ ، مەخپىي نومۇر قاتارلىق مۇھىم ئۇچۇرلار بولمىسۇن</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>يىڭى پارولىڭىز باشقا پاروللار بىلەن ئوخشاش بولمىسۇن</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>پارول ئۆزگەردى</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>خاتا پارول</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>بۇ ئۈسكۈنە قۇلۇپلىنىپ قالدى، باشقۇرغۇچى بىلەن ئالاقىلىشىڭ</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>كۇنۇپكا ئورۇنلاشتۇرۇلۇشى</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>قۇۋۋەت</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>ئېكران كۇنۇپكىسى</translation>
     </message>
 </context>
 <context>
@@ -283,16 +243,27 @@
         <source>Cancel</source>
         <translation>بىكار قىلىش</translation>
     </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>ئۆلچەملىك ھالەت</translation>
+    </message>
 </context>
 <context>
     <name>LockContent</name>
     <message>
         <source>Lock Screen</source>
-        <translation>ئېكراننى قۇلۇپلاش</translation>
+        <translation>ئېكران قۇلۇپى</translation>
     </message>
     <message>
         <source>Failed to lock screen</source>
-        <translation>ئېكراننى قۇلۇپلانمىدى</translation>
+        <translation>ئېكران قۇلۇپلانمىدى</translation>
     </message>
 </context>
 <context>
@@ -318,73 +289,14 @@
     </message>
     <message>
         <source>The above users are still logged in and data will be lost due to reboot, are you sure you want to reboot?</source>
-        <translation>بۇ كومپيۇتېردا يەنە يۇقارقى ھېساباتلار ئوچۇق، قايتا قوزغاتسىڭىز سانلىق مەلۇماتلار يوقاپ كېتىشى مۇمكىن، راستلا قايتا قوزغىتامسىز؟</translation>
+        <translation>بۇ كومپيۇتېردا يەنە يۇقارقى ھېساباتلار ئوچۇق، كومپيۇتېرنى قايتا قوزغاتسىڭىز سانلىق مەلۇماتلار يوقاپ كېتىدۇ، راستلا قايتا قوزغىتامسىز؟</translation>
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>ئاجىز</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>ئوتتۇراھال كۈچلۈك</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>كۈچلۈك</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>پارول قۇرۇق قالسا بولمايدۇ</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>پارول %1 ھەرپتىن كەم بولماسلىقى كېرەك</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>پارول %1 ھەرپتىن ئېشىپ كەتمەسلىكى كېرەك</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>پارولدا پەقەت ئىنگلىزچە ھەرپلەر (چوڭ-كىچىك) ، سان ياكى ئالاھىدە بەلگىلەر بار (~! @ # $% ^ &amp; * () [] {} \ | /?,. &lt;&gt;)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>جاۋاب خەتنىڭ ئۇزۇنلۇقى %1 ھەرپتىن ئېشىپ كەتمىسۇن</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>مونوتونلۇق بەلگە %1 تىن ئېشىپ كەتمىسۇن</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>قايتىلانغان ھەرپ %1 تىن ئېشىپ كەتمىسۇن</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>پارول چوڭ ھەرپ،كىچىك ھەرپ، سانلار ۋە بەلگىلەردىن ئىبارەت ئۈچ تۈرنى ئۆز ئىچىگە ئېلىشى كېرەك(~!@#$%^&amp;*()[]{}\|/?,.&lt;&gt;)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>پارولدا ئۇدا 4 تىن ئارتۇق قايتىلانما ھەرپ-بەلگە بولسا بولمايدۇ</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>پارولدا دائىم ئۇچرايدىغان ئاددىي سۆز ۋە سۆز بىرىكمىلىرى بولسا بولمايدۇ</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>پارول بەك ئاددىي، مۇرەككەپرەك بېكىتىڭ</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>پارول بىخەتەرلىك تەلىپىگە ئۇيغۇن كەلمەيدۇ</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>يۇقىرى دەرىجىلىك قوغداشنى قوزغاتتىڭىز، Wayland ئەندىزىسىگە ئالماشتۇرغىلى بولمىدى، «بىخەتەرلىك مەركىزى»دىن يۇقىرى دەرىجىلىك قوغداشنى تاقىغاندىن كېيىن قايتا سىناڭ</translation>
     </message>
 </context>
 <context>
@@ -407,19 +319,27 @@
     </message>
     <message>
         <source>Lock</source>
-        <translation>قۇلۇپلاش</translation>
+        <translation>ئېكران قۇلۇپلاش</translation>
     </message>
     <message>
         <source>Log out</source>
         <translation>چېكىنىش</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>ئىشلەتكۈچى ئالماشتۇرۇش</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>سىستېما ئالماشتۇرۇش</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>ئىشلەتكۈچى ئالماشتۇرۇش</translation>
+        <source>Update and Shut Down</source>
+        <translation>يېڭىلاش ۋە تاقاش</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>يېڭىلاش ۋە قايتا قوزغىتىش</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>ئۆلچەملىك ئىشلەتكۈچى</translation>
+        <source>发送验证码</source>
+        <translation>دەلىللەش كودى يوللاش</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>باشقۇرغۇچى</translation>
+        <source>请输入手机号</source>
+        <translation>يانفون نومۇرىڭىزنى كىرگۈزۈڭ</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation type="unfinished"/>
+        <source>请输入验证码</source>
+        <translation>دەلىللەش كودىنى كىرگۈزۈڭ</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>دەلىللەش كودىغا ئېرىشىش</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>ئېكران كۇنۇپكىسى</translation>
+        <source>Update</source>
+        <translation>يېڭىلاش</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>توكقا چېتىپ ئاندىن يېڭىلاڭ</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>راستلا چېكىنەمسىز؟</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>يېڭىلاش ۋە تاقاش</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>يېڭىلاش ۋە قايتا قوزغىتىش</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>يۇقىرىقى پىروگراممىلارنى تاقاپ ئۆچۈۋاتىدۇ، سەل ساقلاڭ...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>يۇقىرىقى پىروگراممىلارنى تاقاپ قايتا قوزغىلىۋاتىدۇ، سەل ساقلاڭ...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>يۇقىرىقى پىروگراممىلارنى تاقاپ چېكىنىۋاتىدۇ، سەل ساقلاڭ...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

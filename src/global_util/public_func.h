@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,8 +15,6 @@
 #include <QString>
 
 class QJsonDocument;
-
-#define ACCOUNTS_DBUS_PREFIX "/org/deepin/dde/Accounts1/User"
 
 static const int APP_TYPE_LOCK = 0;
 static const int APP_TYPE_LOGIN = 1;
@@ -85,6 +83,8 @@ bool checkVersion(const QString &target, const QString &base);
  */
 void configWebEngine();
 
+#ifdef ENABLE_DSS_SNIPE
 bool isSleepLock();
+#endif
 
 #endif // PUBLIC_FUNC_H

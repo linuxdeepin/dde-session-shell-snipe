@@ -47,7 +47,7 @@ TEST_F(UT_ControlWidget, init)
 
     m_controlWidget->rightKeySwitch();
     m_controlWidget->leftKeySwitch();
-    //m_controlWidget->showTips();
-    //m_controlWidget->hideTips();
+    m_controlWidget->showTips();
+    m_controlWidget->hideTips();
     QTest::keyRelease(m_controlWidget, Qt::Key_0, Qt::KeyboardModifier::NoModifier);
 }

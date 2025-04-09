@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <QPainter>
+#include <QtCore/QObject>
 #include <QSvgRenderer>
 #include "rounditembutton.h"
 
@@ -72,8 +72,11 @@ void RoundItemButton::initUI()
     setCheckable(true);
     DFontSizeManager::instance()->bind(this, DFontSizeManager::T5);
 }
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void RoundItemButton::enterEvent(QEnterEvent* event)
+#else
+void RoundItemButton::enterEvent(QEvent* event)
+#endif
 {
     Q_UNUSED(event)
 
@@ -131,7 +134,11 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 计算文本行数
     QStringList textList;
     QString str = m_text;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     while (fontMetrics().horizontalAdvance(str) > width() - 20 && str.length() > 0) {
+#else
+    while (fontMetrics().width(str) > width() - 20 && str.length() > 0) {
+#endif
         int lastSpacePos = str.lastIndexOf(" ");
         if (lastSpacePos == -1) {
             str = fontMetrics().elidedText(str, Qt::ElideRight, width() - 2 * padding);
@@ -154,7 +161,11 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 计算文本绘制的区域
     int textWidth = 0;
     for (auto text : textList) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         textWidth = qMax(textWidth, fontMetrics().horizontalAdvance(text));
+#else
+        textWidth = qMax(textWidth, fontMetrics().width(text));
+#endif
     }
     QRect textRect;
     textRect.setX((width() - qMin(width(), textWidth + 2 * padding)) / 2);

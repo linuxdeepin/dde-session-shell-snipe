@@ -91,9 +91,13 @@ bool LoginWindow::event(QEvent *event)
                 qCInfo(DDE_SHELL) << "allowLocalUnlockTerminal : "<<allowLocalUnlockTerminal;
                 if(allowLocalUnlockTerminal){
                     QProcess process;
+#ifndef ENABLE_DSS_SNIPE
+                    process.start("dbus-send --print-reply --system --dest=com.deepin.daemon.Accounts /com/deepin/daemon/Accounts com.deepin.daemon.Accounts.SetTerminalLocked boolean:false");
+#else
                     process.setProgram("dbus-send");
                     process.setArguments( {"--print-reply", "--system", "--dest=org.deepin.dde.Accounts1", "/org/deepin/dde/Accounts1", "org.deepin.dde.Accounts1.SetTerminalLocked", "boolean:false"});
                     process.start();
+#endif
                     process.waitForFinished();
                 }
             }

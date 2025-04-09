@@ -1,16 +1,14 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "deepinauthframework.h"
 #include "encrypt_helper.h"
-
 #include "authcommon.h"
 #include "public_func.h"
+#include "dbusconstant.h"
 
 #include <dlfcn.h>
-
-#include <QTimer>
 
 #include <security/pam_appl.h>
 #include <unistd.h>
@@ -28,7 +26,7 @@ using namespace AuthCommon;
 
 DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     : QObject(parent)
-    , m_authenticateInter(new AuthInter(AUTHENTICATE_SERVICE, "/org/deepin/dde/Authenticate1", QDBusConnection::systemBus(), this))
+    , m_authenticateInter(new AuthInter(DSS_DBUS::authenticateService, DSS_DBUS::authenticatePath, QDBusConnection::systemBus(), this))
     , m_PAMAuthThread(0)
     , m_authenticateControllers(new QMap<QString, AuthControllerInter *>())
     , m_cancelAuth(false)
@@ -39,14 +37,14 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     connect(m_authenticateInter, &AuthInter::LimitUpdated, this, &DeepinAuthFramework::LimitsInfoChanged);
     connect(m_authenticateInter, &AuthInter::SupportedFlagsChanged, this, &DeepinAuthFramework::SupportedMixAuthFlagsChanged);
     connect(m_authenticateInter, &AuthInter::SupportEncryptsChanged, this, &DeepinAuthFramework::SupportedEncryptsChanged);
-    QDBusConnection::systemBus().connect(AUTHENTICATE_SERVICE, "/org/deepin/dde/Authenticate1", "org.deepin.dde.Authenticate1", "DeviceChange", this, SLOT(onDeviceChanged(const int, const int)));
+    QDBusConnection::systemBus().connect(DSS_DBUS::authenticateService, DSS_DBUS::authenticatePath, DSS_DBUS::authenticateService, "DeviceChange", this, SLOT(onDeviceChanged(const int, const int)));
 
     if (m_authenticateInter->isValid()) {
         m_isDAStartupCompleted = true;
     } else{
         // 异步拉起DA，避免阻塞主线程
         QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.DBus", "/", "org.freedesktop.DBus", "StartServiceByName");
-        message << "org.deepin.dde.Authenticate1" << 0u;
+        message << DSS_DBUS::authenticateService << 0u;
         QDBusPendingCall async = QDBusConnection::systemBus().asyncCall(message);
         auto *watcher = new QDBusPendingCallWatcher(async);
         QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher](QDBusPendingCallWatcher *callWatcher) {
@@ -323,7 +321,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
             << ", Auth type:"<< authType
             << ", App type:" << appType
             << ", Authentication session path: " << authControllerInterPath;
-    AuthControllerInter *authControllerInter = new AuthControllerInter("org.deepin.dde.Authenticate1", authControllerInterPath, QDBusConnection::systemBus(), this);
+    AuthControllerInter *authControllerInter = new AuthControllerInter(DSS_DBUS::authenticateService, authControllerInterPath, QDBusConnection::systemBus(), this);
     m_authenticateControllers->insert(account, authControllerInter);
 
     connect(authControllerInter, &AuthControllerInter::FactorsInfoChanged, this, &DeepinAuthFramework::FactorsInfoChanged);
@@ -645,6 +643,6 @@ bool DeepinAuthFramework::authSessionExist(const QString &account) const
  */
 bool DeepinAuthFramework::isDeepinAuthValid() const
 {
-    return QDBusConnection::systemBus().interface()->isServiceRegistered(AUTHENTICATE_SERVICE)
+    return QDBusConnection::systemBus().interface()->isServiceRegistered(DSS_DBUS::authenticateService)
             && (Available == GetFrameworkState());
 }

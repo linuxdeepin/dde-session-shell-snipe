@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -26,8 +26,10 @@ private:
     static int xinput_version(Display *display);
     static void select_events(Display* display);
 
+#ifdef ENABLE_DSS_SNIPE
 private:
     Display *m_display = nullptr;
+#endif
 };
 
 #endif // KEYBOARDPLANTFORM_X11_H

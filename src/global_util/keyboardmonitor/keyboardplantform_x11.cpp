@@ -1,11 +1,16 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "keyboardplantform_x11.h"
 #include "constants.h"
 
+#ifdef ENABLE_DSS_SNIPE
 #include <QGuiApplication>
+#else
+#include <QX11Info>
+#endif
+#include <QDebug>
 
 #include <X11/X.h>
 #include <X11/XKBlib.h>
@@ -132,6 +137,97 @@ int KeyboardPlatformX11::listen(Display *display)
     return EXIT_SUCCESS;
 }
 
+#ifndef ENABLE_DSS_SNIPE
+KeyboardPlatformX11::KeyboardPlatformX11(QObject *parent)
+    : KeyBoardPlatform(parent)
+{
+
+}
+
+bool KeyboardPlatformX11::isCapsLockOn()
+{
+    bool result = false;
+    unsigned int n = 0;
+    static Display *d = QX11Info::display();
+    if (d != nullptr) {
+        XkbGetIndicatorState(d, XkbUseCoreKbd, &n);
+        result = (n & 0x01) != 0;
+    }
+    return result;
+}
+
+bool KeyboardPlatformX11::isNumLockOn()
+{
+    bool result;
+    unsigned int n = 0;
+    static Display* d = QX11Info::display();
+    if (!d)
+        return false;
+
+    XkbGetIndicatorState(d, XkbUseCoreKbd, &n);
+    result = (n & 0x02) != 0;
+
+    return result;
+}
+
+bool KeyboardPlatformX11::setNumLockStatus(const bool &on)
+{
+    Display* d = QX11Info::display();
+    if (!d)
+        return false;
+
+    XKeyboardState x;
+    XGetKeyboardControl(d, &x);
+    const bool numLockEnabled = x.led_mask & 2;
+
+    if (numLockEnabled == on) {
+        return true;
+    }
+
+    // Get the keycode for XK_Caps_Lock keysymbol
+    unsigned int keycode = XKeysymToKeycode(d, XK_Num_Lock);
+
+    // Simulate Press
+    int pressExit = XTestFakeKeyEvent(d, keycode, True, CurrentTime);
+    XFlush(d);
+
+    // Simulate Release
+    int releseExit = XTestFakeKeyEvent(d, keycode, False, CurrentTime);
+    XFlush(d);
+
+    return pressExit == 0 && releseExit == 0;
+}
+
+void KeyboardPlatformX11::run()
+{
+    Display* display = XOpenDisplay(nullptr);
+    int event, error;
+
+    if (!XQueryExtension(display, "XInputExtension", &xi2_opcode, &event, &error)) {
+        fprintf(stderr, "XInput2 not available.\n");
+        return;
+    }
+
+    if (!xinput_version(display)) {
+        fprintf(stderr, "XInput2 extension not available\n");
+        return;
+    }
+
+    select_events(display);
+    listen(display);
+}
+
+void KeyboardPlatformX11::ungrabKeyboard()
+{
+    static Display *d = QX11Info::display();
+    if (d == NULL) {
+        fprintf(stderr, "display pointer is NULL when try ungrab keyboard.\n");
+        return;
+    }
+
+    XUngrabKeyboard(d, CurrentTime);
+}
+#else
 KeyboardPlatformX11::KeyboardPlatformX11(QObject *parent)
     : KeyBoardPlatform(parent)
 {
@@ -219,3 +315,4 @@ void KeyboardPlatformX11::ungrabKeyboard()
 
     XUngrabKeyboard(m_display, CurrentTime);
 }
+#endif

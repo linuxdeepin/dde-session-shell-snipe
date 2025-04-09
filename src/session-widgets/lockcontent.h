@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,7 +15,11 @@
 #include <QLocalServer>
 
 #include <memory>
+#ifndef ENABLE_DSS_SNIPE
+#include <com_deepin_wm.h>
+#else
 #include "wminterface.h"
+#endif
 
 class AuthWidget;
 class MFAWidget;

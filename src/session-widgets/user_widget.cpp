@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -8,10 +8,8 @@
 #include "dconfig_helper.h"
 #include "constants.h"
 
-#include <QVBoxLayout>
-
 #include <DFontSizeManager>
-#include <DIcon>
+#include <DHiDPIHelper>
 
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
@@ -50,17 +48,25 @@ void UserWidget::initUI()
     /* 用户全名 */
     m_displayNameWidget->setAccessibleName(QStringLiteral("NameWidget"));
     QHBoxLayout *nameLayout = new QHBoxLayout(m_displayNameWidget);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     nameLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    nameLayout->setMargin(0);
+#endif
 
     nameLayout->addStretch();
-    QPixmap pixmap = DIcon::loadNxPixmap(":/misc/images/select.svg");
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/select.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_loginState->setAccessibleName("LoginState");
     m_loginState->setPixmap(pixmap);
     m_loginState->setVisible(m_user->isLogin());
     QVBoxLayout *loginStateLayout = new QVBoxLayout;
     loginStateLayout->setSpacing(0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     loginStateLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    loginStateLayout->setMargin(0);
+#endif
     loginStateLayout->addSpacing(4);
     loginStateLayout->addWidget(m_loginState);
     nameLayout->addLayout(loginStateLayout);
@@ -103,7 +109,11 @@ void UserWidget::initUI()
     m_blurEffectWidget->setBlurRectYRadius(BlurRadius);
 
     m_mainLayout->setSpacing(0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_mainLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_mainLayout->setMargin(0);
+#endif
     m_mainLayout->addWidget(m_avatar);
     m_mainLayout->addSpacing(4);
     m_mainLayout->addWidget(m_displayNameWidget);

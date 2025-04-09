@@ -28,6 +28,4 @@ build*/
 *.vscode
 tests/report/*
 .transifexrc
-
-# xml2cpp
-*_interface.*
+.cache/

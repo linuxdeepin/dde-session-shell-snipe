@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,18 +6,25 @@
 
 #include "lockcontent.h"
 #include "sessionbasemodel.h"
+#include "userinfo.h"
 #include "warningcontent.h"
 #include "public_func.h"
 #include "dconfig_helper.h"
-
-#include <xcb/xproto.h>
 
 #include <DPlatformWindowHandle>
 
 #include <QApplication>
 #include <QDBusInterface>
 
-#define LOCK_START_EFFECT 16 // 锁屏动效比较特殊，窗管根据这个动效值进行处理
+#include "dbusconstant.h"
+#ifndef ENABLE_DSS_SNIPE
+#include <QGSettings>
+#include <QX11Info>
+#else
+#include <xcb/xproto.h>
+#endif
+
+#define LOCK_START_EFFECT 16 //锁屏动效比较特殊，窗管根据这个动效值进行处理
 
 xcb_atom_t internAtom(xcb_connection_t *connection, const char *name, bool only_if_exists)
 {
@@ -42,7 +49,11 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
     , m_enablePowerOffKey(false)
     , m_autoExitTimer(nullptr)
 {
+#ifndef ENABLE_DSS_SNIPE
+    xcb_connection_t *connection = QX11Info::connection();
+#else
     xcb_connection_t *connection = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection();
+#endif
     if (connection) {
         xcb_atom_t cook = internAtom(connection, "_DEEPIN_LOCK_SCREEN", false);
         xcb_change_property(connection, XCB_PROP_MODE_REPLACE, static_cast<xcb_window_t>(winId()),
@@ -183,7 +194,7 @@ bool LockFrame::handlePoweroffKey()
         return false;
     }
 
-    QDBusInterface powerInter("org.deepin.dde.Power1","/org/deepin/dde/Power1","org.deepin.dde.Power1");
+    QDBusInterface powerInter(DSS_DBUS::sessionPowerService, DSS_DBUS::sessionPowerPath,DSS_DBUS::sessionPowerService);
     if (!powerInter.isValid()) {
         qCWarning(DDE_SHELL) << "Poweroff interface is not valid";
         return false;

@@ -1,27 +1,20 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef SHUTDOWNWIDGET
 #define SHUTDOWNWIDGET
 
-#include <functional>
+#include <QFrame>
 
+#include <functional>
+#include <dtkcore_global.h>
+
+#include "util_updateui.h"
 #include "rounditembutton.h"
 #include "sessionbasemodel.h"
-#include "switchosinterface.h"
+#include "switchos_interface.h"
 #include "systemmonitor.h"
-
-
-class QVBoxLayout;
-class QHBoxLayout;
-class QStackedLayout;
-
-DCORE_BEGIN_NAMESPACE
-class DConfig;
-DCORE_END_NAMESPACE
-
-using HuaWeiSwitchOSInterface = com::huawei::switchos;
 
 class ShutdownWidget: public QFrame
 {
@@ -31,7 +24,12 @@ public:
     ~ShutdownWidget() override;
     void setModel(SessionBaseModel * const model);
     void onStatusChanged(SessionBaseModel::ModeStatus status);
+#ifndef ENABLE_DSS_SNIPE
+    bool enableState(const QString &gsettingsValue);
+#else
     bool enableState(int settingsValue);
+#endif
+    static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
 public slots:
     void leftKeySwitch();
@@ -59,31 +57,30 @@ private:
     void setButtonsVisible();
 
 private:
-    int m_index = -1;
+    int m_index;
     bool m_switchUserEnable= false;
     QList<RoundItemButton *> m_btnList;
     QList<std::pair<std::function<void (QString)>, QString>> m_trList;
-    SessionBaseModel* m_model = nullptr;
+    SessionBaseModel* m_model;
     QFrame* m_shutdownFrame = nullptr;
     SystemMonitor* m_systemMonitor = nullptr;
     QFrame* m_actionFrame = nullptr;
-    QStackedLayout* m_mainLayout = nullptr;
-    QHBoxLayout* m_shutdownLayout = nullptr;
-    QVBoxLayout* m_actionLayout = nullptr;
-    RoundItemButton* m_currentSelectedBtn = nullptr;
-    RoundItemButton* m_requireShutdownButton = nullptr;
-    RoundItemButton* m_requireRestartButton = nullptr;
-    RoundItemButton* m_requireSuspendButton = nullptr;
-    RoundItemButton* m_requireHibernateButton = nullptr;
-    RoundItemButton* m_requireLockButton = nullptr;
-    RoundItemButton* m_requireLogoutButton = nullptr;
-    RoundItemButton* m_requireSwitchUserBtn = nullptr;
-    RoundItemButton* m_requireSwitchSystemBtn = nullptr;
-    RoundItemButton* m_updateAndShutdownButton = nullptr;
-    RoundItemButton* m_updateAndRebootButton = nullptr;
-    HuaWeiSwitchOSInterface *m_switchosInterface = nullptr;
+    QStackedLayout* m_mainLayout;
+    QHBoxLayout* m_shutdownLayout;
+    QVBoxLayout* m_actionLayout;
+    RoundItemButton* m_currentSelectedBtn;
+    RoundItemButton* m_requireShutdownButton;
+    RoundItemButton* m_requireRestartButton;
+    RoundItemButton* m_requireSuspendButton;
+    RoundItemButton* m_requireHibernateButton;
+    RoundItemButton* m_requireLockButton;
+    RoundItemButton* m_requireLogoutButton;
+    RoundItemButton* m_requireSwitchUserBtn;
+    RoundItemButton* m_requireSwitchSystemBtn;
+    RoundItemButton* m_updateAndShutdownButton;
+    RoundItemButton* m_updateAndRebootButton;
+    HuaWeiSwitchOSInterface *m_switchosInterface;
     SessionBaseModel::ModeStatus m_modeStatus;
-    DTK_CORE_NAMESPACE::DConfig *m_dconfig = nullptr;
 };
 
 #endif // SHUTDOWNWIDGET

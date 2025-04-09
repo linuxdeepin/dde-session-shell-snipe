@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "auth_module.h"
 
-#include <DIcon>
+#include <DHiDPIHelper>
 
 #include <QDateTime>
 #include <QTimer>
@@ -102,7 +102,7 @@ void AuthModule::setAuthStateStyle(const QString &path)
     if (!m_authStateLabel)
         return;
 
-    QPixmap pixmap = DIcon::loadNxPixmap(path);
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(path);
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_authStateLabel->setPixmap(pixmap);
 }
@@ -153,8 +153,13 @@ void AuthModule::updateUnlockTime()
 void AuthModule::updateIntegerMinutes()
 {
     if (QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs) > QDateTime::currentDateTime()) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch()
                         - QDateTime::currentDateTimeUtc().toSecsSinceEpoch();
+#else
+        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toTime_t()
+                               - QDateTime::currentDateTimeUtc().toTime_t();
+#endif
         m_integerMinutes = static_cast<uint>(qCeil(intervalSeconds / 60));
     } else {
         m_integerMinutes = 0;

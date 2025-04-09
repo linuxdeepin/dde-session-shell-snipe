@@ -12,7 +12,8 @@
 #include <QSettings>
 #include <QPropertyAnimation>
 #include <QString>
-#include <QKeyEvent>
+
+#include "dbusconstant.h"
 
 static const int SessionButtonWidth = 160;
 static const int SessionButtonHeight = 160;
@@ -48,7 +49,7 @@ SessionWidget::SessionWidget(QWidget *parent)
     , m_currentSessionIndex(0)
     , m_sessionModel(new QLightDM::SessionsModel(this))
     , m_userModel(new QLightDM::UsersModel(this))
-    // , m_allowSwitchingToWayland(DConfigHelper::instance()->getConfig("allowSwitchingToWayland", false).toBool())
+    , m_allowSwitchingToWayland(DConfigHelper::instance()->getConfig("allowSwitchingToWayland", false).toBool())
     , m_isWaylandExisted(false)
     , m_warningLabel(new QLabel(this))
     , m_defaultSession(DConfigHelper::instance()->getConfig("defaultSession", DEFAULT_SESSION_NAME).toString())
@@ -64,18 +65,16 @@ SessionWidget::SessionWidget(QWidget *parent)
     m_warningLabel->setAlignment(Qt::AlignCenter);
     m_warningLabel->hide();
 
-#if 0
     // 判断显卡是否支持wayland
     if (m_allowSwitchingToWayland) {
-        QDBusInterface systemDisplayInter("com.deepin.system.Display", "/com/deepin/system/Display",
-                "com.deepin.system.Display", QDBusConnection::systemBus(), this);
+        QDBusInterface systemDisplayInter(DSS_DBUS::systemDisplayService, DSS_DBUS::systemDisplayPath,
+                DSS_DBUS::systemDisplayService, QDBusConnection::systemBus(), this);
         QDBusReply<bool> reply  = systemDisplayInter.call("SupportWayland");
         if (QDBusError::NoError == reply.error().type())
             m_allowSwitchingToWayland = reply.value();
         else
             qCWarning(DDE_SHELL) << "Get support wayland property failed: " << reply.error().message();
     }
-#endif
 }
 
 void SessionWidget::setModel(SessionBaseModel *const model)

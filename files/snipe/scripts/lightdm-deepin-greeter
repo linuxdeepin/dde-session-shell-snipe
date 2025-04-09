@@ -1,0 +1,23 @@
+#!/bin/bash
+display_daemon="/usr/lib/deepin-daemon/greeter-display-daemon"
+if [ -x $display_daemon ]; then
+    $display_daemon &
+fi
+xsettingsd_conf="/etc/lightdm/deepin/xsettingsd.conf"
+if [ -e $xsettingsd_conf ]; then
+    xsettingsd -c $xsettingsd_conf &
+fi
+
+# 判断是否有脚本需要在greeter之前调用。与更新相关功能
+pre_greeter_out=$(/usr/share/dde-session-shell/greeters.d/pre-greeter)
+exit_code=$?
+exec_path=$(printf "%b\n" "$pre_greeter_out" | tail -1)
+
+if [[ $exit_code == 0 ]]; then
+    echo "Pre-greeter path is: "$exec_path
+    $exec_path
+else
+    echo "There is nothing to do before start greeter"
+fi
+
+/usr/bin/lightdm-deepin-greeter

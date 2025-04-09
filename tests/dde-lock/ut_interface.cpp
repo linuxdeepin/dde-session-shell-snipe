@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "dbusconstant.h"
 #include "userinfo.h"
 
 class UT_Interface : public testing::Test
@@ -25,7 +26,7 @@ void UT_Interface::TearDown()
 
 TEST_F(UT_Interface, user)
 {
-    std::shared_ptr<NativeUser> nativeUser(new NativeUser("/org/deepin/dde/Accounts1/User"+QString::number((getuid()))));
+    std::shared_ptr<NativeUser> nativeUser(new NativeUser(QString(DSS_DBUS::accountsUserPath).arg(QString::number(getuid()))));
     // ASSERT_TRUE(nativeUser->userInter());
     // EXPECT_TRUE(nativeUser->userInter()->greeterBackground().isEmpty());
     // EXPECT_TRUE(nativeUser->userInter()->uid().isEmpty());

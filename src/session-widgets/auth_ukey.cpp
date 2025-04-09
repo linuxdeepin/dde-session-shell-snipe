@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,7 +7,7 @@
 #include "authcommon.h"
 #include "dlineeditex.h"
 
-#include <DIcon>
+#include <DHiDPIHelper>
 
 #include <QKeyEvent>
 #include <QTimer>
@@ -49,7 +49,7 @@ void AuthUKey::initUI()
     /* 缩放因子 */
     UKeyLayout->addStretch(1);
     /* 大小写状态 */
-    QPixmap pixmap = DIcon::loadNxPixmap(CAPS_LOCK);
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(CAPS_LOCK);
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_capsLock->setPixmap(pixmap);
     UKeyLayout->addWidget(m_capsLock, 0, Qt::AlignRight | Qt::AlignVCenter);

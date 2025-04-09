@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -188,81 +207,22 @@
         <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
+        <source>Password expired, please change</source>
+        <translation>Lozink je istekla, molim promijenite je</translation>
+    </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
+        <source>Terminal locked, please contact administrator</source>
         <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>ChangePasswordWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Spremi</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Stara lozinka</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Nova lozinka</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Lozinke se ne podudaraju</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Nova lozinka mora se razlikovati od trenutačne</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Promijenjena lozinka</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Neispravna lozinka</translation>
-    </message>
-</context>
-<context>
-    <name>ControlWidget</name>
-    <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Raspored tipkovnice</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Energija</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
     </message>
 </context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Otkaži</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Slaba</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Srednja</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Jaka</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Lozinka ne smije biti prazna</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Lozinka mora imati najmanje %1 znakova</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Lozinka ne smije biti veća od %1 znakova</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Lozinka može sadržavati samo engleska slova (velika i mala), brojeve i posebne simbole (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Lozinka mora sadržavati velika slova, mala slova, brojeve i simbole (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Ne koristi uobičajene riječi i kombinacije kao lozinku</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Molim napravite jaku lozinku</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Nije u skladu s pravilima lozinke</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Odjava</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Promjeni korisnika</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Promijeni sustav</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Promjeni korisnika</translation>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -430,24 +350,51 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Standardni korisnik</translation>
+        <source>发送验证码</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Administrator</translation>
+        <source>请输入手机号</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Other Users</source>
+        <source>请输入验证码</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>获取验证码</source>
         <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
+        <source>Update</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
         <translation type="unfinished"/>
     </message>
 </context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Jeste li sigurni da se želite odjaviti?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

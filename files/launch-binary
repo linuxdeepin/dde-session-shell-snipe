@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# 设置QT缩放相关的环境变量
+greeter_display_setting_path="/usr/bin/greeter-display-setting"
+if [ -f $greeter_display_setting_path ]; then
+    scale_env=$(/usr/bin/greeter-display-setting | tail -1)
+    export $scale_env
+else
+    echo "$greeter_display_setting_path does not exist, can't do scale"
+fi
+
+# 判断是否有脚本需要在greeter之前调用
+pre_greeter_out=$(/usr/share/dde-session-shell/greeters.d/pre-greeter)
+exit_code=$?
+exec_path=$(printf "%b\n" "$pre_greeter_out" | tail -1)
+
+if [[ $exit_code == 0 ]]; then
+    echo "Pre-greeter path is: "$exec_path
+    $exec_path
+else
+    echo "There is nothing to do before start greeter"
+fi
+
+# 启动greeter
+# greeter没正常退出的情况下，会重新拉起greeter
+start_lightdm_deepin_greeter() {
+  echo "-lightdm-deepin-greeter starting..." 1>&2
+  while true; do
+      /usr/bin/lightdm-deepin-greeter
+      exit_status=$?
+      # 143 为收到kill信号后退出码
+      if [ $exit_status -eq 0 ] || [ $exit_status -eq 143 ]; then
+          echo "-lightdm-deepin-greeter exit code: $exit_status" 1>&2
+          break
+      else
+          current_time=$(date '+%Y-%m-%d %H:%M:%S')
+          echo "$current_time: -lightdm-deepin-greeter exited with non-zero status. Restarting..." 1>&2
+      fi
+  done
+}
+
+dde-dconfig --get -a org.deepin.dde.lightdm-deepin-greeter -r org.deepin.dde.lightdm-deepin-greeter -k enableLighterGreeter | grep "true"
+if [ $? -eq 0 ];then
+    /usr/bin/lightdm-deepin-greeter-lighter
+
+    # 没正常退出的情况下，仍然拉起原版Greeter
+    if [ $? -ne 0 ];then
+        start_lightdm_deepin_greeter
+    fi
+else
+    start_lightdm_deepin_greeter
+fi

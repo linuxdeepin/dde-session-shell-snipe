@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export XDG_CONFIG_DIRS=/etc/xdg
+export QML2_IMPORT_PATH=/usr/lib/x86_64-linux-gnu/qt5/qml
+export XDG_DATA_DIRS=/usr/share
+export GDK_BACKEND=x11
+export QT_QPA_PLATFORM=wayland
+export KWIN_COMPOSE=O2ES
+export QT_WAYLAND_SHELL_INTEGRATION=kwayland-shell
+
+/usr/bin/kwin_wayland --xwayland --drm --no-lockscreen /usr/share/dde-session-shell/greeters.d/wayland/lightdm-deepin-greeter-wayland

@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -188,82 +207,23 @@
         <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
+        <source>Password expired, please change</source>
+        <translation>Adgangskoden er udløbet. Skift den venligst</translation>
+    </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
+        <source>Terminal locked, please contact administrator</source>
         <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>ChangePasswordWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Gem</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Gamle adgangskode</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Ny adgangskode</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Adgangskoderne er ikke ens</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Hjælpen er synlig for alle brugere. Inkludér ikke adgangskoden her.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Ny adgangskode bør afvige fra den nuværende</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Forkert password</translation>
-    </message>
-</context>
-<context>
-    <name>ControlWidget</name>
-    <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Tastaturlayout</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Strøm</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Onboard</translation>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Annuller</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Svag</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Medium</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Stærk</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Adgangskoden må ikke være tom</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Adgangskode skal mindst have %1 tegn</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Adgangskoden må højst være %1 tegn langt</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Adgangskode må kun indeholde engelske bogstaver (forskel på store og små bogstaver), tal, eller specialtegn (æÆøØåÅ~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Venligst ikke flere end %1 palindrome tegn</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Venligst ikke flere end %1 monotone tegn</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Venligst ikke flere end %1 gentagne tegn</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Adgangskode skal indeholde store bogstaver, små bogstaver, tal, og symboler (æÆøØåÅ~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>Adgangskode må ikke indeholde flere end 4 palindrome tegn</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Anvend ikke almindelige ord og kompinationer som adgangskode</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Opret venligst en stærk adgangskode</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Den lever ikke op til adgangskodekravene</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Log ud</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Skift bruger</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation type="unfinished"/>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Skift bruger</translation>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Standardbruger</translation>
+        <source>发送验证码</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Administrator</translation>
+        <source>请输入手机号</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Other Users</source>
+        <source>请输入验证码</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>获取验证码</source>
         <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Onboard</translation>
+        <source>Update</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Er du sikker på, at du vil logge ud?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>

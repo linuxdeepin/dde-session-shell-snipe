@@ -11,11 +11,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#include "dbusconstant.h"
+
 MultiScreenManager::MultiScreenManager(QObject *parent)
     : QObject(parent)
     , m_registerFunction(nullptr)
     , m_raiseContentFrameTimer(new QTimer(this))
-    , m_systemDisplay(new SystemDisplayInter("org.deepin.dde.Display1", "/org/deepin/dde/Display1", QDBusConnection::systemBus(), this))
+    , m_systemDisplay(new SystemDisplayInter(DSS_DBUS::systemDisplayService, DSS_DBUS::systemDisplayPath, QDBusConnection::systemBus(), this))
     , m_isCopyMode(false)
 {
     connect(qApp, &QGuiApplication::screenAdded, this, &MultiScreenManager::onScreenAdded, Qt::DirectConnection);
@@ -42,7 +44,7 @@ void MultiScreenManager::register_for_multi_screen(std::function<QWidget *(QScre
         if (qApp->screens().count() < 1) {
             // 没有屏幕数据延时2s再取一次
             QThread::sleep(2);
-            qWarning() << " #### qApp->screens : " << qApp->screens().count() << ", repeat times : " << maxAttempts++;
+            qWarning(" #### qApp->screens : %d, repeat times : %d .", qApp->screens().count(),  maxAttempts++);
             if (maxAttempts == 50) {
                 break;
             }

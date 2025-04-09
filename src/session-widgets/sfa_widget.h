@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,11 +6,15 @@
 #define SFAWIDGET_H
 
 #include "auth_widget.h"
+#include "userinfo.h"
 #include "authcommon.h"
 #include "buttonbox.h"
 #include "assist_login_widget.h"
 
 #include <DArrowRectangle>
+#include <DBlurEffectWidget>
+#include <DButtonBox>
+#include <DClipEffectWidget>
 #include <DFloatingButton>
 #include <DLabel>
 

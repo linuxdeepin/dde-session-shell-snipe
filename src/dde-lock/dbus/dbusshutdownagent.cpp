@@ -4,7 +4,6 @@
 
 #include "dbusshutdownagent.h"
 #include "sessionbasemodel.h"
-#include "public_func.h"
 
 DBusShutdownAgent::DBusShutdownAgent(QObject *parent)
     : QObject(parent)
@@ -123,7 +122,11 @@ void DBusShutdownAgent::Suspend()
         m_model->setPowerAction(SessionBaseModel::RequireSuspend);
     } else {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
+#ifndef ENABLE_DSS_SNIPE
+        if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
+#else
         if (isSleepLock()) {
+#endif
             m_model->setVisible(true);
         }
         emit m_model->onRequirePowerAction(SessionBaseModel::RequireSuspend, true);
@@ -144,7 +147,11 @@ void DBusShutdownAgent::Hibernate()
         m_model->setPowerAction(SessionBaseModel::RequireHibernate);
     } else {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
+#ifndef ENABLE_DSS_SNIPE
+        if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
+#else
         if (isSleepLock()) {
+#endif
             m_model->setVisible(true);
         }
         emit m_model->onRequirePowerAction(SessionBaseModel::RequireHibernate, true);
@@ -233,7 +240,11 @@ void DBusShutdownAgent::getPPidByPid(quint32 pid)
     file.close();
 
     QTextStream textStream(&byteArray);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     textStream.setEncoding(QStringConverter::Utf8);
+#else
+    textStream.setCodec("UTF-8");
+#endif
     while (!textStream.atEnd()) {
         QString line = textStream.readLine();
         if (line.startsWith("PPid:")) {

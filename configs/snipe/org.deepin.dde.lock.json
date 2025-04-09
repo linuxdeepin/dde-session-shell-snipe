@@ -1,0 +1,286 @@
+{
+    "magic": "dsg.config.meta",
+    "version": "1.0",
+    "contents": {
+        "useSolidBackground": {
+            "value": false,
+            "serial": 0,
+            "flags": [],
+            "name": "UseSolidBackground",
+            "name[zh_CN]": "使用纯色背景",
+            "description": "是否使用纯色背景，默认为否。开启配置时，那么将不会加载背景图片，降低内存占用。禁用设置时，加载背景图片，比较美观，但是会增加内存占用。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "autoExit": {
+            "value": false,
+            "serial": 0,
+            "flags": [],
+            "name": "AutoExit",
+            "name[zh_CN]": "自动退出",
+            "description": "是否自动退出，默认为否。开启配置时，那么隐藏界面一分钟就dde-lock进程将自动退出，降低内存占用。关闭配置时，应用将一直驻留在内存中，每次开启速度较快。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "hideLogoutButton":{
+            "value": false,
+            "serial": 0,
+            "flags": [],
+            "name": "HideLogoutButton",
+            "name[zh_CN]": "隐藏注销按钮",
+            "description": "锁屏界面隐藏注销按钮；false：不隐藏，true：隐藏。默认值为false，修改后即时生效。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "hideOnboard":{
+            "value": false,
+            "serial": 0,
+            "flags": [],
+            "name": "HideOnboard",
+            "name[zh_CN]": "隐藏屏幕键盘",
+            "description": "锁屏界面隐藏屏幕键盘；false：不隐藏，true：隐藏。默认值为false，修改后即时生效。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableOneKeyLogin":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "EnableOneKeyLogin",
+            "name[zh_CN]": "是否加载华为自动登录插件",
+            "description[zh_CN]": "华为了电脑一键登录是否加载插件；false：不加载，true：加载。默认值为false；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableShortcutForLock":{
+            "value": ["Screenshot","Screen Recorder","Full screenshot"],
+            "serial": 0,
+            "flags": [],
+            "name": "EnableShortcutForLock",
+            "name[zh_CN]": "锁屏下启用的快捷键",
+            "description[zh_CN]": "锁屏下需要启用一些快捷键，修改后非即时生效",
+            "permissions": "readonly",
+            "visibility": "private"
+        },
+        "showTopTip":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowTopTip",
+            "name[zh_CN]": "是否显示顶部的提示信息，默认不开启",
+            "description[zh_CN]": "顶部提示信息一般用于定制项目，主线默认不开启",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "topTipText":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "TopTipText",
+            "name[zh_CN]": "顶部的提示信息的文案",
+            "description[zh_CN]": "顶部的提示信息的文案，不支持多语言",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showUserName":{
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowUserName",
+            "name[zh_CN]": "锁屏是否展示用户名",
+            "description[zh_CN]": "锁屏是否展示用户名，默认不展示",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "topTipTextFont":{
+            "value": 5,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "TopTipTextFont",
+            "name[zh_CN]": "顶部的提示信息的文案的字体大小",
+            "description[zh_CN]": "顶部的提示信息的文案的字体大小，默认为5，有效值为0~9，数字越大字体越小。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "userFrameMaxWidth":{
+            "value": 226,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "UserNameMaxWidth",
+            "name[zh_CN]": "用户名界面最大宽度",
+            "description[zh_CN]": "显示用户名界面的最大宽度，默认为226，小于226不生效。开启后根据用户名长度调整宽度，如果无法完整显示则用省略号补充。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "fullNameFont":{
+            "value": 5,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "FullNameFont",
+            "name[zh_CN]": "全名的字体大小",
+            "description[zh_CN]": "设置全名的字体大小，默认为5，有效值为0~9，数字越大字体越小。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "pluginBlackList":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Plugin black list",
+            "name[zh_CN]": "插件黑名单",
+            "description[zh_CN]": "插件黑名单（包括托盘插件和认证插件），在加载插件的阶段进行判断。系统级配置，默认为空，需要重启电脑。数据结构为数组，内部填充字符串（插件的key值）",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "customLogoPath":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "CustomLogoPath",
+            "name[zh_CN]": "第三方系统logo水印路径",
+            "description[zh_CN]": "第三方系统logo水印路径,图片最大不超过500k",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "customLogoPos":{
+            "value": "0,0",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "CustomLogoPos",
+            "name[zh_CN]": "第三方系统logo水印位置",
+            "description[zh_CN]": "第三方系统logo水印位置，系统LOGO右上角为原点,(10,0)表示 OEM LOGO 在系统LOGO右侧水平间隔10像素",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showSystemVersion":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowSystemVersion",
+            "name[zh_CN]": "是否显示系统版本",
+            "description[zh_CN]": "系统版本显示；false：不显示，true：显示。默认值为true；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "delayInhibitIgnoreList":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "DelayInhibitIgnoreList",
+            "name[zh_CN]": "延迟关机忽略列表",
+            "description[zh_CN]": "延迟关机忽略列表内的应用不在阻止关机列表中显示",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "designatedLoginPlugin":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Designated login plugin",
+            "name[zh_CN]": "指定的认证插件",
+            "description[zh_CN]": "指定使用哪一种认证插件，优先级最高。默认为空，重启后生效。\n（**deprecated**）此配置不推荐使用，使用 designatedLoginPlugins 配置替代",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultLoginPlugin":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Default login plugin",
+            "name[zh_CN]": "默认的认证插件",
+            "description[zh_CN]": "默认使用的认证插件，默认为空，重启后生效。\n（**deprecated**）此配置不推荐使用，使用 defaultLoginPlugins 配置替代",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "designatedLoginPlugins":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Designated login plugin",
+            "name[zh_CN]": "指定的认证插件",
+            "description[zh_CN]": "指定使用的认证插件，优先级最高，会覆盖 defaultLoginPlugins 的值\n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "defaultLoginPlugins":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Default login plugin",
+            "name[zh_CN]": "默认的认证插件",
+            "description[zh_CN]": "默认使用的认证插件，优先级次于 designatedLoginPlugins \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "loginPluginsDisplayOrder":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Login plugin display order",
+            "name[zh_CN]": "认证插件展示的顺序",
+            "description[zh_CN]": "认证插件的显示顺序 \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "loginPluginsAuthOrder":{
+            "value": [],
+            "serial": 0,
+            "flags": ["global"],
+            "name": "Login plugin auth order",
+            "name[zh_CN]": "认证插件认证的顺序",
+            "description[zh_CN]": "认证插件的认证优先级，此配置优先级最高，会覆盖其它的优先级设置 \n类型：字符串数组，内部填充插件的 key 值\n默认值：空数组\n生效时机：重启后生效",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableShellBlack":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "EnableShellBlack",
+            "name[zh_CN]": "是否打开shell的黑屏模式",
+            "description": "是否打开shell的黑屏模；false：不开，true：开启。默认值为true；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "visibleShutdownWhenRebootOrShutdown":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "VisibleShutdownWhenRebootOrShutdown",
+            "name[zh_CN]": "是否在shutdown页面点击关机或重启时，隐藏shutdown页面",
+            "description": "是否在shutdown页面点击关机或重启时，隐藏shutdown页面；false：隐藏，true：不隐藏。默认值为true；",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "showMediaWidget":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "ShowMediaWidget",
+            "name[zh_CN]": "是否显示多媒体控制界面",
+            "description": "是否显示多媒体控制界面，true-显示，false-隐藏",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "accountExpression":{
+            "value": "[a-zA-Z0-9-_@.]+$",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "AccountExpression",
+            "name[zh_CN]": "账户名命名规则",
+            "description": "账户名命名规则",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "longPressDisplayPassword":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "LongPressDisplayPassword",
+            "name[zh_CN]": "是否长按小眼睛显示密码",
+            "description": "是否长按小眼睛显示密码，true-鼠按长按小眼睛才显示密码，false-鼠标点击一下就一直显示密码",
+            "permissions": "readwrite",
+            "visibility": "private"
+        }
+    }
+}

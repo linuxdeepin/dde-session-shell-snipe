@@ -23,7 +23,11 @@ void ActionWidget::setState(const State state)
     update();
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void ActionWidget::enterEvent(QEnterEvent *event)
+#else
+void ActionWidget::enterEvent(QEvent *event)
+#endif
 {
     Q_EMIT mouseEnter();
     m_state = Enter;

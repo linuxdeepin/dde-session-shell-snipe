@@ -1,0 +1,24 @@
+#!/bin/bash
+
+folder_path="/usr/share/dde-session-shell/greeters.d/launch.conf.d"
+
+if [ -d ${folder_path} ]; then
+    # 遍历文件夹中的所有文件
+    for file in $(ls -1 "$folder_path"/*.json | sort -r -n); do
+        if [[ -f "$file" ]]; then
+            need_exec_script=$(jq -r '.NeedExecScript' "$file")
+            if [[ ! -z "$need_exec_script" ]]; then
+                # 执行需要执行的脚本
+                "$need_exec_script"
+                exit_code=$?
+                if [[ $exit_code -eq 0 ]]; then
+                    exec_path=$(jq -r '.ExecPath' "$file")
+                    echo "$exec_path"
+                    exit 0
+                fi
+            fi
+        fi
+    done
+fi
+
+exit 1

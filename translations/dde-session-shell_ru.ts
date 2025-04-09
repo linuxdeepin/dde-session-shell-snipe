@@ -23,7 +23,7 @@
     </message>
     <message>
         <source>Face ID locked, use password please</source>
-        <translation type="unfinished"/>
+        <translation>Face ID заблокирован, пожалуйста, используйте пароль</translation>
     </message>
     <message>
         <source>Device unavailable!</source>
@@ -77,7 +77,26 @@
     </message>
     <message>
         <source>Iris ID locked, use password please</source>
-        <translation type="unfinished"/>
+        <translation>Face ID заблокирован, пожалуйста, используйте пароль</translation>
+    </message>
+</context>
+<context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Пожалуйста, подключите ключ безопасности</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Проверка прошла успешно</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Проверка завершилась неудачно</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Пожалуйста, подключите ключ безопасности</translation>
     </message>
 </context>
 <context>
@@ -188,82 +207,23 @@
         <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation type="unfinished"/>
+        <source>Password expired, please change</source>
+        <translation>Срок действия пароля истек, пожалуйста, измените</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation type="unfinished"/>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation type="unfinished"/>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Срок действия вашего пароля истек. Пожалуйста, свяжитесь с администратором, чтобы изменить его</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Сохранить</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Прежний пароль</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Новый пароль</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Пароли не совпадают</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Подсказка видна всем пользователям. Не указывайте здесь пароль.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Новый пароль должен отличаться от текущего</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Пароль был изменен</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Неверный пароль</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Терминал заблокирован, пожалуйста, свяжитесь с администратором</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Раскладка клавиатуры</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation type="unfinished"/>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Питание</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Экранная Клавиатура</translation>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation type="unfinished"/>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Обычный режим</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Слабый</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Средний</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Сильный</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Пароль не может быть пустым</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Пароль должен содержать не менее %1 символов</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Пароль должен содержать не более %1 символов</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Пароль может содержать только английские буквы (с учетом регистра), цифры или специальные символы(~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Слишком много палиндромов: %1</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Слишком много символов по порядку: %1</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Слишком много повторяющихся символов: %1</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Пароль должен содержать прописные буквы, строчные буквы, цифры и символы (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>Пароль не должен содержать более 4 символов палиндрома</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Не используйте общие слова и комбинации в качестве пароля</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Пожалуйста, создайте надежный пароль</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Не соответствует правилам паролей</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Вы включили высокий уровень безопасности системы, поэтому не можете переключиться в режим Wayland, отключите высокий уровень безопасности в Центре безопасности и повторите попытку.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Выйти</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Переключить пользователя</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Переключить систему</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Переключить пользователя</translation>
+        <source>Update and Shut Down</source>
+        <translation>Обновить и Выключить</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Обновить и Перезагрузить</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Обычный пользователь</translation>
+        <source>发送验证码</source>
+        <translation>Отправить проверочный код</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Администратор</translation>
+        <source>请输入手机号</source>
+        <translation>Пожалуйста, введите Ваш номер телефона</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation type="unfinished"/>
+        <source>请输入验证码</source>
+        <translation>Пожалуйста, введите проверочный код</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Получить проверочный код</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Экранная Клавиатура</translation>
+        <source>Update</source>
+        <translation>Обновление</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Пожалуйста, подключитесь, а затем установите обновления.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Вы действительно хотите выйти из системы?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Обновить и Выключить</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Обновить и Перезагрузить</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Закрытие программ и завершение работы, пожалуйста, подождите...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Закрытие программ и перезагрузка, пожалуйста подождите...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Закрытие программ и выход из системы, пожалуйста подождите...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Автоматическая авторизация</translation>
     </message>
 </context>
 <context>

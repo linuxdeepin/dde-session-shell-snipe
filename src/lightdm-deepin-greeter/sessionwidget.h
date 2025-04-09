@@ -7,13 +7,13 @@
 
 #include <QFrame>
 #include <QList>
+#include <QSettings>
 
 #include <QLightDM/SessionsModel>
 #include <QLightDM/UsersModel>
 
 #include "rounditembutton.h"
 
-class QLabel;
 class SessionBaseModel;
 class SessionWidget : public QFrame
 {
@@ -64,7 +64,7 @@ private:
     QLightDM::SessionsModel *m_sessionModel;
     QList<RoundItemButton *> m_sessionBtns;
     QLightDM::UsersModel *m_userModel;
-    bool m_allowSwitchingToWayland = false;
+    bool m_allowSwitchingToWayland;
     bool m_isWaylandExisted;
     QLabel *m_warningLabel;
     QString m_defaultSession;

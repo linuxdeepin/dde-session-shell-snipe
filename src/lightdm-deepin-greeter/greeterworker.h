@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,12 +7,19 @@
 
 #include "authinterface.h"
 #include "dbuslockservice.h"
+#include "dbuslogin1manager.h"
 #include "deepinauthframework.h"
 #include "sessionbasemodel.h"
 
 #include <QLightDM/Greeter>
 #include <QLightDM/SessionsModel>
 #include <QObject>
+
+#ifndef ENABLE_DSS_SNIPE
+#include <com_deepin_api_soundthemeplayer.h>
+
+using SoundThemePlayerInter = com::deepin::api::SoundThemePlayer;
+#endif
 
 class GreeterWorker : public Auth::AuthInterface
 {
@@ -78,13 +85,18 @@ private:
     void changePasswd();
     void screenSwitchByWldpms(bool active);
     void updatePasswordExpiredStateBySPName(const QString &account);
+#ifdef ENABLE_DSS_SNIPE
     void prepareShutdownSound();
+#endif
 
 private:
     DeepinAuthFramework *m_authFramework;
     QLightDM::Greeter *m_greeter;
     DBusLockService *m_lockInter;
     QDBusInterface *m_systemDaemon;
+#ifndef ENABLE_DSS_SNIPE
+    SoundThemePlayerInter *m_soundPlayerInter;
+#endif
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,29 +12,26 @@
 #include <QObject>
 #include <QJsonObject>
 
+#ifndef ENABLE_DSS_SNIPE
+#include <com_deepin_daemon_accounts_user.h>
+using UserInter = com::deepin::daemon::accounts::User;
+#else
 #include "userinterface.h"
-
 using UserInter = org::deepin::dde::accounts1::User;
-
+#endif
 class User : public QObject
 {
     Q_OBJECT
 public:
-    // enum AccountType {
-    //     NormalUser,
-    //     Administrator
-    // };
+    enum AccountType {
+        NormalUser,
+        Administrator
+    };
 
     enum UserType {
         Native,
         ADDomain,
         Default
-    };
-
-    enum AccountType {
-        Standard = 0,
-        Admin = 1,
-        Other = 2
     };
 
     enum ExpiredState {

@@ -4,6 +4,7 @@
 
 #include "dbuslockagent.h"
 #include "sessionbasemodel.h"
+#include "dbusconstant.h"
 
 #include <QDBusMessage>
 
@@ -58,7 +59,7 @@ void DBusLockAgent::Suspend(bool enable)
         m_model->setIsBlackMode(true);
         m_model->setVisible(true);
     } else {
-        QDBusInterface infc("org.deepin.dde.Power1","/org/deepin/dde/Power1","org.deepin.dde.Power1");
+        QDBusInterface infc(DSS_DBUS::sessionPowerService, DSS_DBUS::sessionPowerPath,DSS_DBUS::sessionPowerService);
         // 待机恢复需要密码
         bool bSuspendLock = infc.property("SleepLock").toBool();
 
@@ -142,7 +143,11 @@ void DBusLockAgent::getPPidByPid(quint32 pid)
     file.close();
 
     QTextStream textStream(&byteArray);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     textStream.setEncoding(QStringConverter::Utf8);
+#else
+    textStream.setCodec("UTF-8");
+#endif
     while (!textStream.atEnd()) {
         QString line = textStream.readLine();
         if (line.startsWith("PPid:")) {

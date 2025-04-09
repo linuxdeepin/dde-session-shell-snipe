@@ -72,8 +72,11 @@ void PopupWindow::showEvent(QShowEvent *e)
 
     QTimer::singleShot(0, this, &PopupWindow::ensureRaised);
 }
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void PopupWindow::enterEvent(QEnterEvent *e)
+#else
+void PopupWindow::enterEvent(QEvent *e)
+#endif
 {
     DArrowRectangle::enterEvent(e);
 

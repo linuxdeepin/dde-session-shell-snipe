@@ -1,13 +1,15 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "sessionbasemodel.h"
-#include "dconfig_helper.h"
 
-#include <QProcess>
-#include <QJsonParseError>
+#include <DSysInfo>
+
 #include <QDebug>
+
+#include "dbusconstant.h"
+#include "dconfig_helper.h"
 
 DCORE_USE_NAMESPACE
 
@@ -39,7 +41,11 @@ SessionBaseModel::SessionBaseModel(QObject *parent)
     , m_enableShellBlackMode(DConfigHelper::instance()->getConfig("enableShellBlack", true).toBool())
     , m_visibleShutdownWhenRebootOrShutdown(DConfigHelper::instance()->getConfig("visibleShutdownWhenRebootOrShutdown", true).toBool())
 {
-
+#ifndef ENABLE_DSS_SNIPE
+    if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
+        m_powerGsettings = new QGSettings("com.deepin.dde.power", "/com/deepin/dde/power/", this);
+    }
+#endif
 }
 
 SessionBaseModel::~SessionBaseModel()
@@ -48,9 +54,20 @@ SessionBaseModel::~SessionBaseModel()
     delete m_loginedUsers;
 }
 
+#ifndef ENABLE_DSS_SNIPE
+QVariant SessionBaseModel::getPowerGSettings(const QString &node, const QString &key)
+{
+    QVariant value = valueByQSettings<QVariant>(node, key, true);
+    if (m_powerGsettings != nullptr && m_powerGsettings->keys().contains(key)) {
+        value = m_powerGsettings->get(key);
+    }
+    return value;
+}
+#endif
+
 std::shared_ptr<User> SessionBaseModel::findUserByUid(const uint uid) const
 {
-    for (auto user : std::as_const(*m_users)) {
+    for (auto user : qAsConst(*m_users)) {
         if (user->uid() == uid) {
             return user;
         }
@@ -64,7 +81,7 @@ std::shared_ptr<User> SessionBaseModel::findUserByName(const QString &name) cons
         return std::shared_ptr<User>(nullptr);
     }
 
-    for (auto user : std::as_const(*m_users)) {
+    for (auto user : qAsConst(*m_users)) {
         if (user->name() == name) {
             return user;
         }
@@ -431,7 +448,7 @@ void SessionBaseModel::updateUserList(const QStringList &list)
             m_users->insert(path, user);
         }
     }
-    for (const QString &path : std::as_const(listTmp)) {
+    for (const QString &path : qAsConst(listTmp)) {
         m_users->remove(path);
     }
     emit userListChanged(m_users->values());
@@ -464,7 +481,7 @@ void SessionBaseModel::updateLoginedUserList(const QString &list)
                 // 排除非正常登录用户
                 continue;
             }
-            const QString path = QString("/org/deepin/dde/Accounts1/User") + QString::number(uid);
+            const QString path = QString(DSS_DBUS::accountsUserPath).arg(QString::number(uid));
             if (!m_loginedUsers->contains(path)) {
                 // 对于通过自定义窗口输入的账户(域账户), 此时账户还没添加进来，导致下面m_users->value(path)为空指针，调用会导致程序奔溃
                 // 因此在登录时，对于新增的账户，调用addUser先将账户添加进来，然后再去更新对应账户的登录状态
@@ -476,7 +493,7 @@ void SessionBaseModel::updateLoginedUserList(const QString &list)
             }
         }
     }
-    for (const QString &path : std::as_const(loginedUsersTmp)) {
+    for (const QString &path : qAsConst(loginedUsersTmp)) {
         m_loginedUsers->remove(path);
         m_users->value(path)->updateLoginState(false);
     }

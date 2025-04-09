@@ -65,7 +65,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Перевірку не пройдено, лишилася %n спроба</numerusform><numerusform>Перевірку не пройдено, лишилося %1 спроби</numerusform><numerusform>Перевірку не пройдено, лишилося %n спроб</numerusform><numerusform>Перевірку не пройдено, лишилася %n спроба</numerusform></translation>
+        <translation><numerusform>Перевірку не пройдено, лишилася %n спроба</numerusform><numerusform>Перевірку не пройдено, лишилося %n спроби</numerusform><numerusform>Перевірку не пройдено, лишилося %n спроб</numerusform><numerusform>Перевірку не пройдено, лишилася %n спроба</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -78,6 +78,25 @@
     <message>
         <source>Iris ID locked, use password please</source>
         <translation>Ідентифікатор райдужки заблоковано. Скористайтеся, будь ласка, паролем</translation>
+    </message>
+</context>
+<context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Будь ласка, вставте ключ захисту</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Перевірку пройдено</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Перевірку не пройдено</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Ідентифікуємо ключ захисту</translation>
     </message>
 </context>
 <context>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Будь ласка, повторіть спробу за %n хвилину</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилину</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилин</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилину</numerusform></translation>
+        <translation><numerusform>Будь ласка, повторіть спробу за %n хвилину</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилини</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилин</numerusform><numerusform>Будь ласка, повторіть спробу за %n хвилину</numerusform></translation>
     </message>
 </context>
 <context>
@@ -188,82 +207,23 @@
         <translation><numerusform>Строк дії вашого пароля буде вичерпано за %n день. Будь ласка, вчасно змініть його</numerusform><numerusform>Строк дії вашого пароля буде вичерпано за %n дні. Будь ласка, вчасно змініть його</numerusform><numerusform>Строк дії вашого пароля буде вичерпано за %n днів. Будь ласка, вчасно змініть його</numerusform><numerusform>Строк дії вашого пароля буде вичерпано за %n день. Будь ласка, вчасно змініть його</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
+        <source>Password expired, please change</source>
+        <translation>Строк дії пароля вичерпано. Будь ласка, змініть</translation>
+    </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
         <translation>Строк дії пароля вичерпано. Будь ласка, зв&apos;яжіться з адміністратором, щоб змінити його.</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>Строк дії вашого пароля вичерпано. Будь ласка, змініть його.</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Термінал заблоковано, будь ласка, зв&apos;яжіться з адміністратором</translation>
     </message>
 </context>
 <context>
-    <name>ChangePasswordWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>Строк дії вашого пароля вичерпано. Будь ласка, змініть його і увійдіть до системи знову.</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Зберегти</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Старий пароль</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Новий пароль</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Повторіть новий пароль</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Підказка щодо пароля (необов&apos;язкова)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Паролі не збігаються</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Підказку буде показано усім користувачам. Не включайте до неї пароля.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Новий пароль повинен відрізнятися від попереднього</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Пароль змінено</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Помилковий пароль</translation>
-    </message>
-</context>
-<context>
-    <name>ControlWidget</name>
-    <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>Стільничне середовище і протокол показу</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Розкладка клавіатури</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>Змінити користувача</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Живлення</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Клавіатура</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Скасувати</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>Причина заборони.</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Стандартний режим</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Простий</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Посередній</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Складний</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Пароль не може бути порожнім</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Пароль має складатися із принаймні %1 символів</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Пароль має складатися з не більше, ніж %1 символів</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Пароль може складатися лише з літер латиниці (із врахуванням регістру), цифр та спеціальних символів (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Не більше %1 символів у паліндромі, будь ласка</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Не більше %1 послідовних символів, будь ласка</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Не більше %1 повторюваних символів, будь ласка</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Пароль має складатися із великих і малих латинських літер, цифр і символів (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>У паролі не повинно бути паліндромів, що складаються з понад 4 символів</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Не використовуйте поширені слова або їхні комбінації як пароль</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Будь ласка, створіть складний пароль</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Не відповідає правилам створення паролів</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Вами увімкнено високий рівень захисту системи, тому перемикання на режим Wayland неможливе. Будь ласка, вимкніть високий рівень захисту у «Центрі безпеки» і повторіть спробу.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Вихід</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Змінити користувача</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Перемкнути систему</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Змінити користувача</translation>
+        <source>Update and Shut Down</source>
+        <translation>Оновити і вимкнути</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Оновити і перезавантажити</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Стандартний користувач</translation>
+        <source>发送验证码</source>
+        <translation>Введіть код підтвердження</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Адміністратор</translation>
+        <source>请输入手机号</source>
+        <translation>Будь ласка, введіть номер телефону</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>Інші користувачі</translation>
+        <source>请输入验证码</source>
+        <translation>Будь ласка, введіть код підтвердження</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Отримати код підтвердження</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Клавіатура</translation>
+        <source>Update</source>
+        <translation>Оновлення</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Будь ласка, з&apos;єднайте комп&apos;ютер з джерелом живлення, потім встановлюйте оновлення.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Ви впевнені, що хочете вийти?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Оновити і вимкнути</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Оновити і перезавантажити</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Завершуємо роботу програм і вимикаємо комп&apos;ютер, зачекайте…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Завершуємо роботу програм і перезавантажуємо систему, зачекайте…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Завершуємо роботу програм і виходимо із системи, зачекайте…</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Автоматичний вхід</translation>
     </message>
 </context>
 <context>

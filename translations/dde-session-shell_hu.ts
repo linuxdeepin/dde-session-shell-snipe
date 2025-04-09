@@ -19,11 +19,11 @@
     </message>
     <message>
         <source>Verify your Face ID</source>
-        <translation>Hitelesítés Arc azonosítóval</translation>
+        <translation>Hitelesítés Arcalapú azonosítással</translation>
     </message>
     <message>
         <source>Face ID locked, use password please</source>
-        <translation>Az Arc Azonosító zárolva, kérjük használja a jelszavát</translation>
+        <translation>Az Arcalapú azonosítás zárolva, kérjük használja a jelszavát</translation>
     </message>
     <message>
         <source>Device unavailable!</source>
@@ -73,11 +73,30 @@
     </message>
     <message>
         <source>Verify your Iris ID</source>
-        <translation>Hitelesítés Írisz Azonosítóval</translation>
+        <translation>Hitelesítés Írisz Azonosítással</translation>
     </message>
     <message>
         <source>Iris ID locked, use password please</source>
-        <translation>Az Írisz Azonosító zárolva, kérjük használja a jelszavát</translation>
+        <translation>Az Írisz azonosítás zárolva, kérjük használja a jelszavát</translation>
+    </message>
+</context>
+<context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Kérjük csatlakoztassa a biztonsági kulcsot</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Az ellenőrzés sikeres</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Az ellenőrzés sikertelen</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>A biztonsági kulcs azonosítása</translation>
     </message>
 </context>
 <context>
@@ -188,82 +207,23 @@
         <translation><numerusform>A jelszava %n nap múlva lejár, kérjük változtassa meg időben</numerusform><numerusform>A jelszava %n nap múlva lejár, kérjük változtassa meg időben</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
+        <source>Password expired, please change</source>
+        <translation>Jelszava lejárt, kérjük változtassa meg</translation>
+    </message>
+    <message>
+        <source>Your password has expired. Please contact the administrator to change it</source>
         <translation>A jelszava lejárt. A módosításhoz kérjük forduljon a Rendszergazdához.</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>A jelszava lejárt, kérjük változtassa meg.</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>A terminál zárolva van, forduljon a Rendszergazdához</translation>
     </message>
 </context>
 <context>
-    <name>ChangePasswordWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>A jelszava lejárt, kérjük változtassa meg és jelentkezzen be újra.</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Mentés</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Régi jelszó</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Új jelszó</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Ismételje meg az új jelszót</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Jelszó emlékeztető (Opcionális)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>A jelszavak nem egyeznek</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Az emlékeztető minden felhasználó számára látható. Ne adja meg itt a jelszavát</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Az új jelszónak különböznie kell a jelenlegitől </translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>A jelszó megváltoztatva</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Helytelen jelszó</translation>
-    </message>
-</context>
-<context>
-    <name>ControlWidget</name>
-    <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>Asztali környezet és megjelenítési protokoll</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Billentyűzetkiosztás</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>Felhasználóváltás</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Kikapcsolás</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Képernyő billentyűzet</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -283,6 +243,17 @@
         <source>Cancel</source>
         <translation>Mégsem</translation>
     </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>A meggátolás oka:</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Általános Mód</translation>
+    </message>
 </context>
 <context>
     <name>LockContent</name>
@@ -299,11 +270,11 @@
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Az ujjlenyomat azonosítás időtúllépése, kérjük adja meg a jelszavát kézzel</translation>
+        <translation>Ujjlenyomat azonosítás időtúllépése, kérjük adja meg a jelszót kézzel</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>
-        <translation>Az ujjlenyomatok nem egyeznek</translation>
+        <translation>Ujjlenyomatok nem egyeznek</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Gyenge</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Közepes</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Erős</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>A jelszó nem lehet üres</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>A jelszónak legalább %1 karakterből kell állnia</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>A jelszó nem lehet hosszabb %1 karakternél</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>A jelszó csak angol betűket (kis- és nagybetűk érzékeny), számokat vagy speciális szimbólumokat tartalmazhat (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Kérjük ne legyen több, mint %1 palindrom karakter</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Kérjük ne legyen több, mint %1 monoton karakter</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Kérjük ne legyen több, mint %1 ismételt karakter</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>A jelszónak tartalmaznia kell nagybetűket, kisbetűket, számokat és szimbólumokat (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>A jelszó legfeljebb 4 palindróm karaktert tartalmazhat</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Ne használjon jelszóként gyakori szavakat és kombinációkat</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Kérjük hozzon létre egy erős jelszót</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>Nem felel meg a jelszavakra vonatkozó szabályoknak</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Engedélyezte a magas rendszer biztonsági szintet, így nem tud Wayland módra váltani. Kérjük tiltsa le a magas biztonsági szintet a Biztonsági Központban, és próbálkozzon újra.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Kijelentkezés</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Felhasználóváltás</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Rendszer váltása</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Felhasználóváltás</translation>
+        <source>Update and Shut Down</source>
+        <translation>Frissítés és Leállítás</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Frissítés és Újraindítás</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Általános felhasználó</translation>
+        <source>发送验证码</source>
+        <translation>Küldje el az ellenőrző kódot</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Rendszergazda</translation>
+        <source>请输入手机号</source>
+        <translation>Kérjük adja meg a telefonszámát</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>További Felhasználók</translation>
+        <source>请输入验证码</source>
+        <translation>Kérjük adja meg az ellenőrző kódot</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Ellenőrző kódot kap</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Képernyő billentyűzet</translation>
+        <source>Update</source>
+        <translation>Frissítés</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Kérjük csatlakoztassa a számítógépet az áramforráshoz, majd telepítse a frissítéseket.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation>Vissza</translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>Kérjük válasszon ki egy fiókot a bejelentkezéshez</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>Helyi fiók</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>Tartományi fiók</translation>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Biztosan ki akar jelentkezni?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Frissítés és Leállítás</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Frissítés és Újraindítás</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>A programok bezárása és leállítás, kérjük várjon...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>A programok bezárása és újraindítás, kérjük várjon...</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>A programok bezárása és kijelentkezés, kérjük várjon...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Automatikus bejelentkezés</translation>
     </message>
 </context>
 <context>

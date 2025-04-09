@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,7 +6,6 @@
 
 #include "constants.h"
 
-#include <QDBusInterface>
 #include <QDBusConnection>
 #include <QDateTime>
 #include <QDebug>
@@ -22,6 +21,12 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xfixes.h>
 #include <X11/extensions/Xrandr.h>
+
+#ifndef ENABLE_DSS_SNIPE
+#include <QGSettings>
+#else
+#include <QDBusInterface>
+#endif
 
 using namespace std;
 
@@ -191,12 +196,12 @@ bool checkPictureCanRead(const QString &fileName)
 /**
  * @brief 是否使用域管认证。
  *
- * @return false 使用域管认证
- * @return true 使用系统认证
+ * @return true 使用域管认证
+ * @return false 使用系统认证
  */
 bool isDeepinAuth()
 {
-#if 0 // TODO this gsetting config provided by 域管
+#ifndef ENABLE_DSS_SNIPE
     const char* controlId = "com.deepin.dde.auth.control";
     if (QGSettings::isSchemaInstalled(controlId)) {
         const char *controlPath = "/com/deepin/dde/auth/control/";
@@ -204,21 +209,29 @@ bool isDeepinAuth()
         const QString &key = "useDeepinAuth";
         bool useDeepinAuth = controlObj.keys().contains(key) && controlObj.get(key).toBool();
     #ifdef QT_DEBUG
-        qDebug() << "use deepin auth: " << useDeepinAuth;
+        qDebug() << "Use deepin auth: " << useDeepinAuth;
     #endif
         return useDeepinAuth;
     }
+#else
+    // TODO this gsetting config provided by 域管
 #endif
-
     return true;
 }
 
 uint timeFromString(QString time)
 {
+#ifndef ENABLE_DSS_SNIPE
+    if (time.isEmpty()) {
+        return QDateTime::currentDateTime().toTime_t();
+    }
+    return QDateTime::fromString(time, Qt::ISODateWithMs).toLocalTime().toTime_t();
+#else
     if (time.isEmpty()) {
         return QDateTime::currentDateTime().toSecsSinceEpoch();
     }
     return QDateTime::fromString(time, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch();
+#endif
 }
 
 void setAppType(int type)
@@ -245,9 +258,8 @@ void loadTranslation(const QString &locale)
     }
     localTmp = locale;
     qApp->removeTranslator(&translator);
-    if (translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first())) {
-        qApp->installTranslator(&translator);
-    }
+    translator.load("/usr/share/dde-session-shell/translations/dde-session-shell_" + locale.split(".").first());
+    qApp->installTranslator(&translator);
 }
 
 /**
@@ -339,6 +351,7 @@ void configWebEngine()
     }
 }
 
+#ifdef ENABLE_DSS_SNIPE
 bool isSleepLock()
 {
     QDBusInterface powerInterface("org.deepin.dde.Power1",
@@ -357,3 +370,4 @@ bool isSleepLock()
 
     return value.toBool();
 }
+#endif

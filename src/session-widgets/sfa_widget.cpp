@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -97,7 +97,11 @@ void SFAWidget::initConnections()
     connect(m_accountEdit, &DLineEditEx::textChanged, this, [this](const QString &value) {
         m_lockButton->setEnabled(!value.isEmpty());
     });
+#if DTK_VERSION < DTK_VERSION_CHECK(6, 0, 0, 0)
+    connect(SpacerItemBinder::instance(), &SpacerItemBinder::requestInvalidateLayout, m_mainLayout, &QVBoxLayout::invalidate);
+#else
     connect(&SpacerItemBinder::ref(), &SpacerItemBinder::requestInvalidateLayout, m_mainLayout, &QVBoxLayout::invalidate);
+#endif
     connect(PluginManager::instance(), &PluginManager::pluginAboutToBeRemoved, this, [this] (const QString &key) {
         qCInfo(DDE_SHELL) << key << " about to be removed, destruct custom auth now";
         auto it = m_customAuths.find(key);

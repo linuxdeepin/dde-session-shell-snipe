@@ -1,0 +1,19 @@
+#!/bin/bash
+
+xsettingsd_conf="/etc/lightdm/deepin/xsettingsd.conf"
+if [ -e $xsettingsd_conf ]; then
+    xsettingsd -c $xsettingsd_conf &
+else
+    # 设置为推荐分辨率
+    outputs=$(xrandr --query | grep " connected" | cut -d" " -f1)
+    for output in $outputs; do
+        xrandr --output $output --preferred
+    done
+fi
+
+display_daemon="/usr/lib/deepin-daemon/greeter-display-daemon"
+if [ -x $display_daemon ]; then
+    $display_daemon 1>/tmp/greeter-display-daemon.log 2>&1 &
+fi
+
+/usr/share/dde-session-shell/greeters.d/launch-binary

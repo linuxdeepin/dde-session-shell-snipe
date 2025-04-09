@@ -1,0 +1,7 @@
+<RCC>
+    <qresource>
+        <file>images/next1.png</file>
+        <file>images/next2.png</file>
+        <file>qss/udcp_mfa_login_widget.qss</file>
+    </qresource>
+</RCC>

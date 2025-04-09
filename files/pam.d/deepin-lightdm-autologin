@@ -1,0 +1,2 @@
+auth      requisite pam_inhibit_autologin.so
+@include lightdm-autologin

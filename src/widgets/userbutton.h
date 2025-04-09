@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,15 +6,20 @@
 #define USERBUTTON_H
 
 #include <QGraphicsOpacityEffect>
-#include <QtGui/QPaintEvent>
-#include <QVBoxLayout>
+#include <QPaintEvent>
 
 #include <memory>
 
-#include "userinterface.h"
 #include "useravatar.h"
 
+#ifndef ENABLE_DSS_SNIPE
+#include <com_deepin_daemon_accounts_user.h>
+using UserInter = com::deepin::daemon::accounts::User;
+#else
+#include "userinterface.h"
+
 using UserInter = org::deepin::dde::accounts1::User;
+#endif
 
 static const int USER_ICON_WIDTH = 180;
 static const int USER_ICON_HEIGHT = 180;

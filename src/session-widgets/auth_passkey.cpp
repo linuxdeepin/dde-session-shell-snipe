@@ -40,7 +40,11 @@ void AuthPasskey::initUI()
     m_textLabel->setWordWrap(true);
 
     /* 旋转提示和文案提示布局 */
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_stretchLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_stretchLayout->setMargin(0);
+#endif
     m_stretchLayout->setSpacing(10);
     m_stretchLayout->addStretch(1);
     m_stretchLayout->addWidget(m_spinner, 0);

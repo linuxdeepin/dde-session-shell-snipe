@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,9 +11,11 @@
 #include "tray_plugin.h"
 
 #include <DFloatingButton>
+#include <DBlurEffectWidget>
 #include <DStyleOptionButton>
 
 #include <QWidget>
+#include <QEvent>
 #include <QMouseEvent>
 
 namespace dss {
@@ -36,10 +38,6 @@ class QMenu;
 class SessionBaseModel;
 class KBLayoutListView;
 class TipsWidget;
-class RoundPopupWidget;
-class SessionPopupWidget;
-class TipContentWidget;
-class UserListPopupWidget;
 
 const int BlurRadius = 15;
 const int BlurTransparency = 70;
@@ -74,12 +72,8 @@ public:
         installEventFilter(this);
     }
 
-    void setTipText(const QString &tipText) {
-        m_tipText = tipText;
-    }
-    QString tipText() const {
-        return m_tipText;
-    }
+private:
+    IconState m_State = Normal;
 
 Q_SIGNALS:
     void requestShowMenu();
@@ -90,14 +84,7 @@ Q_SIGNALS:
 protected:
     bool eventFilter(QObject *watch, QEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
-
-private:
-    void showCustomWidget() const;
-
-    IconState m_State = Normal;
-    QString m_tipText;
 };
-
 class ControlWidget : public QWidget
 {
     Q_OBJECT
@@ -113,16 +100,13 @@ public:
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
 signals:
-    void requestSwitchUser(std::shared_ptr<User> user);
+    void requestSwitchUser();
     void requestShutdown();
-    void requestSwitchSession(const QString &session);
+    void requestSwitchSession();
     void requestSwitchVirtualKB();
     void requestKeyboardLayout(const QPoint &pos);
     void requestShowModule(const QString &name, const bool callShowForce = false);
     void notifyKeyboardLayoutHidden();
-
-    void requestTogglePopup(QPoint globalPos, QWidget *popup);
-    void requestHidePopup();
 
 public slots:
     void addModule(TrayPlugin *module);
@@ -145,52 +129,45 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
     void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *event) Q_DECL_OVERRIDE;
-    void paintEvent(QPaintEvent *event) override;
 
 private:
     void initUI();
     void initConnect();
+    void showTips();
+    void hideTips();
     void updateLayout();
     void updateTapOrder();
     static QString messageCallback(const QString &message, void *app_data);
-    void toggleButtonPopup(const FloatingButton *button, QWidget *popup);
-
-private slots:
-    void showInfoTips();
-    void hideInfoTips();
-    void showSessionPopup();
-    void showUserListPopupWidget();
 
 private:
     int m_index = 0;
     QList<DFloatingButton *> m_btnList;
 
     QHBoxLayout *m_mainLayout = nullptr;
+    FloatingButton *m_virtualKBBtn = nullptr;
     FloatingButton *m_switchUserBtn = nullptr;
     FloatingButton *m_powerBtn = nullptr;
     FloatingButton *m_sessionBtn = nullptr;
-    FloatingButton *m_virtualKBBtn = nullptr;
-    FloatingButton *m_keyboardBtn = nullptr; // 键盘布局按钮
-
-    std::shared_ptr<User> m_curUser;
-    const SessionBaseModel *m_model = nullptr;
-    QList<QMetaObject::Connection> m_connectionList;
-
-    QMenu *m_contextMenu = nullptr;
+    QLabel *m_sessionTip = nullptr;
+    QWidget *m_tipWidget = nullptr;
+#ifndef SHENWEI_PLATFORM
+    QPropertyAnimation *m_tipsAni = nullptr;
+#endif
     QMap<QPointer<QWidget>, QPointer<QWidget>> m_modules;
     QMap<QString, bool> m_modulesVisible;
 
-    bool m_onboardBtnVisible = true;
-    bool m_doGrabKeyboard = true;
-    bool m_canShowMenu = true;
+    QMenu *m_contextMenu;
+    TipsWidget *m_tipsWidget;
+    const SessionBaseModel *m_model;
 
-    TipContentWidget *m_tipContentWidget = nullptr;       // 显示按钮文字tip
-    TipsWidget *m_tipsWidget = nullptr;                   // 显示插件提供widget tip
-
-    RoundPopupWidget *m_roundPopupWidget = nullptr;       // 圆角弹窗
-    KBLayoutListView *m_kbLayoutListView = nullptr;       // 键盘布局列表
-    SessionPopupWidget *m_sessionPopupWidget = nullptr;   // session 列表
-    UserListPopupWidget *m_userListPopupWidget = nullptr; // 用户列表
+    DArrowRectangle *m_arrowRectWidget;
+    KBLayoutListView *m_kbLayoutListView;   // 键盘布局列表
+    DFloatingButton *m_keyboardBtn;         // 键盘布局按钮
+    std::shared_ptr<User> m_curUser;
+    QList<QMetaObject::Connection> m_connectionList;
+    bool m_onboardBtnVisible;
+    bool m_doGrabKeyboard;
+    bool m_canShowMenu;
 };
 
 #endif // CONTROLWIDGET_H

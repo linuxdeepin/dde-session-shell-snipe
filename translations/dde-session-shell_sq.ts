@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Ju lutemi, futni kyçin e sigurisë</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Verifikim i suksesshëm</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>Verifikimi dështoi</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Po identifikohet kyçi i sigurisë</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -188,81 +207,22 @@
         <translation><numerusform>Fjalëkalimi juaj do të skadojë për %n ditë, ju lutemi, ndryshojeni në kohë</numerusform><numerusform>Fjalëkalimi juaj do të skadojë për %n ditë, ju lutemi, ndryshojeni në kohë</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation>Fjalëkalimi juaj ka skaduar. Ju lutemi, lidhuni me përgjegjësin për ta ndryshuar.</translation>
+        <source>Password expired, please change</source>
+        <translation>Fjalëkalimi skadoi, ju lutemi, ndryshojeni</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>Fjalëkalimi juaj ka skaduar. Ju lutemi, ndryshojeni.</translation>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>Fjalëkalimi juaj ka skaduar. Ju lutemi, ndryshojeni dhe ribëni hyrjen.</translation>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Fjalëkalimi juaj ka skaduar. Ju lutemi, lidhuni me përgjegjësin që ta ndryshojë</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Ruaje</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Fjalëkalimi i vjetër</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Fjalëkalim i ri</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Rijepni fjalëkalimin e ri</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Ndihmëz fjalëkalimi (Opsionale)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Fjalëkalimet nuk përputhen</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>Ndihmëza do të jetë e dukshme për krejt përdoruesit. Mos përfshini fjalëkalimin këtu.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>Fjalëkalimi i ri duhet të jetë i ndryshëm nga ai i tanishmi</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Fjalëkalimi u ndryshua</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Fjalëkalim i gabuar</translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Terminal i kyçur, ju lutemi, lidhuni me përgjegjësin</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>Mjedis Desktop dhe Protokoll Ekrani</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Skemë Tastiere</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>Ndërroni Përdorues</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Energji</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
+        <source>Wrong Password</source>
         <translation type="unfinished"/>
     </message>
 </context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Anuloje</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>Arsyeja e pengimit.</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Mënyra Standarde</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>I dobët</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Çka</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>I fortë</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>Fjalëkalimi s’mund të jetë i zbrazët</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>Fjalëkalimi duhet të ketë të paktën %1 shenja</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>Fjalëkalimi s’duhet të jetë më i madh se %1 shenja</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Fjalëkalimi mund të përmbajë vetëm shkronja anglisht (bëhet dallimi mes shkrimit me të mëdha dhe të vogla), numra ose simbole speciale (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>Ju lutemi, jo më shumë se %1 shenja palindromike</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>Ju lutemi, jo më shumë se %1 shenja monotonike</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>Ju lutemi, jo më shumë se %1 shenja që përsëriten</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>Fjalëkalimi duhet të përmbajë vetëm shkronja të mëdha, shkronja të vogla, numra dhe simbole (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>Fjalëkalimi s’duhet të përmbajë më shumë se 4 shenja palindromike</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>Mos përdorni si fjalëkalim fjalë dhe kombinime të zakonshme</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Ju lutemi, krijoni një fjalëkalim të fortë</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>S’plotëson rregullat për fjalëkalime</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Keni aktivizuar shkallën e lartë të sigurisë së sistemit, ndaj s’mund të kalohet nën mënyrën Wayland, ju lutemi, çaktivizoni shkallën e lartë të sigurisë së sistemit që nga Qendra e Sigurisë dhe riprovoni.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Dilni</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Ndërroni përdorues</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Ndërroni sistem</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Ndërroni përdorues</translation>
+        <source>Update and Shut Down</source>
+        <translation>Përditësoje dhe Fiku</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Përditësoje dhe Rinisu</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Përdorues Standard</translation>
+        <source>发送验证码</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Përgjegjës</translation>
+        <source>请输入手机号</source>
+        <translation type="unfinished"/>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>Përdorues të Tjerë</translation>
+        <source>请输入验证码</source>
+        <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
+        <source>Update</source>
+        <translation>Përditësoje</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Ju lutemi, vëreni në prizë dhe mandej instaloni përditësimet.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
         <translation type="unfinished"/>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>Ju lutemi, përzgjidhni llogarinë për hyrje</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>Llogari Vendore</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>Llogari Përkatësie</translation>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>Jeni i sigurt se doni të dilet?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Përditësoje dhe Fiku</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Përditësoje dhe Rinisu</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Po mbyllen programet dhe po bëhet fikja, ju lutemi, prisni…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Po mbyllen programet dhe po bëhet rinisje, ju lutemi, prisni…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Po mbyllen programet dhe po bëhet dalje nga llogaria, ju lutemi, prisni…</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Hyrje e automatizuar</translation>
     </message>
 </context>
 <context>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -10,9 +10,16 @@
 #include <QMap>
 #include <functional>
 
+#ifdef ENABLE_DSS_SNIPE
 #include "systemdisplay1interface.h"
 
 using SystemDisplayInter = org::deepin::dde::Display1;
+#else
+#include <com_deepin_system_systemdisplay.h>
+
+using SystemDisplayInter = com::deepin::system::Display;
+#endif
+
 
 const static int COPY_MODE = 1;
 const static int EXTENDED_MODE = 2;

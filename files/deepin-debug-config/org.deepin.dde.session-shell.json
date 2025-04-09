@@ -1,0 +1,11 @@
+{
+    "name": "dde-session-shell",
+    "group": "dde",
+    "submodules": [
+        {
+            "name": "org.deepin.dde.lock",
+            "exec": "org.deepin.dde.lock.sh"
+        }
+    ],
+    "version": "V1.0"
+}

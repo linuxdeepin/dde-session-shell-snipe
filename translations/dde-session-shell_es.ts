@@ -3,7 +3,7 @@
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>
-        <translation>ID facial</translation>
+        <translation>ID de facial</translation>
     </message>
     <message>
         <source>Verification successful</source>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, queda %n oportunidad</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -81,6 +81,25 @@
     </message>
 </context>
 <context>
+    <name>AuthPasskey</name>
+    <message>
+        <source>Please plug in the security key</source>
+        <translation>Por favor ingrese la clave de seguridad</translation>
+    </message>
+    <message>
+        <source>Verification successful</source>
+        <translation>Verificación exitosa</translation>
+    </message>
+    <message>
+        <source>Verification failed</source>
+        <translation>La verificación falló</translation>
+    </message>
+    <message>
+        <source>Identifying the security key</source>
+        <translation>Identificando clave de seguridad</translation>
+    </message>
+</context>
+<context>
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
@@ -108,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Vuelva a intentarlo %n minuto más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform></translation>
+        <translation><numerusform>Por favor, inténtelo de nuevo en %n minuto más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo en %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo en %n minutos más tarde</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -127,11 +146,11 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Vuelva a intentarlo %n minuto más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform></translation>
+        <translation><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
-        <translation>Reestablecer contraseña</translation>
+        <translation>Restablecer contraseña</translation>
     </message>
     <message>
         <source>Forgot password?</source>
@@ -174,7 +193,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Por favor, inténtelo de nuevo %n minuto más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform></translation>
+        <translation><numerusform>Por favor, inténtelo de nuevo en %n minuto más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo en %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo en %n minutos más tarde</numerusform></translation>
     </message>
 </context>
 <context>
@@ -185,85 +204,26 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Su contraseña caducará en %n día, cámbiela a tiempo</numerusform><numerusform>Su contraseña caducará en %n días, cámbiela a tiempo</numerusform><numerusform>Su contraseña caducará en %n días, cámbiela a tiempo</numerusform></translation>
+        <translation><numerusform>Su contraseña expirará en %n día, por favor, cámbiela a tiempo</numerusform><numerusform>Su contraseña expirará en %n días, por favor, cámbiela a tiempo</numerusform><numerusform>Su contraseña expirará en %n días, por favor, cámbiela a tiempo</numerusform></translation>
     </message>
     <message>
-        <source>Your password has expired. Please contact the administrator to change it.</source>
-        <translation>Su contraseña ha caducado. Póngase en contacto con el administrador para cambiarlo.</translation>
+        <source>Password expired, please change</source>
+        <translation>La contraseña ha caducado, por favor, cámbiela</translation>
     </message>
     <message>
-        <source>Your password has expired. Please change it.</source>
-        <translation>Su contraseña ha caducado. Por favor cámbiela.</translation>
-    </message>
-</context>
-<context>
-    <name>ChangePasswordWidget</name>
-    <message>
-        <source>Your password has expired. Please change it and log in again.</source>
-        <translation>Su contraseña ha caducado. Cámbiela y vuelva a iniciar sesión.</translation>
+        <source>Your password has expired. Please contact the administrator to change it</source>
+        <translation>Su contraseña ha caducado. Póngase en contacto con el administrador para cambiarla</translation>
     </message>
     <message>
-        <source>Save</source>
-        <translation>Guardar</translation>
-    </message>
-    <message>
-        <source>Old password</source>
-        <translation>Contraseña antigua</translation>
-    </message>
-    <message>
-        <source>New password</source>
-        <translation>Nueva contraseña</translation>
-    </message>
-    <message>
-        <source>Repeat new password</source>
-        <translation>Repetir nueva contraseña</translation>
-    </message>
-    <message>
-        <source>Password hint (Optional)</source>
-        <translation>Sugerencia de contraseña (Opcional)</translation>
-    </message>
-    <message>
-        <source>Passwords do not match</source>
-        <translation>Las contraseñas no coinciden</translation>
-    </message>
-    <message>
-        <source>The hint is visible to all users. Do not include the password here.</source>
-        <translation>La pista es visible para todos los usuarios. No incluya aquí la contraseña.</translation>
-    </message>
-    <message>
-        <source>New password should differ from the current one</source>
-        <translation>La nueva contraseña debe ser diferente a la actual</translation>
-    </message>
-    <message>
-        <source>Password changed</source>
-        <translation>Contraseña cambiada</translation>
-    </message>
-    <message>
-        <source>Wrong password</source>
-        <translation>Contraseña incorrecta </translation>
+        <source>Terminal locked, please contact administrator</source>
+        <translation>Terminal bloqueada, comuníquese con el administrador</translation>
     </message>
 </context>
 <context>
-    <name>ControlWidget</name>
+    <name>DeepinAuthFramework</name>
     <message>
-        <source>Desktop Environment and Display Protocol</source>
-        <translation>Entorno de escritorio y Protocolo de visualización</translation>
-    </message>
-    <message>
-        <source>Keyboard Layout</source>
-        <translation>Distribución del teclado</translation>
-    </message>
-    <message>
-        <source>Switch User</source>
-        <translation>Cambiar usuario</translation>
-    </message>
-    <message>
-        <source>Power</source>
-        <translation>Apagar</translation>
-    </message>
-    <message>
-        <source>Onboard</source>
-        <translation>Teclado en pantalla</translation>
+        <source>Wrong Password</source>
+        <translation type="unfinished"/>
     </message>
 </context>
 <context>
@@ -282,6 +242,17 @@
     <message>
         <source>Cancel</source>
         <translation>Cancelar</translation>
+    </message>
+    <message>
+        <source>The reason of inhibit.</source>
+        <translation>La razón de inhibir.</translation>
+    </message>
+</context>
+<context>
+    <name>LighterGreeter</name>
+    <message>
+        <source>Standard Mode</source>
+        <translation>Modo estándar</translation>
     </message>
 </context>
 <context>
@@ -322,69 +293,10 @@
     </message>
 </context>
 <context>
-    <name>PasswordLevelWidget</name>
+    <name>SessionWidget</name>
     <message>
-        <source>Weak</source>
-        <translation>Débil</translation>
-    </message>
-    <message>
-        <source>Medium</source>
-        <translation>Medio</translation>
-    </message>
-    <message>
-        <source>Strong</source>
-        <translation>Fuerte</translation>
-    </message>
-</context>
-<context>
-    <name>PwqualityManager</name>
-    <message>
-        <source>Password cannot be empty</source>
-        <translation>La contraseña no puede estar vacía</translation>
-    </message>
-    <message>
-        <source>Password must have at least %1 characters</source>
-        <translation>La contraseña debe tener al menos%1 caracteres</translation>
-    </message>
-    <message>
-        <source>Password must be no more than %1 characters</source>
-        <translation>La contraseña no debe tener más de%1 caracteres</translation>
-    </message>
-    <message>
-        <source>Password can only contain English letters (case-sensitive), numbers or special symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>La contraseña debe contener letras latinas (sensible a mayúsculas), números o símbolos (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>No more than %1 palindrome characters please</source>
-        <translation>No más de %1 caracteres de palíndromo, por favor</translation>
-    </message>
-    <message>
-        <source>No more than %1 monotonic characters please</source>
-        <translation>No más de %1 caracteres monótonos por favor</translation>
-    </message>
-    <message>
-        <source>No more than %1 repeating characters please</source>
-        <translation>No más de %1 caracteres repetidos, por favor</translation>
-    </message>
-    <message>
-        <source>Password must contain uppercase letters, lowercase letters, numbers and symbols (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</source>
-        <translation>La contraseña debe contener letras mayúsculas, minúsculas, números y símbolos (~`!@#$%^&amp;*()-_+=|\{}[]:&quot;&apos;&lt;&gt;,.?/)</translation>
-    </message>
-    <message>
-        <source>Password must not contain more than 4 palindrome characters</source>
-        <translation>La contraseña no debe contener más de 4 caracteres palíndromos</translation>
-    </message>
-    <message>
-        <source>Do not use common words and combinations as password</source>
-        <translation>No use palabras y combinaciones simples como contraseña</translation>
-    </message>
-    <message>
-        <source>Create a strong password please</source>
-        <translation>Por favor, cree una contraseña fuerte</translation>
-    </message>
-    <message>
-        <source>It does not meet password rules</source>
-        <translation>No cumple con las reglas de la contraseña</translation>
+        <source>You have enabled the high system security level, thus cannot switch to the Wayland mode, please disable the high security level in Security Center and try again.</source>
+        <translation>Ha habilitado el nivel alto de seguridad del sistema, por lo que no puede cambiar al modo Wayland, desactive el nivel alto de seguridad en el Centro de seguridad e intente nuevamente.</translation>
     </message>
 </context>
 <context>
@@ -414,12 +326,20 @@
         <translation>Cerrar sesión</translation>
     </message>
     <message>
+        <source>Switch user</source>
+        <translation>Cambiar usuario</translation>
+    </message>
+    <message>
         <source>Switch system</source>
         <translation>Cambiar sistema</translation>
     </message>
     <message>
-        <source>Switch user</source>
-        <translation>Cambiar usuario</translation>
+        <source>Update and Shut Down</source>
+        <translation>Actualizar y Apagar</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Actualizar y reiniciar</translation>
     </message>
 </context>
 <context>
@@ -430,25 +350,52 @@
     </message>
 </context>
 <context>
-    <name>UserListPopupWidget</name>
+    <name>UdcpMFALoginWidget</name>
     <message>
-        <source>Standard User</source>
-        <translation>Usuario estándar</translation>
+        <source>发送验证码</source>
+        <translation>Enviar código de verificación</translation>
     </message>
     <message>
-        <source>Administrator</source>
-        <translation>Administrador</translation>
+        <source>请输入手机号</source>
+        <translation>Por favor, introduzca el número de su teléfono móvil</translation>
     </message>
     <message>
-        <source>Other Users</source>
-        <translation>Otros usuarios</translation>
+        <source>请输入验证码</source>
+        <translation>Por favor, introduzca el código de verificación</translation>
+    </message>
+    <message>
+        <source>获取验证码</source>
+        <translation>Obtener un código de verificación</translation>
     </message>
 </context>
 <context>
-    <name>VirtualKeyboardModule</name>
+    <name>UpdateWorker</name>
     <message>
-        <source>Onboard</source>
-        <translation>Teclado en pantalla</translation>
+        <source>Update</source>
+        <translation>Actualizar</translation>
+    </message>
+    <message>
+        <source>Please plug in and then install updates.</source>
+        <translation>Conéctelo y luego instale las actualizaciones.</translation>
+    </message>
+</context>
+<context>
+    <name>UsersWithTheSameName</name>
+    <message>
+        <source>Return</source>
+        <translation>Regresar</translation>
+    </message>
+    <message>
+        <source>Please select the account for login</source>
+        <translation>Por favor seleccione la cuenta para iniciar sesión</translation>
+    </message>
+    <message>
+        <source>Local Account</source>
+        <translation>Cuenta local</translation>
+    </message>
+    <message>
+        <source>Domain Account</source>
+        <translation>Cuenta de dominio</translation>
     </message>
 </context>
 <context>
@@ -508,6 +455,33 @@
     <message>
         <source>Are you sure you want to log out?</source>
         <translation>¿Seguro que desea cerrar sesión?</translation>
+    </message>
+    <message>
+        <source>Update and Shut Down</source>
+        <translation>Acrualizar y apagar</translation>
+    </message>
+    <message>
+        <source>Update and Reboot</source>
+        <translation>Actualizar y reiniciar</translation>
+    </message>
+    <message>
+        <source>Closing the programs and shutting down, please wait...</source>
+        <translation>Cerrando los programas y apagando, por favor espere…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and rebooting, please wait...</source>
+        <translation>Cerrando los programas y reiniciando, por favor espere…</translation>
+    </message>
+    <message>
+        <source>Closing the programs and logging out, please wait...</source>
+        <translation>Cerrando los programas y cerrando la sesión, por favor espere...</translation>
+    </message>
+</context>
+<context>
+    <name>dss::module::AssistLoginWidget</name>
+    <message>
+        <source>Automatic login</source>
+        <translation>Inicio de sesión automático</translation>
     </message>
 </context>
 <context>

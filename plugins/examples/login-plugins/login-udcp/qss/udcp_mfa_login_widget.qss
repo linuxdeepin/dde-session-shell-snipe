@@ -1,0 +1,33 @@
+QPushButton#sendButton {
+    background-color: rgba(255, 255, 255, 76);
+    color: white;
+    border: none;
+    height: 32;
+    border-radius: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+QPushButton#sendButton:hover {
+    background-color: #0081ff;
+}
+
+QPushButton#sendButton:pressed {
+    color: rgb(180, 180, 180);
+}
+QPushButton#sendButton:!enabled {
+    color: rgb(200, 200, 200);
+}
+
+QPushButton#verifyButton {
+    background-color: transparent;
+    border-radius: 2px;
+    color: white;
+    width: 28;
+    height: 20;
+    border: none;
+}
+
+QPushButton#verifyButton:hover {
+    background-color: #0081ff;
+}

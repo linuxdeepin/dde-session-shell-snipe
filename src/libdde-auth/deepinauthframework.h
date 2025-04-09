@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -9,14 +9,19 @@
 
 #include <QObject>
 
+#ifndef ENABLE_DSS_SNIPE
+#include <com_deepin_daemon_authenticate.h>
+#include <com_deepin_daemon_authenticate_session2.h>
+
+using AuthInter = com::deepin::daemon::Authenticate;
+using AuthControllerInter = com::deepin::daemon::authenticate::Session;
+#else
 #include "authenticate1interface.h"
 #include "session2interface.h"
 
-#define AUTHENTICATE_SERVICE "org.deepin.dde.Authenticate1"
-
 using AuthInter = org::deepin::dde::Authenticate1;
 using AuthControllerInter = org::deepin::dde::authenticate1::Session;
-
+#endif
 
 class DeepinAuthFramework : public QObject
 {
@@ -39,13 +44,13 @@ public:
     // 是否正在使用pam认证
     bool IsUsingPamAuth();
 
-    /* org.deepin.dde.Authenticate1 */
+    /* com.deepin.daemon.Authenticate */
     int GetFrameworkState() const;
     AuthCommon::AuthFlags GetSupportedMixAuthFlags() const;
     QString GetPreOneKeyLogin(const int flag) const;
     QString GetLimitedInfo(const QString &account) const;
     QString GetSupportedEncrypts() const;
-    /* org.deepin.dde.Authenticate1.Session */
+    /* com.deepin.daemon.Authenticate.Session */
     int GetFuzzyMFA(const QString &account) const;
     int GetMFAFlag(const QString &account) const;
     int GetPINLen(const QString &account) const;
@@ -63,12 +68,12 @@ public:
 
 signals:
     void startupCompleted();
-    /* org.deepin.dde.Authenticate1 */
+    /* com.deepin.daemon.Authenticate */
     void LimitsInfoChanged(const QString &);
     void SupportedMixAuthFlagsChanged(const int);
     void FramworkStateChanged(const int);
     void SupportedEncryptsChanged(const QString &);
-    /* org.deepin.dde.Authenticate1.Session */
+    /* com.deepin.daemon.Authenticate.Session */
     void MFAFlagChanged(const bool);
     void FuzzyMFAChanged(const bool);
     void PromptChanged(const QString &);

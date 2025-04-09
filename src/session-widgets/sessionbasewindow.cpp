@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "sessionbasewindow.h"
 #include "constants.h"
 #include "centertopwidget.h"
-#include "fakewindowlayer.h"
 
 #include <QDebug>
 #include <QResizeEvent>
@@ -20,7 +19,6 @@ SessionBaseWindow::SessionBaseWindow(QWidget *parent)
     , m_centerTopFrame(nullptr)
     , m_centerFrame(nullptr)
     , m_bottomFrame(nullptr)
-    , m_fakeWindowLayer(new FakeWindowLayer(this))
     , m_mainLayout(nullptr)
     , m_centerTopLayout(nullptr)
     , m_centerLayout(nullptr)
@@ -109,7 +107,10 @@ void SessionBaseWindow::initUI()
     //整理代码顺序，让子部件层级清晰明了,
     //同时方便计算中间区域的大小,使用QFrame替换了QScrollArea
     m_centerTopLayout = new QHBoxLayout;
-    m_centerTopLayout->setContentsMargins(0, 0, 0, 0);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#else
+    m_centerTopLayout->setMargin(0);
+#endif
     m_centerTopLayout->setSpacing(0);
 
     m_centerTopFrame = new QFrame;
@@ -119,11 +120,19 @@ void SessionBaseWindow::initUI()
     m_centerTopFrame->setAutoFillBackground(false);
 
     m_centerLayout = new QHBoxLayout;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_centerLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_centerLayout->setMargin(0);
+#endif
     m_centerLayout->setSpacing(0);
 
     m_centerVLayout = new QVBoxLayout;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_centerVLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_centerVLayout->setMargin(0);
+#endif
     m_centerVLayout->setSpacing(0);
     m_centerVLayout->addSpacerItem(m_centerSpacerItem);
     m_centerVLayout->addLayout(m_centerLayout);
@@ -137,15 +146,26 @@ void SessionBaseWindow::initUI()
     m_rightBottomLayout = new QHBoxLayout;
     m_centerBottomLayout = new QHBoxLayout;
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_leftBottomLayout->setContentsMargins(0, 0, 0, 0);
-    m_leftBottomLayout->setSpacing(0);
     m_centerBottomLayout->setContentsMargins(0, 0, 0, 0);
-    m_centerBottomLayout->setSpacing(0);
     m_rightBottomLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    m_leftBottomLayout->setMargin(0);
+    m_centerBottomLayout->setMargin(0);
+    m_rightBottomLayout->setMargin(0);
+#endif
+
+    m_leftBottomLayout->setSpacing(0);
+    m_centerBottomLayout->setSpacing(0);
     m_rightBottomLayout->setSpacing(0);
 
     QHBoxLayout *bottomLayout = new QHBoxLayout;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     bottomLayout->setContentsMargins(0, 0, 0, 0);
+#else
+    bottomLayout->setMargin(0);
+#endif
     bottomLayout->setSpacing(0);
     bottomLayout->addLayout(m_leftBottomLayout, 3);
     bottomLayout->addLayout(m_centerBottomLayout, 2);
@@ -173,9 +193,6 @@ void SessionBaseWindow::initUI()
     m_stackedLayout->insertWidget(kDefaultWidgetIndex, basewindow);
 
     setLayout(m_stackedLayout);
-
-    m_fakeWindowLayer->setFixedSize(size());
-    m_fakeWindowLayer->setAccessibleName("FakeWindowLayer");
 }
 
 void SessionBaseWindow::hideStackedWidgets()
@@ -271,28 +288,6 @@ void SessionBaseWindow::showDefaultFrame()
     }
 }
 
-void SessionBaseWindow::showPopup(QPoint globalPos, QWidget *popup)
-{
-    m_fakeWindowLayer->setContent(popup);
-    QPoint localPos = m_fakeWindowLayer->mapFromGlobal(globalPos);
-    popup->move(localPos);
-    m_fakeWindowLayer->raise();
-    m_fakeWindowLayer->show();
-}
-
-void SessionBaseWindow::hidePopup()
-{
-    m_fakeWindowLayer->hide();
-}
-
-void SessionBaseWindow::togglePopup(QPoint globalPos, QWidget *popup)
-{
-    if (m_fakeWindowLayer->isVisible())
-        hidePopup();
-    else
-        showPopup(globalPos, popup);
-}
-
 void SessionBaseWindow::resizeEvent(QResizeEvent *event)
 {
     if (!m_centerTopWidget || !m_centerTopFrame || !m_mainLayout)
@@ -303,8 +298,6 @@ void SessionBaseWindow::resizeEvent(QResizeEvent *event)
 
     const int centerTopHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
     m_centerTopFrame->setFixedSize(event->size().width(), centerTopHeight);
-
-    m_fakeWindowLayer->setFixedSize(size());
 
     QFrame::resizeEvent(event);
 }

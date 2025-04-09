@@ -1,5 +1,10 @@
 #!/bin/bash
 
-for i in /etc/deepin/greeters.d/*; do
-    $i
-done
+dde-dconfig --get -a org.deepin.dde.lightdm-deepin-greeter -r org.deepin.dde.lightdm-deepin-greeter -k defaultGreeterSession | grep "wayland"
+if [ $? -eq 0 ];then
+    /usr/share/dde-session-shell/greeters.d/wayland/launch-kwin-wayland
+else
+    for i in /usr/share/dde-session-shell/greeters.d/x/*; do
+        $i
+    done
+fi

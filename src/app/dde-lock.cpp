@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -16,6 +16,7 @@
 #include "sessionbasemodel.h"
 #include "warningcontent.h"
 #include "plugin_manager.h"
+#include "dbusconstant.h"
 
 #include <DApplication>
 #include <DGuiApplicationHelper>
@@ -30,6 +31,13 @@ DWIDGET_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
+#if (DTK_VERSION >= DTK_VERSION_CHECK(5, 6, 8, 7) && DTK_VERSION < DTK_VERSION_CHECK(6, 0, 0, 0))
+    DLogManager::registerLoggingRulesWatcher("org.deepin.dde.lock");
+#endif
+
+    // 配置 qwebengine
+    configWebEngine();
+
     DApplication *app = nullptr;
 #if (DTK_VERSION < DTK_VERSION_CHECK(5, 4, 0, 0))
     app = new DApplication(argc, argv);
@@ -39,6 +47,8 @@ int main(int argc, char *argv[])
 
     // qt默认当最后一个窗口析构后，会自动退出程序，这里设置成false，防止插拔时，没有屏幕，导致进程退出
     QApplication::setQuitOnLastWindowClosed(false);
+    //解决Qt在Retina屏幕上图片模糊问题
+    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     app->setOrganizationName("deepin");
     app->setApplicationName("org.deepin.dde.lock");
     app->setApplicationVersion("2015.1.0");
@@ -136,21 +146,19 @@ int main(int argc, char *argv[])
     // 这里提前进行单实例判断，避免后面数据初始化后再进行单实例判断而导致各种问题（例如：多次调用LockContent::instance()->init(model) 导致的localserver失效）
     auto isSingle = app->setSingleInstance(QString("dde-lock%1").arg(getuid()), DApplication::UserScope);
     QDBusConnection conn = QDBusConnection::sessionBus();
-    if (!conn.registerService(DBUS_LOCK_NAME) ||
-        !conn.registerObject(DBUS_LOCK_PATH, &lockAgent) ||
-        !conn.registerService(DBUS_SHUTDOWN_NAME) ||
-        !conn.registerObject(DBUS_SHUTDOWN_PATH, &shutdownAgent) ||
+    if (!conn.registerService(DSS_DBUS::lockFrontService) ||
+        !conn.registerObject(DSS_DBUS::lockFrontPath, &lockAgent) ||
+        !conn.registerService(DSS_DBUS::shutdownService) ||
+        !conn.registerObject(DSS_DBUS::shutdownPath, &shutdownAgent) ||
         !isSingle) {
         qCWarning(DDE_SHELL) << "Register DBus failed, maybe lock front is running, error: " << conn.lastError();
 
         if (!runDaemon) {
-            const char *lockFrontInter = "org.deepin.dde.LockFront1";
-            const char *shutdownFrontInter = "org.deepin.dde.ShutdownFront1";
             if (showUserList) {
-                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
+                QDBusInterface ifc(DSS_DBUS::lockFrontService, DSS_DBUS::lockFrontPath, DSS_DBUS::lockFrontService, QDBusConnection::sessionBus(), nullptr);
                 ifc.asyncCall("ShowUserList");
             } else if (showShutdown) {
-                QDBusInterface ifc(DBUS_SHUTDOWN_NAME, DBUS_SHUTDOWN_PATH, shutdownFrontInter, QDBusConnection::sessionBus(), nullptr);
+                QDBusInterface ifc(DSS_DBUS::shutdownService, DSS_DBUS::shutdownPath, DSS_DBUS::shutdownService, QDBusConnection::sessionBus(), nullptr);
                 ifc.asyncCall("Show");
             } else if (showLockScreen) {
                 do {
@@ -162,7 +170,7 @@ int main(int argc, char *argv[])
                     }
                 } while (false);
 
-                QDBusInterface ifc(DBUS_LOCK_NAME, DBUS_LOCK_PATH, lockFrontInter, QDBusConnection::sessionBus(), nullptr);
+                QDBusInterface ifc(DSS_DBUS::lockFrontService, DSS_DBUS::lockFrontPath, DSS_DBUS::lockFrontService, QDBusConnection::sessionBus(), nullptr);
                 ifc.asyncCall("Show");
             }
         }

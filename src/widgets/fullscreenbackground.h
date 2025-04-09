@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -9,6 +9,7 @@
 #include <QSharedPointer>
 #include <QLoggingCategory>
 #include <QSize>
+#include <QPointer>
 #include <QVariantAnimation>
 
 #include "abstractfullbackgroundinterface.h"
@@ -50,7 +51,11 @@ protected:
 
 private:
     void paintEvent(QPaintEvent *e) Q_DECL_OVERRIDE;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void enterEvent(QEnterEvent *event) Q_DECL_OVERRIDE;
+#else
+    void enterEvent(QEvent *event) Q_DECL_OVERRIDE;
+#endif
     void leaveEvent(QEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void updateScreen(QPointer<QScreen> screen);

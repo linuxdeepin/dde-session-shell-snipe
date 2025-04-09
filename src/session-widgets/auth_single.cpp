@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -6,17 +6,21 @@
 
 #include "authcommon.h"
 #include "dlineeditex.h"
+#include "dbusconstant.h"
 
-#include <DIcon>
+#include <DHiDPIHelper>
 #include <DDialogCloseButton>
-#include <DSuggestButton>
-#include <DMessageManager>
 
 #include <QKeyEvent>
 #include <QWindow>
+#include <QValidator>
+#ifndef ENABLE_DSS_SNIPE
+#include <QRegExp>
 
+#include <com_deepin_daemon_accounts_user.h>
+#else
 #include "userinterface.h"
-
+#endif
 using namespace AuthCommon;
 
 AuthSingle::AuthSingle(QWidget *parent)
@@ -56,7 +60,11 @@ void AuthSingle::initUI()
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
+#else
+    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$"), this));
+#endif
 
     auto *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
     passwordLayout->setContentsMargins(0, 0, 10, 0);
@@ -71,7 +79,7 @@ void AuthSingle::initUI()
     /* 缩放因子 */
     passwordLayout->addStretch(1);
     /* 大小写状态 */
-    QPixmap pixmap = DIcon::loadNxPixmap(":/misc/images/caps_lock.svg");
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/caps_lock.svg");
     pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_capsLock->setAccessibleName(QStringLiteral("CapsStateLabel"));
     m_capsLock->setPixmap(pixmap);
@@ -448,7 +456,11 @@ void AuthSingle::showResetPasswordMessage()
     }
 
     QPalette pa;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     pa.setColor(QPalette::Window, QColor(247, 247, 247, 51));
+#else
+    pa.setColor(QPalette::Background, QColor(247, 247, 247, 51));
+#endif
     pa.setColor(QPalette::Highlight, Qt::white);
     pa.setColor(QPalette::HighlightedText, Qt::black);
     m_resetPasswordFloatingMessage = new DFloatingMessage(DFloatingMessage::MessageType::ResidentType);
@@ -471,9 +483,12 @@ void AuthSingle::showResetPasswordMessage()
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [this]{
-        const QString AccountsService("org.deepin.dde.Accounts1");
-        const QString path = QString("/org/deepin/dde/Accounts1/User%1").arg(m_currentUid);
-        org::deepin::dde::accounts1::User user(AccountsService, path, QDBusConnection::systemBus());
+#ifndef ENABLE_DSS_SNIPE
+        com::deepin::daemon::accounts::User
+#else
+        org::deepin::dde::accounts1::User
+#endif
+        user(DSS_DBUS::accountsService, QString(DSS_DBUS::accountsUserPath).arg(m_currentUid), QDBusConnection::systemBus());
         auto reply = user.SetPassword("");
         reply.waitForFinished();
         qCWarning(DDE_SHELL) << "Show reset password message: " << reply.error().message();
@@ -523,9 +538,9 @@ bool AuthSingle::isUserAccountBinded()
         return false;
     }
 
-    QDBusInterface accountsInter("org.deepin.dde.Accounts1",
-                                 QString("/org/deepin/dde/Accounts1/User%1").arg(m_currentUid),
-                                 "org.deepin.dde.Accounts1.User",
+    QDBusInterface accountsInter(DSS_DBUS::accountsService,
+                                 QString(DSS_DBUS::accountsUserPath).arg(m_currentUid),
+                                 DSS_DBUS::accountsUserInterface,
                                  QDBusConnection::systemBus());
     QVariant retUUID = accountsInter.property("UUID");
     if (!accountsInter.isValid()) {

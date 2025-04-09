@@ -92,7 +92,11 @@ void InhibitButton::setSelected(bool isSelected)
     update();
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void InhibitButton::enterEvent(QEnterEvent *event)
+#else
+void InhibitButton::enterEvent(QEvent *event)
+#endif
 {
     m_state = Enter;
     m_isSelected = true;

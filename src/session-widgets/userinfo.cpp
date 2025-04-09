@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -10,10 +10,7 @@
 #include <memory>
 #include <pwd.h>
 
-#include <QFile>
-#include <QDBusConnection>
-#include <QJsonArray>
-#include <QJsonDocument>
+#include "dbusconstant.h"
 
 #define DEFAULT_AVATAR ":/img/default_avatar.svg"
 #define DEFAULT_BACKGROUND "/usr/share/backgrounds/default_background.jpg"
@@ -22,7 +19,7 @@ using namespace DDESESSIONCC;
 
 User::User(QObject *parent)
     : QObject(parent)
-    , m_accountType(Admin)
+    , m_accountType(Administrator)
     , m_isAutomaticLogin(false)
     , m_isLogin(false)
     , m_isNoPasswordLogin(false)
@@ -175,7 +172,7 @@ void User::updatePasswordExpiredState(User::ExpiredState state, int dayLeft)
 
 bool User::allowToChangePassword() const
 {
-    return m_accountType == Admin || DConfigHelper::instance()->getConfig(CHANGE_PASSWORD_FOR_NORMAL_USER, true).toBool() || m_expiredState != ExpiredAlready;
+    return m_accountType == Administrator || DConfigHelper::instance()->getConfig(CHANGE_PASSWORD_FOR_NORMAL_USER, true).toBool() || m_expiredState != ExpiredAlready;
 }
 
 bool User::checkUserIsNoPWGrp(const User *user) const
@@ -246,7 +243,7 @@ QString User::userPwdName(const uid_t uid) const
 NativeUser::NativeUser(const QString &path, QObject *parent)
     : User(parent)
     , m_path(path)
-    , m_userInter(new UserInter("org.deepin.dde.Accounts1", path, QDBusConnection::systemBus(), this))
+    , m_userInter(new UserInter(DSS_DBUS::accountsService, path, QDBusConnection::systemBus(), this))
 {
     initConnections();
     initData();
@@ -255,8 +252,8 @@ NativeUser::NativeUser(const QString &path, QObject *parent)
 
 NativeUser::NativeUser(const uid_t &uid, QObject *parent)
     : User(parent)
-    , m_path("/org/deepin/dde/Accounts1/User" + QString::number(uid))
-    , m_userInter(new UserInter("org.deepin.dde.Accounts1", m_path, QDBusConnection::systemBus(), this))
+    , m_path(QString(DSS_DBUS::accountsUserPath).arg(QString::number(uid)))
+    , m_userInter(new UserInter(DSS_DBUS::accountsService, m_path, QDBusConnection::systemBus(), this))
 {
     initConnections();
     initData();
@@ -266,7 +263,7 @@ NativeUser::NativeUser(const uid_t &uid, QObject *parent)
 NativeUser::NativeUser(const NativeUser &user)
     : User(user)
     , m_path(user.path())
-    , m_userInter(new UserInter("org.deepin.dde.Accounts1", m_path, QDBusConnection::systemBus(), this))
+    , m_userInter(new UserInter(DSS_DBUS::accountsService, m_path, QDBusConnection::systemBus(), this))
 {
     initConnections();
 }
