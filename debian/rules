@@ -31,10 +31,3 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 		-DWAIT_DEEPIN_ACCOUNTS_SERVICE=1 \
 		-DDDE_SESSION_SHELL_SNIPE=1
-
-ifeq ($(SYSTYPE), Professional)
-ifeq ($(DEB_BUILD_ARCH), amd64)
-override_dh_gencontrol:
-	dh_gencontrol -- -Vdist:Depends="pbis-open"
-endif
-endif
