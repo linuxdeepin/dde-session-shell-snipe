@@ -1,3 +1,10 @@
+dde-session-shell (6.0.36) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dde-session-shell
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 08 May 2025 17:36:55 +0800
+
 dde-session-shell (6.0.35) unstable; urgency=medium
 
   * chore: remove Depends="pbis-open"
