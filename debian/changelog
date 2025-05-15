@@ -1,3 +1,9 @@
+dde-session-shell (6.0.38) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- YeShanShan <yeshanshan@uniontech.com>  Thu, 15 May 2025 21:30:55 +0800
+
 dde-session-shell (6.0.37) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
