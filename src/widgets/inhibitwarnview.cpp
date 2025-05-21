@@ -10,9 +10,21 @@
 #include <DLabel>
 #include <DToolTip>
 
+#ifdef ENABLE_DSS_SNIPE
+#include <DSGApplication>
+#include <DUtil>
+#include <DDBusSender>
+#endif
+
 #include <QHBoxLayout>
 
 DWIDGET_USE_NAMESPACE
+
+#ifdef ENABLE_DSS_SNIPE
+#define AMDBUS_SERVICE "org.desktopspec.ApplicationManager1"
+#define AMDBUS_PATH_APP_PREFIX "/org/desktopspec/ApplicationManager1"
+#define AMDBUS_APP_INTERFACE "org.desktopspec.ApplicationManager1.Application"
+#endif
 
 const int ButtonWidth = 200;
 const int ButtonHeight = 64;
@@ -86,16 +98,41 @@ void InhibitWarnView::setInhibitorList(const QList<InhibitorData> &list)
     for (const InhibitorData &inhibitor : list) {
         QIcon icon;
 
-        if (inhibitor.icon.isEmpty() && inhibitor.pid) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-            QFileInfo executable_info(QFile::symLinkTarget(QString("/proc/%1/exe").arg(inhibitor.pid)));
-#else
-            QFileInfo executable_info(QFile::readLink(QString("/proc/%1/exe").arg(inhibitor.pid)));
+        if (inhibitor.icon.isEmpty()) {
+            QString iconName;
+#ifdef ENABLE_DSS_SNIPE
+            do {
+                const auto appId = Dtk::Core::DSGApplication::getId(inhibitor.pid);
+                if (appId.isEmpty())
+                    break;
+                const auto amDBusAppPath = QString("%1/%2").arg(AMDBUS_PATH_APP_PREFIX, DUtil::escapeToObjectPath(appId));
+                QDBusReply<QDBusVariant> reply = DDBusSender()
+                    .service(AMDBUS_SERVICE)
+                    .path(amDBusAppPath)
+                    .interface(AMDBUS_APP_INTERFACE)
+                    .property("Icons")
+                    .get();
+                if (reply.isValid()) {
+                    auto ret = qdbus_cast<QMap<QString, QString>>(reply.value().variant());
+                    iconName = ret.value("Desktop Entry");
+                } else {
+                    qCWarning(DDE_SHELL) << "Get icon error:" << reply.error().message();
+                    break;
+                }
+            } while(0);
 #endif
 
-            if (executable_info.exists()) {
-                icon = QIcon::fromTheme(executable_info.fileName());
+            if (iconName.isEmpty() && inhibitor.pid) {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                QFileInfo executable_info(QFile::symLinkTarget(QString("/proc/%1/exe").arg(inhibitor.pid)));
+#else
+                QFileInfo executable_info(QFile::readLink(QString("/proc/%1/exe").arg(inhibitor.pid)));
+#endif
+                // 玲珑应用的exe指向的路径是容器内的路径，在容器外无法访问，因此不能判断文件是否存在
+                QString iconName = executable_info.fileName();
             }
+
+            icon = QIcon::fromTheme(iconName);
         } else {
             icon = QIcon::fromTheme(inhibitor.icon, QIcon::fromTheme("application-x-desktop"));
         }
