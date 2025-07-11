@@ -1,3 +1,13 @@
+dde-session-shell (6.0.43) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dde-session-shell
+  * chore: remove unused Spanish translation files
+  * sync: from linuxdeepin/dde-session-shell
+  * sync: from linuxdeepin/dde-session-shell
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- zyz <zhaoyingzhen@uniontech.com>  Fri, 11 Jul 2025 10:32:10 +0800
+
 dde-session-shell (6.0.42) unstable; urgency=medium
 
   * fix: add hardening compiler flags in debian/rules
