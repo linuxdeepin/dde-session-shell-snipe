@@ -112,6 +112,13 @@ void LockContent::init(SessionBaseModel *model)
     }
 
     DConfigHelper::instance()->bind(this, SHOW_MEDIA_WIDGET, &LockContent::OnDConfigPropertyChanged);
+
+    if (m_model->appType() == AuthCommon::Login && keyboardLayoutHasSpecialSetting()) {
+        m_originalKBLayout = getCurrentKBLayoutAndVariant();
+        qCInfo(DDE_SHELL) << "Original keyboard layout:" << m_originalKBLayout;
+        // 如果是登录界面且键盘布局有特殊设置，则切换到英文键盘布局
+        setKBLayoutAndVariant("us");
+    }
 }
 
 void LockContent::initUI()
@@ -184,8 +191,13 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::userListChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::authFinished, this, [this](bool successful) {
-        if (successful)
+        if (successful) {
             setVisible(false);
+            if (!m_originalKBLayout.isEmpty()) {
+                // 切换回原来的键盘布局
+                setKBLayoutAndVariant(m_originalKBLayout);
+            }
+        }
         restoreMode();
     });
     connect(m_model, &SessionBaseModel::MFAFlagChanged, this, [this](const bool isMFA) {
@@ -984,4 +996,54 @@ void LockContent::showShutdown()
 {
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
     m_model->setVisible(true);
+}
+
+// 判断键盘布局是否有特殊设置，如XKBVARIANT=tib（藏文键盘布局），这个配置文件可通过安装器后配置键盘布局修改
+// 如果设置特殊键盘布局，则在greeter阶段会导致无法输入的问题，密码输入框等设置过滤规则（如大小写，数字，符号等）
+bool LockContent::keyboardLayoutHasSpecialSetting() const
+{
+    QFile file("/etc/default/keyboard");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.startsWith("XKBVARIANT=")) {
+            QString val = line.section('=', 1).trimmed();
+            if (val.startsWith('"') && val.endsWith('"'))
+                val = val.mid(1, val.length() - 2);  // Remove quotes
+            return !val.trimmed().isEmpty();
+        }
+    }
+
+    return false;
+}
+
+QString LockContent::getCurrentKBLayoutAndVariant() const
+{
+    QProcess p;
+    p.start("/usr/bin/setxkbmap", {"-query"});
+    p.waitForFinished();
+    QString layout, variant;
+
+    const QString output = QString::fromUtf8(p.readAllStandardOutput());
+    for (const QString &line : output.split('\n')) {
+        if (line.startsWith("layout:"))
+            layout = line.section(':', 1).trimmed();
+        else if (line.startsWith("variant:"))
+            variant = line.section(':', 1).trimmed();
+    }
+
+    return variant.isEmpty() ? layout : layout + "+" + variant;
+}
+
+void LockContent::setKBLayoutAndVariant(const QString &layoutVariant)
+{
+    qCInfo(DDE_SHELL) << "Set keyboard layout and variant: " << layoutVariant;
+    const QStringList parts = layoutVariant.split('+');
+    if (parts.size() == 2)
+        QProcess::execute("/usr/bin/setxkbmap", {parts[0], "-variant", parts[1]});
+    else if (parts.size() == 1)
+        QProcess::execute("/usr/bin/setxkbmap", {parts[0]});
 }
