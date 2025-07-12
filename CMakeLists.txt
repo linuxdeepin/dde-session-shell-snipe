@@ -401,7 +401,7 @@ add_subdirectory(src/pam-inhibit-autologin)
 if (DISABLE_DSS_SNIPE)
     # bin
     install(TARGETS dde-lock lightdm-deepin-greeter greeter-display-setting DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(FILES files/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(PROGRAMS files/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # install x files
     file(GLOB SCRIPTS
@@ -419,7 +419,7 @@ if (DISABLE_DSS_SNIPE)
     install(FILES files/wayland/lightdm-deepin-greeter-wayland.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/xgreeters/)
 else () # snipe
     install(TARGETS dde-lock lightdm-deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
-    install(FILES files/snipe/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
+    install(PROGRAMS files/snipe/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     file(GLOB SCRIPTS  files/snipe/scripts/*)
     install(PROGRAMS ${SCRIPTS} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/deepin/greeters.d)
