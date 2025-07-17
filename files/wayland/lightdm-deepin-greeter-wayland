@@ -15,4 +15,37 @@ if [ -x $display_daemon ]; then
 fi
 
 
+#在满足条件下，设置tapToClick=true
+#解析dbus信息输出
+dbus_values_get_strings(){
+	local input="$1"
+	echo "$input" | grep -oP 'string \K".*?"' | tr -d '"'
+}
+dbus_values_get_bool(){
+	local input="$1"
+	echo "$input" | grep -oP 'boolean \Ktrue|false' | awk '{print $1}'
+}
+
+#判断并设置设备属性
+device_handle(){
+	local input="$1"
+	local dbus_touchpad=$(dbus-send --session --print-reply --dest=org.kde.KWin $input org.freedesktop.DBus.Properties.Get string:"org.kde.KWin.InputDevice" string:"touchpad")
+	local touchpad=$(dbus_values_get_bool "$dbus_touchpad")
+
+	if [ "$touchpad" = "true" ]; then
+		dbus-send --session --dest=org.kde.KWin "$input" org.freedesktop.DBus.Properties.Set string:"org.kde.KWin.InputDevice" string:"tapToClick" variant:boolean:true
+	fi
+}
+
+#获取设备列表
+dbus_devices=$(dbus-send --session --print-reply --dest=org.kde.KWin /org/kde/KWin/InputDevice org.freedesktop.DBus.Properties.Get string:"org.kde.KWin.InputDeviceManager" string:"devicesSysNames")
+devices_strings=$(dbus_values_get_strings "$dbus_devices")
+
+#遍历设备列表
+device_path="/org/kde/KWin/InputDevice/"
+for dev in $devices_strings; do
+    path="${device_path}${dev}"
+	device_handle "$path"
+done
+
 /usr/share/dde-session-shell/greeters.d/launch-binary
