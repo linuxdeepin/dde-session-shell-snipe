@@ -19,6 +19,7 @@
 #include "useravatar.h"
 #include "plugin_manager.h"
 #include "login_plugin_util.h"
+#include "signal_bridge.h"
 
 #include <DFontSizeManager>
 
@@ -192,8 +193,17 @@ void SFAWidget::initCustomFactors(const AuthFlags type)
     auto plugins = filtrateAuthPlugins(PluginManager::instance()->getLoginPlugins());
     qCInfo(DDE_SHELL) << "Login plugin size:" << plugins.size();
     if (!m_model->terminalLocked() && !plugins.isEmpty() && (type & AT_Custom)) {
-        for (const auto plugin : plugins)
-            initCustomAuth(plugin);
+        for (const auto plugin : plugins) {
+            if (plugin) {
+                plugin->updateConfig();
+                // 手势认证当前还未适配单因认证
+                if (plugin->defaultAuthType() & AT_Pattern) {
+                    continue;
+                }
+
+                initCustomAuth(plugin);
+            }
+        }
 
         // 析构不使用的插件
         for (const auto &auth : m_customAuths.values()) {
@@ -463,10 +473,19 @@ void SFAWidget::initPasswdAuth()
         if (text.isEmpty()) {
             return;
         }
+        if (m_passwordAuth->assistLoginWidget()) {
+            if (m_user) {
+                Q_EMIT SignalBridge::ref().requestSendExtraInfo(m_user->name(), AT_Password, m_passwordAuth->assistLoginWidget()->extraInfo());
+            } else {
+                qCWarning(DDE_SHELL) << "Current user is null, can not send extra info";
+            }
+        }
         m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
         m_passwordAuth->setAnimationState(true);
         m_passwordAuth->setLineEditEnabled(false);
         m_lockButton->setEnabled(false);
+        // OPTIMIZING: DA没有发AS_Verify，这里自己发一个，后续DA优化
+        m_passwordAuth->setAuthState(AuthCommon::AS_Verify, QStringLiteral("Verifying..."));
 
         if (m_model->currentUser()->isLdapUser()
             && LPUtil::updateLoginType() == LPUtil::Type::CLT_MFA)
@@ -1256,28 +1275,42 @@ void SFAWidget::initAccount()
     });
 }
 
-void SFAWidget::onRequestChangeAuth(const AuthType authType)
+void SFAWidget::onRequestChangeAuth(AuthType authType)
 {
     qCInfo(DDE_SHELL) << "Request change auth, auth type: " << authType
             << ", choose auth button box is enabled: " << m_chooseAuthButtonBox->isEnabled()
             << ", current authentication type: " << m_currentAuthType;
+
+    int authTypeTmp = authType;
     const auto customAuth = qobject_cast<AuthCustom*>(sender());
     if (customAuth && customAuth->customAuthType() != m_currentAuthType) {
-        qCInfo(DDE_SHELL) << "Custom auth dismath with current auth type";
-        return;
+        // 输出一下日志表明是哪个插件请求切换的，目前遇到的场景：锁屏时开启了密码认证，云桌面需要切换单点登录插件认证，自动解锁。
+        qCInfo(DDE_SHELL) << "Custom auth mismatch with current auth type, custom auth type: " << customAuth->customAuthType();
     }
 
-    if (authType == m_currentAuthType) {
+    if (authTypeTmp == m_currentAuthType) {
         qCInfo(DDE_SHELL) << "Current auth type is same with request auth type";
         return;
     }
 
-    if (authType != AuthCommon::AT_Password && !m_chooseAuthButtonBox->isEnabled()) {
-        qCWarning(DDE_SHELL) << "Authentication button box is disabled and authentication type is not password.";
-        return;
+    if (authTypeTmp != AuthCommon::AT_Password && !m_chooseAuthButtonBox->isEnabled()) {
+        qCInfo(DDE_SHELL) << "Authentication button box is disabled and authentication type is not password, automatically switch to password authentication";
+        authTypeTmp = AT_Password;
     }
 
-    if (!m_authButtons.contains(authType)) {
+    // 如果请求切换到AT_All 表明请求方无所谓切换到某种特定的类型，交由登录器来处理。
+    // 登录器会切换到上次认证成功的类型。
+    if (authTypeTmp == AuthCommon::AT_All) {
+        qCInfo(DDE_SHELL) << "Request authentication type is AT_All, let the session-shell to handle it";
+        if (m_user) {
+            authTypeTmp = m_user->lastAuthType();
+        } else {
+            qCWarning(DDE_SHELL) << "No user, use first auth type";
+            authTypeTmp = m_authButtons.firstKey();
+        }
+    }
+
+    if (!m_authButtons.contains(authTypeTmp)) {
         qCWarning(DDE_SHELL) << "Authentication buttons do not contain the type";
 
         // 登录选项默认显示上一次认证方式，当不存在上一次认证，默认显示第一种认证方式
@@ -1285,7 +1318,7 @@ void SFAWidget::onRequestChangeAuth(const AuthType authType)
         const auto lastAuthType = m_user->lastAuthType();
         qCInfo(DDE_SHELL) << "Last authtication type:" << lastAuthType;
         if (lastAuthType == AuthCommon::AT_Custom) {
-            int authType = m_authButtons.firstKey();
+            authTypeTmp = m_authButtons.firstKey();
             // 获取上次自定义认证的类型
             const auto &lastCustomAuth = m_user->lastCustomAuth();
             qCInfo(DDE_SHELL) << "Last custom auth:" << lastCustomAuth;
@@ -1294,10 +1327,10 @@ void SFAWidget::onRequestChangeAuth(const AuthType authType)
                 if (it != m_customAuths.end() && it.value() != nullptr) {
                     // 排除重复使用了当前自定义认证类型的情况
                     if (!customAuth || customAuth->customAuthType() != it.value()->customAuthType())
-                        authType = it.value()->customAuthType();
+                        authTypeTmp = it.value()->customAuthType();
                 }
             }
-            button = m_chooseAuthButtonBox->button(authType);
+            button = m_chooseAuthButtonBox->button(authTypeTmp);
         } else if (m_authButtons.contains(lastAuthType)) {
             button = m_chooseAuthButtonBox->button(lastAuthType);
         } else {
@@ -1313,7 +1346,7 @@ void SFAWidget::onRequestChangeAuth(const AuthType authType)
         return ;
     }
 
-    QAbstractButton *btn = m_chooseAuthButtonBox->button(authType);
+    QAbstractButton *btn = m_chooseAuthButtonBox->button(authTypeTmp);
     if (!btn) {
         qCWarning(DDE_SHELL) << "The button of authentication is null";
         return;

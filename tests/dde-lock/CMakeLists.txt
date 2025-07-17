@@ -21,6 +21,7 @@ set(LOCK_TEST_SRCS
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbuslockfrontservice.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbusshutdownagent.cpp
     ${PROJECT_SOURCE_DIR}/src/dde-lock/dbus/dbusshutdownfrontservice.cpp
+    ${PROJECT_SOURCE_DIR}/src/global_util/signal_bridge.h
 )
 
 add_executable(${BIN_NAME}
