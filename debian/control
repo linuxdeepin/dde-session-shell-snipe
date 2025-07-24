@@ -23,7 +23,7 @@ Build-Depends: debhelper-compat (=12), pkg-config,
  libx11-xcb-dev,
  libssl-dev,
 Standards-Version: 3.9.4
-Homepage: http://www.deepin.org/
+Homepage: https://github.com/linuxdeepin/dde-session-shell-snipe
 
 Package: dde-session-shell
 Architecture: any
