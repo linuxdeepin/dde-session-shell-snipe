@@ -53,7 +53,7 @@
             "visibility": "private"
         },
         "enableShortcutForLock":{
-            "value": ["Screenshot","Screen Recorder","Full screenshot"],
+            "value": ["Screenshot","Screen Recorder","Full screenshot","WLAN"],
             "serial": 0,
             "flags": [],
             "name": "EnableShortcutForLock",
