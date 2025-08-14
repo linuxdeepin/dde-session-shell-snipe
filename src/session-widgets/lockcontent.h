@@ -101,6 +101,8 @@ protected:
     void initFMAWidget();
     void initUserListWidget();
     void enableSystemShortcut(const QStringList &shortcuts, bool enabled, bool isPersistent);
+    QString getCurrentKBLayout() const;
+    void setKBLayout(const QString &layout);
 
 protected:
     SessionBaseModel *m_model = nullptr;
@@ -133,6 +135,8 @@ protected:
     bool m_MPRISEnable = false;
     bool m_showMediaWidget = false;
     bool m_hasResetPasswordDialog = false;
+
+    QString m_originalKBLayout;
 };
 
 #endif // LOCKCONTENT_H
