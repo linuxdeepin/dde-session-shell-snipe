@@ -1,3 +1,19 @@
+dde-session-shell (6.0.44) unstable; urgency=medium
+
+  * Sync: from linuxdeepin/dde-session-shell
+  * Sync: from linuxdeepin/dde-session-shell
+  - Updated configs/org.deepin.dde.lock.json
+  * Fix: update homepage url in debian/control
+  * Sync: from linuxdeepin/dde-session-shell
+  * Chore: bump version to 6.0.43
+  * Sync: from linuxdeepin/dde-session-shell
+  * Chore: remove unused Spanish translation files
+  * Sync: from linuxdeepin/dde-session-shell
+  * Sync: from linuxdeepin/dde-session-shell
+  * Sync: from linuxdeepin/dde-session-shell
+
+ -- zyz <zhaoyingzhen@uniontech.com>  Thu, 14 Aug 2025 14:52:01 +0800
+
 dde-session-shell (6.0.43) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
