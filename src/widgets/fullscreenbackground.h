@@ -13,6 +13,7 @@
 #include <QVariantAnimation>
 
 #include "abstractfullbackgroundinterface.h"
+#include "shutdown_black_widget.h"
 
 Q_DECLARE_LOGGING_CATEGORY(DDE_SS)
 
@@ -96,6 +97,7 @@ private:
     BlackWidget *m_blackWidget;
     QTimer *m_resetGeometryTimer;
     QRect m_geometryRect;
+    ShutdownBlackWidget *m_shutdownBlackWidget;
 };
 
 #endif // FULLSCREENBACKGROUND_H

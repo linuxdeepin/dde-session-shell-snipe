@@ -36,6 +36,7 @@ public:
 public slots:
     void startAnimation();
     void stopAnimation();
+    void setEnableTableKeyEvent(bool enable);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -48,6 +49,7 @@ private:
 private:
     LoadSlider *m_loadSlider;
     QPropertyAnimation *m_animation;
+    bool m_enableTableKeyEvent;
 };
 
 #endif // DLINEEDITEX_H

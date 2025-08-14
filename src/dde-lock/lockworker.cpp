@@ -14,6 +14,8 @@
 #include "fullscreenbackground.h"
 #include "updateworker.h"
 #include "lockcontent.h"
+#include "signal_bridge.h"
+#include "mfasequencecontrol.h"
 
 #include <DSysInfo>
 
@@ -160,8 +162,22 @@ void LockWorker::initConnections()
             destroyAuthentication(m_account);
         }
     });
+
+    // 在待机时启动定时器，如果定时器超时的时间离待机时间大于15秒，则认为已经唤醒，停止定时器，并设置黑屏模式为false
+    // prepareForSleep信号有时候会会延迟，所以需要定时器来确认是否已经唤醒，尽早显示出锁屏。
+    static QDateTime doSuspendTime = QDateTime::currentDateTime();
+    auto checkSystemWakeupTimer = new QTimer(this);
+    checkSystemWakeupTimer->setInterval(500);
+    connect(checkSystemWakeupTimer, &QTimer::timeout, this, [this, checkSystemWakeupTimer] {
+        const int secs = static_cast<const int>(doSuspendTime.secsTo(QDateTime::currentDateTime()));
+        if (secs >= 15) { // 小风险：如果15秒还没有待机下去，那就把锁屏显示出来了，不过15秒没有待机的才是大问题
+            qCInfo(DDE_SHELL) << "System wakeup，hide black widget";
+            checkSystemWakeupTimer->stop();
+            m_model->setIsBlackMode(false);
+        }
+    });
     /* org.freedesktop.login1.Manager */
-    connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [this](bool isSleep) {
+    connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [this, checkSystemWakeupTimer](bool isSleep) {
         qCInfo(DDE_SHELL) << "DBus login1 manager prepare for sleep: " << isSleep;
         if (m_model->currentContentType() == SessionBaseModel::UpdateContent) {
             qCInfo(DDE_SHELL) << "Updating, do not answer `PrepareForSleep` signal";
@@ -177,6 +193,8 @@ void LockWorker::initConnections()
         if (isSleep) {
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
+            checkSystemWakeupTimer->start();
+            doSuspendTime = QDateTime::currentDateTime();
         } else {
             // 非黑屏mode
             m_model->setIsBlackMode(isSleep);
@@ -263,6 +281,7 @@ void LockWorker::initConnections()
         FullScreenBackground::setContent(LockContent::instance());
         m_model->setCurrentContentType(SessionBaseModel::LockContent);
     });
+    connect(&SignalBridge::ref(), &SignalBridge::requestSendExtraInfo, this, &LockWorker::sendExtraInfo);
 }
 
 void LockWorker::initData()
@@ -363,7 +382,12 @@ void LockWorker::onAuthStateChanged(const int type, const int state, const QStri
                     && m_model->currentModeState() != SessionBaseModel::ModeStatus::ConfirmPasswordMode) {
                     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
                 }
-                m_resetSessionTimer->start();
+
+                // 处于序列化多因认证过程中时不要重置认证
+                if (MFASequenceControl::instance().currentAuthType() == AuthType::AT_None) {
+                    m_resetSessionTimer->start();
+                }
+
                 m_model->updateAuthState(AuthType(type), AuthState(state), message);
                 break;
             case AS_Failure:
@@ -526,34 +550,38 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
     }
         break;
     case SessionBaseModel::PowerAction::RequireRestart:
-        QProcess::startDetached("/usr/lib/deepin-daemon/dde-blackwidget", QStringList() << "nodbus");
-        if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
-            m_sessionManagerInter->RequestReboot();
-        } else {
-            createAuthentication(m_account);
-            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
-        }
+        m_model->setShutdownMode(true);
 
-        if (m_model->visibleShutdownWhenRebootOrShutdown()) {
-            return;
-        }
-        QTimer::singleShot(250, this, [=] {
+        QTimer::singleShot(350, this, [=] {
+            if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
+                m_sessionManagerInter->RequestReboot();
+            } else {
+                createAuthentication(m_account);
+                m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
+            }
+
+            if (m_model->visibleShutdownWhenRebootOrShutdown()) {
+                return;
+            }
+
             m_model->setVisible(false);
         });
         return;
     case SessionBaseModel::PowerAction::RequireShutdown:
-        QProcess::startDetached("/usr/lib/deepin-daemon/dde-blackwidget", QStringList() << "nodbus");
-        if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
-            m_sessionManagerInter->RequestShutdown();
-        } else {
-            createAuthentication(m_account);
-            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
-        }
+        m_model->setShutdownMode(true);
 
-        if (m_model->visibleShutdownWhenRebootOrShutdown()) {
-            return;
-        }
-        QTimer::singleShot(250, this, [=] {
+        QTimer::singleShot(350, this, [=] {
+            if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
+                m_sessionManagerInter->RequestShutdown();
+            } else {
+                createAuthentication(m_account);
+                m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
+            }
+
+            if (m_model->visibleShutdownWhenRebootOrShutdown()) {
+                return;
+            }
+
             m_model->setVisible(false);
         });
         return;
@@ -628,6 +656,9 @@ void LockWorker::setCurrentUser(const std::shared_ptr<User> user)
 
 void LockWorker::switchToUser(std::shared_ptr<User> user)
 {
+    // 发生用户切换时锁住
+    setLocked(true);
+
     qCDebug(DDE_SHELL) << "LockWorker::switchToUser:" << m_account << user->name();
     if (user->name() == m_account || *user == *m_model->currentUser()) {
         qCInfo(DDE_SHELL) << "Switch to current user:" << user->name() << user->isLogin();
@@ -990,5 +1021,16 @@ void LockWorker::onNoPasswordLoginChanged(const QString &account, bool noPasswor
         if (m_model->currentModeState() != SessionBaseModel::ShutDownMode && m_model->currentModeState() != SessionBaseModel::UserMode) {
             createAuthentication(account);
         }
+    }
+}
+
+void LockWorker::sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info)
+{
+    switch (m_model->getAuthProperty().FrameworkState) {
+    case Available:
+        m_authFramework->sendExtraInfo(account, authType, info);
+        break;
+    default:
+        break;
     }
 }

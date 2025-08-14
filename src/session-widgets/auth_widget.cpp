@@ -41,6 +41,7 @@ AuthWidget::AuthWidget(QWidget *parent)
     , m_faceAuth(nullptr)
     , m_irisAuth(nullptr)
     , m_passkeyAuth(nullptr)
+    , m_gestureAuth(nullptr)
     , m_customAuth(nullptr)
     , m_refreshTimer(new QTimer(this))
     , m_authState(AuthCommon::AS_None)
@@ -79,6 +80,7 @@ void AuthWidget::initUI()
     m_accountEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_accountEdit->setClearButtonEnabled(false);
     m_accountEdit->setPlaceholderText(tr("Account"));
+    m_accountEdit->setEnableTableKeyEvent(true);
 
     // 账户名有效字符使用dsg配置
     const QString accountExpression = DConfigHelper::instance()->getConfig("accountExpression", "[a-zA-Z0-9-_@]+$").toString();
@@ -293,6 +295,11 @@ void AuthWidget::setLimitsInfo(const QMap<int, User::LimitsInfo> *limitsInfo)
             break;
         case AT_ActiveDirectory:
         case AT_Custom:
+            break;
+        case AT_Pattern:
+            if (m_gestureAuth) {
+                m_gestureAuth->setLimitsInfo(limitsInfoTmp);
+            }
             break;
         default:
             qCWarning(DDE_SHELL) << "Authentication type is wrong." << i.key();
@@ -544,6 +551,11 @@ int AuthWidget::getTopSpacing() const
     const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
 
     return qMax(15, deltaY);
+}
+
+QWidget *AuthWidget::getAuthWidget()
+{
+    return this;
 }
 
 int AuthWidget::calcCurrentHeight(const int height) const

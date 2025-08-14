@@ -11,6 +11,7 @@
 #include "dconfig_helper.h"
 
 #include <DGuiApplicationHelper>
+#include <DPlatformWindowHandle>
 
 #include <QDebug>
 #include <QImageReader>
@@ -43,6 +44,7 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
     , m_useSolidBackground(false)
     , m_blackWidget(new BlackWidget(this))
     , m_resetGeometryTimer(new QTimer(this))
+    , m_shutdownBlackWidget(nullptr)
 {
 #ifndef QT_DEBUG
     if (!m_model->isUseWayland()) {
@@ -53,6 +55,8 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
         setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
         // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
         windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
+        DPlatformWindowHandle handle(this, this);
+        handle.setWindowRadius(-1);
     }
 #endif
     frameList.append(this);
@@ -70,6 +74,15 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
     connect(m_resetGeometryTimer, &QTimer::timeout, this, [this] {
         qCDebug(DDE_SHELL) << " setGeometry : " << m_geometryRect;
         setGeometry(m_geometryRect);
+    });
+
+    connect(m_model, &SessionBaseModel::shutdownkModeChanged, this, [this] (bool value){
+        if (!m_shutdownBlackWidget) {
+            m_shutdownBlackWidget = new ShutdownBlackWidget(this);
+        }
+        qCInfo(DDE_SHELL) << "FullScreenBackground size : " << size();
+        m_shutdownBlackWidget->setFixedSize(this->size());
+        m_shutdownBlackWidget->setBlackMode(value);
     });
 }
 
@@ -435,6 +448,8 @@ void FullScreenBackground::updateGeometry()
     }
 
     if (!m_screen.isNull()) {
+        if(m_model->isUseWayland())
+            windowHandle()->setScreen(m_screen);
         setddeGeometry(m_screen->geometry());
 
         qCInfo(DDE_SHELL) << "Update geometry, screen:" << m_screen

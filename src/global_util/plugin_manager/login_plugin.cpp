@@ -129,6 +129,20 @@ void LoginPlugin::notifyCurrentUserChanged(const QString &userName, uid_t uid)
     this->message(toJson(message));
 }
 
+
+void LoginPlugin::authStateChanged(AuthCommon::AuthType type, AuthCommon::AuthState state, const QString &prompt)
+{
+    QJsonObject message;
+    message["CmdType"] = "AuthState";
+    QJsonObject retDataObj;
+    retDataObj["AuthType"] = static_cast<int>(type);
+    retDataObj["AuthState"] = state;
+    retDataObj["AuthPrompt"] = prompt;
+    message["Data"] = retDataObj;
+
+    this->message(toJson(message));
+}
+
 void LoginPlugin::updateConfig()
 {
     QJsonObject message;
@@ -180,4 +194,22 @@ void LoginPlugin::notifyAuthFactorsChanged(int authFactors)
     message["Data"] = data;
 
     this->message(toJson(message));
+}
+
+/**
+ * @brief
+ *
+ * @return true 插件已经准备好做认证了（一般是用户已经输入了内容，比如验证码）
+ * @return false
+ */
+bool LoginPlugin::readyToAuth()
+{
+    QJsonObject message;
+    message["CmdType"] = "ReadyToAuth";
+    const QString &result = this->message(toJson(message));
+    const QJsonObject &dataObj = getDataObj(result);
+    if (dataObj.isEmpty())
+        return true;
+
+    return dataObj["ReadyToAuth"].toBool(true);
 }
