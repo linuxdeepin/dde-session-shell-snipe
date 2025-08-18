@@ -45,7 +45,7 @@ UserFrameList::UserFrameList(QWidget *parent)
 
 void UserFrameList::initUI()
 {
-    m_centerWidget = new QWidget;
+    m_centerWidget = new QWidget(this);
     m_centerWidget->setAccessibleName("UserFrameListCenterWidget");
 
     m_flowLayout = new DFlowLayout(m_centerWidget);
@@ -273,6 +273,7 @@ void UserFrameList::updateLayout(int width)
     if (countWidth > 0) {
         if (m_flowLayout->count() <= count) {
             m_scrollArea->setFixedSize(countWidth, userWidgetHeight + 20);
+            m_centerWidget->setMaximumHeight(m_scrollArea->height());
         } else {
             m_scrollArea->setFixedSize(countWidth, (userWidgetHeight + UserFrameSpacing) * 2);
         }
