@@ -18,6 +18,7 @@
 #include "keyboardmonitor.h"
 #include "dconfig_helper.h"
 #include "constants.h"
+#include "mfasequencecontrol.h"
 
 #include <DDBusSender>
 #include <DConfig>
@@ -41,9 +42,9 @@ LockContent::LockContent(QWidget *parent)
 
 }
 
-LockContent* LockContent::instance()
+LockContent *LockContent::instance()
 {
-    static LockContent* lockContent = nullptr;
+    static LockContent *lockContent = nullptr;
     if (!lockContent) {
         lockContent = new LockContent();
     }
@@ -148,7 +149,9 @@ void LockContent::initUI()
 
     initUserListWidget();
 
-    initFMAWidget();
+    if (PluginManager::instance()->getFullManagedLoginPlugin() != nullptr) {
+        initFMAWidget();
+    }
 }
 
 void LockContent::initConnections()
@@ -179,7 +182,8 @@ void LockContent::initConnections()
             connect(&VirtualKBInstance::Instance(), &VirtualKBInstance::initFinished, this, [&] {
                 m_virtualKB = VirtualKBInstance::Instance().virtualKBWidget();
                 m_controlWidget->setVirtualKBVisible(true);
-            }, Qt::QueuedConnection);
+            },
+                    Qt::QueuedConnection);
             VirtualKBInstance::Instance().init();
         } else {
             VirtualKBInstance::Instance().stopVirtualKBProcess();
@@ -205,11 +209,17 @@ void LockContent::initConnections()
         isMFA ? initMFAWidget() : initSFAWidget();
         // 当前中间窗口为空或者中间窗口就是验证窗口的时候显示验证窗口
         if (!m_centerWidget || m_centerWidget == m_authWidget)
-            setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+            setCenterContent(m_authWidget->getAuthWidget(), 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
     });
 
     connect(m_wmInter, &com::deepin::wm::WorkspaceSwitched, this, &LockContent::currentWorkspaceChanged);
     connect(m_localServer, &QLocalServer::newConnection, this, &LockContent::onNewConnection);
+    connect(m_controlWidget, &ControlWidget::notifyKeyboardLayoutHidden, this, [this] {
+        if (!m_model->isUseWayland() && isVisible() && window()->windowHandle()) {
+            qCDebug(DDE_SHELL) << "Grab keyboard after keyboard layout hidden";
+            window()->windowHandle()->setKeyboardGrabEnabled(true);
+        }
+    });
 
     connect(m_model, &SessionBaseModel::showUserList, this, &LockContent::showUserList);
     connect(m_model, &SessionBaseModel::showLockScreen, this, &LockContent::showLockScreen);
@@ -245,6 +255,16 @@ void LockContent::initMFAWidget()
     connect(m_mfaWidget, &MFAWidget::requestEndAuthentication, this, &LockContent::requestEndAuthentication);
     connect(m_mfaWidget, &MFAWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
     connect(m_mfaWidget, &MFAWidget::requestCheckSameNameAccount, this, &LockContent::requestCheckSameNameAccount);
+
+    connect(&MFASequenceControl::instance(), &MFASequenceControl::currentUIAuthTypeChanged, this, [&](int authType) {
+        Q_UNUSED(authType)
+        // 仅在当前处于认证界面上刷新
+        auto isMFA = m_model->getAuthProperty().MFAFlag;
+        qCInfo(DDE_SHELL) << "model mfa flag" << isMFA;
+        if (m_model->currentModeState() == SessionBaseModel::ModeStatus::PasswordMode && isMFA) {
+            pushPasswordFrame();
+        }
+    });
 }
 
 /**
@@ -320,7 +340,8 @@ void LockContent::initUserListWidget()
 
 void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
-    if (user.get() == nullptr) return; // if dbus is async
+    if (user.get() == nullptr)
+        return; // if dbus is async
 
     //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
     auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
@@ -353,11 +374,11 @@ void LockContent::pushPasswordFrame()
         }
     }
 
-    setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+    setCenterContent(m_authWidget->getAuthWidget(), 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
 
     m_authWidget->syncResetPasswordUI();
 
-    if (!m_fmaWidget->isPluginLoaded()) {
+    if (m_fmaWidget && !m_fmaWidget->isPluginLoaded()) {
         showDefaultFrame();
         return;
     }
@@ -380,7 +401,7 @@ void LockContent::pushUserFrame()
         return;
     }
 
-    if(m_model->isServerModel())
+    if (m_model->isServerModel())
         m_controlWidget->setUserSwitchEnable(false);
 
     m_userListWidget->updateLayout(width());
@@ -393,17 +414,17 @@ void LockContent::pushUserFrame()
         m_controlWidget->setUserSwitchEnable(m_isUserSwitchVisible);
     }
 
-   showDefaultFrame();
+    showDefaultFrame();
 
-   // fix: 解决用户界面多账户区域无焦点问题
-   // showDefaultFrame() -> hideStackedWidgets() -> 会将焦点置为空
-   // 导致默认用户无选中状态，多账户区域无键盘事件
-   setFocus();
+    // fix: 解决用户界面多账户区域无焦点问题
+    // showDefaultFrame() -> hideStackedWidgets() -> 会将焦点置为空
+    // 导致默认用户无选中状态，多账户区域无键盘事件
+    setFocus();
 }
 
 void LockContent::pushConfirmFrame()
 {
-    setCenterContent(m_authWidget, 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+    setCenterContent(m_authWidget->getAuthWidget(), 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
     showDefaultFrame();
 }
 
@@ -475,7 +496,7 @@ void LockContent::onNewConnection()
                                            << "screenshot-ocr"
                                            << "screenshot-scroll"
                                            << "deepin-screen-recorder",
-            false, false);
+                             false, false);
     }
     m_hasResetPasswordDialog = true;
 }
@@ -488,9 +509,13 @@ void LockContent::onDisConnect()
     }
     // 这种情况下不必强制要求可以抓取到键盘，因为可能是网络弹窗抓取了键盘
     tryGrabKeyboard(false);
-    enableSystemShortcut(QStringList() << "screenshot" << "screenshot-window" << "screenshot-delayed"
-                                    << "screenshot-ocr" << "screenshot-scroll" << "deepin-screen-recorder", true, false);
-    m_hasResetPasswordDialog = false;
+    enableSystemShortcut(QStringList() << "screenshot"
+                                       << "screenshot-window"
+                                       << "screenshot-delayed"
+                                       << "screenshot-ocr"
+                                       << "screenshot-scroll"
+                                       << "deepin-screen-recorder",
+                         true, false);
 }
 
 void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
@@ -505,7 +530,7 @@ void LockContent::onStatusChanged(SessionBaseModel::ModeStatus status)
         PluginConfigMap::instance().requestRemoveConfig(PluginConfigMap::ConfigIndex::FullManagePlugin);
     }
 
-    if(m_model->isServerModel())
+    if (m_model->isServerModel())
         onUserListChanged(m_model->loginedUserList());
 
     if (!m_isPANGUCpu && m_currentModeStatus == status)
@@ -672,7 +697,7 @@ void LockContent::toggleVirtualKB()
 
 void LockContent::showModule(const QString &name, const bool callShowForce)
 {
-    PluginBase * plugin = PluginManager::instance()->findPlugin(name);
+    PluginBase *plugin = PluginManager::instance()->findPlugin(name);
     if (!plugin) {
         return;
     }
@@ -702,12 +727,12 @@ bool LockContent::eventFilter(QObject *watched, QEvent *e)
 {
     // 点击插件弹窗以外区域，隐藏插件弹窗
     if (m_popWin && m_currentTray && m_popWin->isVisible()) {
-        QWidget * w = qobject_cast<QWidget*>(watched);
+        QWidget *w = qobject_cast<QWidget *>(watched);
         if (!w)
             return false;
-        const bool isChild = m_currentTray->findChildren<QWidget*>().contains(w);
+        const bool isChild = m_currentTray->findChildren<QWidget *>().contains(w);
         if ((watched == m_currentTray || isChild) && e->type() == QEvent::Enter) {
-            Q_EMIT qobject_cast<FloatingButton*>(m_currentTray)->requestHideTips();
+            Q_EMIT qobject_cast<FloatingButton *>(m_currentTray)->requestHideTips();
         } else if (watched != m_currentTray && !isChild && e->type() == QEvent::MouseButtonRelease) {
             if (!m_popWin->geometry().contains(this->mapFromGlobal(QCursor::pos()))) {
                 m_popWin->hide();
@@ -734,7 +759,7 @@ void LockContent::updateVirtualKBPosition()
     m_virtualKB->move(point);
 }
 
-void LockContent::onUserListChanged(QList<std::shared_ptr<User> > list)
+void LockContent::onUserListChanged(QList<std::shared_ptr<User>> list)
 {
     const bool allowShowUserSwitchButton = m_model->allowShowUserSwitchButton();
     const bool alwaysShowUserSwitchButton = m_model->alwaysShowUserSwitchButton();
@@ -775,7 +800,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
     }
 
     if (m_model->isUseWayland()) {
-        static QDBusInterface *kwinInter = new QDBusInterface("org.kde.KWin","/KWin","org.kde.KWin", QDBusConnection::sessionBus());
+        static QDBusInterface *kwinInter = new QDBusInterface("org.kde.KWin", "/KWin", "org.kde.KWin", QDBusConnection::sessionBus());
         if (!kwinInter || !kwinInter->isValid()) {
             qCWarning(DDE_SHELL) << "Kwin interface is invalid";
             m_failures = 0;
@@ -913,7 +938,7 @@ void LockContent::showTrayPopup(QWidget *trayWidget, QWidget *contentWidget, con
                 window()->windowHandle()->setKeyboardGrabEnabled(true);
             }
         });
-        
+
         connect(this, &LockContent::parentChanged, this, [this] {
             if (m_popWin && m_popWin->isVisible()) {
                 const QPoint &point = mapFromGlobal(m_currentTray->mapToGlobal(QPoint(m_currentTray->size().width() / 2, 0)));
@@ -930,7 +955,7 @@ void LockContent::showTrayPopup(QWidget *trayWidget, QWidget *contentWidget, con
     }
 
     m_currentTray = trayWidget;
-    
+
     // 隐藏后需要removeEventFilter，后期优化
     for (auto child : this->findChildren<QWidget*>()) {
         child->removeEventFilter(this);
@@ -976,7 +1001,7 @@ void LockContent::showUserList()
 {
     if (m_model->userlistVisible()) {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-        QTimer::singleShot(10, this, [ = ] {
+        QTimer::singleShot(10, this, [=] {
             m_model->setVisible(true);
         });
     } else {

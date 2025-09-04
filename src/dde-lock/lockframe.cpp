@@ -95,7 +95,7 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
 
     if (DConfigHelper::instance()->getConfig("autoExit", false).toBool()) {
         m_autoExitTimer = new QTimer(this);
-        m_autoExitTimer->setInterval(1000*60); //1分钟
+        m_autoExitTimer->setInterval(1000 * 60); //1分钟
         m_autoExitTimer->setSingleShot(true);
         connect(m_autoExitTimer, &QTimer::timeout, qApp, &QApplication::quit);
     }
@@ -115,7 +115,7 @@ LockFrame::~LockFrame()
 bool LockFrame::event(QEvent *event)
 {
     if (event->type() == QEvent::KeyRelease) {
-        QString  keyValue = "";
+        QString keyValue = "";
         switch (static_cast<QKeyEvent *>(event)->key()) {
         case Qt::Key_PowerOff: {
             if (!handlePoweroffKey()) {
@@ -165,8 +165,8 @@ bool LockFrame::event(QEvent *event)
         }
         // 锁屏时会独占键盘，需要单独处理F1待机事件
         case Qt::Key_Sleep: {
-             m_model->setPowerAction(SessionBaseModel::RequireSuspend);
-             break;
+            m_model->setPowerAction(SessionBaseModel::RequireSuspend);
+            break;
         }
         }
 
@@ -230,7 +230,9 @@ void LockFrame::keyPressEvent(QKeyEvent *e)
 {
     switch (e->key()) {
 #ifdef QT_DEBUG
-    case Qt::Key_Escape:    qApp->quit();       break;
+    case Qt::Key_Escape:
+        qApp->quit();
+        break;
 #endif
     }
 }
@@ -254,7 +256,6 @@ void LockFrame::hideEvent(QHideEvent *event)
 
     return FullScreenBackground::hideEvent(event);
 }
-
 
 void LockFrame::prepareForSleep(bool isSleep)
 {
