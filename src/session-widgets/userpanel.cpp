@@ -9,16 +9,14 @@
 
 #include <QHBoxLayout>
 
-DWIDGET_USE_NAMESPACE
-
 UserPanel::UserPanel(QWidget *parent)
     : ActionWidget(parent)
     , m_isSelected(false)
     , m_uid(UINT_MAX)
     , m_mainLayout(new QHBoxLayout(this))
     , m_avatar(new UserAvatar(this))
-    , m_displayNameLabel(new QLabel(this))
-    , m_typeLabel(new QLabel(this))
+    , m_displayNameLabel(new DLabel(this))
+    , m_typeLabel(new DLabel(this))
 {
     setObjectName(QStringLiteral("UserPanel"));
     setAccessibleName(QStringLiteral("UserPanel"));
@@ -33,8 +31,12 @@ void UserPanel::initUI()
     setRadius(18);
     m_displayNameLabel->setAlignment(Qt::AlignLeft);
     DFontSizeManager::instance()->bind(m_displayNameLabel, DFontSizeManager::T5);
+    m_displayNameLabel->setElideMode(Qt::ElideRight);
+
     m_typeLabel->setAlignment(Qt::AlignLeft);
     DFontSizeManager::instance()->bind(m_typeLabel, DFontSizeManager::T6);
+    m_typeLabel->setElideMode(Qt::ElideRight);
+
     m_avatar->setAvatarSize(UserAvatarSize);
     m_mainLayout->setSpacing(12);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);

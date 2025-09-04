@@ -34,9 +34,9 @@ UsersWithTheSameName::UsersWithTheSameName(SessionBaseModel *model, QWidget *par
 void UsersWithTheSameName::initUI()
 {
     m_backButton->setText(tr("Return"));
-    const QPixmap &normalBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-normal.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const QPixmap &normalBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-normal.svg");
     m_backButton->setNormalPixmap(normalBackPixmap);
-    const QPixmap &hoverBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-hover.svg").scaled(m_backButton->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    const QPixmap &hoverBackPixmap = DHiDPIHelper::loadNxPixmap(":/img/back-hover.svg");
     m_backButton->setHoverPixmap(hoverBackPixmap);
     m_backButton->setFixedSize(200, 64);
     DFontSizeManager::instance()->bind(m_backButton, DFontSizeManager::T4);
@@ -114,7 +114,13 @@ bool UsersWithTheSameName::findUsers(const QString nativeUserName, const QString
         return false;
     }
     const QJsonObject &jsonObject = jsonDoc.object();
-    const QString &fullName = jsonObject.value("gecos").toString();
+    QString fullName;
+    // 检查fullname字段是否存在，如果存在则使用，否则使用name字段的值
+    if (jsonObject.contains("fullname")) {
+        fullName = jsonObject.value("fullname").toString();
+    } else {
+        fullName = jsonObject.value("name").toString();
+    }
     const QString &name = jsonObject.value("name").toString();
     const uint uid = jsonObject.value("uid").toInt();
 

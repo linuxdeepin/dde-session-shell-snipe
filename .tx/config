@@ -8,3 +8,9 @@ file_filter = translations/dde-session-shell_<lang>.ts
 source_file = translations/dde-session-shell_en.ts
 source_lang = en
 type = QT
+
+[o:linuxdeepin:p:deepin-desktop-environment:r:login-gesture]
+file_filter = plugins/login-gesture/translations/login-gesture_<lang>.ts
+source_file = plugins/login-gesture/translations/login-gesture_en.ts
+source_lang = en
+type = QT

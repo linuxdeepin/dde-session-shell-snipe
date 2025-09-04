@@ -13,6 +13,10 @@
 #include "keyboardmonitor.h"
 #include "sessionbasemodel.h"
 #include "useravatar.h"
+#include "mfasequencecontrol.h"
+#include "plugin_manager.h"
+#include "auth_custom.h"
+#include "signal_bridge.h"
 
 MFAWidget::MFAWidget(QWidget *parent)
     : AuthWidget(parent)
@@ -54,6 +58,10 @@ void MFAWidget::initConnections()
     AuthWidget::initConnections();
     connect(m_model, &SessionBaseModel::authTypeChanged, this, &MFAWidget::setAuthType);
     connect(m_model, &SessionBaseModel::authStateChanged, this, &MFAWidget::setAuthState);
+    // 关闭--已开启但无UI的认证（针对手势这种开启功能，但可能因配置错误、未安装插件，导致无法完成登录/解锁的场景）
+    connect(&MFASequenceControl::instance(), &MFASequenceControl::requestEndUnsupportedAuth, this, [&](int authType) {
+        Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AUTH_FLAGS_CAST(authType));
+    });
 }
 
 void MFAWidget::setModel(const SessionBaseModel *model)
@@ -110,6 +118,14 @@ void MFAWidget::setAuthType(const AuthFlags type)
         m_passwordAuth->deleteLater();
         m_passwordAuth = nullptr;
     }
+    /* 手势 */
+    if (type & AT_Pattern) {
+        initGestureAuth();
+    } else if (m_gestureAuth) {
+        m_gestureAuth->deleteLater();
+        m_gestureAuth = nullptr;
+    }
+
     /* 账户 */
     if (type == AT_None) {
         if (m_model->currentUser()->isNoPasswordLogin()) {
@@ -158,6 +174,8 @@ void MFAWidget::setAuthType(const AuthFlags type)
         }
     }
     setFocus();
+
+    MFASequenceControl::instance().setAuthType(type);
 }
 
 /**
@@ -194,12 +212,21 @@ void MFAWidget::setAuthState(const AuthCommon::AuthType type, const AuthCommon::
             m_irisAuth->setAuthState(state, message);
         }
         break;
+    case AT_Pattern:
+        if (m_gestureAuth) {
+            m_gestureAuth->setAuthState(state, message);
+            // 插件需要认证结果
+            m_gestureAuth->notifyAuthState(type, state);
+        }
+        break;
     case AT_All:
         checkAuthResult(type, state);
         break;
     default:
         break;
     }
+
+    MFASequenceControl::instance().onAuthStatusChanged(type, state, message);
 }
 
 void MFAWidget::autoUnlock()
@@ -235,6 +262,13 @@ void MFAWidget::initPasswdAuth()
         const QString &text = m_passwordAuth->lineEditText();
         if (text.isEmpty()) {
             return;
+        }
+        if (m_passwordAuth->assistLoginWidget()) {
+            if (m_user) {
+                Q_EMIT SignalBridge::ref().requestSendExtraInfo(m_user->name(), AT_Password, m_passwordAuth->assistLoginWidget()->extraInfo());
+            } else {
+                qCWarning(DDE_SHELL) << "Current user is null, can not send extra info";
+            }
         }
         m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
         m_passwordAuth->setAnimationState(true);
@@ -357,6 +391,41 @@ void MFAWidget::initIrisAuth()
 }
 
 /**
+ * @brief 由插件加载,无法加载时，结束该认证
+ */
+void MFAWidget::initGestureAuth()
+{
+    if (m_gestureAuth) {
+        return;
+    }
+
+    auto plugin = PluginManager::instance()->getLoginPlugin(AuthType::AT_Pattern);
+    if (!plugin) {
+        // 如果插件不存在或被析构，次序控制将结束已开启的认证
+        MFASequenceControl::instance().insertIsolateAuthWidget(AT_Pattern, nullptr);
+        qCWarning(DDE_SHELL) << "Pattern plug not found, should stop pattern auth";
+        return;
+    }
+
+    m_gestureAuth = new AuthCustom(this, AuthType::AT_Pattern);
+    m_gestureAuth->setModule(plugin);
+    m_gestureAuth->setModel(m_model);
+    m_gestureAuth->initUi();
+    m_gestureAuth->reset();
+    m_gestureAuth->hide();
+
+    connect(m_gestureAuth, &AuthCustom::requestSendToken, this, [this](const QString &token) {
+        Q_EMIT sendTokenToAuth(m_model->currentUser()->name(), AuthType::AT_Pattern, token);
+    });
+
+    connect(m_gestureAuth, &AuthCustom::activeAuth, this, [this] {
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AuthType::AT_Pattern);
+    });
+
+    MFASequenceControl::instance().insertIsolateAuthWidget(AT_Pattern, m_gestureAuth->getLoginPlugin()->content());
+}
+
+/**
  * @brief 检查多因子认证结果
  *
  * @param type
@@ -417,8 +486,9 @@ void MFAWidget::updateFocusPosition()
 int MFAWidget::getTopSpacing() const
 {
     const int calcTopHeight = static_cast<int>(topLevelWidget()->geometry().height() * AUTH_WIDGET_TOP_SPACING_PERCENT);
-    // 验证类型数量*高度
-    const int authWidgetHeight = m_index * 47 + MIN_AUTH_WIDGET_HEIGHT;
+    auto sequenceAuthWid = MFASequenceControl::instance().currentAuthWidget();
+    // 验证类型数量*高度，或者是独立ui的高度
+    const int authWidgetHeight = sequenceAuthWid == nullptr ? m_index * 47 + MIN_AUTH_WIDGET_HEIGHT : sequenceAuthWid->height();
 
     // 当分辨率过低时，如果仍然保持用户头像到屏幕顶端的距离为屏幕高度的35%，那么验证窗口整体时偏下的。
     // 计算当验证窗口居中时距离屏幕顶端的高度，与屏幕高度*0.35对比取较小值。
@@ -429,6 +499,15 @@ int MFAWidget::getTopSpacing() const
     const int deltaY = topHeight - calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
 
     return qMax(15, deltaY);
+}
+
+/**
+ * @brief 根据认证序列，提供不同来源的UI
+ */
+QWidget *MFAWidget::getAuthWidget()
+{
+    auto wid = MFASequenceControl::instance().currentAuthWidget();
+    return wid == nullptr ? this : wid;
 }
 
 void MFAWidget::resizeEvent(QResizeEvent *event)

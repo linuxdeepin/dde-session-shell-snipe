@@ -118,7 +118,7 @@ LoginModule::LoginModule(QObject *parent)
         if (!m_isAcceptFingerprintSignal) {
             // 防止刚切换指纹认证stop还没结束。
             QTimer::singleShot(30, this, [this] {
-                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+                sendAuthTypeToSession(AuthType::AT_All);
             });
         }
     }, Qt::DirectConnection);
@@ -167,7 +167,7 @@ void LoginModule::startCallHuaweiFingerprint()
     auto failedHandler = [this] {
         m_isAcceptFingerprintSignal = false;
         // FIXME 此处不能调用回调，因为还没初始化，此处的逻辑应该在setCallBack函数完成后再进行。
-        sendAuthTypeToSession(AuthType::AT_Fingerprint);
+        sendAuthTypeToSession(AuthType::AT_All);
     };
 
     QDBusMessage m = QDBusMessage::createMethodCall(DSS_DBUS::authenticateService, DSS_DBUS::fingerprintAuthPath, DSS_DBUS::fingerprintAuthInterface,
@@ -200,7 +200,7 @@ void LoginModule::init()
     if (m_appType == AppType::Lock && !m_acceptSleepSignal) {
         //此处延迟0.5s发送，是需要等待dde-session-shell认证方式创建完成
         QTimer::singleShot(500, this, [this] {
-            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            sendAuthTypeToSession(AuthType::AT_All);
         });
     }
 }
@@ -331,7 +331,7 @@ QString LoginModule::message(const QString &message)
                 sendAuthData(m_lastAuthResult);
             }
             if (m_needSendAuthType) {
-                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+                sendAuthTypeToSession(AuthType::AT_All);
             }
         }
     } else if (cmdType == "AuthState") {
@@ -399,7 +399,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
         if (m_appType == AppType::Lock && m_userName != name && name != "") {
             // 防止stop还未完成就开启了指纹认证
             QTimer::singleShot(30, this, [this] {
-                sendAuthTypeToSession(AuthType::AT_Fingerprint);
+                sendAuthTypeToSession(AuthType::AT_All);
             });
             return ;
         }
@@ -413,7 +413,7 @@ void LoginModule::slotIdentifyStatus(const QString &name, const int errorCode, c
         // 发送一键登录失败的信息
         qWarning() << "Identify Status recive failed, error: " << msg;
         QTimer::singleShot(30, this, [this] {
-            sendAuthTypeToSession(AuthType::AT_Fingerprint);
+            sendAuthTypeToSession(AuthType::AT_All);
         });
 
         m_lastAuthResult.result = AuthResult::Failure;
@@ -499,7 +499,7 @@ void LoginModule::slotPrepareForSleep(bool active)
             m_spinner->start();
     } else {
         //fix: 多用户时，第一个用户直接锁屏，然后待机唤醒，在直接切换到另一个用户时，m_login1SessionSelf没有激活，见159949
-        sendAuthTypeToSession(AuthType::AT_Fingerprint);
+        sendAuthTypeToSession(AuthType::AT_All);
     }
 }
 
@@ -525,12 +525,6 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
         return;
     }
 
-    // 登录界面密码锁定后只允许切换到密码认证，等待密码锁定解除后才能切换到其它认证类型
-    if (m_isLocked && m_appType == AppType::Login) {
-        qInfo() << "Password is locked and current application is greeter, change authentication type to password";
-        type = AuthType::AT_Password;
-    }
-
     // 这里主要为了防止 在发送切换信号的时候,lightdm还为开启认证，导致切换类型失败
     if (m_authStatus == AuthStatus::None && !m_isLocked && type != AuthType::AT_Custom && m_appType != AppType::Lock) {
         m_needSendAuthType = true;
@@ -543,7 +537,7 @@ void LoginModule::sendAuthTypeToSession(AuthType type)
     QJsonObject message;
     message.insert("CmdType", "setAuthTypeInfo");
     QJsonObject retDataObj;
-    retDataObj["AuthType"] = type;
+    retDataObj["AuthType"] = static_cast<int>(type);
     message["Data"] = retDataObj;
     QJsonDocument doc;
     doc.setObject(message);

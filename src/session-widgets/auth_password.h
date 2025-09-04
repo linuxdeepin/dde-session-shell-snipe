@@ -66,6 +66,8 @@ public:
     void clearPasswrodErrorTip(bool isClear);
     void updatePasswrodErrorTipUi();
 
+    AssistLoginWidget * assistLoginWidget() const { return m_assistLoginWidget; }
+
 signals:
     void focusChanged(const bool);
     void lineEditTextChanged(const QString &); // 数据同步
@@ -78,10 +80,12 @@ signals:
     void requestPluginAuthToken(const QString accout, const QString token);
     void requestUpdateBlurEffectGeometry();
     void passwordErrorTipsClearChanged(const bool isClear);
+    void requestSendExtraInfo(const QString &info);
 
 public slots:
     void setResetPasswordMessageVisible(const bool isVisible, bool fromResetDialog = false);
     void updateResetPasswordUI();
+    void onReadyToAuthChanged(bool ready);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

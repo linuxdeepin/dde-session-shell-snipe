@@ -67,6 +67,7 @@ public slots:
     void authFinishedAction();
 
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
+    void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
 
 private:
     void initConnections();
