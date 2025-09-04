@@ -152,6 +152,8 @@ public:
     inline bool isBlackMode() const { return m_isBlackMode; }
     void setIsBlackMode(bool is_black);
 
+    void setShutdownMode(bool is_black);
+
     inline bool isHibernateMode() const { return m_isHibernateMode; }
     void setIsHibernateModel(bool is_Hibernate);
 
@@ -252,6 +254,7 @@ signals:
     void userListLoginedChanged(QList<std::shared_ptr<User>> list);
     void activeAuthChanged(bool active);
     void blackModeChanged(bool is_black);
+    void shutdownkModeChanged(bool is_black);
     void HibernateModeChanged(bool is_hibernate); //休眠信号改变
     void prepareForSleep(bool is_Sleep);          //待机信号改变
     void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
@@ -311,6 +314,7 @@ private:
     bool m_lightdmPamStarted; // 标志lightdmpam是否已经开启，主要用于greeter,lock不涉及lightdm
     AuthResult m_authResult; // 记录认证结果
     bool m_enableShellBlackMode;
+    bool m_enableShutdownBlackWidget;
     bool m_visibleShutdownWhenRebootOrShutdown;
     bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程
 };

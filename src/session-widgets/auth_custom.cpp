@@ -13,8 +13,8 @@ using namespace dss::module;
 
 QList<AuthCustom*> AuthCustom::AuthCustomObjs = {};
 
-AuthCustom::AuthCustom(QWidget *parent)
-    : AuthModule(AuthCommon::AT_Custom, parent)
+AuthCustom::AuthCustom(QWidget *parent, AuthCommon::AuthType type)
+    : AuthModule(type, parent)
     , m_mainLayout(new QVBoxLayout(this))
     , m_plugin(nullptr)
     , m_model(nullptr)
@@ -26,6 +26,9 @@ AuthCustom::AuthCustom(QWidget *parent)
     m_mainLayout->setSpacing(0);
 
     AuthCustomObjs.append(this);
+
+    // 需要父类的定时解锁
+    AuthModule::initConnections();
 }
 
 AuthCustom::~AuthCustom()
@@ -45,7 +48,7 @@ void AuthCustom::detachPlugin()
     m_plugin = nullptr;
 }
 
-void AuthCustom::setModule(LoginPlugin* module)
+void AuthCustom::setModule(LoginPlugin *module)
 {
     if (m_plugin) {
         return;
@@ -114,11 +117,16 @@ void AuthCustom::setAuthState(const AuthCommon::AuthState state, const QString &
     case AuthCommon::AS_Started:
         // greeter需要等lightdm开启验证后再发送认证信息
         if (m_model->appType() == AuthCommon::AppType::Lock) {
+            // FIXME: 并不是所有插件都会有此场景下发token的需求,因此注意清空authdata
             sendAuthToken();
         }
         break;
     case AuthCommon::AS_Success:
         emit authFinished(state);
+        break;
+    case AuthCommon::AS_Unlocked:
+        // 切换用户时，会有解锁的动作，因此需要响应unlock
+        emit activeAuth(m_type);
         break;
     default:
         break;
@@ -133,12 +141,15 @@ void AuthCustom::setAuthData(const LoginPlugin::AuthCallbackData &callbackData)
         return;
     }
 
-    const QString &account = callbackData.account;
+    const QString &account = m_currentAuthData.account;
     if (!account.isEmpty()) {
         qCInfo(DDE_SHELL) << "Request check account: " << account;
         emit requestCheckAccount(account, m_plugin->pluginConfig().switchUserWhenCheckAccount);
     } else {
-        emit requestSendToken("");
+        // 如果插件的token信息带上了用户名，则通过checkAccount信号通知外面去做用户切换或发送token
+        // 隐式地要求插件仅在主动切换用户时需要填充token的account，注意需要在代码中增加信号响应，参见sfawidget
+        Q_EMIT requestSendToken(m_currentAuthData.token);
+        resetAuth();
     }
 }
 
@@ -275,6 +286,18 @@ bool AuthCustom::event(QEvent *e)
     return AuthModule::event(e);
 }
 
+// 响应解锁
+void AuthCustom::updateUnlockPrompt()
+{
+    // DA不会主动刷新limit信息，以当前解锁时间判断
+    if (m_integerMinutes == 0) {
+        QTimer::singleShot(1000, this, [this] {
+            emit activeAuth(m_type);
+        });
+        qCInfo(DDE_SHELL) << "Waiting authentication service...";
+    }
+}
+
 void AuthCustom::updateConfig()
 {
     if (!m_plugin)
@@ -373,6 +396,27 @@ void AuthCustom::setLimitsInfo(const QMap<int, User::LimitsInfo> &limitsInfo)
     message["CmdType"] = "LimitsInfo";
     message["Data"] = array;
     m_plugin->message(toJson(message));
+}
+
+void AuthCustom::setLimitsInfo(const LimitsInfo &limitsInfo)
+{
+    if (!m_plugin)
+        return;
+
+    QJsonObject message;
+    message["CmdType"] = "LimitsInfo";
+
+    // FIXME: 注意limitsinfo这个结构体没有必要存在两个定义
+    QJsonObject obj;
+    obj["Locked"] = limitsInfo.locked;
+    obj["MaxTries"] = static_cast<int>(limitsInfo.maxTries);
+    obj["NumFailures"] = static_cast<int>(limitsInfo.numFailures);
+    obj["UnlockSecs"] = static_cast<int>(limitsInfo.unlockSecs);;
+    obj["UnlockTime"] = limitsInfo.unlockTime;
+    message["Data"] = obj;
+    m_plugin->message(toJson(message));
+
+    AuthModule::setLimitsInfo(limitsInfo);
 }
 
 QJsonObject AuthCustom::getRootObj(const QString &jsonStr)

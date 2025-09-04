@@ -260,6 +260,7 @@ set(LOCK_SRCS
     src/widgets/passworderrortipswidget.cpp
     src/widgets/passworderrortipswidget.h
     src/global_util/dbusconstant.h
+    src/global_util/signal_bridge.h
 )
 
 link_libraries(
@@ -324,7 +325,14 @@ set(GREETER_SRCS
     src/lightdm-deepin-greeter/logincontent.cpp
     src/lightdm-deepin-greeter/logintipswindow.cpp
     src/lightdm-deepin-greeter/sessionwidget.cpp
+    src/global_util/signal_bridge.h
 )
+
+if (USE_DEEPIN_WAYLAND)
+  set(GREETER_SRCS
+    ${GREETER_SRCS}
+  )
+endif(USE_DEEPIN_WAYLAND)
 
 add_executable(lightdm-deepin-greeter
     ${GREETER_SRCS}

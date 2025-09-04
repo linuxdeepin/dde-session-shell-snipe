@@ -38,7 +38,8 @@ public:
         LoginType,   // 登陆插件
         TrayType,     // 托盘插件
         FullManagedLoginType,    // 全托管插件
-        IpcAssistLoginType       // 用于接收厂商密码插件
+        IpcAssistLoginType,       // 用于接收厂商密码插件
+        PasswordExtendLoginType,    // 密码认证扩展插件，需要两个都认证通过后
     };
 
     /**

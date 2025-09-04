@@ -65,6 +65,7 @@ private slots:
     void onSessionCreated();
     void terminalLockedChanged(const QDBusMessage &msg);
     void resetAuth(const QString &);
+    void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
 
 private:
     void initConnections();

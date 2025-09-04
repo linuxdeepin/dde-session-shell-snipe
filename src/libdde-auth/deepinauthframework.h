@@ -64,7 +64,7 @@ public:
     bool authSessionExist(const QString &account) const;
     bool isDeepinAuthValid() const;
     bool isDAStartupCompleted() const { return  m_isDAStartupCompleted;}
-
+    void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
 
 signals:
     void startupCompleted();

@@ -1,0 +1,20 @@
+{
+    "pluginEnabled": {
+        "lock": {
+            "dconfig": {
+                "appid": "org.deepin.dde.lock",
+                "resource": "org.deepin.dde.dss-login-gesture",
+                "subpath": "",
+                "key": "pluginEnabled"
+            }
+        },
+        "greeter": {
+            "dconfig": {
+                "appid": "org.deepin.dde.lightdm-deepin-greeter",
+                "resource": "org.deepin.dde.dss-login-gesture",
+                "subpath": "",
+                "key": "pluginEnabled"
+            }
+        }
+    }
+}
