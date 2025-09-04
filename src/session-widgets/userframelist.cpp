@@ -273,9 +273,12 @@ void UserFrameList::updateLayout(int width)
     if (countWidth > 0) {
         if (m_flowLayout->count() <= count) {
             m_scrollArea->setFixedSize(countWidth, userWidgetHeight + 20);
+            // 单行用户时，限制高度避免滚动条
             m_centerWidget->setMaximumHeight(m_scrollArea->height());
         } else {
             m_scrollArea->setFixedSize(countWidth, (userWidgetHeight + UserFrameSpacing) * 2);
+            // 多行用户时，清除高度限制，让内容自适应以支持滚动
+            m_centerWidget->setMaximumHeight(QWIDGETSIZE_MAX);
         }
 
         m_centerWidget->setFixedWidth(m_scrollArea->width() - 10);
