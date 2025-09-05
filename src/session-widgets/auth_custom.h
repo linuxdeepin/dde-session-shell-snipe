@@ -11,6 +11,7 @@
 #include "login_plugin.h"
 
 #include <QVBoxLayout>
+#include <QPointer>
 
 class SessionBaseModel;
 
@@ -23,11 +24,9 @@ class AuthCustom : public AuthModule
         DeepinAuthenticate      // deepin authentication framework - 深度认证框架
     };
 
-
 public:
-
-    explicit AuthCustom(QWidget *parent = nullptr);
-    ~AuthCustom();
+    explicit AuthCustom(QWidget *parent = nullptr, AuthCommon::AuthType type = AuthCommon::AT_Custom);
+    virtual ~AuthCustom() override;
 
     void setModule(LoginPlugin *module);
     LoginPlugin* getLoginPlugin() const;
@@ -47,7 +46,7 @@ public:
     void lightdmAuthStarted();
 
     void notifyAuthState(AuthCommon::AuthFlags authType, AuthCommon::AuthState state);
-    using AuthModule::setLimitsInfo; // 避免警告：XXX hides overloaded virtual function
+    void setLimitsInfo(const LimitsInfo &limitsInfo) override;
     void setLimitsInfo(const QMap<int, User::LimitsInfo> &limitsInfo);
 
     void setCustomAuthIndex(int index) { m_customAuthIndex = index; }
@@ -59,6 +58,7 @@ protected:
     bool event(QEvent *e) override;
 
 private:
+    void updateUnlockPrompt() override;
     void setCallback();
     static void authCallback(const LoginPlugin::AuthCallbackData *callbackData, void *app_data);
     static QString messageCallback(const QString &message, void *app_data);

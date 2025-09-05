@@ -43,7 +43,7 @@ public:
 
 public slots:
     void onRetryButtonVisibleChanged(bool visible);
-    void onRequestChangeAuth(const AuthCommon::AuthType authType);
+    void onRequestChangeAuth(AuthCommon::AuthType authType);
     void onLightdmPamStartChanged();
 
 protected:

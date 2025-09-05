@@ -9,6 +9,8 @@
 #include "userinfo.h"
 #include "dconfig_helper.h"
 #include "login_plugin_util.h"
+#include "mfasequencecontrol.h"
+#include "signal_bridge.h"
 
 #include <DSysInfo>
 
@@ -324,6 +326,8 @@ void GreeterWorker::initConnections()
     // 监听terminal锁定状态
     QDBusConnection::systemBus().connect(DSS_DBUS::accountsService, DSS_DBUS::accountsPath, "org.freedesktop.DBus.Properties",
                                          "PropertiesChanged", this, SLOT(terminalLockedChanged(QDBusMessage)));
+
+    connect(&SignalBridge::ref(), &SignalBridge::requestSendExtraInfo, this, &GreeterWorker::sendExtraInfo);
 }
 
 void GreeterWorker::initData()
@@ -908,7 +912,12 @@ void GreeterWorker::onAuthStateChanged(const int type, const int state, const QS
             case AS_Success:
                 if (m_model->currentModeState() != SessionBaseModel::ResetPasswdMode)
                     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-                m_resetSessionTimer->start();
+
+                // 处于序列化多因认证过程中时不要重置认证
+                if (MFASequenceControl::instance().currentAuthType() == AuthType::AT_None) {
+                    m_resetSessionTimer->start();
+                }
+
                 m_model->updateAuthState(AuthType(type), AuthState(state), message);
                 break;
             case AS_Failure:
@@ -1217,3 +1226,14 @@ void GreeterWorker::prepareShutdownSound()
     //soundPlayerInter.call("PrepareShutdownSound", static_cast<int>(m_model->currentUser()->uid()));
 }
 #endif
+
+void GreeterWorker::sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info)
+{
+    switch (m_model->getAuthProperty().FrameworkState) {
+    case Available:
+        m_authFramework->sendExtraInfo(account, authType, info);
+        break;
+    default:
+        break;
+    }
+}

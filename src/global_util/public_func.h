@@ -57,11 +57,6 @@ void setPointer();
 bool isDeepinAuth();
 
 /**
- * @brief 把字符串解析成时间，然后转换为Unix时间戳
- */
-uint timeFromString(QString time);
-
-/**
  * @brief 设置app类型，让程序知道应该获取哪个配置文件
  */
 void setAppType(int type);

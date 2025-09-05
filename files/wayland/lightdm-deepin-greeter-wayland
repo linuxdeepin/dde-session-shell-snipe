@@ -33,7 +33,7 @@ device_handle(){
 	local touchpad=$(dbus_values_get_bool "$dbus_touchpad")
 
 	if [ "$touchpad" = "true" ]; then
-		dbus-send --session --dest=org.kde.KWin "$input" org.freedesktop.DBus.Properties.Set string:"org.kde.KWin.InputDevice" string:"tapToClick" variant:boolean:true
+		dbus-send --session --print-reply --dest=org.kde.KWin "$input" org.freedesktop.DBus.Properties.Set string:"org.kde.KWin.InputDevice" string:"tapToClick" variant:boolean:true
 	fi
 }
 

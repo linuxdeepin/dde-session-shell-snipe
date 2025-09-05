@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "assist_login_widget.h"
+#include "plugin_manager.h"
+
+using DSS_PLUGIN_TYPE = dss::module::BaseModuleInterface::ModuleType;
 
 QList<AssistLoginWidget *> AssistLoginWidget::AssistLoginWidgetObjs = {};
 
@@ -30,6 +33,7 @@ void AssistLoginWidget::setModule(LoginPlugin *module)
     m_module = module;
 
     setCallback();
+    updateVisible();
 }
 
 void AssistLoginWidget::initUI()
@@ -43,7 +47,16 @@ void AssistLoginWidget::initUI()
         qCInfo(DDE_SHELL) << Q_FUNC_INFO << "m_module->init()";
         m_module->init();
         m_mainLayout->addWidget(m_module->content());
+        setFocusProxy(m_module->content());
     }
+}
+
+dss::module::BaseModuleInterface::ModuleType AssistLoginWidget::pluginType() const
+{
+    if (m_module)
+        return m_module->type();
+
+    return dss::module::BaseModuleInterface::ModuleType::LoginType;
 }
 
 void AssistLoginWidget::setCallback()
@@ -68,7 +81,7 @@ void AssistLoginWidget::authCallback(const LoginPlugin::AuthCallbackData *callba
 
 QString AssistLoginWidget::messageCallback(const QString &message, void *app_data)
 {
-    qCDebug(DDE_SHELL) << Q_FUNC_INFO << "Received message: " << message;
+    qCInfo(DDE_SHELL) << "Received message: " << message;
     QJsonParseError jsonParseError;
     const QJsonDocument messageDoc = QJsonDocument::fromJson(message.toLatin1(), &jsonParseError);
 
@@ -94,7 +107,13 @@ QString AssistLoginWidget::messageCallback(const QString &message, void *app_dat
     QString cmdType = messageObj.value("CmdType").toString();
     qCInfo(DDE_SHELL) << "Cmd type: " << cmdType;
     if (cmdType == "GetProperties") {
-    } else if (cmdType == "setAuthTypeInfo") {
+        return PluginManager::instance()->getProperties(messageObj);
+    }
+
+    if (cmdType == "ReadyToAuthChanged") {
+        Q_EMIT assistLoginWidget->readyToAuthChanged(messageObj["Data"].toBool());
+    } else if (cmdType == "PluginEnabledChanged") {
+        assistLoginWidget->setVisible(messageObj["Data"].toBool());
     }
 
     retObj["Data"] = dataObj;
@@ -104,13 +123,22 @@ QString AssistLoginWidget::messageCallback(const QString &message, void *app_dat
 void AssistLoginWidget::setAuthData(const LoginPlugin::AuthCallbackData &callbackData)
 {
     m_currentAuthData = callbackData;
+    qCDebug(DDE_SHELL) << Q_FUNC_INFO << m_currentAuthData.result;
+    const QString &account = callbackData.account;
+    const QString &token = callbackData.token;
+    if (DSS_PLUGIN_TYPE::PasswordExtendLoginType == pluginType()) {
+        qCInfo(DDE_SHELL) << "Request send extra info, result: " << callbackData.result;
+        m_extraInfo = token;
+        if (dss::module::AuthResult::Success == callbackData.result)
+            Q_EMIT requestSendExtraInfo(token);
+        return;
+    }
+
     if (dss::module::AuthResult::Success != callbackData.result) {
         qCWarning(DDE_SHELL) << "Custom auth result is not success";
         return;
     }
-    qCDebug(DDE_SHELL) << Q_FUNC_INFO << m_currentAuthData.result;
-    const QString &account = callbackData.account;
-    const QString &token = callbackData.token;
+
     if (!account.isEmpty()) {
         qCInfo(DDE_SHELL) << Q_FUNC_INFO << "requestSendToken: " << account << token;
         emit requestSendToken(account, token);
@@ -175,4 +203,25 @@ void AssistLoginWidget::setPluginConfig(const LoginPlugin::PluginConfig &pluginC
         m_pluginConfig = pluginConfig;
         Q_EMIT requestPluginConfigChanged(m_pluginConfig);
     }
+}
+
+void AssistLoginWidget::setAuthState(AuthCommon::AuthState state, const QString &result)
+{
+    if (m_module) {
+        m_module->authStateChanged(AuthCommon::AT_Password, state, result);
+    }
+}
+
+void AssistLoginWidget::updateVisible()
+{
+    if (m_module)
+        setVisible(m_module->isPluginEnabled());
+}
+
+bool AssistLoginWidget::readyToAuth() const
+{
+    if (m_module)
+        return m_module->readyToAuth();
+
+    return true;
 }

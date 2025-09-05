@@ -153,13 +153,7 @@ void AuthModule::updateUnlockTime()
 void AuthModule::updateIntegerMinutes()
 {
     if (QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs) > QDateTime::currentDateTime()) {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch()
-                        - QDateTime::currentDateTimeUtc().toSecsSinceEpoch();
-#else
-        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toTime_t()
-                               - QDateTime::currentDateTimeUtc().toTime_t();
-#endif
+        qreal intervalSeconds = QDateTime::fromString(m_limitsInfo->unlockTime, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch()  - QDateTime::currentDateTimeUtc().toSecsSinceEpoch();
         m_integerMinutes = static_cast<uint>(qCeil(intervalSeconds / 60));
     } else {
         m_integerMinutes = 0;

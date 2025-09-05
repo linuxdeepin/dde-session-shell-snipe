@@ -123,6 +123,23 @@ LoginPlugin* PluginManager::getFullManagedLoginPlugin() const
     return nullptr;
 }
 
+LoginPlugin *PluginManager::getLoginPlugin(int authType) const
+{
+    for (const auto &plugin : m_plugins.values()) {
+        if (plugin && PluginBase::ModuleType::LoginType == plugin->type()) {
+            auto p = dynamic_cast<LoginPlugin*>(plugin);
+            p->updateConfig();
+            if (p->defaultAuthType() == authType) {
+                return p;
+            }
+        }
+    }
+
+    qDebug() << "plugin for type " << authType << "not found in " << m_plugins;
+
+    return nullptr;
+}
+
 QList<TrayPlugin*> PluginManager::trayPlugins() const
 {
     QList<TrayPlugin*> list;
@@ -139,7 +156,8 @@ PluginBase* PluginManager::createPlugin(dss::module::BaseModuleInterface* module
 {
     if (dss::module::BaseModuleInterface::LoginType == module->type()
         || dss::module::BaseModuleInterface::FullManagedLoginType == module->type()
-        || dss::module::BaseModuleInterface::IpcAssistLoginType == module->type()) {
+        || dss::module::BaseModuleInterface::IpcAssistLoginType == module->type()
+        || dss::module::BaseModuleInterface::PasswordExtendLoginType == module->type()) {
         return createLoginPlugin(module, version);
     } else if (dss::module::BaseModuleInterface::TrayType == module->type()) {
         TrayPlugin* plugin = createTrayPlugin(module, version);
@@ -196,6 +214,17 @@ LoginPlugin* PluginManager::getAssistloginPlugin() const
     return nullptr;
 }
 
+LoginPlugin *PluginManager::getFirstLoginPlugin(PluginBase::ModuleType type) const
+{
+    for (const auto& plugin : m_plugins.values()) {
+        if (plugin && type == plugin->type()) {
+            return dynamic_cast<LoginPlugin*>(plugin);
+        }
+    }
+
+    return nullptr;
+}
+
 void PluginManager::setModel(SessionBaseModel *model)
 {
     if (!model)
@@ -234,4 +263,58 @@ void PluginManager::broadcastAuthFactors(int authFactors)
 
         loginPlugin->notifyAuthFactorsChanged(authFactors);
     }
+}
+
+QPair<QString, QJsonDocument> PluginManager::parseMessage(const QString &message)
+{
+    QJsonParseError jsonParseError;
+    const QJsonDocument messageDoc = QJsonDocument::fromJson(message.toLatin1(), &jsonParseError);
+    QJsonObject retObj;
+    QJsonObject dataObj;
+    retObj["Code"] = 0;
+    retObj["Message"] = "Success";
+    if (jsonParseError.error != QJsonParseError::NoError || messageDoc.isEmpty()) {
+        retObj["Code"] = -1;
+        retObj["Message"] = "Failed to analysis message info";
+        qCWarning(DDE_SHELL) << "Failed to analysis message from plugin: " << message;
+        return qMakePair(toJson(retObj), messageDoc);
+    }
+
+    return qMakePair(QStringLiteral(""), messageDoc);
+}
+
+QString PluginManager::getProperties(const QJsonObject &messageObj) const
+{
+    QJsonArray properties;
+    properties = messageObj.value("Data").toArray();
+
+    QJsonObject retObj;
+    QJsonObject dataObj;
+    retObj["Code"] = 0;
+    retObj["Message"] = "Success";
+    do
+    {
+        if (m_model.isNull()) {
+            retObj["Code"] = -1;
+            retObj["Message"] = "Session base model is nullptr";
+            break;
+        }
+        if (properties.contains("AppType")) {
+            dataObj["AppType"] = m_model->appType();
+        }
+        if (properties.contains("CurrentUser")) {
+            if (m_model->currentUser()) {
+                QJsonObject user;
+                user["Name"] = m_model->currentUser()->name();
+                user["Uid"] = static_cast<int>(m_model->currentUser()->uid());
+                dataObj["CurrentUser"] = user;
+            } else {
+                retObj["Code"] = -1;
+                retObj["Message"] = "Current user is null!";
+            }
+        }
+    } while(0);
+    retObj["Data"] = dataObj;
+
+    return toJson(retObj);
 }

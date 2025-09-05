@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QPropertyAnimation>
 #include <QVariantAnimation>
+#include <QKeyEvent>
 
 LoadSlider::LoadSlider(QWidget *parent)
     : QWidget(parent)
@@ -37,6 +38,7 @@ DLineEditEx::DLineEditEx(QWidget *parent)
     : DLineEdit(parent)
     , m_loadSlider(new LoadSlider(this))
     , m_animation(new QPropertyAnimation(m_loadSlider, "pos", m_loadSlider))
+    , m_enableTableKeyEvent(false)
 {
     setObjectName(QStringLiteral("DLineEditEx"));
     setAccessibleName(QStringLiteral("DLineEditEx"));
@@ -118,6 +120,14 @@ void DLineEditEx::stopAnimation()
     m_animation->stop();
 }
 
+void DLineEditEx::setEnableTableKeyEvent(bool enable)
+{
+    if (m_enableTableKeyEvent == enable)
+        return;
+
+    m_enableTableKeyEvent = enable;
+}
+
 /**
  * @brief 重写 QLineEdit paintEvent 函数，实现当文本设置居中后，holderText 仍然显示的需求
  *
@@ -147,6 +157,16 @@ bool DLineEditEx::eventFilter(QObject *watched, QEvent *event)
     if ((watched == this || watched == this->lineEdit())
         && event->type() == QEvent::InputMethodQuery) {
         return true;
+    } else if ((watched == this || watched == this->lineEdit())
+                && event->type() == QEvent::KeyPress
+                && m_enableTableKeyEvent) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Tab
+            && keyEvent->modifiers() == Qt::NoModifier
+            && !this->text().isEmpty()) {
+            emit this->returnPressed();
+            return true;
+        }
     }
 
     return DLineEdit::eventFilter(watched, event);

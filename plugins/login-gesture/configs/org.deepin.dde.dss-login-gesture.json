@@ -1,0 +1,16 @@
+{
+    "magic": "dsg.config.meta",
+    "version": "1.0",
+    "contents": {
+        "pluginEnabled": {
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "PluginEnabled",
+            "name[zh_CN]": "是否启用插件",
+            "description[zh_CN]": "是否启用插件，默认为否。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        }
+    }
+}
