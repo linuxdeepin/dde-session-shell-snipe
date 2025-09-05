@@ -5,6 +5,7 @@
 #include "sessionbasemodel.h"
 #include "dconfig_helper.h"
 #include "dbus/dbusdisplaymanager.h"
+#include "mfasequencecontrol.h"
 
 #include <DSysInfo>
 #include <QDebug>
@@ -39,7 +40,9 @@ SessionBaseModel::SessionBaseModel(QObject *parent)
     , m_lightdmPamStarted(false)
     , m_authResult{AuthType::AT_None, AuthState::AS_None, ""}
     , m_enableShellBlackMode(DConfigHelper::instance()->getConfig("enableShellBlack", true).toBool())
+    , m_enableShutdownBlackWidget(DConfigHelper::instance()->getConfig("enableShutdownBlackWidget", true).toBool())
     , m_visibleShutdownWhenRebootOrShutdown(DConfigHelper::instance()->getConfig("visibleShutdownWhenRebootOrShutdown", true).toBool())
+    , m_gsCheckpwd(false)
 {
 #ifndef ENABLE_DSS_SNIPE
     if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
@@ -119,6 +122,9 @@ void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
         return;
 
     m_powerAction = powerAction;
+
+    if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
+        Q_EMIT shutdownkModeChanged(true);
 
     emit onPowerActionChanged(powerAction);
 }
@@ -240,6 +246,14 @@ void SessionBaseModel::setIsBlackMode(bool is_black)
     emit blackModeChanged(is_black);
 }
 
+void SessionBaseModel::setShutdownMode(bool is_black)
+{
+    if (!m_enableShutdownBlackWidget || gsCheckpwd()) {
+        return;
+    }
+    Q_EMIT shutdownkModeChanged(is_black);
+}
+
 void SessionBaseModel::setIsHibernateModel(bool is_Hibernate)
 {
     if (m_isHibernateMode == is_Hibernate)
@@ -272,6 +286,7 @@ void SessionBaseModel::setAuthType(const AuthFlags type)
     if (type == m_authProperty.AuthType && type != AT_None) {
         return;
     }
+
     if (m_currentUser->type() == User::Default) {
         m_authProperty.AuthType = type;
         emit authTypeChanged(AT_None);
@@ -660,6 +675,7 @@ void SessionBaseModel::updateAuthState(const AuthType type, const AuthState stat
     m_authResult.authState = state;
     m_authResult.authType = type;
     m_authResult.authMessage = message;
+
     switch (m_authProperty.FrameworkState) {
     case Available:
         emit authStateChanged(type, state, message);
@@ -710,4 +726,23 @@ void SessionBaseModel::setUserlistVisible(bool visible)
 void SessionBaseModel::setQuickLoginProcess(bool val)
 {
     m_isQuickLoginProcess = val;
+}
+
+void SessionBaseModel::setGsCheckpwd(bool value)
+{
+    if (m_gsCheckpwd != value) {
+        m_gsCheckpwd = value;
+    }
+}
+
+bool SessionBaseModel::isNoPasswordLogin() const
+{
+    // 检查当前用户是否存在
+    if (!m_currentUser) {
+        qCWarning(DDE_SHELL) << "Current user is null";
+        return false;
+    }
+
+    // 直接调用当前用户的isNoPasswordLogin方法
+    return m_currentUser->isNoPasswordLogin();
 }

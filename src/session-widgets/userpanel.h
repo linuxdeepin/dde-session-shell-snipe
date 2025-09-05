@@ -7,6 +7,8 @@
 
 #include "actionwidget.h"
 
+#include <DLabel>
+
 #include <QWidget>
 
 const int UserPanelWidth = 330;
@@ -16,6 +18,7 @@ const int UserAvatarSize = 56;
 class QHBoxLayout;
 class UserAvatar;
 
+DWIDGET_USE_NAMESPACE
 class UserPanel : public ActionWidget
 {
     Q_OBJECT
@@ -46,8 +49,8 @@ private:
     QString m_fullName;
     QString m_name;
     QString m_type;
-    QLabel *m_displayNameLabel;
-    QLabel *m_typeLabel;
+    DLabel *m_displayNameLabel;
+    DLabel *m_typeLabel;
 };
 
 #endif // USERPANEL_H

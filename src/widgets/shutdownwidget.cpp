@@ -615,7 +615,8 @@ void ShutdownWidget::recoveryLayout()
 
 void ShutdownWidget::onRequirePowerAction(SessionBaseModel::PowerAction powerAction, bool needConfirm)
 {
-    qCInfo(DDE_SHELL) << "Require power action: " << powerAction << ", need confirm: " << needConfirm;
+    qInfo() << "Require power action: " << powerAction << ", need confirm: " << needConfirm << ", m_model->appType(): " << m_model->appType();
+
     //锁屏或关机模式时，需要确认是否关机或检查是否有阻止关机
     if (m_model->appType() == Lock) {
         switch (powerAction) {

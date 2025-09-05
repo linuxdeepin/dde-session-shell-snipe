@@ -39,10 +39,12 @@ PasswordErrorTipsWidget::PasswordErrorTipsWidget(QWidget *parent)
 void PasswordErrorTipsWidget::initUi()
 {
     QVBoxLayout* mainLay = new QVBoxLayout(this);
+    mainLay->setContentsMargins(10, 5, 10, 5);
     mainLay->setSpacing(0);
 
     QHBoxLayout* hlay = new QHBoxLayout(m_tipsWidget);
-    hlay->setSpacing(0);
+    hlay->setContentsMargins(0, 0, 0, 0);
+    hlay->setSpacing(5);
     hlay->addWidget(m_tipLabel, 0, Qt::AlignmentFlag::AlignLeft | Qt::AlignmentFlag::AlignTop);
     DFontSizeManager::instance()->bind(m_tipLabel, DFontSizeManager::T6);
     m_tipLabel->setForegroundRole(DPalette::TextWarning);
@@ -50,9 +52,8 @@ void PasswordErrorTipsWidget::initUi()
     QPixmap pixmap;
     pixmap.load(":img/warning.svg");
     m_showMore->setPixmap(pixmap);
-    m_showMore->hide();
+    m_showMore->setVisible(false);
 
-    hlay->addSpacing(5);
     hlay->addWidget(m_showMore, 0, Qt::AlignmentFlag::AlignCenter);
     mainLay->addWidget(m_tipsWidget, 0, Qt::AlignmentFlag::AlignTop | Qt::AlignmentFlag::AlignLeft);
 
