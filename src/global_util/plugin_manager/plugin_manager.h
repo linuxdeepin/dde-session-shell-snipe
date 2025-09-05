@@ -27,10 +27,15 @@ public:
     QList<LoginPlugin*> getLoginPlugins(int level = 1) const;
     LoginPlugin *getFullManagedLoginPlugin() const;
     LoginPlugin *getAssistloginPlugin() const;
+    LoginPlugin *getFirstLoginPlugin(PluginBase::ModuleType type) const;
+    LoginPlugin *getLoginPlugin(int authType) const;
     QList<TrayPlugin*> trayPlugins() const;
     bool contains(const QString &key) const;
     PluginBase *findPlugin(const QString &key) const;
     void broadcastAuthFactors(int authFactors);
+    QString getProperties(const QJsonObject &messageObj) const;
+
+    static QPair<QString, QJsonDocument> parseMessage(const QString &message);
 
 signals:
     void trayPluginAdded(TrayPlugin *);
