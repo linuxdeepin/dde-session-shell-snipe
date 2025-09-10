@@ -72,8 +72,20 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
         }
     });
     connect(m_resetGeometryTimer, &QTimer::timeout, this, [this] {
-        qCDebug(DDE_SHELL) << " setGeometry : " << m_geometryRect;
-        setGeometry(m_geometryRect);
+        const auto &currentGeometry = geometry();
+        if (currentGeometry != m_geometryRect) {
+            qCDebug(DDE_SHELL) << "Current geometry:" << currentGeometry <<"setGeometry:" << m_geometryRect;
+            setGeometry(m_geometryRect);
+        }
+    });
+
+    connect(m_model, &SessionBaseModel::shutdownkModeChanged, this, [this] (bool value){
+        if (!m_shutdownBlackWidget) {
+            m_shutdownBlackWidget = new ShutdownBlackWidget(this);
+        }
+        qCInfo(DDE_SHELL) << "FullScreenBackground size : " << size();
+        m_shutdownBlackWidget->setFixedSize(this->size());
+        m_shutdownBlackWidget->setBlackMode(value);
     });
 
     connect(m_model, &SessionBaseModel::shutdownkModeChanged, this, [this] (bool value){
@@ -735,5 +747,5 @@ void FullScreenBackground::setddeGeometry(const QRect &rect)
     setGeometry(rect);
     m_geometryRect = rect;
     m_resetGeometryTimer->start(200);
-    QTimer::singleShot(200 * 5, m_resetGeometryTimer, &QTimer::stop);
+    QTimer::singleShot(400 * 5, m_resetGeometryTimer, &QTimer::stop);
 }
