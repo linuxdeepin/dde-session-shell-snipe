@@ -29,6 +29,6 @@ build*/
 tests/report/*
 .transifexrc
 .cache/
-
+.cursor/
 # for snipe
 src/global_util/dbus/*

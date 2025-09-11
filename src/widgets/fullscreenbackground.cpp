@@ -11,6 +11,7 @@
 #include "dconfig_helper.h"
 
 #include <DGuiApplicationHelper>
+#include <DPlatformWindowHandle>
 
 #include <QDebug>
 #include <QImageReader>
@@ -43,6 +44,7 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
     , m_useSolidBackground(false)
     , m_blackWidget(new BlackWidget(this))
     , m_resetGeometryTimer(new QTimer(this))
+    , m_shutdownBlackWidget(nullptr)
 {
 #ifndef QT_DEBUG
     if (!m_model->isUseWayland()) {
@@ -53,6 +55,8 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
         setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
         // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
         windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
+        DPlatformWindowHandle handle(this, this);
+        handle.setWindowRadius(-1);
     }
 #endif
     frameList.append(this);
@@ -68,8 +72,20 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
         }
     });
     connect(m_resetGeometryTimer, &QTimer::timeout, this, [this] {
-        qCDebug(DDE_SHELL) << " setGeometry : " << m_geometryRect;
-        setGeometry(m_geometryRect);
+        const auto &currentGeometry = geometry();
+        if (currentGeometry != m_geometryRect) {
+            qCDebug(DDE_SHELL) << "Current geometry:" << currentGeometry <<"setGeometry:" << m_geometryRect;
+            setGeometry(m_geometryRect);
+        }
+    });
+
+    connect(m_model, &SessionBaseModel::shutdownkModeChanged, this, [this] (bool value){
+        if (!m_shutdownBlackWidget) {
+            m_shutdownBlackWidget = new ShutdownBlackWidget(this);
+        }
+        qCInfo(DDE_SHELL) << "FullScreenBackground size : " << size();
+        m_shutdownBlackWidget->setFixedSize(this->size());
+        m_shutdownBlackWidget->setBlackMode(value);
     });
 }
 
@@ -154,7 +170,8 @@ void FullScreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
 
     qCInfo(DDE_SHELL) << "Set screen:" << screen
                       << ", screen geometry:" << screen->geometry()
-                      << ", full screen background object:" << this;
+                      << ", full screen background object:" << this
+                      << ", visible:" << isVisible;
     if (isVisible) {
         updateCurrentFrame(this);
     } else {
@@ -274,6 +291,7 @@ void FullScreenBackground::enterEvent(QEnterEvent *event)
 void FullScreenBackground::enterEvent(QEvent *event)
 #endif
 {
+    qCInfo(DDE_SS) << "Enter event, enable enter event:" << m_enableEnterEvent << ", visible:" << m_model->visible();
     if (m_enableEnterEvent && m_model->visible()) {
         updateCurrentFrame(this);
         // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
@@ -435,6 +453,8 @@ void FullScreenBackground::updateGeometry()
     }
 
     if (!m_screen.isNull()) {
+        if(m_model->isUseWayland())
+            windowHandle()->setScreen(m_screen);
         setddeGeometry(m_screen->geometry());
 
         qCInfo(DDE_SHELL) << "Update geometry, screen:" << m_screen
@@ -634,6 +654,8 @@ void FullScreenBackground::updateCurrentFrame(FullScreenBackground *frame)
 
     if (frame->m_screen)
         qCInfo(DDE_SHELL) << "Update current frame:" << frame << ", screen:" << frame->m_screen->name();
+    else
+        qWarning() << "Frame's screen is null, frame:" << frame;
 
     currentFrame = frame;
     setContent(currentContent);
@@ -716,5 +738,5 @@ void FullScreenBackground::setddeGeometry(const QRect &rect)
     setGeometry(rect);
     m_geometryRect = rect;
     m_resetGeometryTimer->start(200);
-    QTimer::singleShot(200 * 5, m_resetGeometryTimer, &QTimer::stop);
+    QTimer::singleShot(400 * 5, m_resetGeometryTimer, &QTimer::stop);
 }

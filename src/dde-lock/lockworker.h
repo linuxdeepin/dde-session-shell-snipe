@@ -67,6 +67,8 @@ public slots:
     void authFinishedAction();
 
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
+    void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
+    void setLocked(const bool locked);
 
 private:
     void initConnections();
@@ -75,7 +77,6 @@ private:
 
     void doPowerAction(const SessionBaseModel::PowerAction action);
     void setCurrentUser(const std::shared_ptr<User> user);
-    void setLocked(const bool locked);
 
     // lock
     void lockServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message);

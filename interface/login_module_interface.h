@@ -75,6 +75,7 @@ enum AuthType {
     AT_FingerVein      = 1 << 5,    // 指静脉
     AT_Iris            = 1 << 6,    // 虹膜
     AT_Passkey         = 1 << 7,    // 安全密钥
+    AT_Pattern         = 1 << 8,    // 手势
     AT_PAM             = 1 << 29,   // PAM
     AT_Custom          = 1 << 30,   // 自定义
     AT_All             = -1         // all
@@ -98,7 +99,9 @@ enum AuthState {
     AS_Ended,       // 认证已结束，调用 End 之后，每种成功关闭的都会发送此信号，当某种认证类型被锁定时，也会触发此信号
     AS_Locked,      // 认证已锁定，当认证类型锁定时，触发此信号。该信号不会给出锁定等待时间信息
     AS_Recover,     // 设备恢复，需要调用 Start 重新开启认证，对应 AS_Exception
-    AS_Unlocked     // 认证解锁，对应 AS_Locked
+    AS_Unlocked,    // 认证解锁，对应 AS_Locked
+    AS_Unknown,     // 未知状态
+	AS_VerifyCode,  // 需要验证码
 };
 
 /**

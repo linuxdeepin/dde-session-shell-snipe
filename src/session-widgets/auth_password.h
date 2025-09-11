@@ -27,6 +27,7 @@ class AuthPassword : public AuthModule
     Q_OBJECT
 public:
     explicit AuthPassword(QWidget *parent = nullptr);
+    ~AuthPassword() override;
 
     void reset();
     QString lineEditText() const;
@@ -61,10 +62,12 @@ public:
         m_isPasswdAuthWidgetReplaced = isPasswdAuthWidgetReplaced;
     }
     bool isShowPasswrodErrorTip();
-    bool canShowPasswrodErrorTip();
+    inline bool canShowPasswrodErrorTip() { return m_canShowPasswordErrorTips; }
     void showErrorTip(const QString &text);
     void clearPasswrodErrorTip(bool isClear);
     void updatePasswrodErrorTipUi();
+
+    AssistLoginWidget * assistLoginWidget() const { return m_assistLoginWidget; }
 
 signals:
     void focusChanged(const bool);
@@ -78,10 +81,12 @@ signals:
     void requestPluginAuthToken(const QString accout, const QString token);
     void requestUpdateBlurEffectGeometry();
     void passwordErrorTipsClearChanged(const bool isClear);
+    void requestSendExtraInfo(const QString &info);
 
 public slots:
     void setResetPasswordMessageVisible(const bool isVisible, bool fromResetDialog = false);
     void updateResetPasswordUI();
+    void onReadyToAuthChanged(bool ready);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -120,6 +125,7 @@ private:
     bool m_isPasswdAuthWidgetReplaced;
     AssistLoginWidget *m_assistLoginWidget;
     DConfig *m_authenticationDconfig;
+    bool m_canShowPasswordErrorTips;
 };
 
 #endif // AUTHPASSWORD_H

@@ -12,6 +12,7 @@ AuthFace::AuthFace(QWidget *parent)
     : AuthModule(AuthCommon::AT_Face, parent)
     , m_aniIndex(-1)
     , m_textLabel(new DLabel(this))
+    , m_filterTimer(new QTimer(this))
 {
     setObjectName(QStringLiteral("AuthFace"));
     setAccessibleName(QStringLiteral("AuthFace"));
@@ -37,6 +38,10 @@ void AuthFace::initUI()
     m_authStateLabel->installEventFilter(this);
     setAuthStateStyle(LOGIN_WAIT);
     mainLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
+
+    // 多数摄像头模组前2s内会有由暗变亮的过程，特别是重新上电的第一次，例如待机/休眠/重启等场景，此时获取的人脸图像会报错，此处增加一个定时器，过滤前2s的错误
+    m_filterTimer->setInterval(2000);
+    m_filterTimer->setSingleShot(true);
 }
 
 /**
@@ -68,6 +73,7 @@ void AuthFace::reset()
  */
 void AuthFace::setAuthState(const AuthCommon::AuthState state, const QString &result)
 {
+    static bool startFilterTimer = false;
     m_state = state;
     switch (state) {
     case AuthCommon::AS_Success:
@@ -79,6 +85,7 @@ void AuthFace::setAuthState(const AuthCommon::AuthState state, const QString &re
         m_showPrompt = true;
         emit authFinished(state);
         emit retryButtonVisibleChanged(false);
+        startFilterTimer = false;
         break;
     case AuthCommon::AS_Failure: {
         setAnimationState(false);
@@ -92,6 +99,7 @@ void AuthFace::setAuthState(const AuthCommon::AuthState state, const QString &re
         }
         emit retryButtonVisibleChanged(true);
         emit authFinished(state);
+        startFilterTimer = false;
         break;
     }
     case AuthCommon::AS_Cancel:
@@ -106,9 +114,15 @@ void AuthFace::setAuthState(const AuthCommon::AuthState state, const QString &re
         m_showPrompt = true;
         break;
     case AuthCommon::AS_Verify:
+        if (!startFilterTimer) {
+            m_filterTimer->start();
+            startFilterTimer = true;
+        }
         setAnimationState(false);
         setAuthStateStyle(isMFA() ? LOGIN_SPINNER : AUTH_LOCK);
-        m_textLabel->setText(result);
+        if (!m_filterTimer->isActive()) {
+            m_textLabel->setText(result);
+        }
         break;
     case AuthCommon::AS_Exception:
         setAnimationState(false);
@@ -121,6 +135,7 @@ void AuthFace::setAuthState(const AuthCommon::AuthState state, const QString &re
         setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
         break;
     case AuthCommon::AS_Started:
+        startFilterTimer = false;
         m_textLabel->setText(tr("Verify your Face ID"));
         break;
     case AuthCommon::AS_Ended:

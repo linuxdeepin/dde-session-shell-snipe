@@ -22,6 +22,8 @@ public:
     void autoUnlock();
     int getTopSpacing() const override;
 
+    QWidget *getAuthWidget() override;
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -34,6 +36,7 @@ private:
     void initUKeyAuth();
     void initFaceAuth();
     void initIrisAuth();
+    void initGestureAuth();
 
     void checkAuthResult(const AuthCommon::AuthType type, const AuthCommon::AuthState state) override;
 

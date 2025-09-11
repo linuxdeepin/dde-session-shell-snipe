@@ -86,8 +86,9 @@ int main(int argc, char *argv[])
     });
 
     DLogManager::setLogFormat("%{time}{yyyy-MM-dd, HH:mm:ss.zzz} [%{type:-7}] [ %{function:-35} %{line}] %{message}\n");
+#ifdef QT_DEBUG
     DLogManager::registerConsoleAppender();
-    DLogManager::registerFileAppender();
+#endif
     DLogManager::registerJournalAppender();
 
     QCommandLineParser cmdParser;
@@ -203,6 +204,7 @@ int main(int argc, char *argv[])
     QObject::connect(WarningContent::instance(), &WarningContent::requestLockFrameHide, [model] {
         model->setVisible(false);
     });
+    QObject::connect(LockContent::instance(), &LockContent::requestLockStateChange, worker, &LockWorker::setLocked);
 
     auto createFrame = [&](QPointer<QScreen> screen, int count) -> QWidget* {
         LockFrame *lockFrame = new LockFrame(model);

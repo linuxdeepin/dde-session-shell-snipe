@@ -103,6 +103,10 @@ public:
 
     inline PluginConfig pluginConfig() const { return m_pluginConfig; }
 
+    void authStateChanged(AuthCommon::AuthType type, AuthCommon::AuthState state, const QString &prompt);
+
+    bool readyToAuth();
+
 private:
     PluginConfig m_pluginConfig;
     AuthType m_authType;

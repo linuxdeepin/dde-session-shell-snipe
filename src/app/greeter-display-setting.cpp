@@ -108,6 +108,65 @@ static double calcMaxScaleFactor(unsigned int width, unsigned int height) {
     return maxScale;
 }
 
+static QStringList getScaleList()
+{
+    qDebug() << "Get scale list";
+    Display *display = XOpenDisplay(nullptr);
+    if (!display) {
+        qWarning() << "Display is null";
+        return QStringList{};
+    }
+
+    XRRScreenResources *resources = XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
+    if (!resources) {
+        resources = XRRGetScreenResources(display, DefaultRootWindow(display));
+        qCWarning(DDE_SHELL) << "Get current XRR screen resources failed, instead of getting XRR screen resources, resources: " << resources;
+    }
+
+    static const float MinScreenWidth = 1024.0f;
+    static const float MinScreenHeight = 768.0f;
+    static const QStringList tvstring = {"1.0", "1.25", "1.5", "1.75", "2.0", "2.25", "2.5", "2.75", "3.0"};
+    QStringList fscaleList;
+
+    if (resources) {
+        for (int i = 0; i < resources->noutput; i++) {
+            XRROutputInfo* outputInfo = XRRGetOutputInfo(display, resources, resources->outputs[i]);
+            if (outputInfo->crtc == 0 || outputInfo->mm_width == 0)
+                continue;
+
+            XRRCrtcInfo *crtInfo = XRRGetCrtcInfo(display, resources, outputInfo->crtc);
+            if (crtInfo == nullptr)
+                continue;
+
+            auto maxWScale = crtInfo->width / MinScreenWidth;
+            auto maxHScale = crtInfo->height / MinScreenHeight;
+            auto maxScale = maxWScale < maxHScale ? maxWScale : maxHScale;
+            maxScale = maxScale < 3.0f ? maxScale : 3.0f;
+            if (fscaleList.isEmpty()) {
+                for (int idx = 0; idx * 0.25f + 1.0f <= maxScale; ++idx) {
+                    fscaleList << tvstring[idx];
+                }
+                qDebug() << "First screen scale list:" << fscaleList;
+            } else {
+                QStringList tmpList;
+                for (int idx = 0; idx * 0.25f + 1.0f <= maxScale; ++idx) {
+                    tmpList << tvstring[idx];
+                }
+                qDebug()  << "Current screen scale list:" << tmpList;
+                // fscaleList、tmpList两者取交集
+                for (const auto &scale : fscaleList) {
+                    if (!tmpList.contains(scale))
+                        fscaleList.removeAll(scale);
+                }
+            }
+        }
+    } else {
+        qCWarning(DDE_SHELL) << "Get scale factor failed, please check X11 Extension";
+    }
+
+    return fscaleList;
+}
+
 static double getScaleFactor() {
     Display *display = XOpenDisplay(nullptr);
     double scaleFactor = 0.0;
@@ -199,6 +258,14 @@ double getScaleFormConfig()
             qDebug() << "Scale factor from system display config: " << scaleFactor;
             if(scaleFactor == 0.0) {
                 scaleFactor = defaultScaleFactor;
+            } else {
+                // 处理关机期间从高分屏换到低分屏的场景
+                const auto &scales = getScaleList();
+                qDebug() << "Scales:" << scales;
+                if (!scales.isEmpty() && !scales.contains(QString::number(scaleFactor, 'f', 2).replace("00", "0"))) {
+                    qInfo() << "Scale factor is not in scales, use default scale factor";
+                    scaleFactor = defaultScaleFactor;
+                }
             }
             return scaleFactor;
         } else {
