@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Väärä salasana</translation>
     </message>
 </context>
 <context>
@@ -270,7 +270,7 @@
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Sormenjäljen tarkistus aikakatkaistiin, ole hyvä ja anna salasana manuaalisesti</translation>
+        <translation>Sormenjäljen tarkistus aikakatkaistiin, ole hyvä ja anna salasana</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>
@@ -285,11 +285,11 @@
     </message>
     <message>
         <source>The above users are still logged in and data will be lost due to shutdown, are you sure you want to shut down?</source>
-        <translation>Edellä mainitut käyttäjät ovat vielä kirjautuneet sisään ja tiedot katoavat, koska haluat sammuttaa?</translation>
+        <translation>Käyttäjiä on edelleen sisään kirjautuneena ja heidän avoimet työt katoavat. Haluatko varmasti sammuttaa?</translation>
     </message>
     <message>
         <source>The above users are still logged in and data will be lost due to reboot, are you sure you want to reboot?</source>
-        <translation>Edellä mainitut käyttäjät ovat vielä kirjautuneet sisään ja tiedot katoavat uudelleenkäynnistyksen takia, haluatko varmasti uudelleenkäynnistyksen?</translation>
+        <translation>Käyttäjiä on edelleen sisään kirjautuneena ja heidän avoimet työt katoavat. Haluatko varmasti käynnistää uudelleen?</translation>
     </message>
 </context>
 <context>
@@ -376,7 +376,7 @@
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation>Kytke kone sähköverkkoon ja asenna sitten päivitykset.</translation>
+        <translation>Kytke sähköverkkoon ja asenna sitten päivitykset.</translation>
     </message>
 </context>
 <context>
@@ -402,11 +402,11 @@
     <name>WarningContent</name>
     <message>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation>Ohjelmat estävät tietokoneen sammutusta ja pakottaminen voi aiheuttaa tietojen menetyksen.</translation>
+        <translation>Ohjelmat estävät tietokoneen sammumisen. Pakottaminen voi aiheuttaa tietojen menetyksen.</translation>
     </message>
     <message>
         <source>To close the program, click Cancel, and then close the program.</source>
-        <translation>Valitse ensin Peruuta ja sulje sitten avoin ohjelma.</translation>
+        <translation>Paina ensin peruuta, sitten sulje avoin ohjelma.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>

@@ -219,21 +219,6 @@ bool isDeepinAuth()
     return true;
 }
 
-uint timeFromString(QString time)
-{
-#ifndef ENABLE_DSS_SNIPE
-    if (time.isEmpty()) {
-        return QDateTime::currentDateTime().toTime_t();
-    }
-    return QDateTime::fromString(time, Qt::ISODateWithMs).toLocalTime().toTime_t();
-#else
-    if (time.isEmpty()) {
-        return QDateTime::currentDateTime().toSecsSinceEpoch();
-    }
-    return QDateTime::fromString(time, Qt::ISODateWithMs).toLocalTime().toSecsSinceEpoch();
-#endif
-}
-
 void setAppType(int type)
 {
     appType = type;

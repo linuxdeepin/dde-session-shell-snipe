@@ -270,11 +270,11 @@
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Preverjanje prstnega odtisa ni bilo uspešno, vnesite geslo</translation>
+        <translation>Zaznavanje prstnega odtisa ni uspelo, vnesite geslo</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>
-        <translation>Neustrezen prstni odtis</translation>
+        <translation>Prstni odtis se ne ujema</translation>
     </message>
 </context>
 <context>

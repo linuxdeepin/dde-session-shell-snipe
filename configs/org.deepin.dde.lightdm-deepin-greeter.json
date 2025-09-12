@@ -301,6 +301,16 @@
             "description": "是否长按小眼睛显示密码，true-鼠按长按小眼睛才显示密码，false-鼠标点击一下就一直显示密码",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "mfaSequence":{
+            "value": {"userType":"","authSequence":[]},
+            "serial": 0,
+            "flags": ["global"],
+            "name": "mfaSequence",
+            "name[zh_CN]": "多因认证时控制前端按认证顺序展示UI",
+            "description": "userType可用值，all:代表所有用户，adDomain:代表域用户,其它可选还有default、native，authSequence中的数组即代表认证类型的顺序",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

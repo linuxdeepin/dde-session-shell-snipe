@@ -38,6 +38,7 @@ signals:
 private:
     int m_aniIndex;
     DLabel *m_textLabel;
+    QTimer *m_filterTimer;
 };
 
 #endif // AUTHFACE_H

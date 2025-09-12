@@ -60,6 +60,12 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
             watcher->deleteLater();
         });
     }
+
+    connect(&m_authReminder, &QTimer::timeout, this, []{
+        qCWarning(DDE_SHELL) << "No auth result recived after token send";
+    });
+
+    m_authReminder.setSingleShot(false);
 }
 
 void DeepinAuthFramework::onDeviceChanged(const int authType, const int state)
@@ -268,7 +274,7 @@ void DeepinAuthFramework::SendToken(const QString &token)
     if (!m_waitToken) {
         return;
     }
-    qCInfo(DDE_SHELL) << "Send token to PAM, token: " << token;
+    qCInfo(DDE_SHELL) << "Token arrived, is it empty ? " << token.isEmpty();
     m_token = token;
     m_waitToken = false;
 }
@@ -330,6 +336,11 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
     connect(authControllerInter, &AuthControllerInter::PINLenChanged, this, &DeepinAuthFramework::PINLenChanged);
     connect(authControllerInter, &AuthControllerInter::PromptChanged, this, &DeepinAuthFramework::PromptChanged);
     connect(authControllerInter, &AuthControllerInter::Status, this, [this](int flag, int state, const QString &msg) {
+        if (m_authReminder.isActive()) {
+            m_authReminder.stop();
+            qCWarning(DDE_SHELL) << "reminder stopped for status changed";
+        }
+
         const AuthType type = AUTH_TYPE_CAST(flag);
         const AuthState authState = AUTH_STATE_CAST(state);
         emit AuthStateChanged(type, authState, msg);
@@ -434,17 +445,15 @@ void DeepinAuthFramework::EndAuthentication(const QString &account, const AuthFl
  */
 void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
+    qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type:" << authType;
     if (!m_authenticateControllers->contains(account)) {
         qCWarning(DDE_SHELL) << "account not included";
-        // 无论出于什么原因到这个逻辑，必须更新前端当前认证状态
-        // 否则将导致登录停在这里
-        Q_EMIT TokenAccountMismatch(m_lastAuthUser);
         return;
     }
-    qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type:" << authType;
 
     QByteArray ba = EncryptHelper::ref().getEncryptedToken(token);
     m_authenticateControllers->value(account)->SetToken(authType, ba);
+    m_authReminder.start(3000);
 }
 
 /**
@@ -645,4 +654,20 @@ bool DeepinAuthFramework::isDeepinAuthValid() const
 {
     return QDBusConnection::systemBus().interface()->isServiceRegistered(DSS_DBUS::authenticateService)
             && (Available == GetFrameworkState());
+}
+
+void DeepinAuthFramework::sendExtraInfo(const QString &account, AuthType authType, const QString &info)
+{
+    if (!m_authenticateControllers->contains(account)) {
+        qCWarning(DDE_SHELL) << "Do not contain account";
+        return;
+    }
+    qInfo() << "Send extra info to authentication:" << account << authType;
+    AuthControllerInter *inter = m_authenticateControllers->value(account);
+    QDBusMessage msg = QDBusMessage::createMethodCall(inter->service(), inter->path(), inter->interface(), "SetExtraInfo");
+    msg << authType << QString("{\"type\":%1,\"data\":\"%2\"}").arg(authType).arg(info);
+    QDBusPendingCall reply = inter->connection().asyncCall(msg, 2000);
+    if (reply.isError()) {
+        qCWarning(DDE_SHELL) << "Send extra info error:" << reply.error();
+    }
 }

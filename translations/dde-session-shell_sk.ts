@@ -204,7 +204,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation><numerusform>Vaše heslo vyprší za %d deň, zmeňte si ho prosím včas</numerusform><numerusform>Vaše heslo vyprší za %d dni, zmeňte si ho prosím včas</numerusform><numerusform>Vaše heslo vyprší za %d dní, zmeňte si ho prosím včas</numerusform><numerusform>Vaše heslo vyprší za %d dní, zmeňte si ho prosím včas</numerusform></translation>
+        <translation><numerusform>Platnosť vašeho hesla vyprší za %d deň, zmeňte si ho prosím včas</numerusform><numerusform>Platnosť vašeho hesla vyprší za %d dni, zmeňte si ho prosím včas</numerusform><numerusform>Platnosť vašeho hesla vyprší za %d dní, zmeňte si ho prosím včas</numerusform><numerusform>Platnosť vašeho hesla vyprší za %d dní, zmeňte si ho prosím včas</numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>

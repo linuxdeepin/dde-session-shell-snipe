@@ -1,0 +1,13 @@
+filters:
+- filter_type: file
+  source_file: translations/dde-session-shell_en.ts
+  file_format: QT
+  source_language: en
+  translation_files_expression: translations/dde-session-shell_<lang>.ts
+- filter_type: file
+  source_file: plugins/login-gesture/translations/login-gesture_en.ts
+  file_format: QT
+  source_language: en
+  translation_files_expression: plugins/login-gesture/translations/login-gesture_<lang>.ts
+settings:
+  pr_branch_name: transifex_update_<br_unique_id>

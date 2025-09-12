@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>success.svg</file>
+    </qresource>
+</RCC>

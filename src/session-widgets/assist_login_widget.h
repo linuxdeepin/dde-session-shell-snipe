@@ -27,15 +27,22 @@ public:
     void startAuth();
     void resetAuth();
     void updateConfig();
+    void updateVisible();
 
     const LoginPlugin::PluginConfig &getPluginConfig() const;
     void setPluginConfig(const LoginPlugin::PluginConfig &PluginConfig);
+    void setAuthState(AuthCommon::AuthState state, const QString &result);
+    dss::module::BaseModuleInterface::ModuleType pluginType() const;
+    bool readyToAuth() const;
+    QString extraInfo() const { return m_extraInfo; }
 
 Q_SIGNALS:
     void requestCheckAccount(const QString &account);
     void requestSendToken(const QString &account, const QString &token);
     void requestPluginConfigChanged(const LoginPlugin::PluginConfig &PluginConfig);
     void requestHidePlugin();
+    void readyToAuthChanged(bool ready);
+    void requestSendExtraInfo(const QString &info);
 
 private:
     void setCallback();
@@ -49,6 +56,7 @@ private:
     LoginPlugin *m_module;
     static QList<AssistLoginWidget *> AssistLoginWidgetObjs;
     LoginPlugin::PluginConfig m_pluginConfig;
+    QString m_extraInfo;
 };
 
 

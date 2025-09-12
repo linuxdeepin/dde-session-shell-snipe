@@ -38,6 +38,7 @@ const QString PASSWORD_SHOWN = QStringLiteral(":/misc/images/password-shown.svg"
 const QString DConfig_LongPressDisplayPassword = "longPressDisplayPassword";
 
 using namespace AuthCommon;
+using DSS_PLUGIN_TYPE = dss::module::BaseModuleInterface::ModuleType;
 
 AuthPassword::AuthPassword(QWidget *parent)
     : AuthModule(AT_Password, parent)
@@ -55,6 +56,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     , m_isPasswdAuthWidgetReplaced(false)
     , m_assistLoginWidget(nullptr)
     , m_authenticationDconfig(DConfig::create("org.deepin.dde.authentication", "org.deepin.dde.authentication.errorecho", QString(), this))
+    , m_canShowPasswordErrorTips(false)
 {
     qRegisterMetaType<LoginPlugin::PluginConfig>("LoginPlugin::PluginConfig");
 
@@ -71,6 +73,13 @@ AuthPassword::AuthPassword(QWidget *parent)
     setFocusProxy(m_lineEdit);
 }
 
+AuthPassword::~AuthPassword()
+{
+    if (m_resetPasswordMessageVisible) {
+        closeResetPasswordMessage();
+    }
+}
+
 /**
  * @brief 初始化界面
  */
@@ -78,7 +87,7 @@ void AuthPassword::initUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(5);
+    mainLayout->setSpacing(10);
 
     m_lineEdit->setClearButtonEnabled(false);
     m_lineEdit->setEchoMode(QLineEdit::Password);
@@ -105,9 +114,15 @@ void AuthPassword::initUI()
     /* 缩放因子 */
     passwordLayout->addStretch(1);
 
+    /* 认证状态 */
+    m_authStateLabel = new DLabel(this);
+    m_authStateLabel->setVisible(false);
+    setAuthStateStyle(LOGIN_WAIT);
+    passwordLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
+
     /*显示密码*/
     m_passwordShowBtn->setAccessibleName(QStringLiteral("PasswordShow"));
-    m_passwordShowBtn->setContentsMargins(0,0,0,0);
+    m_passwordShowBtn->setContentsMargins(0, 0, 0, 0);
     m_passwordShowBtn->setFocusPolicy(Qt::NoFocus);
     m_passwordShowBtn->setCursor(Qt::ArrowCursor);
     m_passwordShowBtn->setFlat(true);
@@ -116,11 +131,6 @@ void AuthPassword::initUI()
     m_passwordShowBtn->setVisible(true);
     passwordLayout->addWidget(m_passwordShowBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
-    /* 认证状态 */
-    m_authStateLabel = new DLabel(this);
-    m_authStateLabel->setVisible(false);
-    setAuthStateStyle(LOGIN_WAIT);
-    passwordLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
     /* 密码提示 */
     m_passwordHintBtn->setAccessibleName(QStringLiteral("PasswordHint"));
     m_passwordHintBtn->setContentsMargins(0, 0, 0, 0);
@@ -132,12 +142,11 @@ void AuthPassword::initUI()
     m_passwordHintBtn->setVisible(false);
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
     mainLayout->addWidget(m_lineEdit);
-    auto plugin =  PluginManager::instance()->getAssistloginPlugin();
+    auto plugin = PluginManager::instance()->getAssistloginPlugin();
 
     if (plugin) {
         m_isPasswdAuthWidgetReplaced = true;
         m_assistLoginWidget = new AssistLoginWidget(this);
-
         m_assistLoginWidget->setModule(plugin);
         m_assistLoginWidget->initUI();
         mainLayout->addWidget(m_assistLoginWidget);
@@ -146,6 +155,16 @@ void AuthPassword::initUI()
         m_lineEdit->show();
     }
 
+    // 密码框下面增加一个认证界面
+    auto extendPlugin = PluginManager::instance()->getFirstLoginPlugin(dss::module::BaseModuleInterface::PasswordExtendLoginType);
+    if (extendPlugin) {
+        m_assistLoginWidget = new AssistLoginWidget(this);
+        m_assistLoginWidget->setModule(extendPlugin);
+        m_assistLoginWidget->initUI();
+        mainLayout->addWidget(m_assistLoginWidget);
+    } else {
+        qCDebug(DDE_SHELL) << "There's no password extend plugin";
+    }
     updatePasswordTextMargins();
     m_passwordTipsWidget->hide();
 }
@@ -156,20 +175,27 @@ void AuthPassword::initUI()
 void AuthPassword::initConnections()
 {
     AuthModule::initConnections();
+
+    auto blockEditSig = [this]() -> bool {
+        return m_assistLoginWidget
+               && m_assistLoginWidget->isVisible()
+               && DSS_PLUGIN_TYPE::PasswordExtendLoginType == m_assistLoginWidget->pluginType()
+               && !m_assistLoginWidget->readyToAuth();
+    };
     /* 密码提示 */
     connect(m_passwordHintBtn, &DIconButton::clicked, this, &AuthPassword::showPasswordHint);
     /* 密码输入框 */
-    connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
+    connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this, blockEditSig](const bool focus) {
         if (!focus)
             m_lineEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
         updatePasswordTextMargins();
         emit focusChanged(focus);
-        if (focus) {
+        if (focus && !blockEditSig()) {
             emit lineEditTextChanged(m_lineEdit->text());
         }
     });
-    connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
+    connect(m_lineEdit, &DLineEditEx::textChanged, this, [this, blockEditSig](const QString &text) {
         m_lineEdit->hideAlertMessage();
         hidePasswordHintWidget();
         m_lineEdit->setAlert(false);
@@ -181,11 +207,18 @@ void AuthPassword::initConnections()
             m_passwordTipsWidget->adjustSize();
             emit passwordErrorTipsClearChanged(true);
         }
-        emit lineEditTextChanged(text);
+        if (!blockEditSig())
+            emit lineEditTextChanged(text);
     });
-    connect(m_lineEdit, &DLineEditEx::returnPressed, this, [this] {
-        if (!m_lineEdit->lineEdit()->isReadOnly()) // 避免用户在验证的时候反复点击
-            emit requestAuthenticate();
+    connect(m_lineEdit, &DLineEditEx::returnPressed, this, [this, blockEditSig] {
+        if (!m_lineEdit->lineEdit()->isReadOnly()) { // 避免用户在验证的时候反复点击
+            if (!blockEditSig()) {
+                emit requestAuthenticate();
+            } else {
+                setFocusProxy(m_assistLoginWidget);
+                m_assistLoginWidget->setFocus();
+            }
+        }
     });
 
     if (DConfigHelper::instance()->getConfig(DConfig_LongPressDisplayPassword, true).toBool()) {
@@ -217,13 +250,37 @@ void AuthPassword::initConnections()
     }
 
     if (m_assistLoginWidget && m_isPasswdAuthWidgetReplaced) {
-        connect(m_assistLoginWidget, &AssistLoginWidget::requestPluginConfigChanged, this, [this] (const LoginPlugin::PluginConfig pluginConfig) {
+        connect(m_assistLoginWidget, &AssistLoginWidget::requestPluginConfigChanged, this, [this](const LoginPlugin::PluginConfig pluginConfig) {
             Q_EMIT requestPluginConfigChanged(pluginConfig);
         });
-        connect(m_assistLoginWidget, &AssistLoginWidget::requestHidePlugin, this, [ = ] {
+        connect(m_assistLoginWidget, &AssistLoginWidget::requestHidePlugin, this, [=] {
             hidePlugin();
         });
         connect(m_assistLoginWidget, &AssistLoginWidget::requestSendToken, this, &AuthPassword::requestPluginAuthToken);
+    }
+
+    if (m_assistLoginWidget) {
+        connect(m_assistLoginWidget, &AssistLoginWidget::requestSendExtraInfo, this, [this](const QString &info) {
+            if (!m_lineEdit->text().isEmpty()) {
+                Q_EMIT requestAuthenticate();
+                return;
+            }
+
+            // 焦点切换到密码输入框
+            m_lineEdit->setFocus();
+            setFocusProxy(m_lineEdit);
+        });
+        connect(m_assistLoginWidget, &AssistLoginWidget::readyToAuthChanged, this, &AuthPassword::onReadyToAuthChanged);
+    }
+
+    if (m_authenticationDconfig) {
+        auto updateCanShow = [this] {
+            m_canShowPasswordErrorTips = m_authenticationDconfig->value("PasswordErrorEcho", false).toBool();
+        };
+
+        connect(m_authenticationDconfig, &DConfig::valueChanged, this, updateCanShow);
+
+        updateCanShow();
     }
 }
 
@@ -235,6 +292,7 @@ void AuthPassword::reset()
     m_lineEdit->clear();
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
+    setFocusProxy(m_lineEdit);
     hidePasswordHintWidget();
     setLineEditEnabled(true);
     setLineEditInfo(tr("Password"), PlaceHolderText);
@@ -361,6 +419,11 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
         setLineEditEnabled(true);
         m_showPrompt = true;
         break;
+    case AS_VerifyCode:
+        setAnimationState(false);
+        setAuthStateStyle(LOGIN_WAIT);
+        setLineEditEnabled(true);
+        break;
     default:
         setAnimationState(false);
         setAuthStateStyle(LOGIN_WAIT);
@@ -368,6 +431,9 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
         setLineEditInfo(result, AlertText);
         qCWarning(DDE_SHELL) << "Error! The state of Password Auth is wrong, state: " << state << ", result: " << result;
         break;
+    }
+    if (m_assistLoginWidget) {
+        m_assistLoginWidget->setAuthState(state, result);
     }
     update();
 }
@@ -576,8 +642,8 @@ void AuthPassword::setPasswordHintBtnVisible(const bool isVisible)
 void AuthPassword::setResetPasswordMessageVisible(const bool isVisible, bool fromResetDialog)
 {
     qCDebug(DDE_SHELL) << "Set reset password message visible, incoming visible:" << isVisible
-             << " current visible:" << m_resetPasswordMessageVisible
-             << " fromResetDialog " << fromResetDialog;
+                       << " current visible:" << m_resetPasswordMessageVisible
+                       << " fromResetDialog " << fromResetDialog;
     if (isVisible && fromResetDialog) {
         m_resetDialogShow = false;
     }
@@ -629,7 +695,7 @@ void AuthPassword::showResetPasswordMessage()
     // DFloatingMessage中有两个按钮一个是DIconButton,另一个是继承于DIconButton的DDialogCloseButton，需要区分
     QList<DIconButton *> btnList = m_resetPasswordFloatingMessage->findChildren<DIconButton *>();
     foreach (const auto iconButton, btnList) {
-        DDialogCloseButton * closeButton = qobject_cast<DDialogCloseButton *>(iconButton);
+        DDialogCloseButton *closeButton = qobject_cast<DDialogCloseButton *>(iconButton);
         if (closeButton) {
             continue;
         }
@@ -656,7 +722,7 @@ void AuthPassword::showResetPasswordMessage()
 
         emit m_resetPasswordFloatingMessage->closeButtonClicked();
     });
-    connect(m_resetPasswordFloatingMessage, &DFloatingMessage::closeButtonClicked, this, [this](){
+    connect(m_resetPasswordFloatingMessage, &DFloatingMessage::closeButtonClicked, this, [this]() {
         if (m_resetPasswordFloatingMessage) {
             m_resetPasswordFloatingMessage->deleteLater();
             m_resetPasswordFloatingMessage = nullptr;
@@ -712,7 +778,7 @@ bool AuthPassword::isUserAccountBinded()
     }
     QString uuid = retUUID.toString();
 
-    QDBusReply<QString> retLocalBindCheck= syncHelperInter.call("LocalBindCheck", uosid, uuid);
+    QDBusReply<QString> retLocalBindCheck = syncHelperInter.call("LocalBindCheck", uosid, uuid);
     if (!syncHelperInter.isValid()) {
         return false;
     }
@@ -730,7 +796,7 @@ bool AuthPassword::isUserAccountBinded()
                 m_bindCheckTimer = new QTimer(this);
                 connect(m_bindCheckTimer, &QTimer::timeout, this, [this] {
                     qCWarning(DDE_SHELL) << "BindCheck retry!";
-                    if(isUserAccountBinded()) {
+                    if (isUserAccountBinded()) {
                         setResetPasswordMessageVisible(true);
                         updateResetPasswordUI();
                     }
@@ -865,11 +931,9 @@ void AuthPassword::updatePasswordTextMargins()
 {
     QMargins textMargins = m_lineEdit->lineEdit()->textMargins();
     // 右边控件宽度+控件间距
-    const int rightWidth = (m_passwordShowBtn->isVisible() ? m_passwordShowBtn->width() + 5 : 0) +
-                         (m_authStateLabel->isVisible() ? m_authStateLabel->width() + 5 : 0) +
-                         (m_passwordHintBtn->isVisible() ? m_passwordHintBtn->width() + 5: 0);
+    const int rightWidth = (m_passwordShowBtn->isVisible() ? m_passwordShowBtn->width() + 5 : 0) + (m_authStateLabel->isVisible() ? m_authStateLabel->width() + 5 : 0) + (m_passwordHintBtn->isVisible() ? m_passwordHintBtn->width() + 5 : 0);
     // 左侧控件宽度
-    const int leftWidth = (m_capsLock->isVisible() ? m_capsLock->width() + 5: 0);
+    const int leftWidth = (m_capsLock->isVisible() ? m_capsLock->width() + 5 : 0);
     textMargins.setRight(rightWidth);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
     const int displayTextWidth = m_lineEdit->lineEdit()->fontMetrics().horizontalAdvance(m_lineEdit->lineEdit()->displayText());
@@ -915,15 +979,6 @@ void AuthPassword::startPluginAuth()
 bool AuthPassword::isShowPasswrodErrorTip()
 {
     return m_passwordTipsWidget->isVisible();
-}
-
-bool AuthPassword::canShowPasswrodErrorTip()
-{
-    // 从da的dconfig配置获取
-    if (!m_authenticationDconfig) {
-        return false;
-    }
-    return m_authenticationDconfig->value("PasswordErrorEcho", false).toBool();
 }
 
 void AuthPassword::showErrorTip(const QString &text)
@@ -977,4 +1032,9 @@ void AuthPassword::moveEvent(QMoveEvent *event)
         });
     }
     QWidget::moveEvent(event);
+}
+
+void AuthPassword::onReadyToAuthChanged(bool ready)
+{
+    ready ? emit lineEditTextChanged(m_lineEdit->text()) : emit lineEditTextChanged("");
 }

@@ -130,6 +130,7 @@ public:
     virtual void setAuthType(const AuthCommon::AuthFlags type);
     virtual void setAuthState(const AuthCommon::AuthType type, const AuthCommon::AuthState state, const QString &message);
     virtual int getTopSpacing() const;
+    virtual QWidget* getAuthWidget();
 
     void setAccountErrorMsg(const QString &message);
     void syncPasswordResetPasswordVisibleChanged(const QVariant &value);
@@ -193,6 +194,7 @@ protected:
     QPointer<AuthFace> m_faceAuth;               // 面容
     QPointer<AuthIris> m_irisAuth;               // 虹膜
     QPointer<AuthPasskey> m_passkeyAuth;         // 安全密钥
+    QPointer<AuthCustom> m_gestureAuth;          // 手势
     QPointer<AuthCustom> m_customAuth;           // 自定义认证
 
     QString m_passwordHint;     // 密码提示

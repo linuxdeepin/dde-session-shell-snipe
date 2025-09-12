@@ -11,11 +11,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform></translation>
+        <translation><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>A verificação falhou; resta apenas uma tentativa</translation>
+        <translation>A verificação falhou, apenas uma tentativa restante</translation>
     </message>
     <message>
         <source>Verify your Face ID</source>
@@ -42,11 +42,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform></translation>
+        <translation><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>A verificação falhou; resta apenas uma tentativa</translation>
+        <translation>A verificação falhou, apenas uma tentativa restante</translation>
     </message>
     <message>
         <source>Fingerprint locked, use password please</source>
@@ -65,11 +65,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform></translation>
+        <translation><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>A verificação falhou; resta apenas uma tentativa</translation>
+        <translation>A verificação falhou, apenas uma tentativa restante</translation>
     </message>
     <message>
         <source>Verify your Iris ID</source>
@@ -107,11 +107,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform></translation>
+        <translation><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>A verificação falhou; resta apenas uma tentativa</translation>
+        <translation>A verificação falhou, apenas uma tentativa restante</translation>
     </message>
     <message>
         <source>Wrong Password</source>
@@ -165,11 +165,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform><numerusform>A verificação falhou, restam %n tentativas</numerusform></translation>
+        <translation><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform><numerusform>A verificação falhou, %n tentativas restantes</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>A verificação falhou; resta apenas uma tentativa</translation>
+        <translation>A verificação falhou, apenas uma tentativa restante</translation>
     </message>
     <message>
         <source>Wrong PIN</source>
@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Senha Errada</translation>
     </message>
 </context>
 <context>
@@ -383,19 +383,19 @@
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Retornar</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Por favor, selecione a conta para logar</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Conta Local</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Conta de domínio</translation>
     </message>
 </context>
 <context>

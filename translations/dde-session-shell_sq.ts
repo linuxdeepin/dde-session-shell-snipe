@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Fjalëkalim i Gabuar</translation>
     </message>
 </context>
 <context>
@@ -372,7 +372,7 @@
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation>Përditësoje</translation>
+        <translation>Përditësim</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>

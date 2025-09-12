@@ -259,7 +259,7 @@
     <name>LockContent</name>
     <message>
         <source>Lock Screen</source>
-        <translation>ئېكران قۇلۇپى</translation>
+        <translation>ئېكراننى قۇلۇپلاش</translation>
     </message>
     <message>
         <source>Failed to lock screen</source>

@@ -331,15 +331,15 @@
     </message>
     <message>
         <source>Switch system</source>
-        <translation type="unfinished"/>
+        <translation>Perjungti sistemą</translation>
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Atnaujinti ir išjungti</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Atnaujinti ir paleisti iš naujo</translation>
     </message>
 </context>
 <context>
@@ -458,11 +458,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Atnaujinti ir išjungti</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Atnaujinti ir paleisti iš naujo</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>
