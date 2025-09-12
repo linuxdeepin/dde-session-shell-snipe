@@ -356,3 +356,21 @@ bool isSleepLock()
     return value.toBool();
 }
 #endif
+
+QString qtifyName(const QString &name) {
+    bool next_cap = false;
+    QString result;
+    
+    for (auto it = name.cbegin(); it != name.cend(); ++it) {
+        if (*it == '-') {
+            next_cap = true;
+        } else if (next_cap) {
+            result.append(it->toUpper());
+            next_cap = false;
+        } else {
+            result.append(*it);
+        }
+    }
+    
+    return result;
+}

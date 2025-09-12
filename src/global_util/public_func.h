@@ -82,4 +82,10 @@ void configWebEngine();
 bool isSleepLock();
 #endif
 
+/**
+ * @brief convert 'some-key' to 'someKey'.
+ */
+
+QString qtifyName(const QString &name);
+
 #endif // PUBLIC_FUNC_H
