@@ -87,15 +87,6 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
         m_shutdownBlackWidget->setFixedSize(this->size());
         m_shutdownBlackWidget->setBlackMode(value);
     });
-
-    connect(m_model, &SessionBaseModel::shutdownkModeChanged, this, [this] (bool value){
-        if (!m_shutdownBlackWidget) {
-            m_shutdownBlackWidget = new ShutdownBlackWidget(this);
-        }
-        qCInfo(DDE_SHELL) << "FullScreenBackground size : " << size();
-        m_shutdownBlackWidget->setFixedSize(this->size());
-        m_shutdownBlackWidget->setBlackMode(value);
-    });
 }
 
 FullScreenBackground::~FullScreenBackground()
