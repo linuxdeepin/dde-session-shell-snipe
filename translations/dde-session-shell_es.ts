@@ -3,7 +3,7 @@
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>
-        <translation>ID de facial</translation>
+        <translation>ID facial</translation>
     </message>
     <message>
         <source>Verification successful</source>
@@ -11,11 +11,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, queda %n oportunidad</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>La verificación falló, queda %n oportunidad</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Verificación fallida, sólo queda una oportunidad</translation>
+        <translation>La verificación falló, sólo queda una oportunidad</translation>
     </message>
     <message>
         <source>Verify your Face ID</source>
@@ -42,7 +42,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>La verificación falló, queda %n oportunidad</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -65,11 +65,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, queda %n oportunidad</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>La verificación falló, queda %n oportunidad</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Verificación fallida, sólo queda una oportunidad</translation>
+        <translation>La verificación falló, sólo queda una oportunidad</translation>
     </message>
     <message>
         <source>Verify your Iris ID</source>
@@ -107,7 +107,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, queda %n oportunidad</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>La verificación falló, queda %n oportunidad</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -135,7 +135,7 @@
     </message>
     <message>
         <source>Forgot password?</source>
-        <translation>¿Ha olvidado su contraseña?</translation>
+        <translation>¿Olvidó la contraseña?</translation>
     </message>
 </context>
 <context>
@@ -146,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform><numerusform>Por favor, inténtelo de nuevo %n minutos más tarde</numerusform></translation>
+        <translation><numerusform>Vuelva a intentarlo %n minuto más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform><numerusform>Vuelva a intentarlo %n minutos más tarde</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -154,7 +154,7 @@
     </message>
     <message>
         <source>Forgot password?</source>
-        <translation>¿Ha olvidado su contraseña?</translation>
+        <translation>¿Olvidó la contraseña?</translation>
     </message>
 </context>
 <context>
@@ -165,7 +165,7 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation><numerusform>Verificación fallida, queda %n oportunidad</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform><numerusform>Verificación fallida, quedan %n oportunidades</numerusform></translation>
+        <translation><numerusform>La verificación falló, queda %n oportunidad</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform><numerusform>La verificación falló, quedan %n oportunidades</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Contraseña Incorrecta</translation>
     </message>
 </context>
 <context>
@@ -335,7 +335,7 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation>Actualizar y Apagar</translation>
+        <translation>Actualizar y apagar</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
@@ -458,7 +458,7 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation>Acrualizar y apagar</translation>
+        <translation>Actualizar y apagar</translation>
     </message>
     <message>
         <source>Update and Reboot</source>

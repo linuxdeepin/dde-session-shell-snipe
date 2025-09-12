@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Device unavailable!</source>
-        <translation>Appareil indisponible !</translation>
+        <translation>Appareil indisponible !</translation>
     </message>
 </context>
 <context>
@@ -84,19 +84,19 @@
     <name>AuthPasskey</name>
     <message>
         <source>Please plug in the security key</source>
-        <translation type="unfinished"/>
+        <translation>Veuillez insérer la clé de sécurité.</translation>
     </message>
     <message>
         <source>Verification successful</source>
-        <translation type="unfinished"/>
+        <translation>Vérification réussie</translation>
     </message>
     <message>
         <source>Verification failed</source>
-        <translation type="unfinished"/>
+        <translation>Échec de la vérification</translation>
     </message>
     <message>
         <source>Identifying the security key</source>
-        <translation type="unfinished"/>
+        <translation>Identification de la clé de sécurité</translation>
     </message>
 </context>
 <context>
@@ -212,18 +212,18 @@
     </message>
     <message>
         <source>Your password has expired. Please contact the administrator to change it</source>
-        <translation type="unfinished"/>
+        <translation>Votre mot de passe a expiré, veuillez contacter votre administrateur pour le changer</translation>
     </message>
     <message>
         <source>Terminal locked, please contact administrator</source>
-        <translation type="unfinished"/>
+        <translation>Terminal verrouillé, veuillez contacter l&apos;administrateur.</translation>
     </message>
 </context>
 <context>
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Mauvais mot de passe</translation>
     </message>
 </context>
 <context>
@@ -245,14 +245,14 @@
     </message>
     <message>
         <source>The reason of inhibit.</source>
-        <translation type="unfinished"/>
+        <translation>La raison de ce blocage.</translation>
     </message>
 </context>
 <context>
     <name>LighterGreeter</name>
     <message>
         <source>Standard Mode</source>
-        <translation type="unfinished"/>
+        <translation>Mode standard</translation>
     </message>
 </context>
 <context>
@@ -353,56 +353,56 @@
     <name>UdcpMFALoginWidget</name>
     <message>
         <source>发送验证码</source>
-        <translation type="unfinished"/>
+        <translation>Envoyer le code de vérification</translation>
     </message>
     <message>
         <source>请输入手机号</source>
-        <translation type="unfinished"/>
+        <translation>Veuillez saisir votre numéro de téléphone portable.</translation>
     </message>
     <message>
         <source>请输入验证码</source>
-        <translation type="unfinished"/>
+        <translation>Veuillez saisir le code de vérification</translation>
     </message>
     <message>
         <source>获取验证码</source>
-        <translation type="unfinished"/>
+        <translation>Obtenir le code de vérification</translation>
     </message>
 </context>
 <context>
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation type="unfinished"/>
+        <translation>Mise à jour</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation type="unfinished"/>
+        <translation>Veuillez brancher l&apos;appareil, puis installer les mises à jour.</translation>
     </message>
 </context>
 <context>
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Retour</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Veuillez sélectionner le compte pour vous connecter.</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Compte local</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Compte de domaine</translation>
     </message>
 </context>
 <context>
     <name>WarningContent</name>
     <message>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation>Les programmes empêchent l&apos;ordinateur de s&apos;éteindre et forcer l&apos;arrêt peut entraîner une perte de données.</translation>
+        <translation>Des programmes empêchent l&apos;ordinateur de s&apos;éteindre et forcer l&apos;arrêt peut entraîner une perte de données.</translation>
     </message>
     <message>
         <source>To close the program, click Cancel, and then close the program.</source>
@@ -410,19 +410,19 @@
     </message>
     <message>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
-        <translation>Les programmes empêchent l&apos;ordinateur de redémarrer et forcer le redémarrage peut entraîner une perte de données.</translation>
+        <translation>Des programmes empêchent l&apos;ordinateur de redémarrer et forcer le redémarrage peut entraîner une perte de données.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from suspend, and forcing suspend may cause data loss.</source>
-        <translation>Les programmes empêchent l&apos;ordinateur de se suspendre et forcer la suspension peut entraîner une perte de données.</translation>
+        <translation>Des programmes empêchent l&apos;ordinateur de se suspendre et forcer la suspension peut entraîner une perte de données.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from hibernate, and forcing hibernate may cause data loss.</source>
-        <translation>Les programmes empêchent l&apos;ordinateur de mettre en veille prolongée et forcer la mise en veille prolongée peut entraîner une perte de données.</translation>
+        <translation>Des programmes empêchent l&apos;ordinateur de mettre en veille prolongée et forcer la mise en veille prolongée peut entraîner une perte de données.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from log out, and forcing log out may cause data loss.</source>
-        <translation>Les programmes empêchent l&apos;ordinateur de se déconnecter et forcer la déconnexion peut entraîner une perte de données.</translation>
+        <translation>Des programmes empêchent l&apos;ordinateur de se déconnecter et forcer la déconnexion peut entraîner une perte de données.</translation>
     </message>
     <message>
         <source>Shut down</source>
@@ -446,7 +446,7 @@
     </message>
     <message>
         <source>Are you sure you want to shut down?</source>
-        <translation>Êtes-vous sûr de vouloir arrêter ?</translation>
+        <translation>Êtes-vous sûr de vouloir éteindre ?</translation>
     </message>
     <message>
         <source>Are you sure you want to reboot?</source>
@@ -458,30 +458,30 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Mettre à jour et arrêter</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Mettre à jour et redémarrer</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Fermeture des programmes et arrêt du système, veuillez patienter...</translation>
     </message>
     <message>
         <source>Closing the programs and rebooting, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Fermeture des programmes et redémarrage, veuillez patienter...</translation>
     </message>
     <message>
         <source>Closing the programs and logging out, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Fermeture des programmes et déconnexion, veuillez patienter...</translation>
     </message>
 </context>
 <context>
     <name>dss::module::AssistLoginWidget</name>
     <message>
         <source>Automatic login</source>
-        <translation type="unfinished"/>
+        <translation>Connexion automatique</translation>
     </message>
 </context>
 <context>

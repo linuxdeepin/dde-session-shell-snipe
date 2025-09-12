@@ -263,14 +263,14 @@
     </message>
     <message>
         <source>Failed to lock screen</source>
-        <translation>O bloqueio do ecrã falhou</translation>
+        <translation>Falha ao bloquear o ecrã</translation>
     </message>
 </context>
 <context>
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>A verificação da impressão digital expirou, insira manualmente a sua palavra-passe</translation>
+        <translation>A verificação da impressão digital expirou, introduza manualmente a sua palavra-passe</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>

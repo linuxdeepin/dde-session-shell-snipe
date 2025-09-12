@@ -204,7 +204,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Şifreniz %n gün içinde sona erecek, lütfen zamanında değiştirin</numerusform><numerusform>Şifreniz %n gün içinde sona erecek, lütfen zamanında değiştirin</numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -335,11 +335,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Güncelleştir ve Kapat</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Güncelleştir ve Yeniden Başlat</translation>
     </message>
 </context>
 <context>
@@ -372,11 +372,11 @@
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation type="unfinished"/>
+        <translation>Güncelle</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation type="unfinished"/>
+        <translation>Lütfen fişe takın ve ardından güncellemeleri yükleyin.</translation>
     </message>
 </context>
 <context>
@@ -458,11 +458,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Güncelleştir ve Kapat</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Güncelleştir ve Yeniden Başlat</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>

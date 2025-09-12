@@ -131,7 +131,7 @@
     </message>
     <message>
         <source>Reset Password</source>
-        <translation>Resetuj hasło</translation>
+        <translation>Zresetuj hasło</translation>
     </message>
     <message>
         <source>Forgot password?</source>
@@ -150,7 +150,7 @@
     </message>
     <message>
         <source>Reset Password</source>
-        <translation>Resetuj hasło</translation>
+        <translation>Zresetuj hasło</translation>
     </message>
     <message>
         <source>Forgot password?</source>
@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Błędne hasło</translation>
     </message>
 </context>
 <context>

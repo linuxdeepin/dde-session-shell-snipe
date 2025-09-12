@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Contrasenya incorrecta</translation>
     </message>
 </context>
 <context>

@@ -131,7 +131,7 @@
     </message>
     <message>
         <source>Reset Password</source>
-        <translation>Vynulovat heslo</translation>
+        <translation>Nastavit heslo znovu</translation>
     </message>
     <message>
         <source>Forgot password?</source>
@@ -150,7 +150,7 @@
     </message>
     <message>
         <source>Reset Password</source>
-        <translation>Vynulovat heslo</translation>
+        <translation>Nastavit heslo znovu</translation>
     </message>
     <message>
         <source>Forgot password?</source>

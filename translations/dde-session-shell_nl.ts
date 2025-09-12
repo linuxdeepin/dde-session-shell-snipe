@@ -185,7 +185,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation><numerusform>Probeer het over %n minuut opnieuw</numerusform><numerusform>Probeer het over %n minuten opnieuw</numerusform></translation>
+        <translation><numerusform>Probeer het over %n minuut</numerusform><numerusform>Probeer het over %n minuten opnieuw</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Het wachtwoord is onjuist</translation>
     </message>
 </context>
 <context>
@@ -270,7 +270,7 @@
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Vingerafdrukauthenticatie verlopen - voer je wachtwoord handmatig in</translation>
+        <translation>De vingerafdrukverificatie is verlopen. Voer je wachtwoord handmatig in.</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>

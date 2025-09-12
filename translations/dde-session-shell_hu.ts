@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Helytelen jelszó</translation>
     </message>
 </context>
 <context>
@@ -270,11 +270,11 @@
     <name>LockWorker</name>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
-        <translation>Ujjlenyomat azonosítás időtúllépése, kérjük adja meg a jelszót kézzel</translation>
+        <translation>Az ujjlenyomat azonosítás időtúllépése, kérjük adja meg a jelszavát kézzel</translation>
     </message>
     <message>
         <source>Failed to match fingerprint</source>
-        <translation>Ujjlenyomatok nem egyeznek</translation>
+        <translation>Az ujjlenyomatok nem egyeznek</translation>
     </message>
 </context>
 <context>

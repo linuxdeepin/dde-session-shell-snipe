@@ -3,7 +3,7 @@
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>
-        <translation>Face ID</translation>
+        <translation>Идентификация лица</translation>
     </message>
     <message>
         <source>Verification successful</source>
@@ -57,7 +57,7 @@
     <name>AuthIris</name>
     <message>
         <source>Iris ID</source>
-        <translation type="unfinished"/>
+        <translation>Идентификатор радужной оболочки глаза</translation>
     </message>
     <message>
         <source>Verification successful</source>

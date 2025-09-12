@@ -34,7 +34,7 @@
     <name>AuthFingerprint</name>
     <message>
         <source>Verify your fingerprint</source>
-        <translation type="unfinished"/>
+        <translation>指紋で認証</translation>
     </message>
     <message>
         <source>Verification successful</source>
@@ -142,11 +142,11 @@
     <name>AuthSingle</name>
     <message>
         <source>Please try again 1 minute later</source>
-        <translation type="unfinished"/>
+        <translation>1分後にやり直してください</translation>
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform></translation>
+        <translation><numerusform>%n分後にやり直してください</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -335,11 +335,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>アップデートしてシャットダウン</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>アップデートして再起動</translation>
     </message>
 </context>
 <context>
@@ -372,11 +372,11 @@
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation type="unfinished"/>
+        <translation>アップデート</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation type="unfinished"/>
+        <translation>アップデートをインストールするには、電源に接続してください。</translation>
     </message>
 </context>
 <context>
@@ -458,11 +458,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>アップデートしてシャットダウン</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>アップデートして再起動</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>

@@ -331,22 +331,22 @@
     </message>
     <message>
         <source>Switch system</source>
-        <translation type="unfinished"/>
+        <translation>ປ່ຽນລະບົບ</translation>
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>ອັບເດດ ແລະ ປິດເຄື່ອງ</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>ອັບເດດ ແລະ ເປີດຄືນ</translation>
     </message>
 </context>
 <context>
     <name>SystemMonitor</name>
     <message>
         <source>Start system monitor</source>
-        <translation type="unfinished"/>
+        <translation>ເປີດຕົວຕິດຕາມລະບົບ</translation>
     </message>
 </context>
 <context>
@@ -372,11 +372,11 @@
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation type="unfinished"/>
+        <translation>ປັບປຸງໃຫ້ທັນ</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation type="unfinished"/>
+        <translation>ກະລຸນາສຽບແລະຫຼັງຈາກນັ້ນຕິດຕັ້ງການປັບປຸງ.</translation>
     </message>
 </context>
 <context>
