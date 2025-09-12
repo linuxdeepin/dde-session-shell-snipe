@@ -171,7 +171,12 @@ bool LockFrame::event(QEvent *event)
         }
 
         if (keyValue != "") {
+#ifdef ENABLE_DSS_SNIPE
+            // v25 dde-daemon接受小驼峰命名的name
+            emit sendKeyValue(qtifyName(keyValue));
+#else
             emit sendKeyValue(keyValue);
+#endif
         }
     }
     return FullScreenBackground::event(event);
