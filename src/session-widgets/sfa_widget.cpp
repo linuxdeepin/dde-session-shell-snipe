@@ -171,7 +171,7 @@ void SFAWidget::setAuthType(const AuthFlags type)
     chooseAuthType(authType);
 
     // 如果是无密码认证，焦点默认在解锁按钮上面
-    if (m_model->currentUser()->isNoPasswordLogin()) {
+    if (m_model->currentUser()->isNoPasswordLogin() && !m_model->terminalLocked()) {
         m_lockButton->setEnabled(true);
         setFocusProxy(m_lockButton);
         setFocus();

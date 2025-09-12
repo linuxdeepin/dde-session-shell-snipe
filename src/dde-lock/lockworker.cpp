@@ -190,27 +190,39 @@ void LockWorker::initConnections()
         const bool sleepLock = isSleepLock();
 #endif
         qCInfo(DDE_SHELL) << "Lock screen when system wakes up: " << sleepLock << ", is visible:" << m_model->visible();
+
+        FullScreenBackground::setContent(LockContent::instance());
+        m_model->setCurrentContentType(SessionBaseModel::LockContent);
+
         if (isSleep) {
-            endAuthentication(m_account, AT_All);
-            destroyAuthentication(m_account);
             checkSystemWakeupTimer->start();
             doSuspendTime = QDateTime::currentDateTime();
+            m_model->setIsBlackMode(true);
+            // 休眠时按需拉起锁屏,注意此时是被动响应休眠
+            if (sleepLock && m_login1SessionSelf->active()) {
+                // 仅sleepLock配置开启时执行
+                m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+                setLocked(true);
+                m_model->setVisible(true);
+
+                qCInfo(DDE_SHELL) << "locked for sleepLock config";
+            }
         } else {
-            // 非黑屏mode
-            m_model->setIsBlackMode(isSleep);
-
-            // 如果待机唤醒后需要密码则创建验证
-            if(m_login1SessionSelf->active() && sleepLock)
-                createAuthentication(m_model->currentUser()->name());
-        }
-        if (!m_model->visible() && sleepLock) {
-            m_model->setIsBlackMode(isSleep);
-            m_model->setVisible(true);
-        }
-
-        if (!isSleep && !sleepLock) {
-            //待机唤醒后检查是否需要密码，若不需要密码直接隐藏锁定界面
-            m_model->setVisible(false);
+            SessionBaseModel::ModeStatus status = m_model->currentModeState();
+            if (isLocked() || (m_model->isNoPasswordLogin() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::PasswordMode))) {
+                // 唤醒时如果处于lock状态，重置认证
+                if (m_login1SessionSelf->active()) {
+                    endAuthentication(m_account, AT_All);
+                    destroyAuthentication(m_account);
+                    createAuthentication(m_model->currentUser()->name());
+                }
+            } else {
+                // 处理其他流程设置的可见状态
+                m_model->setVisible(false);
+            }
+            // 避免在电源选项处理中设置密码模式，会导致唤醒后闪锁屏
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+            m_model->setIsBlackMode(false);
         }
         emit m_model->prepareForSleep(isSleep);
     });
@@ -286,40 +298,50 @@ void LockWorker::initConnections()
 
 void LockWorker::initData()
 {
-    /* com.deepin.daemon.Accounts */
-    m_model->updateUserList(m_accountsInter->userList());
-    m_model->updateLoginedUserList(m_loginedInter->userList());
+    auto list = m_accountsInter->userList();
+    if (!list.isEmpty()) {
+        /* com.deepin.daemon.Accounts */
+        m_model->updateUserList(m_accountsInter->userList());
+        m_model->updateLoginedUserList(m_loginedInter->userList());
 
-    m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
-    /* com.deepin.udcp.iam */
-    QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
-    const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
-        ifc.property("Enable").toBool() || checkIsADDomain();
-    m_model->setAllowShowCustomUser(allowShowCustomUser);
+        m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
+        /* com.deepin.udcp.iam */
+        QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
+        const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
+            ifc.property("Enable").toBool() || checkIsADDomain();
+        m_model->setAllowShowCustomUser(allowShowCustomUser);
 
-    /* init server user or custom user */
-    if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
-        std::shared_ptr<User> user(new User());
-        m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
-        m_model->addUser(user);
-    }
+        /* init server user or custom user */
+        if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
+            std::shared_ptr<User> user(new User());
+            m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
+            m_model->addUser(user);
+        }
 
-    /* com.deepin.dde.LockService */
-    std::shared_ptr<User> user_ptr = m_model->findUserByUid(getuid());
-    if (user_ptr.get()) {
-        m_model->updateCurrentUser(user_ptr);
-        const QString &userJson = m_lockInter->CurrentUser();
-        QJsonParseError jsonParseError;
-        const QJsonDocument userDoc = QJsonDocument::fromJson(userJson.toUtf8(), &jsonParseError);
-        if (jsonParseError.error != QJsonParseError::NoError || userDoc.isEmpty()) {
-            qCWarning(DDE_SHELL) << "Failed to obtain current user information from lock service!";
+        /* com.deepin.dde.LockService */
+        std::shared_ptr<User> user_ptr = m_model->findUserByUid(getuid());
+        if (user_ptr.get()) {
+            m_model->updateCurrentUser(user_ptr);
+            const QString &userJson = m_lockInter->CurrentUser();
+            QJsonParseError jsonParseError;
+            const QJsonDocument userDoc = QJsonDocument::fromJson(userJson.toUtf8(), &jsonParseError);
+            if (jsonParseError.error != QJsonParseError::NoError || userDoc.isEmpty()) {
+                qCWarning(DDE_SHELL) << "Failed to obtain current user information from lock service!";
+            } else {
+                const QJsonObject userObj = userDoc.object();
+                m_model->currentUser()->setLastAuthType(AUTH_TYPE_CAST(userObj["AuthType"].toInt()));
+                m_model->currentUser()->setLastCustomAuth(userObj["LastCustomAuth"].toString());
+            }
         } else {
-            const QJsonObject userObj = userDoc.object();
-            m_model->currentUser()->setLastAuthType(AUTH_TYPE_CAST(userObj["AuthType"].toInt()));
-            m_model->currentUser()->setLastCustomAuth(userObj["LastCustomAuth"].toString());
+            m_model->updateCurrentUser(m_lockInter->CurrentUser());
         }
     } else {
-        m_model->updateCurrentUser(m_lockInter->CurrentUser());
+        qCWarning(DDE_SHELL) << "dbus com.deepin.daemon.Accounts userList is empty, use ...";
+
+        std::shared_ptr<User> user(new User());
+        m_model->addUser(user);
+        m_model->updateCurrentUser(user);
+        m_model->setAllowShowCustomUser(true);
     }
 
     /* com.deepin.daemon.Authenticate */
@@ -342,6 +364,8 @@ void LockWorker::initConfiguration()
     m_model->setAlwaysShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Always);
     m_model->setAllowShowUserSwitchButton(getDconfigValue("switchUser", Ondemand).toInt() == AuthInterface::Ondemand);
 #endif
+
+    m_model->setGsCheckpwd(isCheckPwdBeforeRebootOrShut());
 
     checkPowerInfo();
 }
@@ -490,7 +514,6 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
     case SessionBaseModel::PowerAction::RequireSuspend:
     {
         m_model->setIsBlackMode(true);
-        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 
         int delayTime = 500;
 #ifndef ENABLE_DSS_SNIPE
@@ -520,7 +543,6 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
     case SessionBaseModel::PowerAction::RequireHibernate:
     {
         m_model->setIsBlackMode(true);
-        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
 
         int delayTime = 500;
 #ifndef ENABLE_DSS_SNIPE
@@ -549,42 +571,44 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         }
     }
         break;
-    case SessionBaseModel::PowerAction::RequireRestart:
+    case SessionBaseModel::PowerAction::RequireRestart: {
         m_model->setShutdownMode(true);
+        auto gsCheckPwd = m_model->gsCheckpwd();
+        if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
+            m_sessionManagerInter->RequestReboot();
+        } else {
+            createAuthentication(m_account);
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
+        }
 
-        QTimer::singleShot(350, this, [=] {
-            if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
-                m_sessionManagerInter->RequestReboot();
-            } else {
-                createAuthentication(m_account);
-                m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
-            }
+        if (m_model->visibleShutdownWhenRebootOrShutdown()) {
+            return;
+        }
 
-            if (m_model->visibleShutdownWhenRebootOrShutdown()) {
-                return;
-            }
-
+        if (!gsCheckPwd)
             m_model->setVisible(false);
-        });
+
         return;
-    case SessionBaseModel::PowerAction::RequireShutdown:
+    }
+    case SessionBaseModel::PowerAction::RequireShutdown: {
         m_model->setShutdownMode(true);
+        auto gsCheckPwd = m_model->gsCheckpwd();
+        if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
+            m_sessionManagerInter->RequestShutdown();
+        } else {
+            createAuthentication(m_account);
+            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
+        }
 
-        QTimer::singleShot(350, this, [=] {
-            if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !isCheckPwdBeforeRebootOrShut()) {
-                m_sessionManagerInter->RequestShutdown();
-            } else {
-                createAuthentication(m_account);
-                m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
-            }
+        if (m_model->visibleShutdownWhenRebootOrShutdown()) {
+            return;
+        }
 
-            if (m_model->visibleShutdownWhenRebootOrShutdown()) {
-                return;
-            }
-
+        if (!gsCheckPwd)
             m_model->setVisible(false);
-        });
+
         return;
+    }
     case SessionBaseModel::PowerAction::RequireLock:
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         createAuthentication(m_model->currentUser()->name());

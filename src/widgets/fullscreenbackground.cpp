@@ -167,7 +167,8 @@ void FullScreenBackground::setScreen(QPointer<QScreen> screen, bool isVisible)
 
     qCInfo(DDE_SHELL) << "Set screen:" << screen
                       << ", screen geometry:" << screen->geometry()
-                      << ", full screen background object:" << this;
+                      << ", full screen background object:" << this
+                      << ", visible:" << isVisible;
     if (isVisible) {
         updateCurrentFrame(this);
     } else {
@@ -287,6 +288,7 @@ void FullScreenBackground::enterEvent(QEnterEvent *event)
 void FullScreenBackground::enterEvent(QEvent *event)
 #endif
 {
+    qCInfo(DDE_SS) << "Enter event, enable enter event:" << m_enableEnterEvent << ", visible:" << m_model->visible();
     if (m_enableEnterEvent && m_model->visible()) {
         updateCurrentFrame(this);
         // 多屏情况下，此Frame晚于其它Frame显示出来时，可能处于未激活状态（特别是在wayland环境下比较明显）
@@ -649,6 +651,8 @@ void FullScreenBackground::updateCurrentFrame(FullScreenBackground *frame)
 
     if (frame->m_screen)
         qCInfo(DDE_SHELL) << "Update current frame:" << frame << ", screen:" << frame->m_screen->name();
+    else
+        qWarning() << "Frame's screen is null, frame:" << frame;
 
     currentFrame = frame;
     setContent(currentContent);

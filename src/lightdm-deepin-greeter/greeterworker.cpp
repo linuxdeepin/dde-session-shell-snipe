@@ -337,38 +337,47 @@ void GreeterWorker::initData()
         m_model->setSEType(true);
     }
 
-    /* com.deepin.daemon.Accounts */
-    m_model->updateUserList(m_accountsInter->userList());
-    m_model->updateLoginedUserList(m_loginedInter->userList());
+    auto list = m_accountsInter->userList();
+    if (!list.isEmpty()) {
+        /* com.deepin.daemon.Accounts */
+        m_model->updateUserList(list);
+        m_model->updateLoginedUserList(m_loginedInter->userList());
 
-    m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
-    /* com.deepin.udcp.iam */
-    QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
-    const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
-        ifc.property("Enable").toBool() || checkIsADDomain();
-    m_model->setAllowShowCustomUser(allowShowCustomUser);
+        m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
+        /* com.deepin.udcp.iam */
+        QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
+        const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
+            ifc.property("Enable").toBool() || checkIsADDomain();
+        m_model->setAllowShowCustomUser(allowShowCustomUser);
 
-    /* init current user */
-    if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
-        // 如果是服务器版本或者loginPromptInput配置为true，默认显示空用户
-        std::shared_ptr<User> user(new User());
-        m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
-        m_model->addUser(user);
-        if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false) || !m_model->userlistVisible()) {
-            m_model->updateCurrentUser(user);
+        /* init current user */
+        if (DSysInfo::deepinType() == DSysInfo::DeepinServer || m_model->allowShowCustomUser()) {
+            // 如果是服务器版本或者loginPromptInput配置为true，默认显示空用户
+            std::shared_ptr<User> user(new User());
+            m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
+            m_model->addUser(user);
+            if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false) || !m_model->userlistVisible()) {
+                m_model->updateCurrentUser(user);
+            } else {
+                /* com.deepin.dde.LockService */
+                m_model->updateCurrentUser(m_lockInter->CurrentUser());
+            }
         } else {
             /* com.deepin.dde.LockService */
             m_model->updateCurrentUser(m_lockInter->CurrentUser());
         }
-    } else {
-        /* com.deepin.dde.LockService */
-        m_model->updateCurrentUser(m_lockInter->CurrentUser());
-    }
 #ifndef ENABLE_DSS_SNIPE
     m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
 #else
     prepareShutdownSound();
 #endif
+    } else {
+        qCWarning(DDE_SHELL) << "dbus com.deepin.daemon.Accounts userList is empty, use ...";
+        m_model->setAllowShowCustomUser(true);
+        std::shared_ptr<User> user(new User());
+        m_model->addUser(user);
+        m_model->updateCurrentUser(user);
+    }
 
     /* com.deepin.daemon.Authenticate */
     if (m_authFramework->isDAStartupCompleted() ) {

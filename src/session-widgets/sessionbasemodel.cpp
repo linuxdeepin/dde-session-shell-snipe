@@ -42,6 +42,7 @@ SessionBaseModel::SessionBaseModel(QObject *parent)
     , m_enableShellBlackMode(DConfigHelper::instance()->getConfig("enableShellBlack", true).toBool())
     , m_enableShutdownBlackWidget(DConfigHelper::instance()->getConfig("enableShutdownBlackWidget", true).toBool())
     , m_visibleShutdownWhenRebootOrShutdown(DConfigHelper::instance()->getConfig("visibleShutdownWhenRebootOrShutdown", true).toBool())
+    , m_gsCheckpwd(false)
 {
 #ifndef ENABLE_DSS_SNIPE
     if (QGSettings::isSchemaInstalled("com.deepin.dde.power")) {
@@ -122,7 +123,7 @@ void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
 
     m_powerAction = powerAction;
 
-    if (m_enableShutdownBlackWidget && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
+    if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
         Q_EMIT shutdownkModeChanged(true);
 
     emit onPowerActionChanged(powerAction);
@@ -247,7 +248,7 @@ void SessionBaseModel::setIsBlackMode(bool is_black)
 
 void SessionBaseModel::setShutdownMode(bool is_black)
 {
-    if (!m_enableShutdownBlackWidget) {
+    if (!m_enableShutdownBlackWidget || gsCheckpwd()) {
         return;
     }
     Q_EMIT shutdownkModeChanged(is_black);
@@ -725,4 +726,23 @@ void SessionBaseModel::setUserlistVisible(bool visible)
 void SessionBaseModel::setQuickLoginProcess(bool val)
 {
     m_isQuickLoginProcess = val;
+}
+
+void SessionBaseModel::setGsCheckpwd(bool value)
+{
+    if (m_gsCheckpwd != value) {
+        m_gsCheckpwd = value;
+    }
+}
+
+bool SessionBaseModel::isNoPasswordLogin() const
+{
+    // 检查当前用户是否存在
+    if (!m_currentUser) {
+        qCWarning(DDE_SHELL) << "Current user is null";
+        return false;
+    }
+
+    // 直接调用当前用户的isNoPasswordLogin方法
+    return m_currentUser->isNoPasswordLogin();
 }

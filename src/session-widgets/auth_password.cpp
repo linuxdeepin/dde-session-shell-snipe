@@ -56,6 +56,7 @@ AuthPassword::AuthPassword(QWidget *parent)
     , m_isPasswdAuthWidgetReplaced(false)
     , m_assistLoginWidget(nullptr)
     , m_authenticationDconfig(DConfig::create("org.deepin.dde.authentication", "org.deepin.dde.authentication.errorecho", QString(), this))
+    , m_canShowPasswordErrorTips(false)
 {
     qRegisterMetaType<LoginPlugin::PluginConfig>("LoginPlugin::PluginConfig");
 
@@ -70,6 +71,13 @@ AuthPassword::AuthPassword(QWidget *parent)
     m_lineEdit->setCopyEnabled(false);
     m_lineEdit->setCutEnabled(false);
     setFocusProxy(m_lineEdit);
+}
+
+AuthPassword::~AuthPassword()
+{
+    if (m_resetPasswordMessageVisible) {
+        closeResetPasswordMessage();
+    }
 }
 
 /**
@@ -263,6 +271,16 @@ void AuthPassword::initConnections()
             setFocusProxy(m_lineEdit);
         });
         connect(m_assistLoginWidget, &AssistLoginWidget::readyToAuthChanged, this, &AuthPassword::onReadyToAuthChanged);
+    }
+
+    if (m_authenticationDconfig) {
+        auto updateCanShow = [this] {
+            m_canShowPasswordErrorTips = m_authenticationDconfig->value("PasswordErrorEcho", false).toBool();
+        };
+
+        connect(m_authenticationDconfig, &DConfig::valueChanged, this, updateCanShow);
+
+        updateCanShow();
     }
 }
 
@@ -961,15 +979,6 @@ void AuthPassword::startPluginAuth()
 bool AuthPassword::isShowPasswrodErrorTip()
 {
     return m_passwordTipsWidget->isVisible();
-}
-
-bool AuthPassword::canShowPasswrodErrorTip()
-{
-    // 从da的dconfig配置获取
-    if (!m_authenticationDconfig) {
-        return false;
-    }
-    return m_authenticationDconfig->value("PasswordErrorEcho", false).toBool();
 }
 
 void AuthPassword::showErrorTip(const QString &text)

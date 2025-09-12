@@ -27,6 +27,7 @@ class AuthPassword : public AuthModule
     Q_OBJECT
 public:
     explicit AuthPassword(QWidget *parent = nullptr);
+    ~AuthPassword() override;
 
     void reset();
     QString lineEditText() const;
@@ -61,7 +62,7 @@ public:
         m_isPasswdAuthWidgetReplaced = isPasswdAuthWidgetReplaced;
     }
     bool isShowPasswrodErrorTip();
-    bool canShowPasswrodErrorTip();
+    inline bool canShowPasswrodErrorTip() { return m_canShowPasswordErrorTips; }
     void showErrorTip(const QString &text);
     void clearPasswrodErrorTip(bool isClear);
     void updatePasswrodErrorTipUi();
@@ -124,6 +125,7 @@ private:
     bool m_isPasswdAuthWidgetReplaced;
     AssistLoginWidget *m_assistLoginWidget;
     DConfig *m_authenticationDconfig;
+    bool m_canShowPasswordErrorTips;
 };
 
 #endif // AUTHPASSWORD_H

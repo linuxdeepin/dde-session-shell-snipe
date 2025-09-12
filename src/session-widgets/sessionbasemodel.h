@@ -189,6 +189,12 @@ public:
     inline bool isQuickLoginProcess() const { return m_isQuickLoginProcess; }
     void setQuickLoginProcess(bool );
 
+    inline bool gsCheckpwd() const { return m_gsCheckpwd; }
+    void setGsCheckpwd(bool value);
+
+    // 检查当前用户是否设置了免密登录
+    bool isNoPasswordLogin() const;
+
 signals:
     /* com.deepin.daemon.Accounts */
     void currentUserChanged(const std::shared_ptr<User>);
@@ -317,6 +323,7 @@ private:
     bool m_enableShutdownBlackWidget;
     bool m_visibleShutdownWhenRebootOrShutdown;
     bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程
+    bool m_gsCheckpwd;
 };
 
 #endif // SESSIONBASEMODEL_H

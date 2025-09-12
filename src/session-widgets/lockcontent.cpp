@@ -420,6 +420,10 @@ void LockContent::pushUserFrame()
     // showDefaultFrame() -> hideStackedWidgets() -> 会将焦点置为空
     // 导致默认用户无选中状态，多账户区域无键盘事件
     setFocus();
+
+    // 用户列表界面显示时，设置锁屏状态为锁定
+    // 主要是为了处理需求：切换用户界面属于进入锁屏，待机唤醒时仍进入锁屏界面，需输入密码进入系统。
+    Q_EMIT requestLockStateChange(true);
 }
 
 void LockContent::pushConfirmFrame()
