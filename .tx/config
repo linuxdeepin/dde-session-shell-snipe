@@ -1,16 +1,15 @@
 [main]
 host = https://www.transifex.com
-minimum_perc = 80
-mode = developer
 
-[o:linuxdeepin:p:deepin-desktop-environment:r:dde-session-shell]
+[o:linuxdeepin:p:deepin-desktop-environment:r:7b6846181f3a648d8293f3e4693d31cc]
 file_filter = translations/dde-session-shell_<lang>.ts
 source_file = translations/dde-session-shell_en.ts
 source_lang = en
 type = QT
 
-[o:linuxdeepin:p:deepin-desktop-environment:r:login-gesture]
+[o:linuxdeepin:p:deepin-desktop-environment:r:ba0d8d02ba70d7f954ec191e4d0303be]
 file_filter = plugins/login-gesture/translations/login-gesture_<lang>.ts
 source_file = plugins/login-gesture/translations/login-gesture_en.ts
 source_lang = en
 type = QT
+
