@@ -7,19 +7,19 @@
     </message>
     <message>
         <source>For first time use, please set the gesture password first</source>
-        <translation>Kun käytät ensimmäistä kertaa, aseta ensin ele salasanaksi</translation>
+        <translation>Kun käytät ensimmäistä kertaa, aseta ensin ele</translation>
     </message>
     <message>
         <source>Set gesture password</source>
-        <translation>Aseta ele salasanaksi</translation>
+        <translation>Aseta ele</translation>
     </message>
     <message>
         <source>Please draw a gesture password</source>
-        <translation>Piirrä ele salasanaksi</translation>
+        <translation>Piirrä ele</translation>
     </message>
     <message>
         <source>Please draw the gesture password again</source>
-        <translation>Piirrä ele salasanaksi uudelleen</translation>
+        <translation>Piirrä ele uudelleen</translation>
     </message>
     <message>
         <source>Setup completed Start login</source>
@@ -27,19 +27,19 @@
     </message>
     <message>
         <source>Forgot gesture password</source>
-        <translation>Unohda ele salasana</translation>
+        <translation>Unohda ele</translation>
     </message>
     <message>
         <source>Sign in with gesture password</source>
-        <translation>Kirjaudu sisään ele salasanalla</translation>
+        <translation>Kirjaudu sisään eleellä</translation>
     </message>
     <message>
         <source>Gesture password has been reset</source>
-        <translation>Ele salasana on nollattu</translation>
+        <translation>Ele on nollattu</translation>
     </message>
     <message>
         <source>Please reset the gesture password</source>
-        <translation>Nollaa eleen salasana</translation>
+        <translation>Nollaa ele</translation>
     </message>
     <message>
         <source>Inconsistent with the last drawing, please redraw</source>
@@ -47,15 +47,15 @@
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>Tietokone on lukittu, avataan %1 minuutin kuluttua</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
-        <translation>Muokkaa eleen salasanaa</translation>
+        <translation>Muokkaa elettä</translation>
     </message>
     <message>
         <source>Please draw the current gesture password</source>
-        <translation>Piirrä nykyinen ele salasana</translation>
+        <translation>Piirrä nykyinen ele</translation>
     </message>
     <message>
         <source>Modified successfully</source>
@@ -63,35 +63,35 @@
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Piirtovirhe, ota yhteyttä järjestelmänvalvojaan nollaamista varten.</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Peruuta</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Piirtovirhe, %1 yritystä jäljellä. Ota yhteyttä järjestelmänvalvojaan nollaamista varten.</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Asennus valmis, aloita lukituksen avaaminen</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Avaa lukitus eleellä</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Vähintään 4 pistettä, piirrä uudelleen</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Ota yhteyttä järjestelmänvalvojaan nollaamista varten</translation>
     </message>
 </context>
 </TS>

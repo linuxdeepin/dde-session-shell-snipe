@@ -47,7 +47,7 @@
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>Urządzenie zablokowane, odblokowanie za %1 minut</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
@@ -63,35 +63,35 @@
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Błąd rysowania, skontaktuj się z administratorem, aby zresetować hasło</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Anuluj</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Błąd rysowania, pozostały %1 próby. Skontaktuj się z administratorem, aby zresetować hasło</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Konfiguracja zakończona, przejdź do logowania</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Odblokuj za pomocą wzoru hasła</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Co najmniej 4 punkty, narysuj ponownie.</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Skontaktuj się z administratorem, aby zresetować hasło</translation>
     </message>
 </context>
 </TS>
