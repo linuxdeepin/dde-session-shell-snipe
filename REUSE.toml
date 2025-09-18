@@ -1,0 +1,88 @@
+version = 1
+SPDX-PackageName = "dde-session-shell"
+SPDX-PackageSupplier = "UnionTech Software Technology Co., Ltd."
+SPDX-PackageDownloadLocation = "https://github.com/linuxdeepin/dde-session-shell"
+
+[[annotations]]
+path = ["README.md", "README.zh_CN.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["cmake/**.in", "cmake/**.cmake"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "src/global_util/dbus/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "The Qt Company Ltd."
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["**.pro", "**.qrc", "**CMakeLists.txt", "**.cmake", "qt-theme.ini", "files/**", "scripts/**", "src/lightdm-deepin-greeter/deepin-greeter", ".project", ".syncexclude"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "docs/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["src/widgets/img/**", "misc/images/**", "src/session-widgets/img/**", "plugins/examples/login-plugins/login-udcp/images/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["translations/**", "plugins/login-gesture/translations/**", ".tx/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["lupdate.sh", "tests/test-recoverage.sh", "translate_generation.sh"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ".gitignore"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [".github/**", ".gitlab-ci.yml", ".obs/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["xml/**.xml", "**.json", "**.conf"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = "src/widgets/skin/**.qss"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["debian/**", "rpm/**", "archlinux/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = "toolGenerate/**/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"
