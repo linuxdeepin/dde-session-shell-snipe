@@ -105,6 +105,8 @@ private:
     void showAlertMessage(const QString &text);
     void hidePasswordHintWidget();
     void updatePasswordTextMargins();
+    QString getCurrentKBLayout() const;
+    void setKBLayout(const QString &layout);
 
 private:
     bool m_passwordLineEditEnabled;
@@ -126,6 +128,7 @@ private:
     AssistLoginWidget *m_assistLoginWidget;
     DConfig *m_authenticationDconfig;
     bool m_canShowPasswordErrorTips;
+    QString m_originalKBLayout;
 };
 
 #endif // AUTHPASSWORD_H

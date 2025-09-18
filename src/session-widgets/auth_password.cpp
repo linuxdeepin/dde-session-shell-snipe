@@ -194,7 +194,34 @@ void AuthPassword::initConnections()
         if (focus && !blockEditSig()) {
             emit lineEditTextChanged(m_lineEdit->text());
         }
+
+        if (focus) {
+            QString kbLayout = getCurrentKBLayout();
+            if (!kbLayout.isEmpty() && !kbLayout.toLower().startsWith("us")) {
+                m_originalKBLayout = kbLayout;
+                qCInfo(DDE_SHELL) << "Original keyboard layout:" << m_originalKBLayout;
+                // 如果键盘布局有特殊设置，则切换到英文键盘布局，认证成功后恢复
+                setKBLayout("us");
+            }
+        } else {
+            if (!m_originalKBLayout.isEmpty()) {
+                // 切换回原来的键盘布局
+                setKBLayout(m_originalKBLayout);
+                m_originalKBLayout.clear();
+            }
+        }
     });
+
+    connect(this, &AuthPassword::authFinished, this, [this](const AuthState state) {
+        if (state == AS_Success) {
+            if (!m_originalKBLayout.isEmpty()) {
+                // 切换回原来的键盘布局
+                setKBLayout(m_originalKBLayout);
+                m_originalKBLayout.clear();
+            }
+        }
+    });
+
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this, blockEditSig](const QString &text) {
         m_lineEdit->hideAlertMessage();
         hidePasswordHintWidget();
@@ -1037,4 +1064,28 @@ void AuthPassword::moveEvent(QMoveEvent *event)
 void AuthPassword::onReadyToAuthChanged(bool ready)
 {
     ready ? emit lineEditTextChanged(m_lineEdit->text()) : emit lineEditTextChanged("");
+}
+
+
+QString AuthPassword::getCurrentKBLayout() const
+{
+    QProcess p;
+    p.start("/usr/bin/setxkbmap", {"-query"});
+    p.waitForFinished();
+
+    const QString output = QString::fromUtf8(p.readAllStandardOutput());
+    for (const QString &line : output.split('\n')) {
+        if (line.startsWith("layout:")) {
+            QString layout = line.section(':', 1).trimmed();
+            return layout;
+        }
+    }
+
+    return {};
+}
+
+void AuthPassword::setKBLayout(const QString &layout)
+{
+    qCDebug(DDE_SHELL) << "Set keyboard layout: " << layout;
+    QProcess::execute("/usr/bin/setxkbmap", { layout});
 }
