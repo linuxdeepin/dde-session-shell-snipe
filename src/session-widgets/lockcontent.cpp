@@ -113,14 +113,6 @@ void LockContent::init(SessionBaseModel *model)
     }
 
     DConfigHelper::instance()->bind(this, SHOW_MEDIA_WIDGET, &LockContent::OnDConfigPropertyChanged);
-
-    QString kbLayout = getCurrentKBLayout();
-    if (!kbLayout.isEmpty() && !kbLayout.toLower().startsWith("us")) {
-        m_originalKBLayout = kbLayout;
-        qCInfo(DDE_SHELL) << "Original keyboard layout:" << m_originalKBLayout;
-        // 如果键盘布局有特殊设置，则切换到英文键盘布局，认证成功后恢复
-        setKBLayout("us");
-    }
 }
 
 void LockContent::initUI()
@@ -196,13 +188,8 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::userListChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::authFinished, this, [this](bool successful) {
-        if (successful) {
+        if (successful)
             setVisible(false);
-            if (!m_originalKBLayout.isEmpty()) {
-                // 切换回原来的键盘布局
-                setKBLayout(m_originalKBLayout);
-            }
-        }
         restoreMode();
     });
     connect(m_model, &SessionBaseModel::MFAFlagChanged, this, [this](const bool isMFA) {
@@ -1026,27 +1013,4 @@ void LockContent::showShutdown()
 {
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
     m_model->setVisible(true);
-}
-
-QString LockContent::getCurrentKBLayout() const
-{
-    QProcess p;
-    p.start("/usr/bin/setxkbmap", {"-query"});
-    p.waitForFinished();
-
-    const QString output = QString::fromUtf8(p.readAllStandardOutput());
-    for (const QString &line : output.split('\n')) {
-        if (line.startsWith("layout:")) {
-            QString layout = line.section(':', 1).trimmed();
-            return layout;
-        }
-    }
-
-    return {};
-}
-
-void LockContent::setKBLayout(const QString &layout)
-{
-    qCDebug(DDE_SHELL) << "Set keyboard layout: " << layout;
-    QProcess::execute("/usr/bin/setxkbmap", { layout});
 }
