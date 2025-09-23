@@ -46,7 +46,7 @@
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, у Вас осталась одна попытка</translation>
+        <translation>Проверка не удалась, осталась только одна попытка</translation>
     </message>
     <message>
         <source>Fingerprint locked, use password please</source>
@@ -69,7 +69,7 @@
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, у Вас осталась одна попытка</translation>
+        <translation>Проверка не удалась, осталась только одна попытка</translation>
     </message>
     <message>
         <source>Verify your Iris ID</source>
@@ -111,11 +111,11 @@
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, у Вас осталась одна попытка</translation>
+        <translation>Проверка не удалась, осталась только одна попытка</translation>
     </message>
     <message>
         <source>Wrong Password</source>
-        <translation>Неверный Пароль</translation>
+        <translation>Неверный пароль</translation>
     </message>
     <message>
         <source>Password</source>
@@ -123,7 +123,7 @@
     </message>
     <message>
         <source>Please try again 1 minute later</source>
-        <translation>Повторите попытку через 1 минуту.</translation>
+        <translation>Повторите попытку через 1 минуту</translation>
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
@@ -142,7 +142,7 @@
     <name>AuthSingle</name>
     <message>
         <source>Please try again 1 minute later</source>
-        <translation>Повторите попытку через 1 минуту.</translation>
+        <translation>Повторите попытку через 1 минуту</translation>
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
@@ -181,7 +181,7 @@
     </message>
     <message>
         <source>Enter your PIN</source>
-        <translation>Введите Ваш PIN</translation>
+        <translation>Введите ваш PIN</translation>
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
@@ -234,7 +234,7 @@
     </message>
     <message>
         <source>Wrong Password</source>
-        <translation>Неверный Пароль</translation>
+        <translation>Неверный пароль</translation>
     </message>
 </context>
 <context>
@@ -259,7 +259,7 @@
     <name>LockContent</name>
     <message>
         <source>Lock Screen</source>
-        <translation>Экран Блокировки</translation>
+        <translation>Экран блокировки</translation>
     </message>
     <message>
         <source>Failed to lock screen</source>
@@ -335,11 +335,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation>Обновить и Выключить</translation>
+        <translation>Обновить и выключить</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation>Обновить и Перезагрузить</translation>
+        <translation>Обновить и перезагрузить</translation>
     </message>
 </context>
 <context>
@@ -458,11 +458,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation>Обновить и Выключить</translation>
+        <translation>Обновить и выключить</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation>Обновить и Перезагрузить</translation>
+        <translation>Обновить и перезагрузить</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>
