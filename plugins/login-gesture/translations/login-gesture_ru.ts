@@ -23,7 +23,7 @@
     </message>
     <message>
         <source>Setup completed Start login</source>
-        <translation type="unfinished"/>
+        <translation>Настройка завершена. Можно войти</translation>
     </message>
     <message>
         <source>Forgot gesture password</source>
