@@ -3,19 +3,19 @@
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>
-        <translation>Идентификация лица</translation>
+        <translation>Face ID</translation>
     </message>
     <message>
         <source>Verification successful</source>
-        <translation>Проверка прошла успешно</translation>
+        <translation>Успешная проверка</translation>
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, у Вас осталась одна попытка</translation>
+        <translation>Проверка не удалась, осталась одна попытка</translation>
     </message>
     <message>
         <source>Verify your Face ID</source>
@@ -42,11 +42,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, осталась только одна попытка</translation>
+        <translation>Проверка не удалась, осталась одна попытка</translation>
     </message>
     <message>
         <source>Fingerprint locked, use password please</source>
@@ -57,19 +57,19 @@
     <name>AuthIris</name>
     <message>
         <source>Iris ID</source>
-        <translation>Идентификатор радужной оболочки глаза</translation>
+        <translation>Iris ID</translation>
     </message>
     <message>
         <source>Verification successful</source>
-        <translation>Проверка прошла успешно</translation>
+        <translation>Успешная проверка</translation>
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, осталась только одна попытка</translation>
+        <translation>Проверка не удалась, осталась одна попытка</translation>
     </message>
     <message>
         <source>Verify your Iris ID</source>
@@ -88,11 +88,11 @@
     </message>
     <message>
         <source>Verification successful</source>
-        <translation>Проверка прошла успешно</translation>
+        <translation>Успешная проверка</translation>
     </message>
     <message>
         <source>Verification failed</source>
-        <translation>Проверка завершилась неудачно</translation>
+        <translation>Проверка не удалась</translation>
     </message>
     <message>
         <source>Identifying the security key</source>
@@ -103,11 +103,11 @@
     <name>AuthPassword</name>
     <message>
         <source>Verification successful</source>
-        <translation>Проверка прошла успешно</translation>
+        <translation>Успешная проверка</translation>
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
@@ -127,7 +127,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Пожалуйста, повторите через %n мин.</numerusform><numerusform>Пожалуйста, повторите через %n мин.</numerusform><numerusform>Пожалуйста, повторите через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -146,7 +146,7 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform></translation>
     </message>
     <message>
         <source>Reset Password</source>
@@ -165,11 +165,11 @@
     </message>
     <message numerus="yes">
         <source>Verification failed, %n chances left</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform><numerusform>Проверка не удалась, осталось попыток: %n</numerusform></translation>
     </message>
     <message>
         <source>Verification failed, only one chance left</source>
-        <translation>Проверка не удалась, у Вас осталась одна попытка</translation>
+        <translation>Проверка не удалась, осталась одна попытка</translation>
     </message>
     <message>
         <source>Wrong PIN</source>
@@ -185,15 +185,15 @@
     </message>
     <message numerus="yes">
         <source>Please try again %n minute(s) later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Пожалуйста, попробуйте снова через %n мин.</numerusform><numerusform>Пожалуйста, попробуйте снова через %n мин.</numerusform><numerusform>Пожалуйста, попробуйте снова через %n мин.</numerusform><numerusform>Пожалуйста, попробуйте снова через %n мин.</numerusform></translation>
     </message>
     <message>
         <source>Please try again 1 minute later</source>
-        <translation>Повторите попытку через 1 минуту.</translation>
+        <translation>Повторите попытку через 1 минуту</translation>
     </message>
     <message numerus="yes">
         <source>Please try again %n minutes later</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform><numerusform>Повторите попытку через %n мин.</numerusform></translation>
     </message>
 </context>
 <context>
@@ -204,7 +204,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>Срок действия вашего пароля истечет через %n д., пожалуйста, своевременно измените его</numerusform><numerusform>Срок действия вашего пароля истечет через %n д., пожалуйста, своевременно измените его</numerusform><numerusform>Срок действия вашего пароля истечет через %n д., пожалуйста, своевременно измените его</numerusform><numerusform>Срок действия вашего пароля истечет через %n д., пожалуйста, своевременно измените его</numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Неверный пароль</translation>
     </message>
 </context>
 <context>
@@ -245,7 +245,7 @@
     </message>
     <message>
         <source>The reason of inhibit.</source>
-        <translation type="unfinished"/>
+        <translation>Причина подавления.</translation>
     </message>
 </context>
 <context>
@@ -383,19 +383,19 @@
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Возврат</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Пожалуйста, выберите учетную запись для входа</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Локальная учетная запись</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Аккаунт домена</translation>
     </message>
 </context>
 <context>

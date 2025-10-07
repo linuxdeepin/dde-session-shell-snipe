@@ -7,19 +7,19 @@
     </message>
     <message>
         <source>For first time use, please set the gesture password first</source>
-        <translation>Për herë të parë përdorimi, ju lutemi, së pari caktoni fjalëkalim gjestesh</translation>
+        <translation>Për herë të parë përdorimi, ju lutemi, së pari caktoni fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Set gesture password</source>
-        <translation>Caktoni fjalëkalim gjestesh</translation>
+        <translation>Caktoni fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Please draw a gesture password</source>
-        <translation>Ju lutemi, vizatoni një fjalëkalim gjestesh</translation>
+        <translation>Ju lutemi, vizatoni një fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Please draw the gesture password again</source>
-        <translation>Ju lutemi, vizatoni sërish fjalëkalimin e gjesteve</translation>
+        <translation>Ju lutemi, vizatoni sërish fjalëkalimin me gjeste</translation>
     </message>
     <message>
         <source>Setup completed Start login</source>
@@ -27,19 +27,19 @@
     </message>
     <message>
         <source>Forgot gesture password</source>
-        <translation>U harrua fjalëkalim gjestesh</translation>
+        <translation>U harrua fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Sign in with gesture password</source>
-        <translation>Bëni hyrjen me fjalëkalim gjestesh</translation>
+        <translation>Bëni hyrjen me fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Gesture password has been reset</source>
-        <translation>Fjalëkalimi i gjesteve është ricaktuar</translation>
+        <translation>Fjalëkalimi me gjeste u ricaktua</translation>
     </message>
     <message>
         <source>Please reset the gesture password</source>
-        <translation>Ju lutemi, ricaktoni fjalëkalimin e gjesteve</translation>
+        <translation>Ju lutemi, ricaktoni fjalëkalimin me gjeste</translation>
     </message>
     <message>
         <source>Inconsistent with the last drawing, please redraw</source>
@@ -47,15 +47,15 @@
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>Pajisja është e kyçur, shkyçet pas %1 minutash</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
-        <translation>Ndryshoni fjalëkalim gjestesh</translation>
+        <translation>Ndryshoni fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Please draw the current gesture password</source>
-        <translation>Ju lutemi, vizatoni fjalëkalimin e tanishëm të gjesteve</translation>
+        <translation>Ju lutemi, vizatoni fjalëkalimin e tanishëm me gjeste</translation>
     </message>
     <message>
         <source>Modified successfully</source>
@@ -63,35 +63,35 @@
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Gabim vizatimi, lidhuni me përgjegjësin për ta ricakuar</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Anuloje</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>OK</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Gabim vizatimi, edhe %1 prova. Lidhuni me përgjegjësin për ta ricakuar</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Ujdisja u plotësua. Nisni shkyçjen</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Shkyçe me fjalëkalim me gjeste</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Minimumi 4 pika, ju lutemi, rivizatojeni</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Lidhuni me përgjegjësin për ta ricaktuar</translation>
     </message>
 </context>
 </TS>

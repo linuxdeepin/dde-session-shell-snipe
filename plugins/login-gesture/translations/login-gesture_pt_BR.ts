@@ -15,7 +15,7 @@
     </message>
     <message>
         <source>Please draw a gesture password</source>
-        <translation>Desenhe uma senha por gestos</translation>
+        <translation>Desenhe a senha por gestos</translation>
     </message>
     <message>
         <source>Please draw the gesture password again</source>
@@ -23,75 +23,75 @@
     </message>
     <message>
         <source>Setup completed Start login</source>
-        <translation>Configuração completa; entrar</translation>
+        <translation>Configuração concluída. Entrar</translation>
     </message>
     <message>
         <source>Forgot gesture password</source>
-        <translation>Esqueci a senha por gesto</translation>
+        <translation>Esqueci a senha por gestos</translation>
     </message>
     <message>
         <source>Sign in with gesture password</source>
-        <translation>Entrar com a senha por gesto</translation>
+        <translation>Entrar com a senha por gestos</translation>
     </message>
     <message>
         <source>Gesture password has been reset</source>
-        <translation>A senha por gesto foi redefinida</translation>
+        <translation>A senha por gestos foi redefinida</translation>
     </message>
     <message>
         <source>Please reset the gesture password</source>
-        <translation>Redefinir a senha por gesto</translation>
+        <translation>Redefinir senha por gestos</translation>
     </message>
     <message>
         <source>Inconsistent with the last drawing, please redraw</source>
-        <translation>Incompatível com o último desenho; desenhe novamente</translation>
+        <translation>O desenho não confere com o anterior, tente novamente</translation>
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>O dispositivo está bloqueado, aguarde %1 minutos</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
-        <translation>Modificar a senha por gesto</translation>
+        <translation>Alterar senha por gestos</translation>
     </message>
     <message>
         <source>Please draw the current gesture password</source>
-        <translation>Desenhe a senha por gesto atual</translation>
+        <translation>Desenhe a senha por gestos atual</translation>
     </message>
     <message>
         <source>Modified successfully</source>
-        <translation>Modificação bem-sucedida</translation>
+        <translation>Alteração bem-sucedida</translation>
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Desenho incorreto. Contate o administrador para redefinir</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>Ok</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Desenho incorreto. Restam %1 tentativas. Contate o administrador para redefinir</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Configuração concluída. Desbloquear</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Desbloquear com a senha por gestos</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Mínimo de 4 pontos. Desenhe novamente</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Contate o administrador para redefinir</translation>
     </message>
 </context>
 </TS>
