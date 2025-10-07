@@ -402,27 +402,27 @@
     <name>WarningContent</name>
     <message>
         <source>The programs are preventing the computer from shutting down, and forcing shut down may cause data loss.</source>
-        <translation>Ka programe që e pengojnë fikjen e kompjuterit, dhe fikja me zor mund të sjellë humbje të dhënash.</translation>
+        <translation>Ka programe që e pengojnë fikjen e kompjuterit dhe fikja me zor mund të sjellë humbje të dhënash.</translation>
     </message>
     <message>
         <source>To close the program, click Cancel, and then close the program.</source>
-        <translation>Që të mbyllet programi, klikoni mbi “Anuloje”, dhe mandej mbyllni programin.</translation>
+        <translation>Që të mbyllet programi, klikoni mbi “Anuloje” dhe mandej mbyllni programin.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from reboot, and forcing reboot may cause data loss.</source>
-        <translation>Ka programe që e pengojnë rinisjen e kompjuterit, dhe rinisja me zor mund të sjellë humbje të dhënash.</translation>
+        <translation>Ka programe që e pengojnë rinisjen e kompjuterit dhe rinisja me zor mund të sjellë humbje të dhënash.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from suspend, and forcing suspend may cause data loss.</source>
-        <translation>Ka programe që e pengojnë pezullimin e kompjuterit, dhe pezullimi me zor mund të sjellë humbje të dhënash.</translation>
+        <translation>Ka programe që e pengojnë pezullimin e kompjuterit dhe pezullimi me zor mund të sjellë humbje të dhënash.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from hibernate, and forcing hibernate may cause data loss.</source>
-        <translation>Ka programe që e pengojnë plogështimin e kompjuterit, dhe plogështimi me zor mund të sjellë humbje të dhënash.</translation>
+        <translation>Ka programe që e pengojnë plogështimin e kompjuterit dhe plogështimi me zor mund të sjellë humbje të dhënash.</translation>
     </message>
     <message>
         <source>The programs are preventing the computer from log out, and forcing log out may cause data loss.</source>
-        <translation>Ka programe që e pengojnë kompjuterin të bëjë dalje nga llogaria, dhe dalja me zor mund të sjellë humbje të dhënash.</translation>
+        <translation>Ka programe që e pengojnë kompjuterin të bëjë dalje nga llogaria dhe dalja me zor mund të sjellë humbje të dhënash.</translation>
     </message>
     <message>
         <source>Shut down</source>
