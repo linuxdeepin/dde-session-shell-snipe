@@ -1,3 +1,10 @@
+dde-session-shell (6.0.49) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dde-session-shell
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- wujiangyu <wujiangyu@uniontech.com>  Thu, 23 Oct 2025 16:00:57 +0800
+
 dde-session-shell (6.0.48) unstable; urgency=medium
 
   * chore: remove unused Spanish translation files
