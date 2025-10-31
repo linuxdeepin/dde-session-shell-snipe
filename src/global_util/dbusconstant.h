@@ -15,8 +15,6 @@ namespace DSS_DBUS {
     const QString accountsUserPath = "/com/deepin/daemon/Accounts/User%1";
     const QString accountsUserInterface = "com.deepin.daemon.Accounts.User";
     const QString loginedPath = "/com/deepin/daemon/Logined";
-    const QString powerManagerService = "com.deepin.daemon.PowerManager";
-    const QString powerManagerPath = "/com/deepin/daemon/PowerManager";
     const QString powerService = "com.deepin.system.Power";
     const QString powerPath = "/com/deepin/system/Power";
     const QString sessionPowerService = "com.deepin.daemon.Power";
@@ -62,8 +60,6 @@ namespace DSS_DBUS {
     const QString accountsUserPath = "/org/deepin/dde/Accounts1/User%1";
     const QString accountsUserInterface = "org.deepin.dde.Accounts1.User";
     const QString loginedPath = "/org/deepin/dde/Logined";
-    const QString powerManagerService = "org.deepin.dde.PowerManager1";
-    const QString powerManagerPath = "/org/deepin/dde/PowerManager1";
     const QString powerService = "org.deepin.dde.Power1";
     const QString powerPath = "/org/deepin/dde/Power1";
     const QString sessionPowerService = "org.deepin.dde.Power1";
