@@ -21,11 +21,11 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
     , m_accountsInter(new AccountsInter(DSS_DBUS::accountsService, DSS_DBUS::accountsPath, QDBusConnection::systemBus(), this))
     , m_loginedInter(new LoginedInter(DSS_DBUS::accountsService, DSS_DBUS::loginedPath, QDBusConnection::systemBus(), this))
     , m_login1Inter(new DBusLogin1Manager("org.freedesktop.login1", "/org/freedesktop/login1", QDBusConnection::systemBus(), this))
-    , m_powerManagerInter(new PowerManagerInter(DSS_DBUS::powerManagerService, DSS_DBUS::powerManagerPath, QDBusConnection::systemBus(), this))
     , m_dbusInter(new DBusObjectInter("org.freedesktop.DBus", "/org/freedesktop/DBus", QDBusConnection::systemBus(), this))
     , m_lastLogoutUid(0)
     , m_currentUserUid(0)
     , m_loginUserList(0)
+    , m_isVM(detectVirtualMachine())
 {
 #ifndef ENABLE_DSS_SNIPE
     // 需要先初始化m_gsettings
@@ -241,15 +241,11 @@ void AuthInterface::checkPowerInfo()
     // 替换接口org.freedesktop.login1 为com.deepin.sessionManager,原接口的是否支持待机和休眠的信息不准确
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 #ifndef ENABLE_DSS_SNIPE
-    bool can_sleep = env.contains(POWER_CAN_SLEEP) ? QVariant(env.value(POWER_CAN_SLEEP)).toBool()
-                                                   : getGSettings("Power","sleep").toBool() && m_powerManagerInter->CanSuspend();
-    bool can_hibernate = env.contains(POWER_CAN_HIBERNATE) ? QVariant(env.value(POWER_CAN_HIBERNATE)).toBool()
-                                                           : getGSettings("Power","hibernate").toBool() && m_powerManagerInter->CanHibernate();
+    bool can_sleep = getGSettings("Power","sleep").toBool() && canSuspend();
+    bool can_hibernate = getGSettings("Power","hibernate").toBool() && canHibernate();
 #else
-    bool can_sleep = env.contains(POWER_CAN_SLEEP) ? QVariant(env.value(POWER_CAN_SLEEP)).toBool()
-                                                   : getDconfigValue("sleep", true).toBool() && m_powerManagerInter->CanSuspend();
-    bool can_hibernate = env.contains(POWER_CAN_HIBERNATE) ? QVariant(env.value(POWER_CAN_HIBERNATE)).toBool()
-                                                           : getDconfigValue("hibernate", true).toBool() && m_powerManagerInter->CanHibernate();
+    bool can_sleep = getDconfigValue("sleep", true).toBool() && canSuspend();
+    bool can_hibernate = getDconfigValue("hibernate", true).toBool() && canHibernate();
 #endif
 
     m_model->setCanSleep(can_sleep);
@@ -260,4 +256,45 @@ bool AuthInterface::checkIsADDomain()
 {
     //只有加入AD域后，才会生成此文件
     return QFile::exists("/etc/krb5.keytab");
+}
+
+bool AuthInterface::canSuspend()
+{
+    if (QString(getenv("POWER_CAN_SLEEP")) == "0" || m_isVM)
+        return false; 
+
+    // 检查内存休眠支持文件是否存在
+    if (!QFile::exists("/sys/power/mem_sleep"))
+        return false;
+    
+    QString canSuspend = m_login1Inter->CanSuspend();
+    return canSuspend == "yes";
+}
+
+bool AuthInterface::canHibernate()
+{
+    if (QString(getenv("POWER_CAN_HIBERNATE")) == "0" || m_isVM)
+        return false;
+    
+    QString canHibernate = m_login1Inter->CanHibernate();
+    return canHibernate == "yes";
+}
+
+bool AuthInterface::detectVirtualMachine()
+{
+    QProcess process;
+    process.start("/usr/bin/systemd-detect-virt", QStringList());
+    // 添加超时限制，例如 3000ms
+    if (!process.waitForFinished(3000)) {
+        qWarning() << "Timeout detecting virtual machine";
+        return false;
+    }
+    
+    if (process.exitCode() != 0) {
+        qWarning() << "Failed to detect virtual machine, error:" << process.errorString();
+        return false;
+    }
+    
+    QString name = QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+    return name != "none" && !name.isEmpty();
 }

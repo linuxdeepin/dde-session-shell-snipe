@@ -184,7 +184,6 @@ if (NOT DISABLE_DSS_SNIPE)
         "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.Accounts1.User.xml userinterface"
         "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.ImageEffect1.xml imageeffect1interface"
         "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.Logined.xml loginedinterface"
-        "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.PowerManager1.xml powermanager1interface"
         "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.SystemPower1.xml systempower1interface"
         "${CMAKE_SOURCE_DIR}/xml/snipe/com.deepin.wm.xml wminterface"
         "${CMAKE_SOURCE_DIR}/xml/snipe/org.deepin.dde.Authenticate1.Session2.xml session2interface"
