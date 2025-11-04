@@ -14,14 +14,12 @@
 #include <com_deepin_daemon_logined.h>
 #include <com_deepin_daemon_authenticate.h>
 #include <org_freedesktop_login1_session_self.h>
-#include <com_deepin_daemon_powermanager.h>
 #include <org_freedesktop_dbus.h>
 #include <QGSettings>
 #else
 #include "authenticate1interface.h"
 #include "accounts1interface.h"
 #include "loginedinterface.h"
-#include "powermanager1interface.h"
 #include "dbusinterface.h"
 #include "selfinterface.h"
 #include <DConfig>
@@ -34,7 +32,6 @@
 using AccountsInter = com::deepin::daemon::Accounts;
 using LoginedInter = com::deepin::daemon::Logined;
 using Login1SessionSelf = org::freedesktop::login1::Session;
-using PowerManagerInter = com::deepin::daemon::PowerManager;
 using DBusObjectInter = org::freedesktop::DBus;
 
 using com::deepin::daemon::Authenticate;
@@ -42,7 +39,6 @@ using com::deepin::daemon::Authenticate;
 using AccountsInter = org::deepin::dde::Accounts1;
 using LoginedInter = org::deepin::dde::Logined;
 using Login1SessionSelf = org::freedesktop::login1::Session;
-using PowerManagerInter = org::deepin::dde::PowerManager1;
 using DBusObjectInter = org::freedesktop::DBus;
 
 using Authenticate = org::deepin::dde::Authenticate1;
@@ -96,13 +92,16 @@ protected:
                                        failback);
     }
 
+    bool canSuspend();
+    bool canHibernate();
+    bool detectVirtualMachine();
+
 protected:
     SessionBaseModel*  m_model;
     AccountsInter *    m_accountsInter;
     LoginedInter*      m_loginedInter;
     DBusLogin1Manager* m_login1Inter;
     Login1SessionSelf* m_login1SessionSelf = nullptr;
-    PowerManagerInter* m_powerManagerInter;
     DBusObjectInter*   m_dbusInter;
 #ifndef ENABLE_DSS_SNIPE
     QGSettings*        m_gsettings = nullptr;
@@ -112,6 +111,7 @@ protected:
     uint               m_lastLogoutUid;
     uint               m_currentUserUid;
     std::list<uint>    m_loginUserList;
+    bool m_isVM;
 };
 }  // namespace Auth
 
