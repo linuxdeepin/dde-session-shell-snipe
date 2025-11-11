@@ -84,19 +84,19 @@
     <name>AuthPasskey</name>
     <message>
         <source>Please plug in the security key</source>
-        <translation type="unfinished"/>
+        <translation>Lütfen güvenlik anahtarını takın</translation>
     </message>
     <message>
         <source>Verification successful</source>
-        <translation type="unfinished"/>
+        <translation>Doğrulama başarılı</translation>
     </message>
     <message>
         <source>Verification failed</source>
-        <translation type="unfinished"/>
+        <translation>Doğrulama başarısız oldu</translation>
     </message>
     <message>
         <source>Identifying the security key</source>
-        <translation type="unfinished"/>
+        <translation>Güvenlik anahtarının tanımlanması</translation>
     </message>
 </context>
 <context>
@@ -212,18 +212,18 @@
     </message>
     <message>
         <source>Your password has expired. Please contact the administrator to change it</source>
-        <translation type="unfinished"/>
+        <translation>Şifrenizin süresi doldu. Lütfen değiştirmek için yöneticiyle iletişime geçin</translation>
     </message>
     <message>
         <source>Terminal locked, please contact administrator</source>
-        <translation type="unfinished"/>
+        <translation>Terminal kilitlendi, lütfen yöneticiyle iletişime geçin</translation>
     </message>
 </context>
 <context>
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Yanlış Şifre</translation>
     </message>
 </context>
 <context>
@@ -245,14 +245,14 @@
     </message>
     <message>
         <source>The reason of inhibit.</source>
-        <translation type="unfinished"/>
+        <translation>Engellemenin sebebi.</translation>
     </message>
 </context>
 <context>
     <name>LighterGreeter</name>
     <message>
         <source>Standard Mode</source>
-        <translation type="unfinished"/>
+        <translation>Standart Mod</translation>
     </message>
 </context>
 <context>
@@ -383,19 +383,19 @@
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Geri dön</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Lütfen giriş yapmak için hesabı seçin</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Yerel Hesap</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Alan Adı Hesabı</translation>
     </message>
 </context>
 <context>
@@ -466,22 +466,22 @@
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Programlar ve sistem kapatılıyor, lütfen bekleyin...</translation>
     </message>
     <message>
         <source>Closing the programs and rebooting, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Programlar kapatılıp yeniden başlatılıyor, lütfen bekleyin...</translation>
     </message>
     <message>
         <source>Closing the programs and logging out, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>Programlar kapatılıp çıkış yapılıyor, lütfen bekleyin...</translation>
     </message>
 </context>
 <context>
     <name>dss::module::AssistLoginWidget</name>
     <message>
         <source>Automatic login</source>
-        <translation type="unfinished"/>
+        <translation>Otomatik giriş</translation>
     </message>
 </context>
 <context>
