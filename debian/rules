@@ -9,6 +9,9 @@ export DEB_CFLAGS_MAINT_APPEND = -Wall
 export DEB_CXXFLAGS_MAINT_APPEND = -Wall
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-E
 
+# reproducible编译参数
+DEB_CMAKE_EXTRA_FLAGS += -DCMAKE_SKIP_BUILD_RPATH=ON
+
 include /usr/share/dpkg/default.mk
 SYSTYPE=Desktop
 SYSTYPE=$(shell cat /etc/deepin-version | grep Type= | awk -F'=' '{print $$2}')
@@ -17,20 +20,21 @@ SYSTYPE=$(shell cat /etc/deepin-version | grep Type= | awk -F'=' '{print $$2}')
 
 ifeq ($(DEB_BUILD_ARCH), mipsel)
 override_dh_auto_configure:
-	dh_auto_configure -- LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
+	dh_auto_configure -- $(DEB_CMAKE_EXTRA_FLAGS) LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
 endif
 
 ifeq ($(DEB_BUILD_ARCH), mips64el)
 override_dh_auto_configure:
-	dh_auto_configure -- LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
+	dh_auto_configure -- $(DEB_CMAKE_EXTRA_FLAGS) LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
 endif
 
 ifeq ($(DEB_BUILD_ARCH), sw_64)
 override_dh_auto_configure:
-	dh_auto_configure -- LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
+	dh_auto_configure -- $(DEB_CMAKE_EXTRA_FLAGS) LOCK_NO_QUIT=YES DISABLE_DEMO_VIDEO=YES DISABLE_TEXT_SHADOW=YES DISABLE_ANIMATIONS=YES USE_CURSOR_LOADING_ANI=YES
 endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
+		$(DEB_CMAKE_EXTRA_FLAGS) \
 		-DWAIT_DEEPIN_ACCOUNTS_SERVICE=1 \
 		-DDDE_SESSION_SHELL_SNIPE=1
