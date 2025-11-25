@@ -75,6 +75,8 @@ AuthPassword::AuthPassword(QWidget *parent)
 
 AuthPassword::~AuthPassword()
 {
+    // QWidget析构时会clearFocus, focusChanged会被触发，且槽函数操作了成员变量会导致崩溃，在这里提前断开连接
+    m_lineEdit->disconnect(this);
     if (m_resetPasswordMessageVisible) {
         closeResetPasswordMessage();
     }
