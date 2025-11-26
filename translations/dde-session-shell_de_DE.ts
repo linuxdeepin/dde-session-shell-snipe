@@ -311,7 +311,7 @@
     </message>
     <message>
         <source>Suspend</source>
-        <translation>Abschalten</translation>
+        <translation>Bereitschaft</translation>
     </message>
     <message>
         <source>Hibernate</source>
@@ -434,7 +434,7 @@
     </message>
     <message>
         <source>Suspend</source>
-        <translation>Abschalten</translation>
+        <translation>Bereitschaft</translation>
     </message>
     <message>
         <source>Hibernate</source>
