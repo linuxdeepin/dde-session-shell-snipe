@@ -138,15 +138,6 @@ void LockWorker::initConnections()
         emit m_model->authFinished(true);
     });
 
-#ifdef ENABLE_DSS_SNIPE
-    connect(m_sessionManagerInter, &SessionManagerInter::LockedChanged, this, [ this ](bool locked) {
-        qDebug() << "SessionManagerInter::LockedChanged" << locked;
-        if (locked && !m_model->visible()) {
-            m_model->showLockScreen();
-        }
-    });
-#endif
-
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [this](bool active) {
         qCInfo(DDE_SHELL) << "DBus lock service active changed, active: " << active << ", model visible: " << m_model->visible();
@@ -161,6 +152,12 @@ void LockWorker::initConnections()
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
         }
+
+#ifdef ENABLE_DSS_SNIPE
+        if (active && !m_model->visible()) {
+             m_model->showLockScreen();
+        }
+#endif
     });
 
     // 在待机时启动定时器，如果定时器超时的时间离待机时间大于15秒，则认为已经唤醒，停止定时器，并设置黑屏模式为false
