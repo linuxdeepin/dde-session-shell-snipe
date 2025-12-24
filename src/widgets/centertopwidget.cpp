@@ -80,8 +80,12 @@ void CenterTopWidget::setCurrentUser(User *user)
         }
     }
 
+#ifdef ENABLE_DSS_SNIPE
+    m_timeWidget->updateLocale(QLocale(getUserLocale(user)));
+#else
     auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
     m_timeWidget->updateLocale(QLocale(locale));
+#endif // ENABLE_DSS_SNIPE
     m_timeWidget->set24HourFormat(user->isUse24HourFormat());
     m_timeWidget->setWeekdayFormatType(user->weekdayFormat());
     m_timeWidget->setShortDateFormat(user->shortDateFormat());
@@ -105,8 +109,12 @@ void CenterTopWidget::setCurrentUser(User *user)
 void CenterTopWidget::updateTimeFormat(bool use24)
 {
     if (!m_currentUser.isNull()) {
+#ifdef ENABLE_DSS_SNIPE
+        m_timeWidget->updateLocale(QLocale(getUserLocale(m_currentUser)));
+#else
         auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : m_currentUser->locale();
         m_timeWidget->updateLocale(QLocale(locale));
+#endif // ENABLE_DSS_SNIPE
         m_timeWidget->set24HourFormat(use24);
         m_timeWidget->setVisible(true);
     }
@@ -217,6 +225,22 @@ QString CenterTopWidget::getRegionFormatValue(const QString &userConfigDbusPath,
         return QString();
     }
     return reply.value().toString();
+}
+
+QString CenterTopWidget::getUserLocale(const User *user) const
+{
+    if (!user)
+        return QLocale::system().name();
+
+    if (qApp->applicationName() == "dde-lock")
+        return QLocale::system().name();
+
+    QString userConfigDbusPath = getRegionFormatConfigPath(user);
+    QString localeName = getRegionFormatValue(userConfigDbusPath, localeNameKey);
+    if (localeName.isEmpty()) {
+        localeName = user->locale();
+    }
+    return localeName;
 }
 
 void CenterTopWidget::updateRegionFormatConnection(const User *user)
