@@ -41,6 +41,7 @@ private slots:
 private:
     QString getRegionFormatConfigPath(const User *user) const;
     QString getRegionFormatValue(const QString &userConfigDbusPath, const QString& key) const;
+    QString getUserLocale(const User *user) const;
     void updateRegionFormatConnection(const User *user);
     void updateUserDateTimeFormat();
 #endif // ENABLE_DSS_SNIPE
