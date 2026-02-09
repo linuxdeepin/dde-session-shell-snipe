@@ -146,7 +146,19 @@ void DLineEditEx::paintEvent(QPaintEvent *event)
         pa.setPen(col);
         QTextOption option;
         option.setAlignment(Qt::AlignCenter);
-        pa.drawText(rect(), lineEdit()->placeholderText(), option);
+        option.setWrapMode(QTextOption::NoWrap);
+        // 使用 elidedText 确保文本过长时在右侧显示省略号，而不是换行
+        QFontMetrics fm(pa.font());
+        const QString &placeholderText = lineEdit()->placeholderText();
+        QString elidedText = fm.elidedText(placeholderText, Qt::ElideRight, rect().width());
+        pa.drawText(rect(), Qt::AlignCenter | Qt::TextSingleLine, elidedText);
+
+        // 当文本被省略时，设置 tooltip 显示完整文本
+        if (elidedText != placeholderText) {
+            setToolTip(placeholderText);
+        } else {
+            setToolTip(QString());
+        }
     }
     QWidget::paintEvent(event);
 }
