@@ -21,6 +21,13 @@
 #include <QTimer>
 #include <QWindow>
 
+#ifndef ENABLE_DSS_SNIPE
+#include <QX11Info>
+#else
+#include <xcb/xproto.h>
+#endif
+#include <xcb/xcb.h>
+
 #include "dbusconstant.h"
 
 Q_LOGGING_CATEGORY(DDE_SS, "dss.active")
@@ -74,8 +81,52 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
     connect(m_resetGeometryTimer, &QTimer::timeout, this, [this] {
         const auto &currentGeometry = geometry();
         if (currentGeometry != m_geometryRect) {
-            qCDebug(DDE_SHELL) << "Current geometry:" << currentGeometry <<"setGeometry:" << m_geometryRect;
+            qCWarning(DDE_SHELL) << "Geometry mismatch detected! Qt cached geometry:" << currentGeometry
+                                 << ", target geometry:" << m_geometryRect << ", this:" << this;
             setGeometry(m_geometryRect);
+        }
+
+        // 通过 XCB 检查窗口在 X Server 中的实际位置
+        // 注意：X11 坐标系中，窗口位置不乘 DPR（与 X RandR 一致），窗口大小乘 DPR
+        if (!m_model->isUseWayland() && windowHandle()) {
+            xcb_connection_t *connection = nullptr;
+#ifndef ENABLE_DSS_SNIPE
+            connection = QX11Info::connection();
+#else
+            auto *x11App = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+            if (x11App)
+                connection = x11App->connection();
+#endif
+            if (connection) {
+                auto cookie = xcb_get_geometry(connection, static_cast<xcb_window_t>(winId()));
+                auto *reply = xcb_get_geometry_reply(connection, cookie, nullptr);
+                if (reply) {
+                    QRect xcbGeometry(reply->x, reply->y, reply->width, reply->height);
+                    const qreal dpr = devicePixelRatioF();
+                    QRect expectedPhysical(m_geometryRect.x(), m_geometryRect.y(),
+                                           qRound(m_geometryRect.width() * dpr),
+                                           qRound(m_geometryRect.height() * dpr));
+                    if (xcbGeometry != expectedPhysical) {
+                        qCWarning(DDE_SHELL) << "XCB position mismatch! XCB geometry(physical):" << xcbGeometry
+                                             << ", expected(physical):" << expectedPhysical
+                                             << ", target(logical):" << m_geometryRect
+                                             << ", dpr:" << dpr
+                                             << ", this:" << this
+                                             << ", screen:" << (m_screen ? m_screen->name() : "null");
+                        // Qt 的 geometry() 缓存可能已经是正确值，但实际 X 窗口未移动。
+                        // 强制重新绑定 screen 并调用 setGeometry，让 Qt 重新发送 XCB configure request。
+                        if (!m_screen.isNull() && windowHandle()->screen() != m_screen) {
+                            windowHandle()->setScreen(m_screen);
+                        }
+                        // 先 resize 到 0,0 再设目标值，破坏 Qt 的 "geometry 未变" 优化，强制重新下发
+                        setGeometry(0, 0, 0, 0);
+                        setGeometry(m_geometryRect);
+                    } else {
+                        qCInfo(DDE_SHELL) << "XCB position match, no need to set geometry";
+                    }
+                    free(reply);
+                }
+            }
         }
     });
 
@@ -453,14 +504,20 @@ void FullScreenBackground::updateGeometry()
     }
 
     if (!m_screen.isNull()) {
-        if(m_model->isUseWayland())
+        // X11 下也需要将 QWindow 关联到正确的 QScreen，否则 Qt 可能将窗口归属到错误的 screen
+        if (windowHandle() && windowHandle()->screen() != m_screen) {
+            qCInfo(DDE_SHELL) << "bindWindowToScreen, windowHandle screen:" << windowHandle()->screen()->name()
+                              << ", target screen:" << m_screen->name() << ", this:" << this;
             windowHandle()->setScreen(m_screen);
+        }
         setddeGeometry(m_screen->geometry());
 
         qCInfo(DDE_SHELL) << "Update geometry, screen:" << m_screen
+                          << ", screen name:" << m_screen->name()
                           << ", screen geometry:" << m_screen->geometry()
                           << ", lockFrame:" << this
-                          << ", frame geometry:" << this->geometry();
+                          << ", frame geometry:" << this->geometry()
+                          << ", windowHandle screen:" << (windowHandle() ? windowHandle()->screen()->name() : "null");
     } else {
         qCWarning(DDE_SHELL) << "Screen is nullptr";
     }
@@ -735,6 +792,12 @@ bool FullScreenBackground::getScaledBlurImage(const QString &originPath, QString
 //增加一个定时器，每隔50ms再设置一次Geometry，避免出现xorg初始化未完成的情况，导致界面显示不全
 void FullScreenBackground::setddeGeometry(const QRect &rect)
 {
+    qCInfo(DDE_SHELL) << "setddeGeometry called, this:" << this
+                      << ", target rect:" << rect
+                      << ", current geometry:" << geometry()
+                      << ", screen:" << (m_screen ? m_screen->name() : "null")
+                      << ", windowHandle screen:" << (windowHandle() ? windowHandle()->screen()->name() : "null")
+                      << ", dpr:" << devicePixelRatioF();
     setGeometry(rect);
     m_geometryRect = rect;
     m_resetGeometryTimer->start(200);

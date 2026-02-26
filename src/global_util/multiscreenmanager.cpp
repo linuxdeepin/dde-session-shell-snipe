@@ -11,6 +11,13 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+#ifndef ENABLE_DSS_SNIPE
+#include <QX11Info>
+#else
+#include <xcb/xproto.h>
+#endif
+#include <xcb/xcb.h>
+
 #include "dbusconstant.h"
 
 MultiScreenManager::MultiScreenManager(QObject *parent)
@@ -113,6 +120,11 @@ void MultiScreenManager::onScreenAdded(QPointer<QScreen> screen)
     if (!m_registerFunction) {
         return;
     }
+
+    qCInfo(DDE_SHELL) << "onScreenAdded processing, screen:" << screen
+                      << ", name:" << screen->name()
+                      << ", geometry:" << screen->geometry()
+                      << ", existing frames count:" << m_frames.size();
 
     QWidget* w = nullptr;
     if (m_isCopyMode) {
@@ -244,10 +256,53 @@ void MultiScreenManager::onDisplayModeChanged(const QString &)
 
 void MultiScreenManager::checkLockFrameLocation()
 {
+    xcb_connection_t *connection = nullptr;
+    if (!QGuiApplication::platformName().startsWith("wayland", Qt::CaseInsensitive)) {
+#ifndef ENABLE_DSS_SNIPE
+        connection = QX11Info::connection();
+#else
+        auto *x11App = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+        if (x11App)
+            connection = x11App->connection();
+#endif
+    }
+
     for (QScreen *screen : m_frames.keys()) {
         if (screen) {
-            qCInfo(DDE_SHELL) << "Check lock frame location, screen:" << screen << ", location:" << screen->geometry()
-                       << ", lockframe:" << m_frames.value(screen) << ", location:" << m_frames.value(screen)->geometry();
+            QWidget *frame = m_frames.value(screen);
+            qCInfo(DDE_SHELL) << "Check lock frame location, screen:" << screen
+                              << ", screen name:" << screen->name()
+                              << ", screen geometry:" << screen->geometry()
+                              << ", lockframe:" << frame
+                              << ", Qt frame geometry:" << frame->geometry();
+
+            // 通过 XCB 检查窗口在 X Server 中的实际位置
+            // 注意：X11 下窗口位置不乘 DPR（与 RandR 物理坐标一致），窗口大小乘 DPR
+            if (connection && frame) {
+                auto cookie = xcb_get_geometry(connection, static_cast<xcb_window_t>(frame->winId()));
+                auto *reply = xcb_get_geometry_reply(connection, cookie, nullptr);
+                if (reply) {
+                    QRect xcbGeometry(reply->x, reply->y, reply->width, reply->height);
+                    const qreal dpr = frame->devicePixelRatioF();
+                    QRect expectedPhysical(screen->geometry().x(), screen->geometry().y(),
+                                           qRound(screen->geometry().width() * dpr),
+                                           qRound(screen->geometry().height() * dpr));
+                    bool positionMatch = (xcbGeometry == expectedPhysical);
+                    qCInfo(DDE_SHELL) << "  XCB actual geometry(physical):" << xcbGeometry
+                                     << ", expected(physical):" << expectedPhysical
+                                     << ", dpr:" << dpr
+                                     << ", match:" << positionMatch;
+                    if (!positionMatch) {
+                        qCWarning(DDE_SHELL) << "  *** POSITION MISMATCH DETECTED! ***"
+                                             << "XCB geometry:" << xcbGeometry
+                                             << "expected:" << expectedPhysical
+                                             << "for screen" << screen->name();
+                    }
+                    free(reply);
+                } else {
+                    qCWarning(DDE_SHELL) << "  Failed to get XCB geometry for frame:" << frame;
+                }
+            }
         }
     }
 }
