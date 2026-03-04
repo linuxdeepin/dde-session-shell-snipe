@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -116,7 +116,9 @@ public:
     void setSessionKey(const QString &sessionKey);
 
     inline PowerAction powerAction() const { return m_powerAction; }
-    void setPowerAction(const PowerAction &powerAction);
+    void setPowerAction(const PowerAction &powerAction, bool force = false);
+
+    bool isPowerActionDoForce() const { return m_powerActionDoForce; }
 
     ModeStatus currentModeState() const { return m_currentModeState; }
     void setCurrentModeState(const ModeStatus &currentModeState);
@@ -324,6 +326,7 @@ private:
     bool m_visibleShutdownWhenRebootOrShutdown;
     bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程
     bool m_gsCheckpwd;
+    bool m_powerActionDoForce = false; // 是否强制执行关机重启等操作
 };
 
 #endif // SESSIONBASEMODEL_H

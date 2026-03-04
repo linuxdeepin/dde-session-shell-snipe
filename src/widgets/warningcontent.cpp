@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -199,7 +199,11 @@ void WarningContent::doAcceptShutdownInhibit()
         }
     }
 
+#ifndef ENABLE_DSS_SNIPE
     m_model->setPowerAction(m_powerAction);
+#else
+    m_model->setPowerAction(m_powerAction, true);
+#endif
 
     if (m_model->currentModeState() != SessionBaseModel::ModeStatus::ShutDownMode
         && m_model->currentModeState() != SessionBaseModel::ModeStatus::PowerMode

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -114,14 +114,15 @@ void SessionBaseModel::setSessionKey(const QString &sessionKey)
     emit onSessionKeyChanged(sessionKey);
 }
 
-void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
+void SessionBaseModel::setPowerAction(const PowerAction &powerAction, bool force)
 {
-    qCInfo(DDE_SHELL) << "Incoming action:" << powerAction << ", current action:" << m_powerAction;
+    qCInfo(DDE_SHELL) << "Incoming action:" << powerAction << ", current action:" << m_powerAction << ", force:" << force;
 
     if (powerAction == m_powerAction)
         return;
 
     m_powerAction = powerAction;
+    m_powerActionDoForce = force;
 
     if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
         Q_EMIT shutdownkModeChanged(true);
