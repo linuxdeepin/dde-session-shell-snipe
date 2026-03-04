@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -506,7 +506,8 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
 #else
     bool sleepLock = isSleepLock();
 #endif
-    qCInfo(DDE_SHELL) << "Do power action:" << action;
+    bool doForce = m_model->isPowerActionDoForce();
+    qCInfo(DDE_SHELL) << "Do power action:" << action << "doForce:" << doForce;
     switch (action) {
     case SessionBaseModel::PowerAction::RequireSuspend:
     {
@@ -572,7 +573,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setShutdownMode(true);
         auto gsCheckPwd = m_model->gsCheckpwd();
         if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
-            m_sessionManagerInter->RequestReboot();
+            doForce ? m_sessionManagerInter->ForceReboot() : m_sessionManagerInter->RequestReboot();
         } else {
             createAuthentication(m_account);
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
@@ -591,7 +592,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setShutdownMode(true);
         auto gsCheckPwd = m_model->gsCheckpwd();
         if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
-            m_sessionManagerInter->RequestShutdown();
+            doForce ? m_sessionManagerInter->ForceShutdown() : m_sessionManagerInter->RequestShutdown();
         } else {
             createAuthentication(m_account);
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
@@ -611,7 +612,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         createAuthentication(m_model->currentUser()->name());
         break;
     case SessionBaseModel::PowerAction::RequireLogout:
-        m_sessionManagerInter->RequestLogout();
+        doForce ? m_sessionManagerInter->ForceLogout() : m_sessionManagerInter->RequestLogout();
         return;
     case SessionBaseModel::PowerAction::RequireSwitchSystem:
         m_switchosInterface->setOsFlag(!m_switchosInterface->getOsFlag());
