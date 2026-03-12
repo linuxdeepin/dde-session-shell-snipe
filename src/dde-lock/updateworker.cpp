@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -32,9 +32,15 @@ void UpdateWorker::doUpdate(bool powerOff)
             .path("/org/freedesktop/Notifications")
             .interface("org.freedesktop.Notifications")
             .method(QString("Notify"))
+#ifndef ENABLE_DSS_SNIPE
             .arg(tr("Update"))
             .arg(static_cast<uint>(0))
             .arg(QString("package-updated-failed"))
+#else
+            .arg(QString("org.deepin.dde.control-center"))
+            .arg(static_cast<uint>(0))
+            .arg(QString())
+#endif
             .arg(QString(""))
             .arg(tr("Please plug in and then install updates."))
             .arg(QStringList())
