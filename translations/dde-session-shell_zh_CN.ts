@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>密码错误</translation>
     </message>
 </context>
 <context>
@@ -481,7 +481,7 @@
     <name>dss::module::AssistLoginWidget</name>
     <message>
         <source>Automatic login</source>
-        <translation type="unfinished"/>
+        <translation>自动登录</translation>
     </message>
 </context>
 <context>
