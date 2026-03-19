@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -205,8 +205,7 @@ void WarningContent::doAcceptShutdownInhibit()
         && m_model->currentModeState() != SessionBaseModel::ModeStatus::PowerMode
         && m_powerAction != SessionBaseModel::RequireUpdateShutdown
         && m_powerAction != SessionBaseModel::RequireUpdateRestart
-        && m_powerAction != SessionBaseModel::RequireShutdown
-        && m_powerAction != SessionBaseModel::RequireRestart ) {
+        && ((m_powerAction == SessionBaseModel::RequireShutdown || m_powerAction == SessionBaseModel::RequireRestart) && m_model->gsCheckpwd())) {
         FullScreenBackground::setContent(LockContent::instance());
         m_model->setCurrentContentType(SessionBaseModel::LockContent);
     }
