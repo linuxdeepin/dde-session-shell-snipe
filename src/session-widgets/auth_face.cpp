@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -32,7 +32,8 @@ void AuthFace::initUI()
     /* 文案提示 */
     m_textLabel->setText(tr("Face ID"));
     m_textLabel->setWordWrap(true);
-    mainLayout->addWidget(m_textLabel, 1, Qt::AlignHCenter);
+    m_textLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
+    mainLayout->addWidget(m_textLabel, 1);
     /* 认证状态 */
     m_authStateLabel = new DLabel(this);
     m_authStateLabel->installEventFilter(this);
