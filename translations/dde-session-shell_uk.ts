@@ -223,7 +223,7 @@
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Помилковий пароль</translation>
     </message>
 </context>
 <context>
@@ -383,19 +383,19 @@
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Повернутися</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Будь ласка, виберіть обліковий запис для входу</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Локальний обліковий запис</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Доменний обліковий запис</translation>
     </message>
 </context>
 <context>
