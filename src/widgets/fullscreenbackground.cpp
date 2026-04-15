@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -743,16 +743,24 @@ QString FullScreenBackground::sizeToString(const QSize &size)
 
 bool FullScreenBackground::getScaledBlurImage(const QString &originPath, QString &scaledPath)
 {
+#ifndef ENABLE_DSS_SNIPE
     // 为了兼容没有安装壁纸服务环境;Qt5.15高版本可以使用activatableServiceNames()遍历然后可判断系统有没有安装服务
     const QString wallpaperServicePath = "/lib/systemd/system/dde-wallpaper-cache.service";
     if (!QFile::exists(wallpaperServicePath)) {
         qWarning() << "dde-wallpaper-cache service not existed";
         return false;
     }
+#endif
 
     // 壁纸服务dde-wallpaper-cache
     QDBusInterface wallpaperCacheInterface("org.deepin.dde.WallpaperCache", "/org/deepin/dde/WallpaperCache",
                                            "org.deepin.dde.WallpaperCache", QDBusConnection::systemBus());
+#ifdef ENABLE_DSS_SNIPE
+    if (!wallpaperCacheInterface.isValid()) {
+        qWarning() << "dde-wallpaper-cache service not existed";
+        return false;
+    }
+#endif
 
     QFile file(originPath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -774,6 +782,8 @@ bool FullScreenBackground::getScaledBlurImage(const QString &originPath, QString
         qWarning() << "GetProcessedImagePathByFd interface return null";
         return false;
     }
+
+    file.close();
 
     QString path = pathList.value().at(0);
     if (!path.isEmpty() && path != originPath) {
