@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -836,7 +836,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
             .path("/org/freedesktop/Notifications")
             .interface("org.freedesktop.Notifications")
             .method(QString("Notify"))
-            .arg(tr("Lock Screen"))
+            .arg(QString("dde-lock"))     // appName
             .arg(static_cast<uint>(0))
             .arg(QString(""))
             .arg(QString(""))
