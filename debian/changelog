@@ -1,3 +1,14 @@
+dde-session-shell (6.0.57) unstable; urgency=medium
+
+  * sync: from linuxdeepin/dde-session-shell
+  * feat(gesture): add KWin interaction logging support Add shared
+    logging helpers for KWin-related gesture actions and include
+    package/version context where available. Update finalized event
+    identifiers for existing display and input device logs.
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- zhangkun <zhangkun2@uniontech.com>  Fri, 08 May 2026 15:03:28 +0800
+
 dde-session-shell (6.0.56) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
