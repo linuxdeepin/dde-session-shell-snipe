@@ -384,19 +384,15 @@ if (DISABLE_DSS_SNIPE)
     )
 endif()
 
-if (DISABLE_DSS_SNIPE)
-    add_executable(greeter-display-setting
-        src/app/greeter-display-setting.cpp
-    )
+add_executable(greeter-display-setting
+    src/app/greeter-display-setting.cpp
+)
 
-    target_link_libraries(greeter-display-setting
-        ${Qt_LIBS}
-        ${XCB_EWMH_LIBRARIES}
-        ${DtkCore_LIBRARIES}
-        ${Qt5X11Extras_LIBRARIES}
-        ${Qt5DBus_LIBRARIES}
-    )
-endif ()
+target_link_libraries(greeter-display-setting
+    ${Qt_LIBS}
+    ${XCB_EWMH_LIBRARIES}
+    Dtk${DTK_VERSION_MAJOR}::Core
+)
 
 if (DISABLE_DSS_SNIPE)
     add_subdirectory(lighter-greeter)
@@ -407,7 +403,6 @@ add_subdirectory(src/pam-inhibit-autologin)
 
 if (DISABLE_DSS_SNIPE)
     # bin
-    install(TARGETS dde-lock lightdm-deepin-greeter greeter-display-setting DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS files/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # install x files
@@ -425,12 +420,13 @@ if (DISABLE_DSS_SNIPE)
     install(PROGRAMS files/wayland/lightdm-deepin-greeter-wayland DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/greeters.d/wayland)
     install(FILES files/wayland/lightdm-deepin-greeter-wayland.desktop DESTINATION ${CMAKE_INSTALL_DATADIR}/xgreeters/)
 else () # snipe
-    install(TARGETS dde-lock lightdm-deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
     install(PROGRAMS files/snipe/deepin-greeter DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     file(GLOB SCRIPTS  files/snipe/scripts/*)
     install(PROGRAMS ${SCRIPTS} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/deepin/greeters.d)
 endif ()
+
+install(TARGETS dde-lock lightdm-deepin-greeter greeter-display-setting DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # 指定greeter，优先级最低，允许被其他应用以更高的配置文件覆盖
 install(FILES files/50-deepin.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/lightdm/lightdm.conf.d)

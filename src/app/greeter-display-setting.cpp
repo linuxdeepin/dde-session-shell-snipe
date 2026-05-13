@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "constants.h"
@@ -278,7 +278,12 @@ double getScaleFormConfig()
 }
 
 static void setQtScaleFactorEnv() {
-    const double scaleFactor = IsWayland ? getScaleFormConfig() : getScaleFactor();
+    double scaleFactor = 0.0;
+#ifdef ENABLE_DSS_SNIPE
+    scaleFactor = getScaleFactor();
+#else
+    scaleFactor = IsWayland ? getScaleFormConfig() : getScaleFactor();
+#endif
     qDebug() << "Final scale factor: " << scaleFactor;
     if (scaleFactor > 0.0) {
         std::cout << QString("QT_SCALE_FACTOR="+QByteArray::number(scaleFactor)).toStdString().c_str() << std::endl;
@@ -291,9 +296,15 @@ int main(int argc, char* argv[])
 {
     // x11下，dxcb设置Qt::AA_EnableHighDpiScaling属性后，平台插件会处理缩放，不需要再主动设置QT_SCALE_FACTOR，否则会导致缩放系数相乘，得出错误的qApp->devicePixelRatio()
     // wayland下，dwayland平台插件不会处理缩放，需要手动设置QT_SCALE_FACTOR
+#ifdef ENABLE_DSS_SNIPE
+    if (!IsWayland) {
+        setQtScaleFactorEnv();
+    }
+#else
     if (IsWayland) {
         setQtScaleFactorEnv();
     }
+#endif
 
     return 0;
 }

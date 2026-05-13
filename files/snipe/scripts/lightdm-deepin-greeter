@@ -6,6 +6,13 @@ fi
 xsettingsd_conf="/etc/lightdm/deepin/xsettingsd.conf"
 if [ -e $xsettingsd_conf ]; then
     xsettingsd -c $xsettingsd_conf &
+else
+    # xsettingsd.conf 不存在时，通过 greeter-display-setting 设置 QT 缩放环境变量
+    greeter_display_setting_path="/usr/bin/greeter-display-setting"
+    if [ -f $greeter_display_setting_path ]; then
+        scale_env=$(/usr/bin/greeter-display-setting | tail -1)
+        export $scale_env
+    fi
 fi
 
 # 判断是否有脚本需要在greeter之前调用。与更新相关功能
