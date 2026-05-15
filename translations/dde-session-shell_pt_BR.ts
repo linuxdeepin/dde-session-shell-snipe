@@ -200,7 +200,7 @@
     <name>AuthWidget</name>
     <message>
         <source>Account</source>
-        <translation>Conta</translation>
+        <translation>Contas</translation>
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
