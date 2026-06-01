@@ -259,7 +259,7 @@
     <name>LockContent</name>
     <message>
         <source>Lock Screen</source>
-        <translation>Pantalla de bloqueig</translation>
+        <translation>Pantalla de blocatge</translation>
     </message>
     <message>
         <source>Failed to lock screen</source>
