@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>files/permission-interfaces/auth.json</file>
         <file>misc/images/caps_lock.svg</file>
         <file>misc/images/login_check.svg</file>
         <file>misc/images/login_lock.svg</file>
