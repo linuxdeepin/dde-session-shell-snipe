@@ -252,6 +252,7 @@ set(LOCK_SRCS
     src/dde-lock/lockframe.cpp
     src/dde-lock/lockworker.cpp
     src/dde-lock/updateworker.cpp
+    src/dde-lock/securityloaderhelper.cpp
     src/dde-lock/dbus/dbuslockagent.cpp
     src/dde-lock/dbus/dbuslockfrontservice.cpp
     src/dde-lock/dbus/dbusshutdownagent.cpp
@@ -426,7 +427,13 @@ else () # snipe
     install(PROGRAMS ${SCRIPTS} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/deepin/greeters.d)
 endif ()
 
-install(TARGETS dde-lock lightdm-deepin-greeter greeter-display-setting DESTINATION ${CMAKE_INSTALL_BINDIR})
+# dde-lock binary installed to libexec/deepin for security-loader
+install(TARGETS dde-lock DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/deepin)
+install(TARGETS lightdm-deepin-greeter greeter-display-setting DESTINATION ${CMAKE_INSTALL_BINDIR})
+# Install loader wrapper script as /usr/bin/dde-lock
+install(PROGRAMS files/dde-lock-loader-wrapper DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RENAME dde-lock
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # 指定greeter，优先级最低，允许被其他应用以更高的配置文件覆盖
 install(FILES files/50-deepin.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/lightdm/lightdm.conf.d)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -16,6 +16,7 @@
 #include "sessionbasemodel.h"
 #include "warningcontent.h"
 #include "plugin_manager.h"
+#include "securityloaderhelper.h"
 #include "dbusconstant.h"
 
 #include <DApplication>
@@ -109,8 +110,17 @@ int main(int argc, char *argv[])
     QCommandLineOption quickLoginProcess(QStringList() << "q" << "quicklogin", "show for quick login");
     cmdParser.addOption(quickLoginProcess);
 
+    QCommandLineOption fd1Opt("fd1", "fd1 from security loader", "fd1");
+    cmdParser.addOption(fd1Opt);
+    QCommandLineOption fd2Opt("fd2", "fd2 from security loader", "fd2");
+    cmdParser.addOption(fd2Opt);
+
     QStringList xddd = app->arguments();
     cmdParser.process(*app);
+
+    int fd1 = cmdParser.isSet(fd1Opt) ? cmdParser.value(fd1Opt).toInt() : -1;
+    int fd2 = cmdParser.isSet(fd2Opt) ? cmdParser.value(fd2Opt).toInt() : -1;
+    SecurityLoaderHelper::instance().doSecurityLoader(fd1, fd2);
 
     bool runDaemon = cmdParser.isSet(backend);
     bool showUserList = cmdParser.isSet(switchUser);
