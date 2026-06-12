@@ -2,3 +2,4 @@ etc
 usr/bin
 usr/share
 usr/lib/*/security
+usr/libexec/deepin
