@@ -47,7 +47,7 @@
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>Пристрій заблоковано. Його розблокування відбудеться за %1 хвилин</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
@@ -63,35 +63,35 @@
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Помилка малювання. Для скидання зверніться до адміністратора</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Скасувати</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>Гаразд</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Помилка малювання. Лишилося %1 спроб. Для скидання зверніться до адміністратора</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Налаштування завершено. Можна починати</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Розблокувати за допомогою жесту</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Мінімум 4 точки, будь ласка, повторіть малювання</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Для скидання зверніться до адміністратора</translation>
     </message>
 </context>
 </TS>
