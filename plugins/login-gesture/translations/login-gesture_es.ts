@@ -47,7 +47,7 @@
     </message>
     <message>
         <source>Device is locked, unlocked after %1 minutes</source>
-        <translation type="unfinished"/>
+        <translation>El dispositivo está bloqueado, se desbloqueará después de %1 minutos.</translation>
     </message>
     <message>
         <source>Modify gesture password</source>
@@ -63,35 +63,35 @@
     </message>
     <message>
         <source>Drawing error, Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Patrón incorrecto. Contacte con el administrador para restablecerlo.</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation type="unfinished"/>
+        <translation>Cancelar</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"/>
+        <translation>Aceptar</translation>
     </message>
     <message>
         <source>Drawing error, %1 chances left. Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Patrón incorrecto, quedan 1 oportunidad. Contacta con el administrador para reiniciar.</translation>
     </message>
     <message>
         <source>Setup completed Start unlock</source>
-        <translation type="unfinished"/>
+        <translation>Configuración completada. Iniciar desbloqueo.</translation>
     </message>
     <message>
         <source>Unlock with gesture password</source>
-        <translation type="unfinished"/>
+        <translation>Desbloquea con contraseña gestual</translation>
     </message>
     <message>
         <source>Minimum 4 points, please redraw</source>
-        <translation type="unfinished"/>
+        <translation>Mínimo 4 puntos, por favor vuelva a dibujar.</translation>
     </message>
     <message>
         <source>Contact the administrator to reset</source>
-        <translation type="unfinished"/>
+        <translation>Póngase en contacto con la administrador para restablecer</translation>
     </message>
 </context>
 </TS>
