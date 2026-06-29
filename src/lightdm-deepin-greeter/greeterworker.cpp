@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -556,9 +556,14 @@ void GreeterWorker::createAuthentication(const QString &account)
     if (user_ptr) {
         user_ptr->updatePasswordExpiredInfo();
     } else {
+#ifndef ENABLE_DSS_SNIPE
         // 域管账户第一次登录时，后端还未提供账户信息，获取不到用户密码过期数据
         // 需要通过glibc接口读取
         updatePasswordExpiredStateBySPName(account);
+#else
+        qCWarning(DDE_SHELL) << "createAuthentication: user not found in local model,"
+                            << "password expired info will NOT be synced. account:" << account;
+#endif
     }
 
     switch (m_model->getAuthProperty().FrameworkState) {
@@ -687,6 +692,14 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
             m_model->setAuthType(AT_None);
             return;
         }
+
+#ifdef ENABLE_DSS_SNIPE
+        // 新发现的用户（如域管用户首次登录），加入本地 model，
+        // 确保后续 createAuthentication 中 findUserByName 能找到
+        if (!originalUsePtr) {
+            m_model->addUser(userPath);
+        }
+#endif
     } else if (!user_ptr) {
         // 判断账户第一次登录时的有效性
         std::string str = account.toStdString();
@@ -882,10 +895,19 @@ void GreeterWorker::onAuthFinished()
     qCInfo(DDE_SHELL) << "Auth finished";
     if (m_greeter->inAuthentication()) {
         m_greeter->respond(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
+#ifndef ENABLE_DSS_SNIPE
         updatePasswordExpiredStateBySPName(m_account);
         if (m_model->currentUser()->expiredState() == User::ExpiredAlready) {
             changePasswd();
         }
+#else
+        if (m_model->currentUser()) {
+            m_model->currentUser()->updatePasswordExpiredInfo();
+            if (m_model->currentUser()->expiredState() == User::ExpiredAlready) {
+                changePasswd();
+            }
+        }
+#endif
     } else {
         qCWarning(DDE_SHELL) << "The lightdm is not in authentication!";
     }
