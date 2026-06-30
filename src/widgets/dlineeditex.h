@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -37,6 +37,7 @@ public slots:
     void startAnimation();
     void stopAnimation();
     void setEnableTableKeyEvent(bool enable);
+    void setSecureInputEnabled(bool enable);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -50,6 +51,7 @@ private:
     LoadSlider *m_loadSlider;
     QPropertyAnimation *m_animation;
     bool m_enableTableKeyEvent;
+    bool m_secureInputEnabled;
 };
 
 #endif // DLINEEDITEX_H

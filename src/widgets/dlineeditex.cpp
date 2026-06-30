@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,6 +11,7 @@
 #include <QPropertyAnimation>
 #include <QVariantAnimation>
 #include <QKeyEvent>
+#include <QKeySequence>
 
 LoadSlider::LoadSlider(QWidget *parent)
     : QWidget(parent)
@@ -39,6 +40,7 @@ DLineEditEx::DLineEditEx(QWidget *parent)
     , m_loadSlider(new LoadSlider(this))
     , m_animation(new QPropertyAnimation(m_loadSlider, "pos", m_loadSlider))
     , m_enableTableKeyEvent(false)
+    , m_secureInputEnabled(false)
 {
     setObjectName(QStringLiteral("DLineEditEx"));
     setAccessibleName(QStringLiteral("DLineEditEx"));
@@ -128,6 +130,14 @@ void DLineEditEx::setEnableTableKeyEvent(bool enable)
     m_enableTableKeyEvent = enable;
 }
 
+void DLineEditEx::setSecureInputEnabled(bool enable)
+{
+    if (m_secureInputEnabled == enable)
+        return;
+
+    m_secureInputEnabled = enable;
+}
+
 /**
  * @brief 重写 QLineEdit paintEvent 函数，实现当文本设置居中后，holderText 仍然显示的需求
  *
@@ -170,10 +180,20 @@ bool DLineEditEx::eventFilter(QObject *watched, QEvent *event)
         && event->type() == QEvent::InputMethodQuery) {
         return true;
     } else if ((watched == this || watched == this->lineEdit())
-                && event->type() == QEvent::KeyPress
-                && m_enableTableKeyEvent) {
+               && event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if (keyEvent->key() == Qt::Key_Tab
+
+        if (m_secureInputEnabled
+            && (keyEvent->matches(QKeySequence::Cut)
+                || keyEvent->matches(QKeySequence::Copy)
+                || keyEvent->matches(QKeySequence::Paste)
+                || keyEvent->matches(QKeySequence::Undo)
+                || keyEvent->matches(QKeySequence::Redo))) {
+            return true;
+        }
+
+        if (m_enableTableKeyEvent
+            && keyEvent->key() == Qt::Key_Tab
             && keyEvent->modifiers() == Qt::NoModifier
             && !this->text().isEmpty()) {
             emit this->returnPressed();
