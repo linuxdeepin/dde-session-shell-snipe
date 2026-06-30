@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -90,7 +90,7 @@ void AuthUKey::initConnections()
  */
 void AuthUKey::reset()
 {
-    m_lineEdit->clear();
+    m_lineEdit->setText(QString());
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
     setLineEditEnabled(true);
@@ -111,7 +111,7 @@ void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &re
         setAnimationState(false);
         setAuthStateStyle(LOGIN_CHECK);
         m_lineEdit->setAlert(false);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         setLineEditEnabled(false);
         setLineEditInfo(tr("Verification successful"), PlaceHolderText);
         m_showPrompt = true;
@@ -122,7 +122,7 @@ void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &re
     case AuthCommon::AS_Failure:
         setAnimationState(false);
         setAuthStateStyle(LOGIN_WAIT);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         m_lineEdit->setFocus();
         if (m_limitsInfo->locked) {
             m_lineEdit->setAlert(false);

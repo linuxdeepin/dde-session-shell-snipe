@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -137,7 +137,7 @@ void AuthSingle::initConnections()
  */
 void AuthSingle::reset()
 {
-    m_lineEdit->clear();
+    m_lineEdit->setText(QString());
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
     setLineEditEnabled(true);
@@ -157,14 +157,14 @@ void AuthSingle::setAuthState(const AuthCommon::AuthState state, const QString &
     case AS_Success:
         setAnimationState(false);
         m_lineEdit->setAlert(false);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         setLineEditEnabled(false);
         setLineEditInfo(result, PlaceHolderText);
         emit authFinished(AS_Success);
         break;
     case AS_Failure: {
         setAnimationState(false);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         if (m_limitsInfo->locked) {
             m_lineEdit->setAlert(false);
             setLineEditEnabled(false);
@@ -201,7 +201,7 @@ void AuthSingle::setAuthState(const AuthCommon::AuthState state, const QString &
         break;
     case AS_Prompt:
         setAnimationState(false);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         setLineEditEnabled(true);
         setLineEditInfo(result, PlaceHolderText);
         break;

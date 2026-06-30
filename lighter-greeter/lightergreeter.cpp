@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <QApplication>
@@ -286,7 +286,7 @@ void LighterGreeter::onShowMessage(QString messageText, int messageType)
     case QLightDM::Greeter::MessageType::MessageTypeError:
         // Clear password field, set alert flag, and show error message for error messages
         if (m_passwordEdit->isVisible()) {
-            m_passwordEdit->clear();
+            m_passwordEdit->setText(QString());
             m_passwordEdit->setAlert(true);
             m_passwordEdit->showAlertMessage(messageText);
             m_passwordEdit->setFocus();
@@ -305,7 +305,7 @@ void LighterGreeter::resetToNormalGreeter()
 void LighterGreeter::updateFocus()
 {
     // Clear password field
-    m_passwordEdit->clear();
+    m_passwordEdit->setText(QString());
 
     m_passwordEdit->setVisible(true);
 

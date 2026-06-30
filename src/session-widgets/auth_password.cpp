@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -318,7 +318,7 @@ void AuthPassword::initConnections()
  */
 void AuthPassword::reset()
 {
-    m_lineEdit->clear();
+    m_lineEdit->setText(QString());
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
     setFocusProxy(m_lineEdit);
@@ -348,7 +348,7 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
         setAnimationState(false);
         setAuthStateStyle(LOGIN_CHECK);
         m_lineEdit->setAlert(false);
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         setLineEditEnabled(false);
         setLineEditInfo(tr("Verification successful"), PlaceHolderText);
         m_showPrompt = true;
@@ -618,10 +618,10 @@ void AuthPassword::updateUnlockPrompt()
 {
     AuthModule::updateUnlockPrompt();
     if (m_integerMinutes == 1) {
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         m_lineEdit->setPlaceholderText(tr("Please try again 1 minute later"));
     } else if (m_integerMinutes > 1) {
-        m_lineEdit->clear();
+        m_lineEdit->setText(QString());
         m_lineEdit->setPlaceholderText(tr("Please try again %n minutes later", "", static_cast<int>(m_integerMinutes)));
     } else {
         setLineEditInfo(tr("Password"), PlaceHolderText);
