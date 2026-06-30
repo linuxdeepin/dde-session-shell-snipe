@@ -77,6 +77,7 @@ void LighterGreeter::initUI()
     m_userCbx->setMinimumWidth(300);
     m_passwordEdit->setMinimumWidth(300);
     m_passwordEdit->setContextMenuPolicy(Qt::NoContextMenu);
+    m_passwordEdit->setSecureInputEnabled(true);
     m_passwordEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_passwordEdit->setClearButtonEnabled(false);
     m_passwordEdit->setEchoMode(QLineEdit::Password);
