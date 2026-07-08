@@ -323,6 +323,8 @@ void AuthPassword::reset()
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
     setFocusProxy(m_lineEdit);
+    m_lineEdit->setEchoMode(QLineEdit::Password);
+    m_passwordShowBtn->setIcon(QIcon(PASSWORD_SHOWN));
     hidePasswordHintWidget();
     setLineEditEnabled(true);
     setLineEditInfo(tr("Password"), PlaceHolderText);
