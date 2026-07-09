@@ -34,7 +34,7 @@ SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
-path = ["src/widgets/img/**", "misc/images/**", "src/session-widgets/img/**", "plugins/examples/login-plugins/login-udcp/images/**"]
+path = ["src/widgets/img/**", "misc/images/**", "src/session-widgets/img/**", "plugins/examples/login-plugins/login-udcp/images/**", "plugins/login-gesture/icons/**", "plugins/login-gesture/resetDialog/success.svg"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
 SPDX-License-Identifier = "GPL-3.0-or-later"
@@ -46,7 +46,7 @@ SPDX-FileCopyrightText = "UnionTech Software Technology Co., Ltd."
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
 [[annotations]]
-path = ["lupdate.sh", "tests/test-recoverage.sh", "translate_generation.sh"]
+path = ["lupdate.sh", "tests/test-recoverage.sh", "translate_generation.sh", "plugins/login-gesture/lupdate.sh", "plugins/login-gesture/translate_generation.sh"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "None"
 SPDX-License-Identifier = "CC0-1.0"
