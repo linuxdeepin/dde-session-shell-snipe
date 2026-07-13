@@ -2,4 +2,5 @@ etc
 usr/bin
 usr/share
 usr/lib/*/security
+var/lib/dde-session-shell
 usr/libexec/deepin
