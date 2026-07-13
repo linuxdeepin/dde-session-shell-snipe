@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -39,7 +39,7 @@ void LoginTipsWindow::initUI()
     m_content->setAlignment(Qt::AlignCenter);
     m_content->setTextFormat(Qt::TextFormat::PlainText);
 
-    // 获取/usr/share/dde-session-shell/dde-session-shell.conf 配置信息
+    // 获取 session_ui_configs 中的 dde-session-shell.conf 配置信息
     m_contentString = findValueByQSettings<QString>(DDESESSIONCC::session_ui_configs, "Greeter", "tipsContent", "");
     m_content->setText(m_contentString);
 
@@ -58,7 +58,7 @@ void LoginTipsWindow::initUI()
     m_tipLabel->setAlignment(Qt::AlignCenter);
     m_tipLabel->setTextFormat(Qt::TextFormat::PlainText);
 
-    // 获取/usr/share/dde-session-shell/dde-session-shell.conf 配置信息
+    // 获取 session_ui_configs 中的 dde-session-shell.conf 配置信息
     m_tipString = findValueByQSettings<QString>(DDESESSIONCC::session_ui_configs, "Greeter", "tipsTitle", "");
     m_tipLabel->setText(m_tipString);
 

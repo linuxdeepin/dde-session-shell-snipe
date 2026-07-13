@@ -455,7 +455,11 @@ else ()
 endif ()
 
 # install conf files
-install(FILES files/dde-session-shell.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/)
+if (DDE_SESSION_SHELL_SNIPE)
+    install(FILES files/dde-session-shell.conf DESTINATION /var/lib/dde-session-shell/)
+else()
+    install(FILES files/dde-session-shell.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/)
+endif()
 install(FILES files/lightdm-deepin-greeter.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/deepin-authentication/privileges/)
 
 # services

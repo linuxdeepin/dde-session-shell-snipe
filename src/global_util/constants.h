@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,7 +38,11 @@ static const int MIN_AUTH_WIDGET_HEIGHT = 276; // 密码验证时整个登录控
 const QStringList session_ui_configs {
     "/etc/lightdm/lightdm-deepin-greeter.conf",
     "/etc/deepin/dde-session-ui.conf",
+#ifdef ENABLE_DSS_SNIPE
+    "/var/lib/dde-session-shell/dde-session-shell.conf",
+#else
     "/usr/share/dde-session-shell/dde-session-shell.conf",
+#endif
     "/usr/share/dde-session-ui/dde-session-ui.conf"
 };
 
