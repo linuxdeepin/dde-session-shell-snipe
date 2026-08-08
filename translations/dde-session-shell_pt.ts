@@ -84,19 +84,19 @@
     <name>AuthPasskey</name>
     <message>
         <source>Please plug in the security key</source>
-        <translation type="unfinished"/>
+        <translation>Por favor introduza a chave de segurança </translation>
     </message>
     <message>
         <source>Verification successful</source>
-        <translation type="unfinished"/>
+        <translation>Verificação bem sucedida</translation>
     </message>
     <message>
         <source>Verification failed</source>
-        <translation type="unfinished"/>
+        <translation>Verificação falhada</translation>
     </message>
     <message>
         <source>Identifying the security key</source>
-        <translation type="unfinished"/>
+        <translation>A identificar a chave de segurança</translation>
     </message>
 </context>
 <context>
@@ -204,7 +204,7 @@
     </message>
     <message numerus="yes">
         <source>Your password will expire in %n days, please change it timely</source>
-        <translation type="unfinished"><numerusform></numerusform><numerusform></numerusform><numerusform></numerusform></translation>
+        <translation><numerusform>A sua palavra-passe expirará dentro de %n dias, por favor altere-a atempadamente</numerusform><numerusform>A sua palavra-passe expirará dentro de %n dias. Altere-a atempadamente</numerusform><numerusform>A sua palavra-passe vai expirar dentro de %1 dias. Por favor altere-a atempadamente.</numerusform></translation>
     </message>
     <message>
         <source>Password expired, please change</source>
@@ -212,18 +212,18 @@
     </message>
     <message>
         <source>Your password has expired. Please contact the administrator to change it</source>
-        <translation type="unfinished"/>
+        <translation>A sua palavra-passe expirou. Por favor contacte o administrador para a alterar</translation>
     </message>
     <message>
         <source>Terminal locked, please contact administrator</source>
-        <translation type="unfinished"/>
+        <translation>Terminal trancado, por favor contacte o administrador</translation>
     </message>
 </context>
 <context>
     <name>DeepinAuthFramework</name>
     <message>
         <source>Wrong Password</source>
-        <translation type="unfinished"/>
+        <translation>Palavra-passe Errada</translation>
     </message>
 </context>
 <context>
@@ -245,14 +245,14 @@
     </message>
     <message>
         <source>The reason of inhibit.</source>
-        <translation type="unfinished"/>
+        <translation>A razão da inibição</translation>
     </message>
 </context>
 <context>
     <name>LighterGreeter</name>
     <message>
         <source>Standard Mode</source>
-        <translation type="unfinished"/>
+        <translation>Modo Padrão</translation>
     </message>
 </context>
 <context>
@@ -335,11 +335,11 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Atualizar e Encerrar</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Atualizar e Reiniciar</translation>
     </message>
 </context>
 <context>
@@ -372,30 +372,30 @@
     <name>UpdateWorker</name>
     <message>
         <source>Update</source>
-        <translation type="unfinished"/>
+        <translation>Atualizar</translation>
     </message>
     <message>
         <source>Please plug in and then install updates.</source>
-        <translation type="unfinished"/>
+        <translation>Por favor insira e depois instale atualizações.</translation>
     </message>
 </context>
 <context>
     <name>UsersWithTheSameName</name>
     <message>
         <source>Return</source>
-        <translation type="unfinished"/>
+        <translation>Voltar</translation>
     </message>
     <message>
         <source>Please select the account for login</source>
-        <translation type="unfinished"/>
+        <translation>Por favor selecione a conta para início de sessão</translation>
     </message>
     <message>
         <source>Local Account</source>
-        <translation type="unfinished"/>
+        <translation>Conta Local</translation>
     </message>
     <message>
         <source>Domain Account</source>
-        <translation type="unfinished"/>
+        <translation>Conta de Domínio</translation>
     </message>
 </context>
 <context>
@@ -458,30 +458,30 @@
     </message>
     <message>
         <source>Update and Shut Down</source>
-        <translation type="unfinished"/>
+        <translation>Atualizar e Encerrar</translation>
     </message>
     <message>
         <source>Update and Reboot</source>
-        <translation type="unfinished"/>
+        <translation>Atualizar e Reiniciar</translation>
     </message>
     <message>
         <source>Closing the programs and shutting down, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>A fechar os programas e a encerrar, por favor aguarde...</translation>
     </message>
     <message>
         <source>Closing the programs and rebooting, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>A fechar os programas e a reiniciar, por favor aguarde...</translation>
     </message>
     <message>
         <source>Closing the programs and logging out, please wait...</source>
-        <translation type="unfinished"/>
+        <translation>A fechar os programas a sair da sessão, por favor aguarde...</translation>
     </message>
 </context>
 <context>
     <name>dss::module::AssistLoginWidget</name>
     <message>
         <source>Automatic login</source>
-        <translation type="unfinished"/>
+        <translation>Início de sessão automático</translation>
     </message>
 </context>
 <context>
