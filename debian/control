@@ -38,8 +38,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, ${dist:Depends},
  xsettingsd,
  onboard
 Provides: lightdm-greeter
-Recommends: dss-network-plugin,
- dde-network-dialog
+Recommends: dss-network-plugin
 Conflicts: dde-workspace,
  deepin-notifications,
  dde-session-ui (<< 5.0.0),
