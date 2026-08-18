@@ -1,3 +1,10 @@
+dde-session-shell (6.0.66) unstable; urgency=medium
+
+  * chore: remove deprecated dde-network-dialog
+  * sync: from linuxdeepin/dde-session-shell
+
+ -- zhangkun <zhangkun2@uniontech.com>  Tue, 18 Aug 2026 13:26:01 +0800
+
 dde-session-shell (6.0.65) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
