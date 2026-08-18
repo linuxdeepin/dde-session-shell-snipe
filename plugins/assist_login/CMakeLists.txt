@@ -20,4 +20,4 @@ aux_source_directory(. SRCS)
 add_library(${LIB_NAME} SHARED ${SRCS})
 
 add_subdirectory(interface)
-install(TARGETS ${LIB_NAME} LIBRARY DESTINATION lib/dde-session-shell/modules)
+install(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/dde-session-shell/modules)
