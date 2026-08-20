@@ -353,19 +353,19 @@
     <name>UdcpMFALoginWidget</name>
     <message>
         <source>发送验证码</source>
-        <translation type="unfinished"/>
+        <translation>Enviar código de verificação</translation>
     </message>
     <message>
         <source>请输入手机号</source>
-        <translation type="unfinished"/>
+        <translation>Introduza o número de telemóvel</translation>
     </message>
     <message>
         <source>请输入验证码</source>
-        <translation type="unfinished"/>
+        <translation>Introduza o código de verificação</translation>
     </message>
     <message>
         <source>获取验证码</source>
-        <translation type="unfinished"/>
+        <translation>Obter código de verificação</translation>
     </message>
 </context>
 <context>
