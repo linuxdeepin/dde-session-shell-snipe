@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -41,6 +41,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     , m_hotZoneInter(new DBusHotzone(DSS_DBUS::zoneService, DSS_DBUS::zonePath, QDBusConnection::sessionBus(), this))
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
+    , m_wakeUpAuthTimer(new QTimer(this))
     , m_sessionManagerInter(new SessionManagerInter(DSS_DBUS::sessionManagerService, DSS_DBUS::sessionManagerPath, QDBusConnection::sessionBus(), this))
     , m_switchosInterface(new HuaWeiSwitchOSInterface("com.huawei", "/com/huawei/switchos", QDBusConnection::sessionBus(), this))
     , m_kglobalaccelInter(nullptr)
@@ -54,6 +55,15 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     m_limitsUpdateTimer->setInterval(50);
 
     m_resetSessionTimer->setInterval(15000);
+
+    // On standby resume, ActiveChanged and PrepareForSleep are reported back to back;
+    // the 300ms single-shot timer coalesces signal-triggered authentication requests
+    // that occur within 300ms.
+    m_wakeUpAuthTimer->setSingleShot(true);
+    m_wakeUpAuthTimer->setInterval(300);
+    connect(m_wakeUpAuthTimer, &QTimer::timeout, this, [this](){
+        createAuthentication(m_model->currentUser()->name());
+    });
 
 #ifndef ENABLE_DSS_SNIPE
     if (m_gsettings != nullptr && m_gsettings->keys().contains("authResetTime")){
@@ -147,8 +157,9 @@ void LockWorker::initConnections()
         }
 
         if (active && m_model->visible()) {
-            createAuthentication(m_model->currentUser()->name());
+            m_wakeUpAuthTimer->start();
         } else {
+            m_wakeUpAuthTimer->stop();
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
         }
@@ -193,6 +204,7 @@ void LockWorker::initConnections()
 
         if (isSleep) {
             checkSystemWakeupTimer->start();
+            m_wakeUpAuthTimer->stop();
             doSuspendTime = QDateTime::currentDateTime();
             m_model->setIsBlackMode(true);
             // 休眠时按需拉起锁屏,注意此时是被动响应休眠
@@ -211,11 +223,12 @@ void LockWorker::initConnections()
                 if (m_login1SessionSelf->active()) {
                     endAuthentication(m_account, AT_All);
                     destroyAuthentication(m_account);
-                    createAuthentication(m_model->currentUser()->name());
+                    m_wakeUpAuthTimer->start();
                 }
             } else {
                 // 处理其他流程设置的可见状态
                 m_model->setVisible(false);
+                m_wakeUpAuthTimer->stop();
             }
             // 避免在电源选项处理中设置密码模式，会导致唤醒后闪锁屏
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
