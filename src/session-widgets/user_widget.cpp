@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -44,6 +44,7 @@ void UserWidget::initUI()
     m_avatar->setFocusPolicy(Qt::NoFocus);
     m_avatar->setIcon(m_user->avatar());
     m_avatar->setAvatarSize(UserAvatar::AvatarSmallSize);
+    m_avatar->setObjectName("Avatar_2");
 
     /* 用户全名 */
     m_displayNameWidget->setAccessibleName(QStringLiteral("NameWidget"));
