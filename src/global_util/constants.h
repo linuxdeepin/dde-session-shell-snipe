@@ -87,6 +87,7 @@ const QString SHOW_MEDIA_WIDGET = "showMediaWidget";
 
 // 系统版本显示配置
 const QString SHOW_SYSTEM_VERSION = QStringLiteral("showSystemVersion");
+const QString SYSTEM_VERSION_TEXT = QStringLiteral("systemVersionText");
 // 第三方logo相关配置
 const QString CUSTOM_LOGO_PATH = QStringLiteral("customLogoPath");
 const QString CUSTOM_LOGO_POS = QStringLiteral("customLogoPos");

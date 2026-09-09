@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -81,13 +81,14 @@ void LogoWidget::initUI()
       return;
     }
 
-    m_logoVersionLabel->setText(getVersion());
+    updateVersionText(DConfigHelper::instance()->getConfig(SYSTEM_VERSION_TEXT, "").toString());
     logoLayout->addWidget(m_logoVersionLabel);
 
     updateStyle(":/skin/login.qss", m_logoVersionLabel);
     m_logoVersionLabel->setVisible(DConfigHelper::instance()->getConfig(SHOW_SYSTEM_VERSION, true).toBool());
 
     DConfigHelper::instance()->bind(this, SHOW_SYSTEM_VERSION, &LogoWidget::onDConfigPropertyChanged);
+    DConfigHelper::instance()->bind(this, SYSTEM_VERSION_TEXT, &LogoWidget::onDConfigPropertyChanged);
     DConfigHelper::instance()->bind(this, CUSTOM_LOGO_PATH, &LogoWidget::onDConfigPropertyChanged);
     DConfigHelper::instance()->bind(this, CUSTOM_LOGO_POS, &LogoWidget::onDConfigPropertyChanged);
 }
@@ -112,6 +113,11 @@ QString LogoWidget::getVersion()
     return version;
 }
 
+void LogoWidget::updateVersionText(const QString &customText)
+{
+    m_logoVersionLabel->setText(customText.isEmpty() ? getVersion() : customText);
+}
+
 /**
  * @brief LogoWidget::updateLocale
  * 将翻译文件与用户选择的语言对应
@@ -123,7 +129,7 @@ void LogoWidget::updateLocale(const QString &locale)
     if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
         return;
     }
-    m_logoVersionLabel->setText(getVersion());
+    updateVersionText(DConfigHelper::instance()->getConfig(SYSTEM_VERSION_TEXT, "").toString());
 }
 
 void LogoWidget::resizeEvent(QResizeEvent *event)
@@ -149,6 +155,8 @@ void LogoWidget::onDConfigPropertyChanged(const QString &key, const QVariant &va
 
     if (key == SHOW_SYSTEM_VERSION) {
         obj->m_logoVersionLabel->setVisible(value.toBool());
+    } else if (key == SYSTEM_VERSION_TEXT) {
+        obj->updateVersionText(value.toString());
     } else if (key == CUSTOM_LOGO_PATH) {
         obj->loadCustomLogo();
         obj->updateCustomLogoPos();
