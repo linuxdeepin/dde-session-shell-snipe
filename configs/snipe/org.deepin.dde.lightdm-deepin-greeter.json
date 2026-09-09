@@ -212,6 +212,16 @@
             "permissions": "readwrite",
             "visibility": "private"
         },
+        "systemVersionText":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "SystemVersionText",
+            "name[zh_CN]": "自定义系统版本信息",
+            "description[zh_CN]": "登录/锁屏界面左下角logo右侧显示的系统版本及类型信息；为空时显示系统默认的版本号+系统类型，不为空时显示配置的文本内容。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
         "designatedLoginPlugin":{
             "value": "",
             "serial": 0,

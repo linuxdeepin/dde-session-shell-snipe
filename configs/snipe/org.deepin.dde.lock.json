@@ -162,6 +162,16 @@
             "permissions": "readwrite",
             "visibility": "private"
         },
+        "systemVersionText":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "SystemVersionText",
+            "name[zh_CN]": "自定义系统版本信息",
+            "description[zh_CN]": "登录/锁屏界面左下角logo右侧显示的系统版本及类型信息；为空时显示系统默认的版本号+系统类型，不为空时显示配置的文本内容。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
         "delayInhibitIgnoreList":{
             "value": [],
             "serial": 0,
@@ -279,6 +289,16 @@
             "name": "LongPressDisplayPassword",
             "name[zh_CN]": "是否长按小眼睛显示密码",
             "description": "是否长按小眼睛显示密码，true-鼠按长按小眼睛才显示密码，false-鼠标点击一下就一直显示密码",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "enableShutdownBlackWidget":{
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "enableShutdownBlackWidget",
+            "name[zh_CN]": "是否打开关机、重启黑屏界面",
+            "description": "是否打开关机、重启黑屏界面；false：不开，true：开启。默认值为true；",
             "permissions": "readwrite",
             "visibility": "private"
         }

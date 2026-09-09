@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -21,6 +21,7 @@ public:
 
     void updateLocale(const QString &locale);
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject* objPtr);
+    void updateVersionText(const QString &customText);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
