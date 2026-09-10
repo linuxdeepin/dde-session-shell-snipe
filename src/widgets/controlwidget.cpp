@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -130,6 +130,7 @@ void ControlWidget::initKeyboardLayoutList()
     const QString language = m_curUser->keyboardLayout();
     m_kbLayoutListView = new KBLayoutListView(language, this);
     m_kbLayoutListView->setAccessibleName(QStringLiteral("KbLayoutlistview"));
+    m_kbLayoutListView->setObjectName(QStringLiteral("KbLayoutlistview"));
     m_kbLayoutListView->initData(m_curUser->keyboardLayoutList());
     m_kbLayoutListView->setMinimumWidth(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH);
     m_kbLayoutListView->setMaximumSize(DDESESSIONCC::KEYBOARD_LAYOUT_WIDTH, DDESESSIONCC::LAYOUT_BUTTON_HEIGHT * 7);
@@ -179,9 +180,11 @@ void ControlWidget::initUI()
     m_sessionBtn->setAutoExclusive(true);
     m_sessionBtn->setBackgroundRole(DPalette::Button);
     m_sessionBtn->hide();
+    m_sessionBtn->setObjectName("SessionBtn");
 
     m_keyboardBtn = new FloatingButton(this);
     m_keyboardBtn->setAccessibleName("KeyboardLayoutBtn");
+    m_keyboardBtn->setObjectName("KeyboardLayoutBtn");
     m_keyboardBtn->setFixedSize(BUTTON_SIZE);
     m_keyboardBtn->setAutoExclusive(true);
     m_keyboardBtn->setBackgroundRole(DPalette::Button);
@@ -198,6 +201,7 @@ void ControlWidget::initUI()
 
     m_virtualKBBtn = new FloatingButton(this);
     m_virtualKBBtn->setAccessibleName("VirtualKeyboardBtn");
+    m_virtualKBBtn->setObjectName("VirtualKeyboardBtn");
     m_virtualKBBtn->setIcon(QIcon::fromTheme(":/img/screen_keyboard_hover.svg"));
     m_virtualKBBtn->hide();
     m_virtualKBBtn->setIconSize(BUTTON_ICON_SIZE);
@@ -208,6 +212,7 @@ void ControlWidget::initUI()
 
     m_switchUserBtn = new FloatingButton(this);
     m_switchUserBtn->setAccessibleName("SwitchUserBtn");
+    m_switchUserBtn->setObjectName("SwitchUserBtn");
     m_switchUserBtn->setIcon(QIcon::fromTheme(":/img/bottom_actions/userswitch_hover.svg"));
     m_switchUserBtn->setIconSize(BUTTON_ICON_SIZE);
     m_switchUserBtn->setFixedSize(BUTTON_SIZE);
@@ -217,6 +222,7 @@ void ControlWidget::initUI()
 
     m_powerBtn = new FloatingButton(this);
     m_powerBtn->setAccessibleName("PowerBtn");
+    m_powerBtn->setObjectName("PowerBtn");
     m_powerBtn->setIcon(QIcon(":/img/bottom_actions/shutdown_hover.svg"));
     m_powerBtn->setIconSize(BUTTON_ICON_SIZE);
     m_powerBtn->setFixedSize(BUTTON_SIZE);
@@ -310,6 +316,7 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
     button->setFixedSize(QSize(52, 52));
     button->setAutoExclusive(true);
     button->setBackgroundRole(DPalette::Button);
+    button->setObjectName("TrayModuleBtn_" + trayModule->key());
 
     QWidget *trayWidget = trayModule->itemWidget();
     if (trayWidget) {
@@ -359,6 +366,7 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
             action->setData(itemObj.value("itemId").toString());
             action->setEnabled(itemObj.value("isActive").toBool());
             m_contextMenu->addAction(action);
+            m_contextMenu->setObjectName("ContextMenu");
         }
         m_doGrabKeyboard = true;
         QAction *action = m_contextMenu->exec(QCursor::pos());

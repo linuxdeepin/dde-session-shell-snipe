@@ -61,6 +61,7 @@ void AuthSingle::initUI()
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
+    m_lineEdit->setObjectName("LineEdit_2");
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
 #else
@@ -72,6 +73,7 @@ void AuthSingle::initUI()
     passwordLayout->setSpacing(0);
     /* 键盘布局按钮 */
     m_keyboardBtn->setAccessibleName(QStringLiteral("KeyboardButton"));
+    m_keyboardBtn->setObjectName("KeyboardButton");
     m_keyboardBtn->setContentsMargins(0, 0, 0, 0);
     m_keyboardBtn->setFocusPolicy(Qt::NoFocus);
     m_keyboardBtn->setCursor(Qt::ArrowCursor);
@@ -87,6 +89,7 @@ void AuthSingle::initUI()
     passwordLayout->addWidget(m_capsLock, 0, Qt::AlignRight | Qt::AlignVCenter);
     /* 密码提示 */
     m_passwordHintBtn->setAccessibleName(QStringLiteral("PasswordHintButton"));
+    m_passwordHintBtn->setObjectName("PasswordHintButton");
     m_passwordHintBtn->setContentsMargins(0, 0, 0, 0);
     m_passwordHintBtn->setFocusPolicy(Qt::NoFocus);
     m_passwordHintBtn->setCursor(Qt::ArrowCursor);
@@ -478,9 +481,13 @@ void AuthSingle::showResetPasswordMessage()
         iconButton->installEventFilter(this);
         m_iconButton = iconButton;
     }
+    if (m_iconButton) {
+        m_iconButton->setObjectName("IconButton_2");
+    }
     m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
+    suggestButton->setObjectName("SuggestButton_2");
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [this]{

@@ -42,6 +42,7 @@ void AuthUKey::initUI()
     m_lineEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
+    m_lineEdit->setObjectName("LineEdit_3");
     setLineEditInfo(tr("Enter your PIN"), PlaceHolderText);
 
     QHBoxLayout *UKeyLayout = new QHBoxLayout(m_lineEdit->lineEdit());

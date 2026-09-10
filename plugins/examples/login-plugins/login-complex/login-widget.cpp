@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -27,6 +27,7 @@ void LoginWidget::init()
     userNameLabel->setFixedHeight(35);
     QLineEdit *userNameEdit = new QLineEdit(this);
     userNameEdit->setFixedHeight(35);
+    userNameEdit->setObjectName("UserNameEdit");
     QHBoxLayout *userNameLayout = new QHBoxLayout();
     userNameLayout->addWidget(userNameLabel, 3, Qt::AlignRight);
     userNameLayout->addSpacing(15);
@@ -37,6 +38,7 @@ void LoginWidget::init()
     tokenLabel->setFixedHeight(35);
     QLineEdit *tokenEdit = new QLineEdit(this);
     tokenEdit->setFixedHeight(35);
+    tokenEdit->setObjectName("TokenEdit");
     QHBoxLayout *tokenLayout = new QHBoxLayout();
     tokenLayout->addWidget(tokenLabel, 3, Qt::AlignRight);
     tokenLayout->addSpacing(15);
@@ -54,6 +56,7 @@ void LoginWidget::init()
     sendButton->setFixedSize(120, 35);
     sendButton->setEnabled(false);
     sendButton->setDefault(true);
+    sendButton->setObjectName("SendButton");
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     setLayout(layout);

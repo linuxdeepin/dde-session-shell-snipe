@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -74,6 +74,7 @@ void AuthWidget::initUI()
     m_userAvatar->setFocusPolicy(Qt::NoFocus);
     m_userAvatar->setIcon(m_user->avatar());
     m_userAvatar->setAvatarSize(UserAvatar::AvatarLargeSize);
+    m_userAvatar->setObjectName("UserAvatar");
     /* 用户名输入框 */
     m_accountEdit = new DLineEditEx(this);
     m_accountEdit->setContextMenuPolicy(Qt::NoContextMenu);
@@ -81,6 +82,7 @@ void AuthWidget::initUI()
     m_accountEdit->setClearButtonEnabled(false);
     m_accountEdit->setPlaceholderText(tr("Account"));
     m_accountEdit->setEnableTableKeyEvent(true);
+    m_accountEdit->setObjectName("AccountEdit");
 
     // 账户名有效字符使用dsg配置
     const QString accountExpression = DConfigHelper::instance()->getConfig("accountExpression", "[a-zA-Z0-9-_@]+$").toString();
@@ -107,6 +109,7 @@ void AuthWidget::initUI()
         m_lockButton->setIcon(DStyle::SP_ArrowNext);
     }
     m_lockButton->setAccessibleName("LockButton");
+    m_lockButton->setObjectName("LockButton");
     /* 模糊背景 */
     m_blurEffectWidget->setMaskColor(DBlurEffectWidget::LightColor);
     m_blurEffectWidget->setMaskAlpha(BlurTransparency);
