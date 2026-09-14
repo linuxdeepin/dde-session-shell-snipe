@@ -97,6 +97,7 @@ void AuthSingle::initUI()
     passwordLayout->addWidget(m_passwordHintBtn, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     mainLayout->addWidget(m_lineEdit);
+    setLineEditInfo(tr("Password"), PlaceHolderText);
     updatePasswordTextMargins();
 }
 
@@ -204,7 +205,7 @@ void AuthSingle::setAuthState(const AuthCommon::AuthState state, const QString &
         setAnimationState(false);
         m_lineEdit->setText(QString());
         setLineEditEnabled(true);
-        setLineEditInfo(result, PlaceHolderText);
+        setLineEditInfo(tr("Password"), PlaceHolderText);
         break;
     case AS_Started:
         break;
