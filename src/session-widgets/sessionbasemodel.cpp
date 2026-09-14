@@ -123,7 +123,7 @@ void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
 
     m_powerAction = powerAction;
 
-    if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
+    if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown || powerAction == SessionBaseModel::PowerAction::RequireLogout))
         Q_EMIT shutdownkModeChanged(true);
 
     emit onPowerActionChanged(powerAction);
