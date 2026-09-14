@@ -280,7 +280,11 @@ double getScaleFormConfig()
 static void setQtScaleFactorEnv() {
     double scaleFactor = 0.0;
 #ifdef ENABLE_DSS_SNIPE
-    scaleFactor = getScaleFactor();
+    if (isScaleConfigExists()) {
+        scaleFactor = getScaleFormConfig();
+    } else {
+        scaleFactor = getScaleFactor();
+    }
 #else
     scaleFactor = IsWayland ? getScaleFormConfig() : getScaleFactor();
 #endif
