@@ -37,7 +37,8 @@ void AuthPasskey::initUI()
 
     /* 文案提示 */
     m_textLabel->setText(tr("Please plug in the security key"));
-    m_textLabel->setWordWrap(true);
+    m_textLabel->setWordWrap(false);
+    m_textLabel->setElideMode(Qt::ElideNone);
 
     /* 旋转提示和文案提示布局 */
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
