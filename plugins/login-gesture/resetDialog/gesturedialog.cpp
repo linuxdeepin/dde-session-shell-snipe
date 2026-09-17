@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -92,6 +92,7 @@ QWidget* GestureDialog::createCancelButton()
     QHBoxLayout *layout = new QHBoxLayout(cancelWidget);
     layout->setContentsMargins(10, 0, 10, 10);
     m_confirmButton = new QPushButton(TranslastionDoc::instance()->getDoc(DocIndex::Cancel), cancelWidget);
+    m_confirmButton->setObjectName("ConfirmButton");
     m_confirmButton->setAttribute(Qt::WA_NoMousePropagation);
     layout->addWidget(m_confirmButton);
 

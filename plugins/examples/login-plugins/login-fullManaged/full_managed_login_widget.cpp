@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -32,6 +32,7 @@ void FullManagedLoginWidget::initUI()
     m_userNameLabel->setFixedHeight(35);
 
     m_userNameEdit = new QLineEdit(this);
+    m_userNameEdit->setObjectName("UserNameEdit");
     m_userNameEdit->setFixedHeight(35);
 
     QHBoxLayout *m_userNameLayout = new QHBoxLayout();
@@ -44,6 +45,7 @@ void FullManagedLoginWidget::initUI()
     m_tokenLabel->setFixedHeight(35);
 
     m_tokenEdit = new QLineEdit(this);
+    m_tokenEdit->setObjectName("TokenEdit");
     m_tokenEdit->setFixedHeight(35);
 
     QHBoxLayout *tokenLayout = new QHBoxLayout();
@@ -63,8 +65,10 @@ void FullManagedLoginWidget::initUI()
     m_sendButton->setFixedSize(120, 35);
     m_sendButton->setEnabled(false);
     m_sendButton->setDefault(true);
+    m_sendButton->setObjectName("SendButton");
 
     m_disMissButton = new QPushButton("deactive", this);
+    m_disMissButton->setObjectName("DisMissButton");
     m_disMissButton->setFixedSize(120, 35);
     m_disMissButton->setEnabled(true);
     m_disMissButton->setDefault(true);
