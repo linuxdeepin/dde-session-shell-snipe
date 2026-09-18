@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -68,6 +68,7 @@ void SFAWidget::initUI()
     /* 重试按钮 */
     m_retryButton->setIcon(QIcon(":/img/bottom_actions/reboot.svg"));
     m_retryButton->hide();
+    m_retryButton->setObjectName("RetryButton");
 
     m_mainLayout->setContentsMargins(10, 0, 10, 0);
     m_mainLayout->setSpacing(0);
@@ -407,6 +408,7 @@ void SFAWidget::initSingleAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("PamAuthBtn");
     m_authButtons.insert(AT_PAM, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -519,6 +521,7 @@ void SFAWidget::initPasswdAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("PasswordAuthBtn");
     m_authButtons.insert(AT_Password, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -568,6 +571,7 @@ void SFAWidget::initFingerprintAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("FingerprintAuthBtn");
     m_authButtons.insert(AT_Fingerprint, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -616,6 +620,7 @@ void SFAWidget::initPasskeyAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("PasskeyAuthBtn");
     m_authButtons.insert(AT_Passkey, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -672,6 +677,7 @@ void SFAWidget::initUKeyAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("UkeyAuthBtn");
     m_authButtons.insert(AT_Ukey, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -733,6 +739,7 @@ void SFAWidget::initFaceAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("FaceAuthBtn");
     m_authButtons.insert(AT_Face, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -799,6 +806,7 @@ void SFAWidget::initIrisAuth()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("IrisAuthBtn");
     m_authButtons.insert(AT_Iris, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
@@ -1262,6 +1270,7 @@ void SFAWidget::initAccount()
     btn->setIconSize(AuthButtonIconSize);
     btn->setFixedSize(AuthButtonSize);
     btn->setFocusPolicy(Qt::NoFocus);
+    btn->setObjectName("AccountAuthBtn");
     m_authButtons.insert(AT_None, btn);
     connect(btn, &ButtonBoxButton::toggled, this, [this](const bool checked) {
         if (checked) {
