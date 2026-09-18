@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -58,6 +58,7 @@ void PasswordErrorTipsWidget::initUi()
     mainLay->addWidget(m_tipsWidget, 0, Qt::AlignmentFlag::AlignTop | Qt::AlignmentFlag::AlignLeft);
 
     m_detailTextEdit->hide();
+    m_detailTextEdit->setObjectName("DetailTextEdit");
     QFont detailFont;
     detailFont.setFamily("Noto Sans CJK SC-Thin");
     detailFont.setWeight(QFont::ExtraLight);

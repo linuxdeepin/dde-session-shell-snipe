@@ -103,6 +103,7 @@ void AuthPassword::initUI()
     m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
 #endif
     DFontSizeManager::instance()->bind(m_lineEdit, DFontSizeManager::T6);
+    m_lineEdit->setObjectName("LineEdit");
 
     setLineEditInfo(tr("Password"), PlaceHolderText);
 
@@ -125,6 +126,7 @@ void AuthPassword::initUI()
 
     /*显示密码*/
     m_passwordShowBtn->setAccessibleName(QStringLiteral("PasswordShow"));
+    m_passwordShowBtn->setObjectName("PasswordShow");
     m_passwordShowBtn->setContentsMargins(0, 0, 0, 0);
     m_passwordShowBtn->setFocusPolicy(Qt::NoFocus);
     m_passwordShowBtn->setCursor(Qt::ArrowCursor);
@@ -136,6 +138,7 @@ void AuthPassword::initUI()
 
     /* 密码提示 */
     m_passwordHintBtn->setAccessibleName(QStringLiteral("PasswordHint"));
+    m_passwordHintBtn->setObjectName("PasswordHint");
     m_passwordHintBtn->setContentsMargins(0, 0, 0, 0);
     m_passwordHintBtn->setFocusPolicy(Qt::NoFocus);
     m_passwordHintBtn->setCursor(Qt::ArrowCursor);
@@ -734,9 +737,13 @@ void AuthPassword::showResetPasswordMessage()
         iconButton->installEventFilter(this);
         m_iconButton = iconButton;
     }
+    if (m_iconButton) {
+        m_iconButton->setObjectName("IconButton");
+    }
     m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));
     DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
+    suggestButton->setObjectName("SuggestButton");
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
     m_resetPasswordFloatingMessage->setMessage(tr("Forgot password?"));
     connect(suggestButton, &QPushButton::clicked, this, [this] {

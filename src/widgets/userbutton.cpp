@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -50,6 +50,7 @@ void UserButton::initUI()
     m_userAvatar = new UserAvatar;
     m_userAvatar->setAvatarSize(AvatarLargeSize);
     m_userAvatar->setFixedSize(120, 120);
+    m_userAvatar->setObjectName("UserAvatar_2");
 
     m_userNameLabel = new QLabel;
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,6 +38,7 @@ void UserPanel::initUI()
     m_typeLabel->setElideMode(Qt::ElideRight);
 
     m_avatar->setAvatarSize(UserAvatarSize);
+    m_avatar->setObjectName("Avatar_3");
     m_mainLayout->setSpacing(12);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
     QWidget *rightWidget = new QWidget;
