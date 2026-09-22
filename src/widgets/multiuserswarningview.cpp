@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -43,6 +43,7 @@ MultiUsersWarningView::MultiUsersWarningView(SessionBaseModel::PowerAction inhib
     m_userList->setGridSize(UserListItemSize);
     m_userList->setFocusPolicy(Qt::NoFocus);
     m_userList->setStyleSheet("background-color:transparent;");
+    m_userList->setObjectName("UserList");
     DFontSizeManager::instance()->bind(m_warningTip, DFontSizeManager::T5);
 
     m_warningTip->setFixedWidth(300);
