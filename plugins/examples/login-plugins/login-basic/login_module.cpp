@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -63,6 +63,7 @@ void LoginModule::initUI()
     m_loginWidget->setLayout(new QHBoxLayout);
     QPushButton *passButton = new QPushButton("Validation passed", m_loginWidget);
     passButton->setFixedSize(160, 40);
+    passButton->setObjectName("PassButton");
     m_loginWidget->layout()->addWidget(passButton);
 
     connect(passButton, &QPushButton::clicked, this, [this] {

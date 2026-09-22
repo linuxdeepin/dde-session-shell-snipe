@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -53,6 +53,7 @@ void ModuleWidget::init()
     m_tip->setFixedHeight(26);
     m_startEnrollBtn = new DPushButton;
     m_startEnrollBtn->setFixedSize(200, 54);
+    m_startEnrollBtn->setObjectName("StartEnrollBtn");
 
     m_title->setVisible(false);
     m_tip->setVisible(false);

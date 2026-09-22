@@ -75,6 +75,7 @@ void LighterGreeter::initUI()
 
     m_loginFrame->setMaximumSize(1152, 300);
     m_userCbx->setMinimumWidth(300);
+    m_userCbx->setObjectName("UserCbx");
     m_passwordEdit->setMinimumWidth(300);
     m_passwordEdit->setContextMenuPolicy(Qt::NoContextMenu);
     m_passwordEdit->setSecureInputEnabled(true);
@@ -83,8 +84,10 @@ void LighterGreeter::initUI()
     m_passwordEdit->setEchoMode(QLineEdit::Password);
     m_passwordEdit->setFocusPolicy(Qt::StrongFocus);
     m_passwordEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+    m_passwordEdit->setObjectName("PasswordEdit");
 
     m_loginBtn->setIcon(DStyle::SP_LockElement);
+    m_loginBtn->setObjectName("LoginBtn");
 
     auto lockPalette = m_loginBtn->palette();
     QColor color = lockPalette.color(QPalette::Active, QPalette::Highlight);
@@ -95,6 +98,7 @@ void LighterGreeter::initUI()
     m_avatar->setFocusPolicy(Qt::NoFocus);
     m_avatar->setIcon("/var/lib/AccountsService/icons/guest.png");
     m_avatar->setAvatarSize(AVATAR_ICON_SIZE);
+    m_avatar->setObjectName("Avatar");
 
     layout->addStretch();
     layout->addWidget(m_loginFrame, 0, Qt::AlignCenter);
@@ -123,6 +127,7 @@ void LighterGreeter::initUI()
     hLayout->setContentsMargins(SPACING, SPACING, SPACING, SPACING);
     hLayout->addWidget(m_sessionCbx, 0, Qt::AlignCenter);
     hLayout->addWidget(m_switchGreeter, 0, Qt::AlignCenter);
+    m_switchGreeter->setObjectName("SwitchGreeter");
 
     controlFrame->setMaskColor(DBlurEffectWidget::LightColor);
     controlFrame->setMaskAlpha(70);
@@ -150,6 +155,7 @@ void LighterGreeter::initUI()
     }
 
     m_sessionCbx->setVisible(m_sessionCbx->count() > 1);
+    m_sessionCbx->setObjectName("SessionCbx");
 
     m_loginFrame->installEventFilter(this);
     installEventFilter(this);

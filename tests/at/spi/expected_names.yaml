@@ -1,0 +1,452 @@
+# SPDX-FileCopyrightText: 2026 UnionTech Software Technology Co., Ltd.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version: '1.0'
+widgets:
+- variable: m_avatar
+  type: UserAvatar *
+  object_name: Avatar
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 63
+- variable: m_userCbx
+  type: QComboBox *
+  object_name: UserCbx
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 64
+- variable: m_passwordEdit
+  type: DLineEditEx *
+  object_name: PasswordEdit
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 65
+- variable: m_sessionCbx
+  type: QComboBox *
+  object_name: SessionCbx
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 66
+- variable: m_loginBtn
+  type: TransparentButton *
+  object_name: LoginBtn
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 67
+- variable: m_switchGreeter
+  type: QPushButton *
+  object_name: SwitchGreeter
+  source_file: lighter-greeter/lightergreeter.cpp
+  class_name: LighterGreeter
+  line: 68
+- variable: passButton
+  type: QPushButton *
+  object_name: PassButton
+  source_file: plugins/examples/login-plugins/login-basic/login_module.cpp
+  class_name: LoginModule
+  line: 64
+- variable: userNameEdit
+  type: QLineEdit *
+  object_name: UserNameEdit
+  source_file: plugins/examples/login-plugins/login-complex/login-widget.cpp
+  class_name: LoginWidget
+  line: 28
+- variable: tokenEdit
+  type: QLineEdit *
+  object_name: TokenEdit
+  source_file: plugins/examples/login-plugins/login-complex/login-widget.cpp
+  class_name: LoginWidget
+  line: 38
+- variable: sendButton
+  type: QPushButton *
+  object_name: SendButton
+  source_file: plugins/examples/login-plugins/login-complex/login-widget.cpp
+  class_name: LoginWidget
+  line: 53
+- variable: m_userNameEdit
+  type: QLineEdit *
+  object_name: UserNameEdit
+  source_file: plugins/examples/login-plugins/login-fullManaged/full_managed_login_widget.cpp
+  class_name: FullManagedLoginWidget
+  line: 40
+- variable: m_tokenEdit
+  type: QLineEdit *
+  object_name: TokenEdit
+  source_file: plugins/examples/login-plugins/login-fullManaged/full_managed_login_widget.cpp
+  class_name: FullManagedLoginWidget
+  line: 42
+- variable: m_sendButton
+  type: QPushButton *
+  object_name: SendButton
+  source_file: plugins/examples/login-plugins/login-fullManaged/full_managed_login_widget.cpp
+  class_name: FullManagedLoginWidget
+  line: 43
+- variable: m_disMissButton
+  type: QPushButton *
+  object_name: DisMissButton
+  source_file: plugins/examples/login-plugins/login-fullManaged/full_managed_login_widget.cpp
+  class_name: FullManagedLoginWidget
+  line: 44
+- variable: m_phoneEdit
+  type: QLineEdit *
+  object_name: phoneEdit
+  source_file: plugins/examples/login-plugins/login-udcp/udcp_mfa_login_widget.cpp
+  class_name: UdcpMFALoginWidget
+  line: 31
+- variable: m_sendButton
+  type: QPushButton *
+  object_name: sendButton
+  source_file: plugins/examples/login-plugins/login-udcp/udcp_mfa_login_widget.cpp
+  class_name: UdcpMFALoginWidget
+  line: 32
+- variable: m_codeEdit
+  type: QLineEdit *
+  object_name: codeEdit
+  source_file: plugins/examples/login-plugins/login-udcp/udcp_mfa_login_widget.cpp
+  class_name: UdcpMFALoginWidget
+  line: 33
+- variable: m_verifyButton
+  type: QPushButton *
+  object_name: verifyButton
+  source_file: plugins/examples/login-plugins/login-udcp/udcp_mfa_login_widget.cpp
+  class_name: UdcpMFALoginWidget
+  line: 34
+- variable: m_confirmButton
+  type: QPushButton *
+  object_name: ConfirmButton
+  source_file: plugins/login-gesture/resetDialog/gesturedialog.cpp
+  class_name: ResetPatternController
+  line: 55
+- variable: m_startEnrollBtn
+  type: DPushButton *
+  object_name: StartEnrollBtn
+  source_file: plugins/login-gesture/src/modulewidget.cpp
+  class_name: ''
+  line: 42
+- variable: m_btn
+  type: QPushButton *
+  object_name: RequireSureButton
+  source_file: src/lightdm-deepin-greeter/logintipswindow.cpp
+  class_name: LoginTipsWindow
+  line: 36
+- variable: m_lineEdit
+  type: DLineEditEx *
+  object_name: LineEdit
+  source_file: src/session-widgets/auth_password.cpp
+  class_name: AuthPassword
+  line: 114
+- variable: m_passwordShowBtn
+  type: DIconButton *
+  object_name: PasswordShow
+  source_file: src/session-widgets/auth_password.cpp
+  class_name: AuthPassword
+  line: 115
+- variable: m_passwordHintBtn
+  type: DIconButton *
+  object_name: PasswordHint
+  source_file: src/session-widgets/auth_password.cpp
+  class_name: AuthPassword
+  line: 116
+- variable: m_iconButton
+  type: DIconButton *
+  object_name: IconButton
+  source_file: src/session-widgets/auth_password.cpp
+  class_name: AuthPassword
+  line: 124
+- variable: suggestButton
+  type: DSuggestButton *
+  object_name: SuggestButton
+  source_file: src/session-widgets/auth_password.cpp
+  class_name: AuthPassword
+  line: 745
+- variable: m_lineEdit
+  type: DLineEditEx *
+  object_name: LineEdit_2
+  source_file: src/session-widgets/auth_single.cpp
+  class_name: AuthSingle
+  line: 66
+- variable: m_keyboardBtn
+  type: DPushButton *
+  object_name: KeyboardButton
+  source_file: src/session-widgets/auth_single.cpp
+  class_name: AuthSingle
+  line: 67
+- variable: m_passwordHintBtn
+  type: DIconButton *
+  object_name: PasswordHintButton
+  source_file: src/session-widgets/auth_single.cpp
+  class_name: AuthSingle
+  line: 68
+- variable: m_iconButton
+  type: DIconButton *
+  object_name: IconButton_2
+  source_file: src/session-widgets/auth_single.cpp
+  class_name: AuthSingle
+  line: 74
+- variable: suggestButton
+  type: DSuggestButton *
+  object_name: SuggestButton_2
+  source_file: src/session-widgets/auth_single.cpp
+  class_name: AuthSingle
+  line: 489
+- variable: m_lineEdit
+  type: DLineEditEx *
+  object_name: LineEdit_3
+  source_file: src/session-widgets/auth_ukey.cpp
+  class_name: AuthUKey
+  line: 51
+- variable: m_lockButton
+  type: TransparentButton *
+  object_name: LockButton
+  source_file: src/session-widgets/auth_widget.cpp
+  class_name: AuthWidget
+  line: 183
+- variable: m_userAvatar
+  type: UserAvatar *
+  object_name: UserAvatar
+  source_file: src/session-widgets/auth_widget.cpp
+  class_name: AuthWidget
+  line: 184
+- variable: m_accountEdit
+  type: DLineEditEx *
+  object_name: AccountEdit
+  source_file: src/session-widgets/auth_widget.cpp
+  class_name: AuthWidget
+  line: 187
+- variable: m_retryButton
+  type: DFloatingButton *
+  object_name: RetryButton
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 96
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: PamAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 408
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: PasswordAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 520
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: FingerprintAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 569
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: PasskeyAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 617
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: UkeyAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 673
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: FaceAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 734
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: IrisAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 800
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: plugin->key()
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 967
+- variable: btn
+  type: ButtonBoxButton *
+  object_name: AccountAuthBtn
+  source_file: src/session-widgets/sfa_widget.cpp
+  class_name: SFAWidget
+  line: 1263
+- variable: m_avatar
+  type: UserAvatar *
+  object_name: Avatar_2
+  source_file: src/session-widgets/user_widget.cpp
+  class_name: UserWidget
+  line: 68
+- variable: m_avatar
+  type: UserAvatar *
+  object_name: Avatar_3
+  source_file: src/session-widgets/userpanel.cpp
+  class_name: UserPanel
+  line: 48
+- variable: m_virtualKBBtn
+  type: FloatingButton *
+  object_name: VirtualKeyboardBtn
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 149
+- variable: m_switchUserBtn
+  type: FloatingButton *
+  object_name: SwitchUserBtn
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 150
+- variable: m_powerBtn
+  type: FloatingButton *
+  object_name: PowerBtn
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 151
+- variable: m_sessionBtn
+  type: FloatingButton *
+  object_name: SessionBtn
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 152
+- variable: m_contextMenu
+  type: QMenu *
+  object_name: ContextMenu
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 161
+- variable: m_kbLayoutListView
+  type: KBLayoutListView *
+  object_name: KbLayoutlistview
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 165
+- variable: m_keyboardBtn
+  type: FloatingButton *
+  object_name: KeyboardLayoutBtn
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 166
+- variable: button
+  type: FloatingButton *
+  object_name: TrayModuleBtn_<module_key>
+  source_file: src/widgets/controlwidget.cpp
+  class_name: ControlWidget
+  line: 310
+- variable: m_acceptBtn
+  type: InhibitButton *
+  object_name: AcceptButton
+  source_file: src/widgets/inhibitwarnview.cpp
+  class_name: InhibitWarnView
+  line: 78
+- variable: m_cancelBtn
+  type: InhibitButton *
+  object_name: CancelButton
+  source_file: src/widgets/inhibitwarnview.cpp
+  class_name: InhibitWarnView
+  line: 79
+- variable: m_logoLabel
+  type: QLabel *
+  object_name: Logo
+  source_file: src/widgets/logowidget.cpp
+  class_name: LogoWidget
+  line: 36
+- variable: m_logoVersionLabel
+  type: DLabel *
+  object_name: LogoVersion
+  source_file: src/widgets/logowidget.cpp
+  class_name: LogoWidget
+  line: 37
+- variable: m_customLogoLabel
+  type: QLabel *
+  object_name: custom_Logo
+  source_file: src/widgets/logowidget.cpp
+  class_name: LogoWidget
+  line: 41
+- variable: m_userList
+  type: QListWidget *
+  object_name: UserList
+  source_file: src/widgets/multiuserswarningview.cpp
+  class_name: MultiUsersWarningView
+  line: 48
+- variable: m_detailTextEdit
+  type: DTextEdit *
+  object_name: DetailTextEdit
+  source_file: src/widgets/passworderrortipswidget.cpp
+  class_name: PasswordErrorTipsWidget
+  line: 39
+- variable: m_requireShutdownButton
+  type: RoundItemButton *
+  object_name: RequireShutDownButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 72
+- variable: m_requireRestartButton
+  type: RoundItemButton *
+  object_name: RequireRestartButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 73
+- variable: m_requireSuspendButton
+  type: RoundItemButton *
+  object_name: RequireSuspendButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 74
+- variable: m_requireHibernateButton
+  type: RoundItemButton *
+  object_name: RequireHibernateButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 75
+- variable: m_requireLockButton
+  type: RoundItemButton *
+  object_name: RequireLockButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 76
+- variable: m_requireLogoutButton
+  type: RoundItemButton *
+  object_name: RequireLogoutButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 77
+- variable: m_requireSwitchUserBtn
+  type: RoundItemButton *
+  object_name: RequireSwitchUserButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 78
+- variable: m_requireSwitchSystemBtn
+  type: RoundItemButton *
+  object_name: RequireSwitchSystemButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 79
+- variable: m_updateAndShutdownButton
+  type: RoundItemButton *
+  object_name: UpdateAndShutdownButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 80
+- variable: m_updateAndRebootButton
+  type: RoundItemButton *
+  object_name: UpdateAndRebootButton
+  source_file: src/widgets/shutdownwidget.cpp
+  class_name: ShutdownWidget
+  line: 81
+- variable: m_iconLabel
+  type: QLabel *
+  object_name: UserAvatar
+  source_file: src/widgets/useravatar.cpp
+  class_name: UserAvatar
+  line: 73
+- variable: m_userAvatar
+  type: UserAvatar *
+  object_name: UserAvatar_2
+  source_file: src/widgets/userbutton.cpp
+  class_name: UserButton
+  line: 75
+qml_elements: []
+transient_elements: []
