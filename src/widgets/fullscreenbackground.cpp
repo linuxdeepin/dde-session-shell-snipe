@@ -39,6 +39,7 @@ const int PIXMAP_TYPE_BLUR_BACKGROUND = 1;
 
 QString FullScreenBackground::originBackgroundPath;
 QString FullScreenBackground::blurBackgroundPath;
+bool FullScreenBackground::m_blurAvailable = true;
 
 QMap<QString, QPixmap> FullScreenBackground::blurBackgroundCacheMap;
 QList<FullScreenBackground *> FullScreenBackground::frameList;
@@ -192,9 +193,13 @@ void FullScreenBackground::updateBlurBackground(const QString &path)
         bool isPicture = QFile::exists(blurPath) && QFile(blurPath).size() && checkPictureCanRead(blurPath);
         if (!isPicture) {
             blurPath = "/usr/share/backgrounds/default_background.jpg";
+            m_blurAvailable = false;
+        } else {
+            m_blurAvailable = true;
         }
     } else {
         blurPath = "/usr/share/backgrounds/default_background.jpg";
+        m_blurAvailable = false;
         qCWarning(DDE_SHELL) << "Get blur background path error:" << reply.error().message();
     }
 
@@ -312,6 +317,10 @@ void FullScreenBackground::paintEvent(QPaintEvent *e)
             painter.drawPixmap(trueRect,
                                blurBackground,
                                QRect(trueRect.topLeft(), trueRect.size() * devicePixelRatioF()));
+            // 模糊壁纸不可用时（首次启动 ImageEffect 服务未就绪等），叠加半透明深色蒙层作为 fallback
+            if (!m_blurAvailable) {
+                painter.fillRect(trueRect, QColor(0, 15, 39, 100));
+            }
         }
     }
 }
