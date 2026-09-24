@@ -80,7 +80,15 @@ void DLineEditEx::setPlaceholderTextFont(const QFont &font)
 {
     const QString &text = lineEdit()->placeholderText();
     QFont fontTmp = font;
-    while (QFontMetrics(fontTmp).boundingRect(text).width() > width()) {
+    // 计算有效文本宽度（扣除 textMargins + layout contentsMargins）
+    QMargins textMargins = lineEdit()->textMargins();
+    QMargins layoutMargins(0, 0, 0, 0);
+    if (auto *layout = lineEdit()->layout()) {
+        layoutMargins = layout->contentsMargins();
+    }
+    int availWidth = width() - textMargins.left() - textMargins.right()
+                   - layoutMargins.left() - layoutMargins.right();
+    while (QFontMetrics(fontTmp).boundingRect(text).width() > availWidth) {
         // 防止陷入死循环，setPointSize当参数为负数的时候设置不生效
         // TODO: font()获取问题，需要继续调查下为啥font为啥会出问题，但是这里也需要增加跳出死循环的条件
         qDebug() << "Password line edit placeholder text width : " << QFontMetrics(fontTmp).boundingRect(text).width() << " line edit width : " << width();
@@ -160,8 +168,21 @@ void DLineEditEx::paintEvent(QPaintEvent *event)
         // 使用 elidedText 确保文本过长时在右侧显示省略号，而不是换行
         QFontMetrics fm(pa.font());
         const QString &placeholderText = lineEdit()->placeholderText();
-        QString elidedText = fm.elidedText(placeholderText, Qt::ElideRight, rect().width());
-        pa.drawText(rect(), Qt::AlignCenter | Qt::TextSingleLine, elidedText);
+        // 读取内部 QLineEdit 的 textMargins 和 layout contentsMargins，计算扣除图标区域后的有效文本 rect
+        // 避免占位文本与右侧图标（大写状态、密码显示、密码提示等）重叠
+        QRect leRect = lineEdit()->geometry();
+        QMargins textMargins = lineEdit()->textMargins();
+        QMargins layoutMargins(0, 0, 0, 0);
+        if (auto *layout = lineEdit()->layout()) {
+            layoutMargins = layout->contentsMargins();
+        }
+        int leftOffset = textMargins.left() + layoutMargins.left();
+        int rightOffset = textMargins.right() + layoutMargins.right();
+        QRect textRect(leRect.x() + leftOffset, rect().y(),
+                       leRect.width() - leftOffset - rightOffset,
+                       rect().height());
+        QString elidedText = fm.elidedText(placeholderText, Qt::ElideRight, textRect.width());
+        pa.drawText(textRect, Qt::AlignCenter | Qt::TextSingleLine, elidedText);
 
         // 当文本被省略时，设置 tooltip 显示完整文本
         if (elidedText != placeholderText) {
