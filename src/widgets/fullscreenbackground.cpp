@@ -185,7 +185,7 @@ void FullScreenBackground::updateBlurBackground(const QString &path)
                                                           DSS_DBUS::imageEffectService, "Get");
     message << "" << path;
     QDBus::CallMode callMode = isVisible() ? QDBus::BlockWithGui : QDBus::Block;
-    QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(message, callMode, 2 * 1000);
+    QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(message, callMode, 5 * 1000);
     QString blurPath;
     if (!reply.isError()) {
         blurPath = reply.value();
