@@ -87,6 +87,7 @@ protected:
 private:
     static QString originBackgroundPath; // 原图路径
     static QString blurBackgroundPath; // 模糊背景图片路径
+    static bool m_blurAvailable; // 模糊壁纸是否可用，不可用时 paintEvent 叠加蒙层 fallback
     static QMap<QString, QPixmap> blurBackgroundCacheMap;
 
     QPointer<QScreen> m_screen;
