@@ -14,6 +14,7 @@
 #include <DPlatformWindowHandle>
 
 #include <QDebug>
+#include <QDBusPendingCallWatcher>
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QPainter>
@@ -36,9 +37,13 @@ DGUI_USE_NAMESPACE
 
 const int PIXMAP_TYPE_BACKGROUND = 0;
 const int PIXMAP_TYPE_BLUR_BACKGROUND = 1;
+constexpr int BACKGROUND_REQUEST_TIMEOUT_MS = 5000;
 
 QString FullScreenBackground::originBackgroundPath;
 QString FullScreenBackground::blurBackgroundPath;
+FullScreenBackground::BackgroundState FullScreenBackground::backgroundState = BackgroundState::Uninitialized;
+quint64 FullScreenBackground::backgroundRequestId = 0;
+bool FullScreenBackground::backgroundDisplayStarted = false;
 
 QMap<QString, QPixmap> FullScreenBackground::blurBackgroundCacheMap;
 QList<FullScreenBackground *> FullScreenBackground::frameList;
@@ -68,6 +73,22 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
 #endif
     frameList.append(this);
     m_useSolidBackground = DConfigHelper::instance()->getConfig("useSolidBackground", false).toBool();
+
+    // Reset a failed attempt when the whole lock screen is hidden, not when an
+    // individual monitor disappears. The next show retries before setVisible().
+    connect(m_model, &SessionBaseModel::visibleChanged, this, [this](bool visible) {
+        if (!visible) {
+            backgroundDisplayStarted = false;
+            if (backgroundState == BackgroundState::Failed || backgroundState == BackgroundState::Loading) {
+                backgroundState = BackgroundState::Uninitialized;
+                ++backgroundRequestId;
+            }
+        } else if (backgroundState == BackgroundState::Uninitialized && !originBackgroundPath.isEmpty()) {
+            // requestBackground may have selected a workspace wallpaper.
+            // Retry that source without replacing an already prepared background.
+            updateBackground(originBackgroundPath);
+        }
+    });
 
     m_blackWidget->setBlackMode(m_model->isBlackMode());
     connect(m_model, &SessionBaseModel::blackModeChanged, this, [this](bool is_black) {
@@ -143,35 +164,72 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
 FullScreenBackground::~FullScreenBackground()
 {
     frameList.removeAll(this);
+    if (frameList.isEmpty()) {
+        ++backgroundRequestId;
+        backgroundDisplayStarted = false;
+        backgroundState = BackgroundState::Uninitialized;
+        originBackgroundPath.clear();
+        clearBackground();
+    }
+}
+
+void FullScreenBackground::clearBackground()
+{
+    blurBackgroundPath.clear();
+    blurBackgroundCacheMap.clear();
+    for (auto *frame : frameList) {
+        frame->update();
+    }
 }
 
 void FullScreenBackground::updateBackground(const QString &path)
 {
-    if (m_useSolidBackground || !isPicture(path))
+    if (m_useSolidBackground)
         return;
 
-    if (path == originBackgroundPath && !blurBackgroundPath.isEmpty()) {
-        updateScreenBluBackground(blurBackgroundPath);
-        return;
+    if (path == originBackgroundPath) {
+        if (backgroundState == BackgroundState::Loading || backgroundState == BackgroundState::Failed)
+            return;
+
+        if (backgroundState == BackgroundState::Ready) {
+            if (isPicture(blurBackgroundPath)) {
+                updateScreenBluBackground(blurBackgroundPath);
+            } else {
+                backgroundState = BackgroundState::Failed;
+                clearBackground();
+            }
+            return;
+        }
     }
 
-    originBackgroundPath = path;
     updateBlurBackground(path);
 }
 
 void FullScreenBackground::updateScreenBluBackground(const QString &blurPath)
 {
-    if (!blurPath.isEmpty() && blurBackgroundPath != blurPath) {
-        blurBackgroundPath = blurPath;
-    }
+    // Geometry updates may temporarily resize a screen to 0x0.
+    if (trueSize().isEmpty())
+        return;
 
-    QString scaledPath;
-    if (getScaledBlurImage(blurPath, scaledPath)) {
+    if (!contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
+        QString scaledPath;
         QPixmap pixmap;
-        loadPixmap(scaledPath, pixmap);
-        addPixmap(pixmap, PIXMAP_TYPE_BLUR_BACKGROUND);
-    } else {
-        handleBackground(blurBackgroundPath, PIXMAP_TYPE_BLUR_BACKGROUND);
+        if (getScaledBlurImage(blurPath, scaledPath)) {
+            loadPixmap(scaledPath, pixmap);
+        }
+        if (!pixmap.isNull()) {
+            pixmap.setDevicePixelRatio(devicePixelRatioF());
+            addPixmap(pixmap, PIXMAP_TYPE_BLUR_BACKGROUND);
+        } else {
+            handleBackground(blurPath, PIXMAP_TYPE_BLUR_BACKGROUND);
+        }
+
+        if (!contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
+            qCWarning(DDE_SHELL) << "Failed to load blur background:" << blurPath;
+            backgroundState = BackgroundState::Failed;
+            clearBackground();
+            return;
+        }
     }
 
     if (isVisible()) {
@@ -181,25 +239,70 @@ void FullScreenBackground::updateScreenBluBackground(const QString &blurPath)
 
 void FullScreenBackground::updateBlurBackground(const QString &path)
 {
+    if (m_useSolidBackground)
+        return;
+    if (path == originBackgroundPath
+        && (backgroundState == BackgroundState::Loading || backgroundState == BackgroundState::Failed)) {
+        return;
+    }
+
+    originBackgroundPath = path;
+    backgroundState = BackgroundState::Loading;
+    const quint64 requestId = ++backgroundRequestId;
+    clearBackground();
+    if (!isPicture(path)) {
+        backgroundState = BackgroundState::Failed;
+        qCWarning(DDE_SHELL) << "Invalid background image:" << path;
+        return;
+    }
+
     QDBusMessage message = QDBusMessage::createMethodCall(DSS_DBUS::imageEffectService, DSS_DBUS::imageEffectPath,
                                                           DSS_DBUS::imageEffectService, "Get");
     message << "" << path;
-    QDBus::CallMode callMode = isVisible() ? QDBus::BlockWithGui : QDBus::Block;
-    QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(message, callMode, 2 * 1000);
-    QString blurPath;
-    if (!reply.isError()) {
-        blurPath = reply.value();
-        bool isPicture = QFile::exists(blurPath) && QFile(blurPath).size() && checkPictureCanRead(blurPath);
-        if (!isPicture) {
-            blurPath = "/usr/share/backgrounds/default_background.jpg";
-        }
-    } else {
-        blurPath = "/usr/share/backgrounds/default_background.jpg";
-        qCWarning(DDE_SHELL) << "Get blur background path error:" << reply.error().message();
+    if (!backgroundDisplayStarted) {
+        // Prepare the first frame without running a nested GUI event loop.
+        onGetBlurBackgroundReply(QDBusConnection::systemBus().call(message, QDBus::Block,
+                                                                  BACKGROUND_REQUEST_TIMEOUT_MS), requestId);
+        return;
     }
 
-    // 处理模糊背景图和执行动画或update；
-    updateScreenBluBackground(blurPath);
+    // The request serves all screens. Keep it alive if its initiating screen is
+    // unplugged; hiding the model or changing the source invalidates its id.
+    auto *watcher = new QDBusPendingCallWatcher(
+        QDBusConnection::systemBus().asyncCall(message, BACKGROUND_REQUEST_TIMEOUT_MS), m_model);
+    connect(watcher, &QDBusPendingCallWatcher::finished, m_model,
+            [requestId](QDBusPendingCallWatcher *watcher) {
+        const QDBusMessage reply = watcher->reply();
+        watcher->deleteLater();
+        onGetBlurBackgroundReply(reply, requestId);
+    });
+}
+
+void FullScreenBackground::onGetBlurBackgroundReply(const QDBusMessage &message, quint64 requestId)
+{
+    if (requestId != backgroundRequestId)
+        return;
+
+    const QDBusPendingReply<QString> reply(message);
+    if (reply.isError()) {
+        backgroundState = BackgroundState::Failed;
+        qCWarning(DDE_SHELL) << "Get blur background path error:" << reply.error().message();
+        return;
+    }
+    const QString blurPath = reply.value();
+    if (!isPicture(blurPath)) {
+        backgroundState = BackgroundState::Failed;
+        qCWarning(DDE_SHELL) << "Invalid blur background image:" << blurPath;
+        return;
+    }
+
+    backgroundState = BackgroundState::Ready;
+    blurBackgroundPath = blurPath;
+    for (auto *frame : frameList) {
+        frame->updateScreenBluBackground(blurPath);
+        if (backgroundState != BackgroundState::Ready)
+            break;
+    }
 }
 
 bool FullScreenBackground::contentVisible() const
@@ -363,15 +466,8 @@ void FullScreenBackground::leaveEvent(QEvent *event)
 
 void FullScreenBackground::resizeEvent(QResizeEvent *event)
 {
-    if (!blurBackgroundCacheMap.isEmpty() && isPicture(blurBackgroundPath) && !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
-        QString scaledPath;
-        if (getScaledBlurImage(blurBackgroundPath, scaledPath)) {
-            QPixmap pixmap;
-            loadPixmap(scaledPath, pixmap);
-            addPixmap(pixmap, PIXMAP_TYPE_BLUR_BACKGROUND);
-        } else {
-            handleBackground(blurBackgroundPath, PIXMAP_TYPE_BLUR_BACKGROUND);
-        }
+    if (backgroundState == BackgroundState::Ready && !contains(PIXMAP_TYPE_BLUR_BACKGROUND)) {
+        updateScreenBluBackground(blurBackgroundPath);
     }
 
     updatePixmap();
@@ -415,6 +511,9 @@ void FullScreenBackground::keyPressEvent(QKeyEvent *e)
 
 void FullScreenBackground::showEvent(QShowEvent *event)
 {
+    // A later screen may still be hidden while the other screens are already
+    // interactive, so request mode must be shared across the display cycle.
+    backgroundDisplayStarted = true;
     qCDebug(DDE_SHELL) << "Frame is already displayed:" << this;
     if (m_model->isUseWayland()) {
         Q_EMIT requestDisableGlobalShortcutsForWayland(true);
@@ -724,6 +823,8 @@ void FullScreenBackground::handleBackground(const QString &path, int type)
 
     QPixmap pixmap;
     loadPixmap(path, pixmap);
+    if (pixmap.isNull())
+        return;
 
     pixmap = pixmap.scaled(trueSize, Qt::KeepAspectRatioByExpanding, Qt::FastTransformation);
     pixmap = pixmap.copy(QRect((pixmap.width() - trueSize.width()) / 2,
