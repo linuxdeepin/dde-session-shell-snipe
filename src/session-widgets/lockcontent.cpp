@@ -63,12 +63,12 @@ void LockContent::init(SessionBaseModel *model)
     // 异步获取CPU硬件信息，判断是否为PANGU CPU
     // FIXME: CPU硬件信息可能会改且其它的机型也可能会有PANGU CPU，这里的判断不准确
     if (m_model->appType() == AuthCommon::Lock) {
-        QDBusInterface interface(DSS_DBUS::systemInfoService,
-            DSS_DBUS::systemInfoPath,
-            "org.freedesktop.DBus.Properties",
-            QDBusConnection::sessionBus(),
-            this);
-        QDBusPendingReply<QDBusVariant> reply = interface.asyncCall("Get", DSS_DBUS::systemInfoService, "CPUHardware");
+        // QDBusInterface construction can synchronously introspect an unavailable
+        // service. Send the property request directly so startup can continue.
+        QDBusMessage message = QDBusMessage::createMethodCall(DSS_DBUS::systemInfoService,
+            DSS_DBUS::systemInfoPath, "org.freedesktop.DBus.Properties", "Get");
+        message << DSS_DBUS::systemInfoService << QStringLiteral("CPUHardware");
+        QDBusPendingReply<QDBusVariant> reply = QDBusConnection::sessionBus().asyncCall(message);
         QDBusPendingCallWatcher* watcher = new QDBusPendingCallWatcher(reply, this);
         connect(watcher, &QDBusPendingCallWatcher::finished, this, [this, watcher] {
             QDBusPendingReply<QDBusVariant> reply = *watcher;

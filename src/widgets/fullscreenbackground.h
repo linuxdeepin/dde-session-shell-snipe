@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,6 +18,7 @@
 Q_DECLARE_LOGGING_CATEGORY(DDE_SS)
 
 class BlackWidget;
+class QDBusMessage;
 class SessionBaseModel;
 class FullScreenBackground : public QWidget, public AbstractFullBackgroundInterface
 {
@@ -61,7 +62,7 @@ private:
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void updateScreen(QPointer<QScreen> screen);
     void updateGeometry();
-    bool isPicture(const QString &file);
+    static bool isPicture(const QString &file);
     QString getLocalFile(const QString &file);
     const QPixmap& getPixmap(int type);
     QSize trueSize() const;
@@ -75,6 +76,8 @@ private:
     bool getScaledBlurImage(const QString &originPath, QString &scaledPath);
     void setddeGeometry(const QRect &rect);
     void updateScreenBluBackground(const QString &path);
+    static void onGetBlurBackgroundReply(const QDBusMessage &message, quint64 requestId);
+    static void clearBackground();
 
 protected:
     static QPointer<QWidget> currentContent;
@@ -85,6 +88,10 @@ protected:
     static QString sizeToString(const QSize &size);
 
 private:
+    enum class BackgroundState { Uninitialized, Loading, Ready, Failed };
+    static BackgroundState backgroundState;
+    static quint64 backgroundRequestId;
+    static bool backgroundDisplayStarted;
     static QString originBackgroundPath; // 原图路径
     static QString blurBackgroundPath; // 模糊背景图片路径
     static QMap<QString, QPixmap> blurBackgroundCacheMap;
