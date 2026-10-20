@@ -16,8 +16,8 @@
 
 #include <unistd.h>
 
-const QString ModulesDir = "/usr/lib/dde-session-shell/modules";
-const QString ModulesConfigDir = "/usr/lib/dde-session-shell/modules/config.d/";
+const QString ModulesDir = QString("%1/dde-session-shell/modules").arg(CMAKE_INSTALL_FULL_LIBDIR);
+const QString ModulesConfigDir = QString("%1/dde-session-shell/modules/config.d/").arg(CMAKE_INSTALL_FULL_LIBDIR);
 const QString LOWEST_VERSION = "1.1.0";
 const QString LoginType = "Login";
 const QString TrayType = "Tray";
