@@ -585,7 +585,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setShutdownMode(true);
         auto gsCheckPwd = m_model->gsCheckpwd();
         if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
-            m_sessionManagerInter->RequestReboot();
+            QTimer::singleShot(100, this, [this] { m_sessionManagerInter->RequestReboot(); });
         } else {
             createAuthentication(m_account);
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
@@ -604,7 +604,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         m_model->setShutdownMode(true);
         auto gsCheckPwd = m_model->gsCheckpwd();
         if (!isLocked() || m_model->currentModeState() == SessionBaseModel::ModeStatus::ShutDownMode || !gsCheckPwd) {
-            m_sessionManagerInter->RequestShutdown();
+            QTimer::singleShot(100, this, [this] { m_sessionManagerInter->RequestShutdown(); });
         } else {
             createAuthentication(m_account);
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ConfirmPasswordMode);
@@ -624,6 +624,7 @@ void LockWorker::doPowerAction(const SessionBaseModel::PowerAction action)
         createAuthentication(m_model->currentUser()->name());
         break;
     case SessionBaseModel::PowerAction::RequireLogout:
+        m_model->setShutdownMode(true);
         m_sessionManagerInter->RequestLogout();
         return;
     case SessionBaseModel::PowerAction::RequireSwitchSystem:
