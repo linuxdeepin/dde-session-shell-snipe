@@ -58,6 +58,15 @@ void MFAWidget::initConnections()
     AuthWidget::initConnections();
     connect(m_model, &SessionBaseModel::authTypeChanged, this, &MFAWidget::setAuthType);
     connect(m_model, &SessionBaseModel::authStateChanged, this, &MFAWidget::setAuthState);
+    connect(m_model, &SessionBaseModel::prepareForSleep, this, [this](bool isSleep) {
+        if (!isSleep) {
+            if (m_passwordAuth) m_passwordAuth->reset();
+            if (m_fingerprintAuth) m_fingerprintAuth->reset();
+            if (m_faceAuth) m_faceAuth->reset();
+            if (m_irisAuth) m_irisAuth->reset();
+            if (m_ukeyAuth) m_ukeyAuth->reset();
+        }
+    });
     // 关闭--已开启但无UI的认证（针对手势这种开启功能，但可能因配置错误、未安装插件，导致无法完成登录/解锁的场景）
     connect(&MFASequenceControl::instance(), &MFASequenceControl::requestEndUnsupportedAuth, this, [&](int authType) {
         Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AUTH_FLAGS_CAST(authType));
