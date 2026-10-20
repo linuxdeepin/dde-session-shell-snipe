@@ -11,6 +11,7 @@
 #include <QPoint>
 #include <QVector>
 #include <QPainter>
+#include <QPainterPath>
 #include <QMap>
 #include <QRectF>
 #include <QStateMachine>
