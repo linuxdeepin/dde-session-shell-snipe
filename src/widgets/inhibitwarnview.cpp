@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -129,7 +129,7 @@ void InhibitWarnView::setInhibitorList(const QList<InhibitorData> &list)
                 QFileInfo executable_info(QFile::readLink(QString("/proc/%1/exe").arg(inhibitor.pid)));
 #endif
                 // 玲珑应用的exe指向的路径是容器内的路径，在容器外无法访问，因此不能判断文件是否存在
-                QString iconName = executable_info.fileName();
+                iconName = executable_info.fileName();
             }
 
             icon = QIcon::fromTheme(iconName);
