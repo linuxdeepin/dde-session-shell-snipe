@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -87,4 +87,3 @@ typedef QList<SessionInfo> SessionList;
 Q_DECLARE_METATYPE(SessionInfo)
 Q_DECLARE_METATYPE(SessionList)
 #endif // DBUSVARIANT
-

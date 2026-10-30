@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -76,8 +76,7 @@ void LogoWidget::initUI()
     font.setPixelSize(m_logoLabel->height() / 2);
     m_logoVersionLabel->setFont(font);
 
-    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
-      //systemVersion = "";
+    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）      //systemVersion = "";
       return;
     }
 
@@ -126,8 +125,7 @@ void LogoWidget::updateVersionText(const QString &customText)
 void LogoWidget::updateLocale(const QString &locale)
 {
     m_locale = locale;
-    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）
-        return;
+    if(DSysInfo::UosEdition::UosEducation == DSysInfo::uosEditionType()) {  //教育版登录界面不要显示系统版本号（和Logo冲突）        return;
     }
     updateVersionText(DConfigHelper::instance()->getConfig(SYSTEM_VERSION_TEXT, "").toString());
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -74,16 +74,16 @@ void AuthUKey::initConnections()
     connect(m_lineEdit, &DLineEditEx::focusChanged, this, [this](const bool focus) {
         if (!focus) m_lineEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
-        emit focusChanged(focus);
+        Q_EMIT focusChanged(focus);
     });
     connect(m_lineEdit, &DLineEditEx::textChanged, this, [this](const QString &text) {
         m_lineEdit->setAlert(false);
         m_lineEdit->hideAlertMessage();
-        emit lineEditTextChanged(text);
+        Q_EMIT lineEditTextChanged(text);
     });
     connect(m_lineEdit, &DLineEditEx::returnPressed, this, [this] {
         if (!m_lineEdit->lineEdit()->isReadOnly())
-            emit requestAuthenticate();
+            Q_EMIT requestAuthenticate();
     });
 }
 
@@ -118,8 +118,8 @@ void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &re
         setLineEditInfo(tr("Verification successful"), PlaceHolderText);
         m_showPrompt = true;
         m_lineEdit->hideAlertMessage();
-        emit authFinished(state);
-        emit requestChangeFocus();
+        Q_EMIT authFinished(state);
+        Q_EMIT requestChangeFocus();
         break;
     case AuthCommon::AS_Failure:
         setAnimationState(false);
@@ -145,7 +145,7 @@ void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &re
             setLineEditInfo(tr("Wrong PIN"), AlertText);
             m_showPrompt = false;
         }
-        emit authFinished(state);
+        Q_EMIT authFinished(state);
         break;
     case AuthCommon::AS_Cancel:
         setAnimationState(false);
@@ -304,7 +304,7 @@ void AuthUKey::updateUnlockPrompt()
         m_lineEdit->setPlaceholderText(tr("Please try again %n minute(s) later", "", static_cast<int>(m_integerMinutes)));
     } else {
         QTimer::singleShot(1000, this, [this] {
-            emit activeAuth(m_type);
+            Q_EMIT activeAuth(m_type);
         });
         qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }

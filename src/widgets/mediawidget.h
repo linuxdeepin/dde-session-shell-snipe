@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,7 +18,7 @@ public:
     explicit MediaWidget(QWidget *parent = nullptr);
     void initMediaPlayer();
 
-private slots:
+private Q_SLOTS:
     void changeVisible();
 
 private:

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,7 +25,6 @@
 #endif
 
 #define LOCK_START_EFFECT 16 //锁屏动效比较特殊，窗管根据这个动效值进行处理
-
 xcb_atom_t internAtom(xcb_connection_t *connection, const char *name, bool only_if_exists)
 {
     if (!name || *name == 0)
@@ -95,8 +94,7 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
 
     if (DConfigHelper::instance()->getConfig("autoExit", false).toBool()) {
         m_autoExitTimer = new QTimer(this);
-        m_autoExitTimer->setInterval(1000 * 60); //1分钟
-        m_autoExitTimer->setSingleShot(true);
+        m_autoExitTimer->setInterval(1000 * 60); //1分钟        m_autoExitTimer->setSingleShot(true);
         connect(m_autoExitTimer, &QTimer::timeout, qApp, &QApplication::quit);
     }
 }
@@ -173,9 +171,9 @@ bool LockFrame::event(QEvent *event)
         if (keyValue != "") {
 #ifdef ENABLE_DSS_SNIPE
             // v25 dde-daemon接受小驼峰命名的name
-            emit sendKeyValue(qtifyName(keyValue));
+            Q_EMIT sendKeyValue(qtifyName(keyValue));
 #else
-            emit sendKeyValue(keyValue);
+            Q_EMIT sendKeyValue(keyValue);
 #endif
         }
     }
@@ -217,7 +215,7 @@ bool LockFrame::handlePoweroffKey()
         // 待机刚唤醒一段时间内不响应电源按键事件
         if (m_enablePowerOffKey) {
             //锁屏时或显示关机界面时，需要确认是否关机
-            emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+            Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
         }
         return true;
     } else if (action == 4) {
@@ -244,7 +242,7 @@ void LockFrame::keyPressEvent(QKeyEvent *e)
 
 void LockFrame::showEvent(QShowEvent *event)
 {
-    emit requestEnableHotzone(false);
+    Q_EMIT requestEnableHotzone(false);
 
     if (m_autoExitTimer)
         m_autoExitTimer->stop();
@@ -254,7 +252,7 @@ void LockFrame::showEvent(QShowEvent *event)
 
 void LockFrame::hideEvent(QHideEvent *event)
 {
-    emit requestEnableHotzone(true);
+    Q_EMIT requestEnableHotzone(true);
 
     if (m_autoExitTimer)
         m_autoExitTimer->start();

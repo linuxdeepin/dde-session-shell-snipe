@@ -44,10 +44,7 @@ public:
     DBusAdaptor(QObject *parent);
     virtual ~DBusAdaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-Q_SIGNALS: // SIGNALS
-    void NameOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
+public: // PROPERTIESpublic Q_SLOTS: // METHODSQ_SIGNALS: // SIGNALS    void NameOwnerChanged(const QString &name, const QString &oldOwner, const QString &newOwner);
 };
 
 #endif

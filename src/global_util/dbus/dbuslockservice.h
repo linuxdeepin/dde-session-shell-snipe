@@ -51,7 +51,6 @@ public:
     ~DBusLockService();
 
 public Q_SLOTS: // METHODS
-
     inline QDBusPendingReply<QString> CurrentUser()
     {
         QList<QVariant> argumentList;
@@ -86,8 +85,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QStringLiteral("AuthenticateUser"), argumentList);
     }
 
-Q_SIGNALS: // SIGNALS
-    void UserChanged(const QString &user);
+Q_SIGNALS: // SIGNALS    void UserChanged(const QString &user);
     void Event(quint32 eventType, quint32 pid, const QString &username, const QString &message);
 };
 

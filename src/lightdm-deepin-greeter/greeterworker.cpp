@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,10 +38,7 @@ using namespace Auth;
 using namespace AuthCommon;
 DCORE_USE_NAMESPACE
 
-const int NUM_LOCKED = 0;   // 禁用小键盘
-const int NUM_UNLOCKED = 1; // 启用小键盘
-const int NUM_LOCK_UNKNOWN = 2; // 未知状态
-
+const int NUM_LOCKED = 0;   // 禁用小键盘const int NUM_UNLOCKED = 1; // 启用小键盘const int NUM_LOCK_UNKNOWN = 2; // 未知状态
 GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     : AuthInterface(model, parent)
     , m_authFramework(new DeepinAuthFramework(this))
@@ -262,7 +259,7 @@ void GreeterWorker::initConnections()
         m_model->updateCurrentUser(user_ptr);
         const QString &account = user_ptr->name();
         if (user_ptr.get()->isNoPasswordLogin()) {
-            emit m_model->authTypeChanged(AT_None);
+            Q_EMIT m_model->authTypeChanged(AT_None);
             m_account = account;
         }
         QTimer::singleShot(100, this, [this] {
@@ -468,8 +465,7 @@ void GreeterWorker::setCurrentUser(const std::shared_ptr<User> user)
     json["Name"] = user->name();
     json["Type"] = user->type();
     json["Uid"] = static_cast<int>(user->uid());
-    json["LastCustomAuth"] = user->lastCustomAuth(); // 上一次认证通过自定义认证类型
-    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
+    json["LastCustomAuth"] = user->lastCustomAuth(); // 上一次认证通过自定义认证类型    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact))).waitForFinished();
 }
 
 void GreeterWorker::switchToUser(std::shared_ptr<User> user)
@@ -491,8 +487,7 @@ void GreeterWorker::switchToUser(std::shared_ptr<User> user)
     }
 
     setCurrentUser(user);
-    if (user->isLogin()) { // switch to user Xorg
-        QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
+    if (user->isLogin()) { // switch to user Xorg        QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
     } else {
         m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
         destroyAuthentication(m_account);
@@ -639,8 +634,7 @@ void GreeterWorker::sendTokenToAuth(const QString &account, const AuthType authT
             m_authFramework->SendTokenToAuth(account, authType, token);
         }
         if (authType == AT_Password) {
-            m_password = token; // 用于解锁密钥环
-        }
+            m_password = token; // 用于解锁密钥环        }
         break;
     default:
         m_greeter->respond(token);
@@ -687,8 +681,8 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
         // 对于没有设置密码的账户,直接认定为错误账户
         if (!user_ptr->isPasswordValid()) {
             qCWarning(DDE_SHELL) << "The user's password is invalid, user path: " << userPath;
-            emit m_model->accountError();
-            emit m_model->authFailedTipsMessage(tr("Wrong account"));
+            Q_EMIT m_model->accountError();
+            Q_EMIT m_model->authFailedTipsMessage(tr("Wrong account"));
             m_model->setAuthType(AT_None);
             return;
         }
@@ -716,8 +710,8 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setFullName(userFullName);
         } else {
             qCWarning(DDE_SHELL) << "Password is null, user path: " << userPath;
-            emit m_model->accountError();
-            emit m_model->authFailedTipsMessage(tr("Wrong account"));
+            Q_EMIT m_model->accountError();
+            Q_EMIT m_model->authFailedTipsMessage(tr("Wrong account"));
             m_model->setAuthType(AT_None);
             return;
         }
@@ -733,8 +727,7 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
     if (switchUser && originalUsePtr && originalUsePtr->isLogin() && user_ptr) {
         qCInfo(DDE_SHELL) << "Current user is already logged in";
         Q_EMIT m_model->checkAccountFinished();
-        user_ptr->updateLoginState(true); // 初始化 NativeUser 的时候没有处理登录状态
-        switchToUser(user_ptr);
+        user_ptr->updateLoginState(true); // 初始化 NativeUser 的时候没有处理登录状态        switchToUser(user_ptr);
         return;
     }
 
@@ -851,7 +844,7 @@ void GreeterWorker::authenticationComplete()
         return;
     }
 
-    emit m_model->authFinished(true);
+    Q_EMIT m_model->authFinished(true);
 
     m_password.clear();
 
@@ -877,7 +870,7 @@ void GreeterWorker::authenticationComplete()
 
     qCInfo(DDE_SHELL) << "Start session: " << m_model->sessionKey();
 
-    emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
+    Q_EMIT requestUpdateBackground(m_model->currentUser()->greeterBackground());
     setCurrentUser(m_model->currentUser());
     m_greeter->startSessionSync(m_model->sessionKey());
     endAuthentication(m_account, AT_All);
@@ -1047,7 +1040,7 @@ void GreeterWorker::onCurrentUserChanged(const std::shared_ptr<User> &user)
     loadTranslation(user->locale());
     //  账户在变换的时候需要通知lockservice
     setCurrentUser(user);
-    emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
+    Q_EMIT requestUpdateBackground(m_model->currentUser()->greeterBackground());
 }
 
 void GreeterWorker::onSessionCreated()

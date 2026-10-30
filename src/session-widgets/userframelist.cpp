@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -161,8 +161,8 @@ void UserFrameList::onUserClicked()
             m_loginWidgets[i]->setFastSelected(false);
         }
     }
-    emit clicked();
-    emit requestSwitchUser(m_model->findUserByUid(widget->uid()));
+    Q_EMIT clicked();
+    Q_EMIT requestSwitchUser(m_model->findUserByUid(widget->uid()));
 }
 
 /**
@@ -319,14 +319,14 @@ void UserFrameList::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Enter:
         for (auto it = m_loginWidgets.constBegin(); it != m_loginWidgets.constEnd(); ++it) {
             if ((*it)->isSelected()) {
-                emit(*it)->clicked();
+                Q_EMIT(*it)->clicked();
                 break;
             }
         }
         break;
     case Qt::Key_Escape:
-        emit clicked();
-        emit requestSwitchUser(m_model->currentUser());
+        Q_EMIT clicked();
+        Q_EMIT requestSwitchUser(m_model->currentUser());
         break;
     default:
         break;

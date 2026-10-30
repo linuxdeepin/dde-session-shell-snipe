@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -134,8 +134,7 @@ public:
     inline QStringList resetControllers() const
     { return qvariant_cast< QStringList >(property("ResetControllers")); }
 
-public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<> ActivateSession(const QString &id)
+public Q_SLOTS: // METHODS    inline QDBusPendingReply<> ActivateSession(const QString &id)
     {
         QList<QVariant> argumentList;
         argumentList << QVariant::fromValue(id);
@@ -384,8 +383,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("UnlockSessions"), argumentList);
     }
 
-Q_SIGNALS: // SIGNALS
-    void BlockInhibitedChanged();
+Q_SIGNALS: // SIGNALS    void BlockInhibitedChanged();
 
     void PrepareForShutdown(bool active);
     void PrepareForSleep(bool active);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,9 +20,7 @@ class AuthCustom : public AuthModule
     Q_OBJECT
 
     enum AuthObjectType {
-        LightDM,                // light display manager - 显示服务器
-        DeepinAuthenticate      // deepin authentication framework - 深度认证框架
-    };
+        LightDM,                // light display manager - 显示服务器        DeepinAuthenticate      // deepin authentication framework - 深度认证框架    };
 
 public:
     explicit AuthCustom(QWidget *parent = nullptr, AuthCommon::AuthType type = AuthCommon::AT_Custom);

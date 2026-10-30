@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -409,7 +409,7 @@ void WarningContent::tryGrabKeyboard(bool exitIfFailed)
         }
 
         qCInfo(DDE_SHELL) << "Request hide lock frame";
-        emit requestLockFrameHide();
+        Q_EMIT requestLockFrameHide();
         return;
     }
 

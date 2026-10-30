@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -54,9 +54,7 @@ public:
     inline QList<QDBusObjectPath> sessions() const
     { return qvariant_cast< QList<QDBusObjectPath> >(property("Sessions")); }
 
-public Q_SLOTS: // METHODS
-Q_SIGNALS: // SIGNALS
-// begin property changed signals
+public Q_SLOTS: // METHODSQ_SIGNALS: // SIGNALS// begin property changed signals
 void SessionsChanged();
 };
 

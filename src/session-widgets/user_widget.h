@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,7 +38,7 @@ public:
     int heightHint() const;
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-signals:
+Q_SIGNALS:
     void clicked();
 
 
@@ -63,15 +63,8 @@ private:
     uint m_uid;
 
     QVBoxLayout *m_mainLayout; // 登录界面布局
-
-    DBlurEffectWidget *m_blurEffectWidget; // 模糊背景
-    UserAvatar *m_avatar;                  // 用户头像
-
-    DLabel *m_loginState;               // 用户登录状态
-    DLabel *m_displayNameLabel;         // 用户全名
-    QWidget *m_displayNameWidget;       // 用户全名控件
-    UserNameWidget *m_userNameWidget;   // 用户名
-
+    DBlurEffectWidget *m_blurEffectWidget; // 模糊背景    UserAvatar *m_avatar;                  // 用户头像
+    DLabel *m_loginState;               // 用户登录状态    DLabel *m_displayNameLabel;         // 用户全名    QWidget *m_displayNameWidget;       // 用户全名控件    UserNameWidget *m_userNameWidget;   // 用户名
     std::shared_ptr<User> m_user;
 };
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -122,11 +122,11 @@ void AuthCustom::setAuthState(const AuthCommon::AuthState state, const QString &
         }
         break;
     case AuthCommon::AS_Success:
-        emit authFinished(state);
+        Q_EMIT authFinished(state);
         break;
     case AuthCommon::AS_Unlocked:
         // 切换用户时，会有解锁的动作，因此需要响应unlock
-        emit activeAuth(m_type);
+        Q_EMIT activeAuth(m_type);
         break;
     default:
         break;
@@ -144,7 +144,7 @@ void AuthCustom::setAuthData(const LoginPlugin::AuthCallbackData &callbackData)
     const QString &account = m_currentAuthData.account;
     if (!account.isEmpty()) {
         qCInfo(DDE_SHELL) << "Request check account: " << account;
-        emit requestCheckAccount(account, m_plugin->pluginConfig().switchUserWhenCheckAccount);
+        Q_EMIT requestCheckAccount(account, m_plugin->pluginConfig().switchUserWhenCheckAccount);
     } else {
         // 如果插件的token信息带上了用户名，则通过checkAccount信号通知外面去做用户切换或发送token
         // 隐式地要求插件仅在主动切换用户时需要填充token的account，注意需要在代码中增加信号响应，参见sfawidget
@@ -253,7 +253,7 @@ void AuthCustom::changeAuthType(AuthCommon::AuthType type)
     if (type == AuthCommon::AT_Custom)
         tmpType = static_cast<AuthCommon::AuthType>(customAuthType());
 
-    emit notifyAuthTypeChange(tmpType);
+    Q_EMIT notifyAuthTypeChange(tmpType);
 }
 
 LoginPlugin* AuthCustom::getLoginPlugin() const
@@ -272,7 +272,7 @@ QString AuthCustom::loginPluginKey() const
 bool AuthCustom::event(QEvent *e)
 {
     if(e->type() == QEvent::Resize || e->type() == QEvent::Show) {
-        emit notifyResizeEvent();
+        Q_EMIT notifyResizeEvent();
 
         if (e->type() == QEvent::Show) {
             if (m_plugin && m_plugin->content() && m_plugin->content()->parent() != this) {
@@ -292,7 +292,7 @@ void AuthCustom::updateUnlockPrompt()
     // DA不会主动刷新limit信息，以当前解锁时间判断
     if (m_integerMinutes == 0) {
         QTimer::singleShot(1000, this, [this] {
-            emit activeAuth(m_type);
+            Q_EMIT activeAuth(m_type);
         });
         qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }

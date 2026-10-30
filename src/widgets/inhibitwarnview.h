@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -53,7 +53,7 @@ public:
     void setAcceptVisible(const bool acceptable);
     bool hasInhibit() const;
 
-signals:
+Q_SIGNALS:
     void cancelled() const;
     void actionInvoked() const;
 
@@ -66,7 +66,7 @@ private:
     void initUi();
     void initConnection();
 
-private slots:
+private Q_SLOTS:
     void onAccept();
 
 private:

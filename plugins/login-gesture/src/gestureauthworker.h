@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -49,5 +49,4 @@ private:
     QTimer m_unLockTimer;
 };
 } // namespace gestureLogin
-
 #endif // GESTUREWORKER_H

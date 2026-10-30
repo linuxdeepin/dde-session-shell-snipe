@@ -136,8 +136,7 @@ public:
     UserAdaptor(QObject *parent);
     virtual ~UserAdaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(int AccountType READ accountType)
+public: // PROPERTIES    Q_PROPERTY(int AccountType READ accountType)
     int accountType() const;
 
     Q_PROPERTY(bool AutomaticLogin READ automaticLogin)
@@ -236,8 +235,7 @@ public: // PROPERTIES
     Q_PROPERTY(QString XSession READ xSession)
     QString xSession() const;
 
-public Q_SLOTS: // METHODS
-    void AddGroup(const QString &group);
+public Q_SLOTS: // METHODS    void AddGroup(const QString &group);
     void DeleteGroup(const QString &group);
     void DeleteIconFile(const QString &iconFile);
     void EnableNoPasswdLogin(bool enabled);
@@ -258,7 +256,6 @@ public Q_SLOTS: // METHODS
     void SetPassword(const QString &password);
     void SetPasswordHint(const QString &hint);
     void SetShell(const QString &shell);
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

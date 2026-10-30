@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,8 +23,7 @@ const QMap<int, QString> kContent = {{0, "0"},
 
 WayPointModel::WayPointModel(QObject *parent)
     : QObject(parent)
-    , m_size(9) // 3 * 3, 如果有需求，改从配置获取
-    , m_currentMode(Mode::Auth)
+    , m_size(9) // 3 * 3, 如果有需求，改从配置获取    , m_currentMode(Mode::Auth)
     , m_gestureStateFlag(-1)
     , m_gestureEnable(false)
     , m_showErrorStyle(false)
@@ -324,8 +323,7 @@ void WayPointModel::onUserInputDone()
 void WayPointModel::clearPath()
 {
     m_selectedPoints.clear();
-    Q_EMIT selected(-1, false); // 清空所有结点
-    Q_EMIT dataChanged();
+    Q_EMIT selected(-1, false); // 清空所有结点    Q_EMIT dataChanged();
 
     m_showErrorStyle = false;
 }

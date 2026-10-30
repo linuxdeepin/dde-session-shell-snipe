@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -77,8 +77,8 @@ void AuthIris::setAuthState(const AuthCommon::AuthState state, const QString &re
             setAnimationState(true);
         m_textLabel->setText(tr("Verification successful"));
         m_showPrompt = true;
-        emit authFinished(state);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT authFinished(state);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Failure: {
         setAnimationState(false);
@@ -90,8 +90,8 @@ void AuthIris::setAuthState(const AuthCommon::AuthState state, const QString &re
         } else if (leftTimes == 1) {
             m_textLabel->setText(tr("Verification failed, only one chance left"));
         }
-        emit authFinished(state);
-        emit retryButtonVisibleChanged(true);
+        Q_EMIT authFinished(state);
+        Q_EMIT retryButtonVisibleChanged(true);
         break;
     }
     case AuthCommon::AS_Cancel:
@@ -131,7 +131,7 @@ void AuthIris::setAuthState(const AuthCommon::AuthState state, const QString &re
         m_textLabel->setText(tr("Iris ID locked, use password please"));
         m_showPrompt = true;
         if (DDESESSIONCC::SingleAuthFactor == m_authFactorType)
-            emit retryButtonVisibleChanged(false);
+            Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Recover:
         setAnimationState(false);
@@ -142,7 +142,7 @@ void AuthIris::setAuthState(const AuthCommon::AuthState state, const QString &re
         setAnimationState(false);
         setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
         m_showPrompt = true;
-        emit activeAuth(AuthCommon::AT_Iris);
+        Q_EMIT activeAuth(AuthCommon::AT_Iris);
         break;
     default:
         setAnimationState(false);
@@ -190,7 +190,7 @@ void AuthIris::updateUnlockPrompt()
         m_textLabel->setText(tr("Iris ID locked, use password please"));
     } else {
         QTimer::singleShot(1000, this, [this] {
-            emit activeAuth(m_type);
+            Q_EMIT activeAuth(m_type);
         });
         qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
@@ -205,7 +205,7 @@ void AuthIris::doAnimation()
     if (m_state == AuthCommon::AS_Success) {
         if (m_aniIndex > 10) {
             m_aniTimer->stop();
-            emit authFinished(AuthCommon::AS_Success);
+            Q_EMIT authFinished(AuthCommon::AS_Success);
         } else {
             setAuthStateStyle(QStringLiteral(":/misc/images/unlock/unlock_%1.svg").arg(m_aniIndex++));
         }
@@ -219,7 +219,7 @@ bool AuthIris::eventFilter(QObject *watched, QEvent *event)
         && !m_isAuthing
         && AuthCommon::AS_Locked != m_state
         && DDESESSIONCC::MultiAuthFactor == m_authFactorType) {
-        emit activeAuth(m_type);
+        Q_EMIT activeAuth(m_type);
     }
 
     return false;

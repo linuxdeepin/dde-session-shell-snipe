@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -47,7 +47,7 @@ void FullManagedLoginModule::reset()
 void FullManagedLoginModule::initUI()
 {
     if (m_loginWidget) {
-        emit m_loginWidget->reset();
+        Q_EMIT m_loginWidget->reset();
         return;
     }
 
@@ -188,5 +188,4 @@ QString FullManagedLoginModule::message(const QString &message)
     return doc.toJson();
 }
 
-} // namespace module_v2
-} // namespace dss
+} // namespace module_v2} // namespace dss

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -80,7 +80,6 @@ void dss::module::AssistLoginWork::onStartAuth(const QString &user, const QStrin
 void dss::module::AssistLoginWork::generateRSAKeyPair()
 {
     int bits = 2048;  // 设置秘钥长度
-
     // 创建RSA对象
     m_keyPair = RSA_new();
     if (m_keyPair == NULL) {

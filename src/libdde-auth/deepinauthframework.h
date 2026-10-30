@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -29,9 +29,7 @@ class DeepinAuthFramework : public QObject
 
 public:
     enum AuthQuitFlag {
-        AutoQuit,  // 自动退出（默认）
-        ManualQuit // 手动退出
-    };
+        AutoQuit,  // 自动退出（默认）        ManualQuit // 手动退出    };
     Q_ENUM(AuthQuitFlag)
 
     explicit DeepinAuthFramework(QObject *parent = nullptr);
@@ -66,7 +64,7 @@ public:
     bool isDAStartupCompleted() const { return  m_isDAStartupCompleted;}
     void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
 
-signals:
+Q_SIGNALS:
     void startupCompleted();
     /* com.deepin.daemon.Authenticate */
     void LimitsInfoChanged(const QString &);
@@ -84,7 +82,7 @@ signals:
     void DeviceChanged(const int, const int);
     void TokenAccountMismatch(const QString &);
 
-public slots:
+public Q_SLOTS:
     /* New authentication framework */
     void CreateAuthController(const QString &account, const AuthCommon::AuthFlags authType, const int appType);
     void DestroyAuthController(const QString &account);

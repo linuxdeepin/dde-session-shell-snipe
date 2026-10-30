@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -95,7 +95,7 @@ void KBLayoutListView::updateSelectState(const QString &name)
         // 告知外部,更新当前输入法显示内容
         QString kbd = m_buttons[m_kbdParseList.indexOf(name)];
         if (m_clickState)
-            emit itemClicked(kbd);
+            Q_EMIT itemClicked(kbd);
     }
 }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -196,9 +196,9 @@ void AuthPassword::initConnections()
             m_lineEdit->setAlert(false);
         m_authStateLabel->setVisible(!focus && m_showAuthState);
         updatePasswordTextMargins();
-        emit focusChanged(focus);
+        Q_EMIT focusChanged(focus);
         if (focus && !blockEditSig()) {
-            emit lineEditTextChanged(m_lineEdit->text());
+            Q_EMIT lineEditTextChanged(m_lineEdit->text());
         }
 
         if (focus) {
@@ -238,15 +238,14 @@ void AuthPassword::initConnections()
             m_passwordTipsWidget->setErrDetailVisible(false);
             m_passwordTipsWidget->setVisible(false);
             m_passwordTipsWidget->adjustSize();
-            emit passwordErrorTipsClearChanged(true);
+            Q_EMIT passwordErrorTipsClearChanged(true);
         }
         if (!blockEditSig())
-            emit lineEditTextChanged(text);
+            Q_EMIT lineEditTextChanged(text);
     });
     connect(m_lineEdit, &DLineEditEx::returnPressed, this, [this, blockEditSig] {
-        if (!m_lineEdit->lineEdit()->isReadOnly()) { // 避免用户在验证的时候反复点击
-            if (!blockEditSig()) {
-                emit requestAuthenticate();
+        if (!m_lineEdit->lineEdit()->isReadOnly()) { // 避免用户在验证的时候反复点击            if (!blockEditSig()) {
+                Q_EMIT requestAuthenticate();
             } else {
                 setFocusProxy(m_assistLoginWidget);
                 m_assistLoginWidget->setFocus();
@@ -336,7 +335,7 @@ void AuthPassword::reset()
         m_passwordTipsWidget->setErrDetailVisible(false);
         m_passwordTipsWidget->setVisible(false);
         m_passwordTipsWidget->adjustSize();
-        emit passwordErrorTipsClearChanged(true);
+        Q_EMIT passwordErrorTipsClearChanged(true);
     }
 }
 
@@ -361,8 +360,8 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
         m_lineEdit->hideAlertMessage();
         hidePasswordHintWidget();
         m_resetDialogShow = false;
-        emit authFinished(state);
-        emit requestChangeFocus();
+        Q_EMIT authFinished(state);
+        Q_EMIT requestChangeFocus();
         if (m_assistLoginWidget) {
             m_assistLoginWidget->resetAuth();
             if (isPasswdAuthWidgetReplaced()) {
@@ -388,7 +387,7 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
         }
 
         m_showPrompt = false;
-        emit authFinished(state);
+        Q_EMIT authFinished(state);
 
         if (isPasswdAuthWidgetReplaced()) {
             hidePlugin();
@@ -525,7 +524,7 @@ void AuthPassword::setLimitsInfo(const LimitsInfo &info)
     }
 
     if (lockStateChanged)
-        emit notifyLockedStateChanged(m_limitsInfo->locked);
+        Q_EMIT notifyLockedStateChanged(m_limitsInfo->locked);
 }
 
 /**
@@ -632,7 +631,7 @@ void AuthPassword::updateUnlockPrompt()
     } else {
         setLineEditInfo(tr("Password"), PlaceHolderText);
         QTimer::singleShot(1000, this, [this] {
-            emit activeAuth(m_type);
+            Q_EMIT activeAuth(m_type);
         });
         qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
@@ -692,7 +691,7 @@ void AuthPassword::setResetPasswordMessageVisible(const bool isVisible, bool fro
     }
 
     m_resetPasswordMessageVisible = isVisible;
-    emit resetPasswordMessageVisibleChanged(m_resetPasswordMessageVisible);
+    Q_EMIT resetPasswordMessageVisibleChanged(m_resetPasswordMessageVisible);
 }
 
 /**
@@ -740,8 +739,7 @@ void AuthPassword::showResetPasswordMessage()
     if (m_iconButton) {
         m_iconButton->setObjectName("IconButton");
     }
-    m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));
-    DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
+    m_resetPasswordFloatingMessage->setIcon(QIcon("://misc/images/dss_warning.svg"));    DSuggestButton *suggestButton = new DSuggestButton(tr("Reset Password"));
     suggestButton->setAutoDefault(true);
     suggestButton->setObjectName("SuggestButton");
     m_resetPasswordFloatingMessage->setWidget(suggestButton);
@@ -759,7 +757,7 @@ void AuthPassword::showResetPasswordMessage()
         if (reply.isError())
             qCWarning(DDE_SHELL) << "Reset password message error: " << reply.error().message();
 
-        emit m_resetPasswordFloatingMessage->closeButtonClicked();
+        Q_EMIT m_resetPasswordFloatingMessage->closeButtonClicked();
     });
     connect(m_resetPasswordFloatingMessage, &DFloatingMessage::closeButtonClicked, this, [this]() {
         if (m_resetPasswordFloatingMessage) {
@@ -767,7 +765,7 @@ void AuthPassword::showResetPasswordMessage()
             m_resetPasswordFloatingMessage = nullptr;
         }
         m_resetPasswordMessageVisible = false;
-        emit resetPasswordMessageVisibleChanged(false);
+        Q_EMIT resetPasswordMessageVisibleChanged(false);
         // 重置密码后，输入框重新获取焦点
         m_lineEdit->setFocus();
     });
@@ -1075,7 +1073,7 @@ void AuthPassword::moveEvent(QMoveEvent *event)
 
 void AuthPassword::onReadyToAuthChanged(bool ready)
 {
-    ready ? emit lineEditTextChanged(m_lineEdit->text()) : emit lineEditTextChanged("");
+    ready ? Q_EMIT lineEditTextChanged(m_lineEdit->text()) : Q_EMIT lineEditTextChanged("");
 }
 
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -58,5 +58,4 @@ private:
     QMap<DocIndex, QString> m_doc;
     QTranslator *m_translator;
 };
-} // namespace gestureLogin
-#endif // TRANSLASTIONDOC_H
+} // namespace gestureLogin#endif // TRANSLASTIONDOC_H

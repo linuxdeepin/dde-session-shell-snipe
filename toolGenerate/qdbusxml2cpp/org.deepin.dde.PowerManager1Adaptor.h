@@ -51,13 +51,10 @@ public:
     PowerManager1Adaptor(QObject *parent);
     virtual ~PowerManager1Adaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-    bool CanHibernate();
+public: // PROPERTIESpublic Q_SLOTS: // METHODS    bool CanHibernate();
     bool CanReboot();
     bool CanShutdown();
     bool CanSuspend();
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

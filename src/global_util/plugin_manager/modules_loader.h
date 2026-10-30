@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -24,7 +24,7 @@ public:
     void setLoadLoginModule(bool loadLoginModule) { m_loadLoginModule = loadLoginModule; }
     void setModel(SessionBaseModel *model);
 
-signals:
+Q_SIGNALS:
     void loadPluginsFinished();
 
 protected:

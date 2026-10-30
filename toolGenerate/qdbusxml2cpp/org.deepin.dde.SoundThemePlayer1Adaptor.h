@@ -62,16 +62,13 @@ public:
     SoundThemePlayer1Adaptor(QObject *parent);
     virtual ~SoundThemePlayer1Adaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-    void EnableSound(const QString &name, bool enabled);
+public: // PROPERTIESpublic Q_SLOTS: // METHODS    void EnableSound(const QString &name, bool enabled);
     void EnableSoundDesktopLogin(bool enabled);
     void Play(const QString &theme, const QString &event, const QString &device);
     void PlaySoundDesktopLogin();
     void PrepareShutdownSound(int uid);
     void SaveAudioState(const QVariantMap &avtivePlayback);
     void SetSoundTheme(const QString &theme);
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

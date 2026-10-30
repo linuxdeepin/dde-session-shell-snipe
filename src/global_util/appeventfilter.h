@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,7 +15,7 @@ public:
     explicit AppEventFilter(QObject *parent = nullptr);
     bool eventFilter(QObject *watched, QEvent *event) override;
 
-signals:
+Q_SIGNALS:
     void userIsActive();
 };
 

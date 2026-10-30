@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,7 +23,7 @@ public:
     explicit LoginWindow(SessionBaseModel *const model, QWidget *parent = nullptr);
     ~LoginWindow();
 
-signals:
+Q_SIGNALS:
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetKeyboardLayout(std::shared_ptr<User> user, const QString &layout);
 

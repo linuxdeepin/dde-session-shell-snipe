@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -33,13 +33,13 @@ public:
     void setEnterEnable(bool enable);
     static void setContent(QWidget *const w);
 
-public slots:
+public Q_SLOTS:
     void updateBackground(const QString &path);
     void updateBlurBackground(const QString &path);
     void setScreen(QPointer<QScreen> screen, bool isVisible = true) override;
     void setIsHibernateMode();
 
-signals:
+Q_SIGNALS:
     void requestDisableGlobalShortcutsForWayland(bool enable);
     void requestLockFrameHide();
 
@@ -92,9 +92,7 @@ private:
     static BackgroundState backgroundState;
     static quint64 backgroundRequestId;
     static bool backgroundDisplayStarted;
-    static QString originBackgroundPath; // 原图路径
-    static QString blurBackgroundPath; // 模糊背景图片路径
-    static QMap<QString, QPixmap> blurBackgroundCacheMap;
+    static QString originBackgroundPath; // 原图路径    static QString blurBackgroundPath; // 模糊背景图片路径    static QMap<QString, QPixmap> blurBackgroundCacheMap;
 
     QPointer<QScreen> m_screen;
     SessionBaseModel *m_model = nullptr;

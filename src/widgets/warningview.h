@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,9 +11,7 @@
  * \brief The ButtonType enum 按钮枚举
  */
 enum ButtonType {
-    Cancel, // 取消
-    Accept  // 接受
-};
+    Cancel, // 取消    Accept  // 接受};
 
 class WarningView : public QFrame
 {

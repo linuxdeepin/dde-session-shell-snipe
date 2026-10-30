@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -47,7 +47,7 @@ public:
     void hideEvent(QHideEvent *event) override;
     static void OnDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-signals:
+Q_SIGNALS:
     void requestBackground(const QString &path);
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetLayout(std::shared_ptr<User> user, const QString &value);
@@ -63,7 +63,7 @@ signals:
     void noPasswordLoginChanged(const QString &account, bool noPassword);
     void requestLockStateChange(const bool locked);
 
-public slots:
+public Q_SLOTS:
     void pushPasswordFrame();
     void pushUserFrame();
     void pushConfirmFrame();

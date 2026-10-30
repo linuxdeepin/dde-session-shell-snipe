@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -86,8 +86,7 @@ void TimeWidget::refreshTime()
         m_timeLabel->setText(m_locale.toString(QTime::currentTime(), m_shortTimeFormat));
         m_dateLabel->setText(m_locale.toString(QDate::currentDate(), m_shortDateFormat + " " + weekdayFormat.at(m_weekdayIndex)));
     }
-#endif // ENABLE_DSS_SNIPE
-}
+#endif // ENABLE_DSS_SNIPE}
 
 /**
  * @brief TimeWidget::setWeekdayFormatType 根据类型来设置周显示格式

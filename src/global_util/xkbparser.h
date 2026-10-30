@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -27,7 +27,7 @@ public:
     };
     QList<LayoutItem> KeyboardLayoutList;
 
-public slots:
+public Q_SLOTS:
     QStringList lookUpKeyboardList(QStringList keyboardList_key);
     QString lookUpKeyboardKey(const QString &keyboard_value);
 

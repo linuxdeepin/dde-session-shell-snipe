@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -33,11 +33,9 @@ public:
     void hide();
     void setAuthStatueVisible(bool visible);
 
-signals:
+Q_SIGNALS:
     void focusChanged(const bool);
-    void lineEditTextChanged(const QString &); // 数据同步
-    void requestChangeFocus();                 // 切换焦点
-
+    void lineEditTextChanged(const QString &); // 数据同步    void requestChangeFocus();                 // 切换焦点
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
@@ -47,8 +45,6 @@ private:
     void updateUnlockPrompt() override;
 
 private:
-    DLabel *m_capsLock;      // 大小写状态
-    DLineEditEx *m_lineEdit; // PIN 输入框
-};
+    DLabel *m_capsLock;      // 大小写状态    DLineEditEx *m_lineEdit; // PIN 输入框};
 
 #endif // AUTHUKEY_H

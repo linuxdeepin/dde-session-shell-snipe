@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -10,8 +10,7 @@
 #include "dconfigwatcher.h"
 #endif
 
-#if 0 // storage i10n
-QT_TRANSLATE_NOOP("ShutdownWidget", "Shut down"),
+#if 0 // storage i10nQT_TRANSLATE_NOOP("ShutdownWidget", "Shut down"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Reboot"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Suspend"),
 QT_TRANSLATE_NOOP("ShutdownWidget", "Hibernate")
@@ -258,8 +257,7 @@ void ShutdownWidget::initUI()
     m_requireShutdownButton->setAutoExclusive(true);
     updateTr(m_requireShutdownButton, "Shut down");
 #ifndef ENABLE_DSS_SNIPE
-    GSettingWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);  // GSettings配置项
-#else
+    GSettingWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);  // GSettings配置项#else
     DConfigWatcher::instance()->bind("systemShutdown", m_requireShutdownButton);
 #endif
 
@@ -271,8 +269,7 @@ void ShutdownWidget::initUI()
     m_requireRestartButton->setAutoExclusive(true);
     updateTr(m_requireRestartButton, "Reboot");
 #ifndef ENABLE_DSS_SNIPE
-    GSettingWatcher::instance()->bind("systemReboot", m_requireRestartButton);  // GSettings配置项
-#else
+    GSettingWatcher::instance()->bind("systemReboot", m_requireRestartButton);  // GSettings配置项#else
     DConfigWatcher::instance()->bind("systemReboot", m_requireRestartButton);
 #endif
 
@@ -284,8 +281,7 @@ void ShutdownWidget::initUI()
     m_requireSuspendButton->setAutoExclusive(true);
     updateTr(m_requireSuspendButton, "Suspend");
 #ifndef ENABLE_DSS_SNIPE
-    GSettingWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);  // GSettings配置项
-#else
+    GSettingWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);  // GSettings配置项#else
     DConfigWatcher::instance()->bind("systemSuspend", m_requireSuspendButton);
 #endif
 
@@ -297,8 +293,7 @@ void ShutdownWidget::initUI()
     m_requireHibernateButton->setAutoExclusive(true);
     updateTr(m_requireHibernateButton, "Hibernate");
 #ifndef ENABLE_DSS_SNIPE
-    GSettingWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);  // GSettings配置项
-#else
+    GSettingWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);  // GSettings配置项#else
     DConfigWatcher::instance()->bind("systemHibernate", m_requireHibernateButton);
 #endif
 
@@ -310,8 +305,7 @@ void ShutdownWidget::initUI()
     m_requireLockButton->setAutoExclusive(true);
     updateTr(m_requireLockButton, "Lock");
 #ifndef ENABLE_DSS_SNIPE
-    GSettingWatcher::instance()->bind("systemLock", m_requireLockButton);  // GSettings配置项
-#else
+    GSettingWatcher::instance()->bind("systemLock", m_requireLockButton);  // GSettings配置项#else
     DConfigWatcher::instance()->bind("systemLock", m_requireLockButton);
 #endif
 
@@ -629,7 +623,7 @@ void ShutdownWidget::onRequirePowerAction(SessionBaseModel::PowerAction powerAct
         case SessionBaseModel::PowerAction::RequireLogout:
         case SessionBaseModel::PowerAction::RequireSuspend:
         case SessionBaseModel::PowerAction::RequireHibernate:
-            emit m_model->shutdownInhibit(powerAction, needConfirm);
+            Q_EMIT m_model->shutdownInhibit(powerAction, needConfirm);
             break;
         default:
             m_model->setPowerAction(powerAction);

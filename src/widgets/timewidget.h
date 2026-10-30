@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -26,7 +26,6 @@ public:
 #ifdef ENABLE_DSS_SNIPE
     void updateLocale(const QString &locale, const QString &shortTimeFormat = "", const QString &shortDateFormat = "");
 #endif // ENABLE_DSS_SNIPE
-
 public Q_SLOTS:
     void setWeekdayFormatType(int type);
     void setShortDateFormat(int type);
@@ -50,7 +49,6 @@ private:
 #ifdef ENABLE_DSS_SNIPE
     QString m_shortTimeFormat;
     QString m_shortDateFormat;
-#endif // ENABLE_DSS_SNIPE
-};
+#endif // ENABLE_DSS_SNIPE};
 
 #endif // TIMEWIDGET_H

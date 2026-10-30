@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -68,7 +68,7 @@ void DBusLockAgent::Suspend(bool enable)
             m_model->setVisible(true);
         } else {
             m_model->setVisible(false);
-            emit m_model->visibleChanged(false);
+            Q_EMIT m_model->visibleChanged(false);
         }
     }
 }
@@ -92,7 +92,7 @@ void DBusLockAgent::ShowUserList()
     if (isUpdating())
         return;
 
-    emit m_model->showUserList();
+    Q_EMIT m_model->showUserList();
 }
 
 /**

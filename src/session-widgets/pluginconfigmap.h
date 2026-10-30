@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -35,7 +35,7 @@ public:
     static PluginConfigMap &instance();
     const PluginConfig *getConfig();
 
-public slots:
+public Q_SLOTS:
     void requestAddConfig(ConfigIndex index, const PluginConfig *);
     void requestRemoveConfig(ConfigIndex);
 

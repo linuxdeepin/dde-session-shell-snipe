@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,7 +12,6 @@
 int main(int argc, char **argv)
 {
     qputenv("QT_QPA_PLATFORM", "offscreen"); // gerrit编译时没有显示器，需要指定环境变量
-
     QApplication app(argc, argv);
 
     ::testing::InitGoogleTest(&argc, argv);

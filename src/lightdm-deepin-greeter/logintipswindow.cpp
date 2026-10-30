@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -81,7 +81,7 @@ void LoginTipsWindow::initUI()
 
     connect(m_btn, &QPushButton::clicked, this, [this] {
         // 点击确认后打开登录界面
-        emit requestClosed();
+        Q_EMIT requestClosed();
         this->close();
     });
 }

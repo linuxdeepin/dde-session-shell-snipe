@@ -200,8 +200,7 @@ public:
     WmAdaptor(QObject *parent);
     virtual ~WmAdaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(bool compositingAllowSwitch READ compositingAllowSwitch)
+public: // PROPERTIES    Q_PROPERTY(bool compositingAllowSwitch READ compositingAllowSwitch)
     bool compositingAllowSwitch() const;
 
     Q_PROPERTY(bool compositingEnabled READ compositingEnabled WRITE setCompositingEnabled)
@@ -223,8 +222,7 @@ public: // PROPERTIES
     bool zoneEnabled() const;
     void setZoneEnabled(bool value);
 
-public Q_SLOTS: // METHODS
-    void BeginToMoveActiveWindow();
+public Q_SLOTS: // METHODS    void BeginToMoveActiveWindow();
     void CancelPreviewWindow();
     void ChangeCurrentWorkspaceBackground(const QString &uri);
     void ClearMoveStatus();
@@ -270,8 +268,7 @@ public Q_SLOTS: // METHODS
     void ToggleActiveWindowMaximize();
     void TouchToMove(int x, int y);
     int WorkspaceCount();
-Q_SIGNALS: // SIGNALS
-    void WorkspaceBackgroundChanged(int index, const QString &newUri);
+Q_SIGNALS: // SIGNALS    void WorkspaceBackgroundChanged(int index, const QString &newUri);
     void WorkspaceBackgroundChangedForMonitor(int index, const QString &strMonitorName, const QString &uri);
     void WorkspaceSwitched(int from, int to);
     void compositingEnabledChanged(bool enabled);

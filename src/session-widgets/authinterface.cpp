@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -164,7 +164,7 @@ void AuthInterface::onLoginUserListChanged(const QString &list)
     }
 
     if (m_model->isServerModel()) {
-        emit m_model->userListLoginedChanged(m_model->loginedUserList());
+        Q_EMIT m_model->userListLoginedChanged(m_model->loginedUserList());
     }
 }
 

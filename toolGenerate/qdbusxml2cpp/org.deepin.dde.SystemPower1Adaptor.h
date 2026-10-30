@@ -73,8 +73,7 @@ public:
     Power1Adaptor(QObject *parent);
     virtual ~Power1Adaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(double BatteryPercentage READ batteryPercentage)
+public: // PROPERTIES    Q_PROPERTY(double BatteryPercentage READ batteryPercentage)
     double batteryPercentage() const;
 
     Q_PROPERTY(uint BatteryStatus READ batteryStatus)
@@ -121,14 +120,12 @@ public: // PROPERTIES
     bool powerSystemAutoToSleepWhenFree() const;
     void setPowerSystemAutoToSleepWhenFree(bool value);
 
-public Q_SLOTS: // METHODS
-    QList<QDBusObjectPath> GetBatteries();
+public Q_SLOTS: // METHODS    QList<QDBusObjectPath> GetBatteries();
     void Refresh();
     void RefreshBatteries();
     void RefreshMains();
     void SetMode(const QString &mode);
-Q_SIGNALS: // SIGNALS
-    void BatteryAdded(const QDBusObjectPath &objpath);
+Q_SIGNALS: // SIGNALS    void BatteryAdded(const QDBusObjectPath &objpath);
     void BatteryDisplayUpdate(qlonglong timestamp);
     void BatteryRemoved(const QDBusObjectPath &objpath);
     void LidClosed();

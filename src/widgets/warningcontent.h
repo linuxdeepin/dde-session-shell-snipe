@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -29,7 +29,7 @@ public:
     bool supportDelayOrWait() const;
     void tryGrabKeyboard(bool exitIfFailed = true);
 
-signals:
+Q_SIGNALS:
     void requestLockFrameHide();
 
 protected:
@@ -40,7 +40,7 @@ protected:
     void doCancelShutdownInhibit();
     void doAcceptShutdownInhibit();
 
-private slots:
+private Q_SLOTS:
     void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
 
 private:

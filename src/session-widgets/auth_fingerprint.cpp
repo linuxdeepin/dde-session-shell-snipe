@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -70,7 +70,7 @@ void AuthFingerprint::setAuthState(const AuthCommon::AuthState state, const QStr
             setAnimationState(true);
         m_textLabel->setText(tr("Verification successful"));
         m_showPrompt = true;
-        emit authFinished(state);
+        Q_EMIT authFinished(state);
         break;
     case AuthCommon::AS_Failure: {
         setAnimationState(false);
@@ -83,7 +83,7 @@ void AuthFingerprint::setAuthState(const AuthCommon::AuthState state, const QStr
         } else if (leftTimes == 1) {
             m_textLabel->setText(tr("Verification failed, only one chance left"));
         }
-        emit authFinished(state);
+        Q_EMIT authFinished(state);
         break;
     }
     case AuthCommon::AS_Cancel:
@@ -135,7 +135,7 @@ void AuthFingerprint::setAuthState(const AuthCommon::AuthState state, const QStr
     case AuthCommon::AS_Unlocked:
         setAnimationState(false);
         setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
-        emit activeAuth(AuthCommon::AT_Fingerprint);
+        Q_EMIT activeAuth(AuthCommon::AT_Fingerprint);
         break;
     default:
         setAnimationState(false);
@@ -191,7 +191,7 @@ void AuthFingerprint::updateUnlockPrompt()
         m_textLabel->setText(tr("Fingerprint locked, use password please"));
     } else {
         QTimer::singleShot(1000, this, [this] {
-            emit activeAuth(m_type);
+            Q_EMIT activeAuth(m_type);
         });
         qCInfo(DDE_SHELL) << "Waiting authentication service...";
     }
@@ -201,7 +201,7 @@ void AuthFingerprint::updateUnlockPrompt()
 void AuthFingerprint::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        emit activeAuth(m_type);
+        Q_EMIT activeAuth(m_type);
     }
     QWidget::mouseReleaseEvent(event);
 }
@@ -214,7 +214,7 @@ void AuthFingerprint::doAnimation()
     if (m_state == AuthCommon::AS_Success) {
         if (m_aniIndex > 10) {
             m_aniTimer->stop();
-            emit authFinished(AuthCommon::AS_Success);
+            Q_EMIT authFinished(AuthCommon::AS_Success);
         } else {
             setAuthStateStyle(QStringLiteral(":/misc/images/unlock/unlock_%1.svg").arg(m_aniIndex++));
         }

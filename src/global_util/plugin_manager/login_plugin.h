@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -28,15 +28,7 @@ public:
     // 认证插件配置
     struct PluginConfig
     {
-        bool showAvatar = true;                     // 是否显示头像
-        bool showUserName = true;                   // 是否显示用户名
-        bool showSwitchButton = true;               // 是否显示类型切换按钮
-        bool showLockButton = true;                 // 是否显示解锁按钮
-        bool showBackGroundColor = true;            // 是否显示灰色背景
-        bool switchUserWhenCheckAccount = true;     // 检测用户已经登录后是否切换到这个已登录的用户
-        bool notUsedByLoginedUserInGreeter = false; // 在登录界面且当前用户已登录时不使用插件
-        bool saveLastAuthType = true;               // 是否保存上一次认证类型
-        // 默认使用此认证类型的强度
+        bool showAvatar = true;                     // 是否显示头像        bool showUserName = true;                   // 是否显示用户名        bool showSwitchButton = true;               // 是否显示类型切换按钮        bool showLockButton = true;                 // 是否显示解锁按钮        bool showBackGroundColor = true;            // 是否显示灰色背景        bool switchUserWhenCheckAccount = true;     // 检测用户已经登录后是否切换到这个已登录的用户        bool notUsedByLoginedUserInGreeter = false; // 在登录界面且当前用户已登录时不使用插件        bool saveLastAuthType = true;               // 是否保存上一次认证类型        // 默认使用此认证类型的强度
         DefaultAuthLevel defaultAuthLevel = DefaultAuthLevel::Default;
         AuthCommon::AuthType assignAuthType = AuthCommon::AuthType::AT_Custom;
 
@@ -80,15 +72,10 @@ public:
     bool isPluginEnabled();
 
     int level(); // 插件所处层级
-
     int loginType(); // 从插件获取登录类型: 默认、多因、第三方
-
     bool hasSecondLevel(const QString &user); // 检查是否有第二层
-
     int updateLoginType(); // 通知插件更新登录类型，登录类型信息依赖远程配置
-
     int sessionTimeout(); // 插件自定义的会话超时时长，单位ms
-
     bool supportDefaultUser();
 
     void notifyCurrentUserChanged(const QString &userName, uid_t uid);

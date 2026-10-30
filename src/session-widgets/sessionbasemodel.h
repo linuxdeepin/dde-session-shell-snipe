@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -77,22 +77,10 @@ public:
 
     /* com.deepin.daemon.Authenticate */
     struct AuthProperty {
-        bool FuzzyMFA;          // Reserved
-        bool MFAFlag;           // 多因子标志位
-        int FrameworkState;     // 认证框架是否可用标志位
-        AuthFlags AuthType;           // 账户开启的认证类型
-        int MixAuthFlags;       // 受支持的认证类型
-        int PINLen;             // PIN 码的最大长度
-        QString EncryptionType; // 加密类型
-        QString Prompt;         // 提示语
-        QString UserName;       // 账户名
-    };
+        bool FuzzyMFA;          // Reserved        bool MFAFlag;           // 多因子标志位        int FrameworkState;     // 认证框架是否可用标志位        AuthFlags AuthType;           // 账户开启的认证类型        int MixAuthFlags;       // 受支持的认证类型        int PINLen;             // PIN 码的最大长度        QString EncryptionType; // 加密类型        QString Prompt;         // 提示语        QString UserName;       // 账户名    };
 
     struct AuthResult {
-        AuthType authType;       // 认证结果对应的认证类型，AT_ALL时代表所有认证类型
-        AuthState authState;     // 认证结果
-        QString authMessage;     // 认证消息
-    };
+        AuthType authType;       // 认证结果对应的认证类型，AT_ALL时代表所有认证类型        AuthState authState;     // 认证结果        QString authMessage;     // 认证消息    };
 
     explicit SessionBaseModel(QObject *parent = nullptr);
     ~SessionBaseModel() override;
@@ -195,7 +183,7 @@ public:
     // 检查当前用户是否设置了免密登录
     bool isNoPasswordLogin() const;
 
-signals:
+Q_SIGNALS:
     /* com.deepin.daemon.Accounts */
     void currentUserChanged(const std::shared_ptr<User>);
     void userAdded(const std::shared_ptr<User>);
@@ -209,7 +197,7 @@ signals:
     //通知前端lightdm pam 已经开启
     void lightdmPamStartedChanged();
 
-public slots:
+public Q_SLOTS:
     /* com.deepin.daemon.Accounts */
     void addUser(const QString &path);
     void addUser(const std::shared_ptr<User> user);
@@ -235,7 +223,7 @@ public slots:
 #ifndef ENABLE_DSS_SNIPE
     QVariant getPowerGSettings(const QString &node, const QString &key);
 #endif
-signals:
+Q_SIGNALS:
     void authTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
@@ -261,9 +249,7 @@ signals:
     void activeAuthChanged(bool active);
     void blackModeChanged(bool is_black);
     void shutdownkModeChanged(bool is_black);
-    void HibernateModeChanged(bool is_hibernate); //休眠信号改变
-    void prepareForSleep(bool is_Sleep);          //待机信号改变
-    void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
+    void HibernateModeChanged(bool is_hibernate); //休眠信号改变    void prepareForSleep(bool is_Sleep);          //待机信号改变    void shutdownInhibit(const SessionBaseModel::PowerAction action, bool needConfirm);
     void tipsShowed();
     void clearServerLoginWidgetContent();
 
@@ -296,8 +282,7 @@ private:
     bool m_isBlackMode;
     bool m_isHibernateMode;
     bool m_allowShowCustomUser;
-    bool m_SEOpen; // 保存等保开启、关闭的状态
-    bool m_isUseWayland;
+    bool m_SEOpen; // 保存等保开启、关闭的状态    bool m_isUseWayland;
     int m_userListSize = 0;
     bool m_isTerminalLocked = false;
     bool m_userlistVisible = true;
@@ -307,8 +292,7 @@ private:
     QString m_sessionKey;
     PowerAction m_powerAction;
     ModeStatus m_currentModeState;
-    AuthProperty m_authProperty; // 认证相关属性的值，初始时通过dbus获取，暂存在model中，供widget初始化界面使用
-    QMap<QString, std::shared_ptr<User>> *m_users;
+    AuthProperty m_authProperty; // 认证相关属性的值，初始时通过dbus获取，暂存在model中，供widget初始化界面使用    QMap<QString, std::shared_ptr<User>> *m_users;
     QMap<QString, std::shared_ptr<User>> *m_loginedUsers;
     UpdatePowerMode m_updatePowerMode;
     ContentType m_currentContentType;
@@ -317,13 +301,10 @@ private:
 #else
     Dtk::Core::DConfig *m_powerConfig = nullptr;
 #endif
-    bool m_lightdmPamStarted; // 标志lightdmpam是否已经开启，主要用于greeter,lock不涉及lightdm
-    AuthResult m_authResult; // 记录认证结果
-    bool m_enableShellBlackMode;
+    bool m_lightdmPamStarted; // 标志lightdmpam是否已经开启，主要用于greeter,lock不涉及lightdm    AuthResult m_authResult; // 记录认证结果    bool m_enableShellBlackMode;
     bool m_enableShutdownBlackWidget;
     bool m_visibleShutdownWhenRebootOrShutdown;
-    bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程
-    bool m_gsCheckpwd;
+    bool m_isQuickLoginProcess=false;//标志当前界面展示是否为快速登录流程    bool m_gsCheckpwd;
 };
 
 #endif // SESSIONBASEMODEL_H

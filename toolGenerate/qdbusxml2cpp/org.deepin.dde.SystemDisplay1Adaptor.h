@@ -48,12 +48,9 @@ public:
     Display1Adaptor(QObject *parent);
     virtual ~Display1Adaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-    QString GetConfig();
+public: // PROPERTIESpublic Q_SLOTS: // METHODS    QString GetConfig();
     void SetConfig(const QString &in0);
-Q_SIGNALS: // SIGNALS
-    void ConfigUpdated(const QString &in0);
+Q_SIGNALS: // SIGNALS    void ConfigUpdated(const QString &in0);
 };
 
 #endif

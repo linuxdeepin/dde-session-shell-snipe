@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -124,7 +124,7 @@ void User::updateLoginState(const bool isLogin)
         return;
     }
     m_isLogin = isLogin;
-    emit loginStateChanged(isLogin);
+    Q_EMIT loginStateChanged(isLogin);
 }
 
 /**
@@ -147,7 +147,7 @@ void User::updateLimitsInfo(const QString &info)
         limitsInfoTmp.flag = limitsInfoObj["flag"].toInt();
         m_limitsInfo->insert(limitsInfoObj["flag"].toInt(), limitsInfoTmp);
     }
-    emit limitsInfoChanged(m_limitsInfo);
+    Q_EMIT limitsInfoChanged(m_limitsInfo);
 }
 
 /**
@@ -167,7 +167,7 @@ void User::updatePasswordExpiredState(User::ExpiredState state, int dayLeft)
 {
     m_expiredState = state;
     m_expiredDayLeft = dayLeft;
-    emit passwordExpiredInfoChanged();
+    Q_EMIT passwordExpiredInfoChanged();
 }
 
 bool User::allowToChangePassword() const
@@ -381,7 +381,7 @@ void NativeUser::updateAvatar(const QString &path)
     } else {
         m_avatar = DEFAULT_AVATAR;
     }
-    emit avatarChanged(pathTmp);
+    Q_EMIT avatarChanged(pathTmp);
 }
 
 /**
@@ -396,7 +396,7 @@ void NativeUser::updateAutomaticLogin(const bool autoLoginState)
         return;
     }
     m_isAutomaticLogin = autoLoginState;
-    emit autoLoginStateChanged(autoLoginState);
+    Q_EMIT autoLoginStateChanged(autoLoginState);
 }
 
 /**
@@ -431,7 +431,7 @@ void NativeUser::updateFullName(const QString &fullName)
         return;
     }
     m_fullName = fullName;
-    emit displayNameChanged(m_fullName.isEmpty() ? m_name : m_fullName);
+    Q_EMIT displayNameChanged(m_fullName.isEmpty() ? m_name : m_fullName);
 }
 
 /**
@@ -450,7 +450,7 @@ void NativeUser::updateGreeterBackground(const QString &path)
         return;
     }
     m_greeterBackground = pathTmp;
-    emit greeterBackgroundChanged(pathTmp);
+    Q_EMIT greeterBackgroundChanged(pathTmp);
 }
 
 /**
@@ -464,7 +464,7 @@ void NativeUser::updateKeyboardLayout(const QString &keyboardLayout)
         return;
     }
     m_keyboardLayout = keyboardLayout;
-    emit keyboardLayoutChanged(keyboardLayout);
+    Q_EMIT keyboardLayoutChanged(keyboardLayout);
 }
 
 /**
@@ -478,7 +478,7 @@ void NativeUser::updateKeyboardLayoutList(const QStringList &keyboardLayoutList)
         return;
     }
     m_keyboardLayoutList = keyboardLayoutList;
-    emit keyboardLayoutListChanged(keyboardLayoutList);
+    Q_EMIT keyboardLayoutListChanged(keyboardLayoutList);
 }
 
 /**
@@ -492,7 +492,7 @@ void NativeUser::updateLocale(const QString &locale)
         return;
     }
     m_locale = locale;
-    emit localeChanged(locale);
+    Q_EMIT localeChanged(locale);
 }
 
 /**
@@ -506,7 +506,7 @@ void NativeUser::updateName(const QString &name)
         return;
     }
     m_name = name;
-    emit displayNameChanged(m_fullName.isEmpty() ? name : m_fullName);
+    Q_EMIT displayNameChanged(m_fullName.isEmpty() ? name : m_fullName);
 }
 
 /**
@@ -521,7 +521,7 @@ void NativeUser::updateNoPasswordLogin(const bool isNoPasswordLogin)
         return;
     }
     m_isNoPasswordLogin = isNoPasswordLogin;
-    emit noPasswordLoginChanged(isNoPasswordLogin);
+    Q_EMIT noPasswordLoginChanged(isNoPasswordLogin);
 }
 
 /**
@@ -536,7 +536,7 @@ void NativeUser::updatePasswordHint(const QString &hint)
         return;
     }
     m_passwordHint = hint;
-    emit passwordHintChanged(hint);
+    Q_EMIT passwordHintChanged(hint);
 }
 
 /**
@@ -547,7 +547,7 @@ void NativeUser::updatePasswordExpiredInfo()
     m_expiredState = m_userInter->PasswordExpiredInfo(m_expiredDayLeft).value();
     qCInfo(DDE_SHELL) << "User expired state: " << m_expiredState << ", expired day left: " << m_expiredDayLeft;
 
-    emit passwordExpiredInfoChanged();
+    Q_EMIT passwordExpiredInfoChanged();
 }
 
 /**
@@ -610,7 +610,7 @@ void NativeUser::updateShortDateFormat(const int format)
         return;
     }
     m_shortDateFormat = format;
-    emit shortDateFormatChanged(format);
+    Q_EMIT shortDateFormatChanged(format);
 }
 
 /**
@@ -624,7 +624,7 @@ void NativeUser::updateShortTimeFormat(const int format)
         return;
     }
     m_shortTimeFormat = format;
-    emit shortTimeFormatChanged(format);
+    Q_EMIT shortTimeFormatChanged(format);
 }
 
 /**
@@ -638,7 +638,7 @@ void NativeUser::updateWeekdayFormat(const int format)
         return;
     }
     m_weekdayFormat = format;
-    emit weekdayFormatChanged(format);
+    Q_EMIT weekdayFormatChanged(format);
 }
 
 /**
@@ -666,7 +666,7 @@ void NativeUser::updateUse24HourFormat(const bool is24HourFormat)
         return;
     }
     m_isUse24HourFormat = is24HourFormat;
-    emit use24HourFormatChanged(is24HourFormat);
+    Q_EMIT use24HourFormatChanged(is24HourFormat);
 }
 
 QStringList NativeUser::readDesktopBackgroundPath(const QString &path)
@@ -711,7 +711,7 @@ void ADDomainUser::setFullName(const QString &fullName)
         return;
     }
     m_fullName = fullName;
-    emit displayNameChanged(m_fullName.isEmpty() ? m_name : m_fullName);
+    Q_EMIT displayNameChanged(m_fullName.isEmpty() ? m_name : m_fullName);
 }
 
 void ADDomainUser::setName(const QString &name)
@@ -720,5 +720,5 @@ void ADDomainUser::setName(const QString &name)
         return;
     }
     m_name = name;
-    emit displayNameChanged(m_fullName.isEmpty() ? name : m_fullName);
+    Q_EMIT displayNameChanged(m_fullName.isEmpty() ? name : m_fullName);
 }

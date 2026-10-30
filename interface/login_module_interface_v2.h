@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,12 +25,7 @@ using MessageCallbackFunc = dss::module::MessageCallbackFunc;
  * @brief 认证插件需要传回的数据
  */
 struct AuthCallbackData {
-    int result = AuthResult::None;  // 认证结果
-    QString account;                // 账户
-    QString token;                  // 令牌
-    QString message;                // 提示消息
-    QString json;                   // 预留数据
-};
+    int result = AuthResult::None;  // 认证结果    QString account;                // 账户    QString token;                  // 令牌    QString message;                // 提示消息    QString json;                   // 预留数据};
 
 /**
  * @brief 验证回调函数
@@ -45,9 +40,7 @@ using AuthCallbackFun = void (*)(const AuthCallbackData *, void *);
  *
  */
 enum AuthObjectType {
-    LightDM,            // light display manager 显示管理器
-    DeepinAuthenticate  // deepin authenticate service 深度认证框架
-};
+    LightDM,            // light display manager 显示管理器    DeepinAuthenticate  // deepin authenticate service 深度认证框架};
 
 class LoginModuleInterfaceV2 : public dss::module::BaseModuleInterface
 {
@@ -108,9 +101,7 @@ public:
     // Warning: 不要增加虚函数，即使在最后面（如果派生类也有虚函数，那么虚表寻址也会错误）
 };
 
-} // namespace module_v2
-} // namespace dss
-
+} // namespace module_v2} // namespace dss
 Q_DECLARE_INTERFACE(dss::module_v2::LoginModuleInterfaceV2, "com.deepin.dde.shell.Modules_v2.Login")
 
 #endif // LOGINMODULEINTERFACE_V2_H

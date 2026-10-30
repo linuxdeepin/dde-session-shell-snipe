@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -179,35 +179,15 @@ protected Q_SLOTS:
 protected:
     const SessionBaseModel *m_model;
 
-    DBlurEffectWidget *m_blurEffectWidget; // 模糊背景
-    TransparentButton *m_lockButton;         // 解锁按钮
-    UserAvatar *m_userAvatar;              // 用户头像
-
-    DLabel *m_expiredStateLabel;           // 密码过期提示
-    DLineEditEx *m_accountEdit;   // 用户名输入框
-    UserNameWidget *m_userNameWidget;    // 用户名
-
-    QPointer<AuthSingle> m_singleAuth;           // PAM
-    QPointer<AuthPassword> m_passwordAuth;       // 密码
-    QPointer<AuthFingerprint> m_fingerprintAuth; // 指纹
-    QPointer<AuthUKey> m_ukeyAuth;               // UKey
-    QPointer<AuthFace> m_faceAuth;               // 面容
-    QPointer<AuthIris> m_irisAuth;               // 虹膜
-    QPointer<AuthPasskey> m_passkeyAuth;         // 安全密钥
-    QPointer<AuthCustom> m_gestureAuth;          // 手势
-    QPointer<AuthCustom> m_customAuth;           // 自定义认证
-
-    QString m_passwordHint;     // 密码提示
-    QString m_keyboardType;     // 键盘布局类型
-    QStringList m_keyboardList; // 键盘布局列表
-
+    DBlurEffectWidget *m_blurEffectWidget; // 模糊背景    TransparentButton *m_lockButton;         // 解锁按钮    UserAvatar *m_userAvatar;              // 用户头像
+    DLabel *m_expiredStateLabel;           // 密码过期提示    DLineEditEx *m_accountEdit;   // 用户名输入框    UserNameWidget *m_userNameWidget;    // 用户名
+    QPointer<AuthSingle> m_singleAuth;           // PAM    QPointer<AuthPassword> m_passwordAuth;       // 密码    QPointer<AuthFingerprint> m_fingerprintAuth; // 指纹    QPointer<AuthUKey> m_ukeyAuth;               // UKey    QPointer<AuthFace> m_faceAuth;               // 面容    QPointer<AuthIris> m_irisAuth;               // 虹膜    QPointer<AuthPasskey> m_passkeyAuth;         // 安全密钥    QPointer<AuthCustom> m_gestureAuth;          // 手势    QPointer<AuthCustom> m_customAuth;           // 自定义认证
+    QString m_passwordHint;     // 密码提示    QString m_keyboardType;     // 键盘布局类型    QStringList m_keyboardList; // 键盘布局列表
     std::shared_ptr<User> m_user; // 当前用户
-
     QList<QMetaObject::Connection> m_connectionList;
     QMap<QString, int> m_registerFunctions;
 
     QTimer *m_refreshTimer;
-    AuthCommon::AuthState m_authState;  // 当前验证状态
-};
+    AuthCommon::AuthState m_authState;  // 当前验证状态};
 
 #endif // AUTHWIDGET_H

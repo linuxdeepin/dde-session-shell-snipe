@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -256,7 +256,7 @@ void MFAWidget::initPasswdAuth()
     m_authLayout->insertWidget(m_index, m_passwordAuth);
 
     connect(m_passwordAuth, &AuthPassword::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Password);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Password);
     });
     connect(m_passwordAuth, &AuthPassword::requestAuthenticate, this, [this] {
         const QString &text = m_passwordAuth->lineEditText();
@@ -273,7 +273,7 @@ void MFAWidget::initPasswdAuth()
         m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
         m_passwordAuth->setAnimationState(true);
         m_passwordAuth->setLineEditEnabled(false);
-        emit sendTokenToAuth(m_model->currentUser()->name(), AT_Password, text);
+        Q_EMIT sendTokenToAuth(m_model->currentUser()->name(), AT_Password, text);
     });
     connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const AuthState value) {
         checkAuthResult(AT_Password, value);
@@ -298,7 +298,7 @@ void MFAWidget::initFingerprintAuth()
     m_authLayout->insertWidget(m_index, m_fingerprintAuth);
 
     connect(m_fingerprintAuth, &AuthFingerprint::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Fingerprint);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Fingerprint);
     });
     connect(m_fingerprintAuth, &AuthFingerprint::authFinished, this, [this](const AuthState value) {
         checkAuthResult(AT_Fingerprint, value);
@@ -321,7 +321,7 @@ void MFAWidget::initUKeyAuth()
     m_authLayout->insertWidget(m_index, m_ukeyAuth);
 
     connect(m_ukeyAuth, &AuthUKey::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Ukey);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Ukey);
     });
     connect(m_ukeyAuth, &AuthUKey::requestAuthenticate, this, [this] {
         const QString &text = m_ukeyAuth->lineEditText();
@@ -331,7 +331,7 @@ void MFAWidget::initUKeyAuth()
         m_ukeyAuth->setAuthStateStyle(LOGIN_SPINNER);
         m_ukeyAuth->setAnimationState(true);
         m_ukeyAuth->setLineEditEnabled(false);
-        emit sendTokenToAuth(m_model->currentUser()->name(), AT_Ukey, text);
+        Q_EMIT sendTokenToAuth(m_model->currentUser()->name(), AT_Ukey, text);
     });
     connect(m_lockButton, &QPushButton::clicked, m_ukeyAuth, &AuthUKey::requestAuthenticate);
     connect(m_ukeyAuth, &AuthUKey::authFinished, this, [this](const AuthState state) {
@@ -340,7 +340,7 @@ void MFAWidget::initUKeyAuth()
     connect(KeyboardMonitor::instance(), &KeyboardMonitor::capsLockStatusChanged, m_ukeyAuth, &AuthUKey::setCapsLockVisible);
     connect(m_ukeyAuth, &AuthUKey::lineEditTextChanged, this, [this](const QString &value) {
         if (m_model->getAuthProperty().PINLen > 0 && value.size() >= m_model->getAuthProperty().PINLen) {
-            emit m_ukeyAuth->requestAuthenticate();
+            Q_EMIT m_ukeyAuth->requestAuthenticate();
         }
     });
     connect(m_ukeyAuth, &AuthUKey::requestChangeFocus, this, &MFAWidget::updateFocusPosition);
@@ -361,7 +361,7 @@ void MFAWidget::initFaceAuth()
     m_authLayout->insertWidget(m_index, m_faceAuth);
 
     connect(m_faceAuth, &AuthFace::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
     });
     connect(m_faceAuth, &AuthFace::authFinished, this, [this](const AuthState state) {
         checkAuthResult(AT_Face, state);
@@ -383,7 +383,7 @@ void MFAWidget::initIrisAuth()
     m_authLayout->insertWidget(m_index, m_irisAuth);
 
     connect(m_irisAuth, &AuthIris::activeAuth, this, [this] {
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
     });
     connect(m_irisAuth, &AuthIris::authFinished, this, [this](const AuthState state) {
         checkAuthResult(AT_Iris, state);
@@ -436,15 +436,15 @@ void MFAWidget::checkAuthResult(const AuthType type, const AuthState state)
     if (type == AT_Password && state == AS_Success) {
         if (m_fingerprintAuth && m_fingerprintAuth->authState() == AS_Locked) {
             m_fingerprintAuth->reset();
-            emit m_fingerprintAuth->activeAuth(AT_Fingerprint);
+            Q_EMIT m_fingerprintAuth->activeAuth(AT_Fingerprint);
         }
         if (m_faceAuth && m_faceAuth->authState() == AS_Locked) {
             m_faceAuth->reset();
-            emit m_faceAuth->activeAuth(AT_Face);
+            Q_EMIT m_faceAuth->activeAuth(AT_Face);
         }
         if (m_irisAuth && m_irisAuth->authState() == AS_Locked) {
             m_irisAuth->reset();
-            emit m_irisAuth->activeAuth(AT_Iris);
+            Q_EMIT m_irisAuth->activeAuth(AT_Iris);
         }
     }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -33,10 +33,10 @@ protected:
 #endif
     bool eventFilter(QObject *o, QEvent *e) override;
 
-signals:
+Q_SIGNALS:
     void visibleChanged(bool visible);
 
-private slots:
+private Q_SLOTS:
     void ensureRaised();
 
 private:

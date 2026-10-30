@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -320,5 +320,5 @@ void InhibitWarnView::onAccept()
         static_cast<QVBoxLayout *>(m_bottomWidget->layout())->addStretch();
     }
 
-    emit actionInvoked();
+    Q_EMIT actionInvoked();
 }

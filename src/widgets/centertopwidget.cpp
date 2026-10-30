@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,7 +22,6 @@ static const QString localeNameKey = "localeName";
 static const QString shortDateFormatKey = "shortDateFormat";
 static const QString shortTimeFormatKey = "shortTimeFormat";
 #endif // ENABLE_DSS_SNIPE
-
 CenterTopWidget::CenterTopWidget(QWidget *parent)
     : QWidget(parent)
     , m_currentUser(nullptr)
@@ -72,8 +71,7 @@ void CenterTopWidget::setCurrentUser(User *user)
 
 #ifdef ENABLE_DSS_SNIPE
     updateRegionFormatConnection(user);
-#endif // ENABLE_DSS_SNIPE
-    m_currentUser = QPointer<User>(user);
+#endif // ENABLE_DSS_SNIPE    m_currentUser = QPointer<User>(user);
     if (!m_currentUser.isNull()) {
         for (auto connect : m_currentUserConnects) {
             m_currentUser->disconnect(connect);
@@ -85,8 +83,7 @@ void CenterTopWidget::setCurrentUser(User *user)
 #else
     auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
     m_timeWidget->updateLocale(QLocale(locale));
-#endif // ENABLE_DSS_SNIPE
-    m_timeWidget->set24HourFormat(user->isUse24HourFormat());
+#endif // ENABLE_DSS_SNIPE    m_timeWidget->set24HourFormat(user->isUse24HourFormat());
     m_timeWidget->setWeekdayFormatType(user->weekdayFormat());
     m_timeWidget->setShortDateFormat(user->shortDateFormat());
     m_timeWidget->setShortTimeFormat(user->shortTimeFormat());
@@ -102,8 +99,7 @@ void CenterTopWidget::setCurrentUser(User *user)
 
 #ifdef ENABLE_DSS_SNIPE
     updateUserDateTimeFormat();
-#endif // ENABLE_DSS_SNIPE
-}
+#endif // ENABLE_DSS_SNIPE}
 
 
 void CenterTopWidget::updateTimeFormat(bool use24)
@@ -114,8 +110,7 @@ void CenterTopWidget::updateTimeFormat(bool use24)
 #else
         auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : m_currentUser->locale();
         m_timeWidget->updateLocale(QLocale(locale));
-#endif // ENABLE_DSS_SNIPE
-        m_timeWidget->set24HourFormat(use24);
+#endif // ENABLE_DSS_SNIPE        m_timeWidget->set24HourFormat(use24);
         m_timeWidget->setVisible(true);
     }
 }

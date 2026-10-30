@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -24,8 +24,7 @@ private:
     void initUI();
     void initConnections();
 
-    int m_count {}; // 倒计时
-    const QString m_user {};
+    int m_count {}; // 倒计时    const QString m_user {};
 
     QTimer *m_timer {};
     QLineEdit *m_phoneEdit {};

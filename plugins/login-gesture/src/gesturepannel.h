@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -65,5 +65,4 @@ private:
     QStateMachine *m_stateMachine;
     QMap<WayPointWidget *, QRect> m_widRects;
 };
-} // namespace gestureLogin
-#endif // GESTUREPANNEL_H
+} // namespace gestureLogin#endif // GESTUREPANNEL_H

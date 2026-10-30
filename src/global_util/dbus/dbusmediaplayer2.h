@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -121,8 +121,7 @@ public:
     inline void setVolume(double value)
     { setProperty("Volume", QVariant::fromValue(value)); }
 
-public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<> Next()
+public Q_SLOTS: // METHODS    inline QDBusPendingReply<> Next()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QStringLiteral("Next"), argumentList);
@@ -179,8 +178,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QStringLiteral("Stop"), argumentList);
     }
 
-Q_SIGNALS: // SIGNALS
-    void Seeked(qlonglong Position);
+Q_SIGNALS: // SIGNALS    void Seeked(qlonglong Position);
 // begin property changed signals
 void CanControlChanged();
 void CanGoNextChanged();

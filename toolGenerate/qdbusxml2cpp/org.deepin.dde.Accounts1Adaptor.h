@@ -94,8 +94,7 @@ public:
     Accounts1Adaptor(QObject *parent);
     virtual ~Accounts1Adaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(bool AllowGuest READ allowGuest)
+public: // PROPERTIES    Q_PROPERTY(bool AllowGuest READ allowGuest)
     bool allowGuest() const;
 
     Q_PROPERTY(QString GuestIcon READ guestIcon)
@@ -104,8 +103,7 @@ public: // PROPERTIES
     Q_PROPERTY(QStringList UserList READ userList)
     QStringList userList() const;
 
-public Q_SLOTS: // METHODS
-    void AllowGuestAccount(bool in0);
+public Q_SLOTS: // METHODS    void AllowGuestAccount(bool in0);
     QString CreateGuestAccount();
     QDBusObjectPath CreateUser(const QString &in0, const QString &in1, int in2);
     void DeleteUser(const QString &in0, bool in1);
@@ -116,8 +114,7 @@ public Q_SLOTS: // METHODS
     bool IsPasswordValid(const QString &in0, QString &out1, int &out2);
     bool IsUsernameValid(const QString &in0, QString &out1, int &out2);
     QString RandUserIcon();
-Q_SIGNALS: // SIGNALS
-    void UserAdded(const QString &in0);
+Q_SIGNALS: // SIGNALS    void UserAdded(const QString &in0);
     void UserDeleted(const QString &in0);
 };
 

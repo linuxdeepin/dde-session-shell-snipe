@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -75,7 +75,7 @@ void ActionWidget::keyPressEvent(QKeyEvent *event)
 void ActionWidget::keyReleaseEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        emit requestAction();
+        Q_EMIT requestAction();
         m_state = Release;
     }
     update();

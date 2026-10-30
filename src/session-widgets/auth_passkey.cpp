@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -58,7 +58,7 @@ void AuthPasskey::initUI()
     mainLayout->addWidget(m_authStateLabel, 0, Qt::AlignRight | Qt::AlignVCenter);
 
     needSpinner(false);
-    emit retryButtonVisibleChanged(false);
+    Q_EMIT retryButtonVisibleChanged(false);
 }
 
 /**
@@ -94,8 +94,8 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         setAnimationState(true);
         m_showPrompt = true;
         m_textLabel->setText(tr("Verification successful"));
-        emit authFinished(state);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT authFinished(state);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Failure:
         needSpinner(false);
@@ -103,8 +103,8 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         setAuthStateStyle(AUTH_LOCK);
         m_showPrompt = true;
         m_textLabel->setText(tr("Verification failed"));
-        emit retryButtonVisibleChanged(false);
-        emit authFinished(state);
+        Q_EMIT retryButtonVisibleChanged(false);
+        Q_EMIT authFinished(state);
         break;
     case AuthCommon::AS_Cancel:
         needSpinner(false);
@@ -116,7 +116,7 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         setAnimationState(false);
         setAuthStateStyle(AUTH_LOCK);
         m_textLabel->setText(result);
-        emit retryButtonVisibleChanged(true);
+        Q_EMIT retryButtonVisibleChanged(true);
         break;
     case AuthCommon::AS_Error:
         needSpinner(false);
@@ -130,7 +130,7 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         setAnimationState(false);
         setAuthStateStyle(AUTH_LOCK);
         m_textLabel->setText(result);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Exception:
         needSpinner(false);
@@ -149,14 +149,14 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         break;
     case AuthCommon::AS_Ended:
         needSpinner(false);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Locked:
         needSpinner(false);
         setAnimationState(false);
         setAuthStateStyle(AUTH_LOCK);
         m_showPrompt = false;
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     case AuthCommon::AS_Recover:
         needSpinner(false);
@@ -169,15 +169,15 @@ void AuthPasskey::setAuthState(const AuthCommon::AuthState state, const QString 
         setAnimationState(false);
         setAuthStateStyle(AUTH_LOCK);
         m_showPrompt = true;
-        emit activeAuth(AuthCommon::AT_Passkey);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT activeAuth(AuthCommon::AT_Passkey);
+        Q_EMIT retryButtonVisibleChanged(false);
         break;
     default:
         needSpinner(false);
         setAnimationState(false);
         setAuthStateStyle(AUTH_LOCK);
         m_textLabel->setText(result);
-        emit retryButtonVisibleChanged(false);
+        Q_EMIT retryButtonVisibleChanged(false);
         qCWarning(DDE_SHELL) << "The state of passkey auth is wrong, state: " << state << ", result: " << result;
         break;
     }
@@ -221,7 +221,7 @@ void AuthPasskey::setAuthFactorType(AuthFactorType authFactorType)
 void AuthPasskey::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        emit activeAuth(m_type);
+        Q_EMIT activeAuth(m_type);
     }
     QWidget::mouseReleaseEvent(event);
 }
@@ -234,7 +234,7 @@ void AuthPasskey::doAnimation()
     if (m_state == AuthCommon::AS_Success) {
         if (m_aniIndex > 10) {
             m_aniTimer->stop();
-            emit authFinished(AuthCommon::AS_Success);
+            Q_EMIT authFinished(AuthCommon::AS_Success);
         } else {
             setAuthStateStyle(QStringLiteral(":/misc/images/unlock/unlock_%1.svg").arg(m_aniIndex++));
         }
