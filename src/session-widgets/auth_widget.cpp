@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -134,16 +134,16 @@ void AuthWidget::initConnections()
     /* 用户名输入框 */
     connect(m_accountEdit, &DLineEditEx::returnPressed, this, [this] {
         if (m_accountEdit->isVisible() && !m_accountEdit->text().isEmpty()) {
-            emit requestCheckSameNameAccount(m_accountEdit->text());
+            Q_EMIT requestCheckSameNameAccount(m_accountEdit->text());
         }
     });
     /* 解锁按钮 */
     connect(m_lockButton, &DFloatingButton::clicked, this, [this] {
         // 账户锁定后密码是无效的，这时开启快速登录会直接进入桌面，这里需要排除密码无效的情况
         if (m_user->isNoPasswordLogin() && m_user->isPasswordValid()) {
-            emit requestCheckAccount(m_user->name());
+            Q_EMIT requestCheckAccount(m_user->name());
         } else if (!m_passwordAuth && !m_ukeyAuth && !m_singleAuth) {
-            emit m_accountEdit->returnPressed();
+            Q_EMIT m_accountEdit->returnPressed();
         }
     });
 }

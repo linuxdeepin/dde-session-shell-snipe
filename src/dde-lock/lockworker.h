@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -48,7 +48,7 @@ public:
 
     bool isLocked() const;
 
-public slots:
+public Q_SLOTS:
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destroyAuthentication(const QString &account);

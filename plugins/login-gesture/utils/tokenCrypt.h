@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -68,7 +68,6 @@ inline QString getSalt()
     std::random_device r;
     std::default_random_engine e1(r());
     std::uniform_int_distribution<int> uniform_dist(0, seedChars.size() - 1); // seedChars.size()是64，生成随机数的范围应该写成[0, 63]。
-
     // Random access to a character in a restricted list
     for (int i = 0; i != 16; i++) {
         salt[3 + i] = seedChars.at(uniform_dist(e1)).toLatin1();
@@ -81,5 +80,4 @@ inline QString cryptUserPassword(const QString &password)
 {
     return crypt(password.toUtf8().data(), getSalt().toLatin1());
 }
-}; // namespace gestureEncrypt
-#endif
+}; // namespace gestureEncrypt#endif

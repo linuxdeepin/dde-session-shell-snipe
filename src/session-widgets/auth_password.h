@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -69,12 +69,9 @@ public:
 
     AssistLoginWidget * assistLoginWidget() const { return m_assistLoginWidget; }
 
-signals:
+Q_SIGNALS:
     void focusChanged(const bool);
-    void lineEditTextChanged(const QString &); // 数据同步
-    void requestChangeFocus();                 // 切换焦点
-    void requestShowKeyboardList();            // 显示键盘布局列表
-    void resetPasswordMessageVisibleChanged(const bool isVisible);
+    void lineEditTextChanged(const QString &); // 数据同步    void requestChangeFocus();                 // 切换焦点    void requestShowKeyboardList();            // 显示键盘布局列表    void resetPasswordMessageVisibleChanged(const bool isVisible);
     void notifyLockedStateChanged(bool isLocked);
     void requestPluginConfigChanged(const LoginPlugin::PluginConfig &PluginConfig);
     void requestHidePlugin();
@@ -83,7 +80,7 @@ signals:
     void passwordErrorTipsClearChanged(const bool isClear);
     void requestSendExtraInfo(const QString &info);
 
-public slots:
+public Q_SLOTS:
     void setResetPasswordMessageVisible(const bool isVisible, bool fromResetDialog = false);
     void updateResetPasswordUI();
     void onReadyToAuthChanged(bool ready);
@@ -110,16 +107,9 @@ private:
 
 private:
     bool m_passwordLineEditEnabled;
-    DLabel *m_capsLock;             // 大小写状态
-    DLineEditEx *m_lineEdit;        // 密码输入框
-    DIconButton *m_passwordShowBtn; // 密码显示按钮
-    DIconButton *m_passwordHintBtn; // 密码提示按钮
-    PasswordErrorTipsWidget* m_passwordTipsWidget;  // 认证错误提示窗口
-    QString m_passwordHint;         // 密码提示
-    bool m_resetPasswordMessageVisible;
+    DLabel *m_capsLock;             // 大小写状态    DLineEditEx *m_lineEdit;        // 密码输入框    DIconButton *m_passwordShowBtn; // 密码显示按钮    DIconButton *m_passwordHintBtn; // 密码提示按钮    PasswordErrorTipsWidget* m_passwordTipsWidget;  // 认证错误提示窗口    QString m_passwordHint;         // 密码提示    bool m_resetPasswordMessageVisible;
     DFloatingMessage *m_resetPasswordFloatingMessage;
-    uid_t m_currentUid; // 当前用户uid
-    QTimer *m_bindCheckTimer;
+    uid_t m_currentUid; // 当前用户uid    QTimer *m_bindCheckTimer;
     DAlertControl *m_passwordHintWidget;
     DIconButton *m_iconButton;
     bool m_resetDialogShow;

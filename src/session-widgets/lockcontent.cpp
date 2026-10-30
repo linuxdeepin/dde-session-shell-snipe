@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -108,8 +108,7 @@ void LockContent::init(SessionBaseModel *model)
     QString serverName = QString("GrabKeyboard_") + (m_model->appType() == AuthCommon::Login ? "greeter" : ("lock_" + m_model->currentUser()->name()));
     // 将之前的server删除，如果是旧文件，即使监听成功，客户端也无法连接。
     QLocalServer::removeServer(serverName);
-    if (!m_localServer->listen(serverName)) { // 监听特定的连接
-        qCWarning(DDE_SHELL) << "Listen local server failed!" << m_localServer->errorString();
+    if (!m_localServer->listen(serverName)) { // 监听特定的连接        qCWarning(DDE_SHELL) << "Listen local server failed!" << m_localServer->errorString();
     }
 
     DConfigHelper::instance()->bind(this, SHOW_MEDIA_WIDGET, &LockContent::OnDConfigPropertyChanged);
@@ -151,11 +150,11 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] {
         if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
-            emit requestSwitchToUser(m_model->currentUser());
+            Q_EMIT requestSwitchToUser(m_model->currentUser());
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         } else {
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-            emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
+            Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
         }
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [this] {
@@ -329,7 +328,6 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
     if (user.get() == nullptr)
         return; // if dbus is async
-
     //如果是锁屏就用系统语言，如果是登陆界面就用用户语言
     auto locale = qApp->applicationName() == "dde-lock" ? QLocale::system().name() : user->locale();
     m_logoWidget->updateLocale(locale);
@@ -381,7 +379,7 @@ void LockContent::pushUserFrame()
         std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
         if (user_ptr) {
             m_controlWidget->setUserSwitchEnable(false);
-            emit requestSwitchToUser(user_ptr);
+            Q_EMIT requestSwitchToUser(user_ptr);
             return;
         }
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
@@ -573,7 +571,7 @@ void LockContent::mouseReleaseEvent(QMouseEvent *event)
         }
 
         // 点击空白处的时候切换到当前用户，以开启验证。
-        emit requestSwitchToUser(m_model->currentUser());
+        Q_EMIT requestSwitchToUser(m_model->currentUser());
     }
 
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
@@ -628,7 +626,7 @@ void LockContent::updateGreeterBackgroundPath(const QString &path)
         return;
     }
 
-    emit requestBackground(path);
+    Q_EMIT requestBackground(path);
 }
 
 void LockContent::updateDesktopBackgroundPath(const QString &path)
@@ -637,7 +635,7 @@ void LockContent::updateDesktopBackgroundPath(const QString &path)
         return;
     }
 
-    emit requestBackground(path);
+    Q_EMIT requestBackground(path);
 }
 
 void LockContent::OnDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr)
@@ -841,8 +839,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
             .arg(static_cast<uint>(0))
             .arg(QString(""))
 #else
-            .arg(QString("dde-lock"))     // appName
-            .arg(static_cast<uint>(0))
+            .arg(QString("dde-lock"))     // appName            .arg(static_cast<uint>(0))
             .arg(QString("notification-lock-screen-failed"))
 #endif
             .arg(QString(""))
@@ -860,7 +857,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
             .call();
 
         qCInfo(DDE_SHELL) << "Request hide lock frame";
-        emit requestLockFrameHide();
+        Q_EMIT requestLockFrameHide();
         return;
     }
 
@@ -904,7 +901,7 @@ void LockContent::refreshBackground(SessionBaseModel::ModeStatus status)
     // 根据当前状态刷新不同的背景
     auto user = m_model->currentUser();
     if (user != nullptr) {
-        emit requestBackground(user->greeterBackground());
+        Q_EMIT requestBackground(user->greeterBackground());
     }
 }
 
@@ -1004,7 +1001,7 @@ void LockContent::showUserList()
     } else {
         std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
         if (user_ptr) {
-            emit requestSwitchToUser(user_ptr);
+            Q_EMIT requestSwitchToUser(user_ptr);
         }
     }
 }

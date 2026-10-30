@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -19,7 +19,6 @@ namespace module {
 class LoginModuleInterface;
 };
 }; // namespace dss
-
 class FullManagedAuthWidget : public AuthWidget
     , public PluginConfig
 {
@@ -34,7 +33,7 @@ public:
     bool isPluginLoaded() const;
     virtual bool isUserSwitchButtonVisiable() const override;
 
-public slots:
+public Q_SLOTS:
     void onRequestChangeAuth(const AuthCommon::AuthType authType);
 
 protected:

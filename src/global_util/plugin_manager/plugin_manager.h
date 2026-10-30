@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -37,11 +37,11 @@ public:
 
     static QPair<QString, QJsonDocument> parseMessage(const QString &message);
 
-signals:
+Q_SIGNALS:
     void trayPluginAdded(TrayPlugin *);
     void pluginAboutToBeRemoved(const QString &key);
 
-private slots:
+private Q_SLOTS:
     void broadcastCurrentUser();
 
 private:

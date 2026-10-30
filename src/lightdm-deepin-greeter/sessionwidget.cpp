@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -109,8 +109,7 @@ void SessionWidget::updateLayout()
     if (m_isWaylandExisted && !m_allowSwitchingToWayland)
         --count;
 
-    const int maxLineCap = width() / itemWidth - 1; // 1 for left-offset and right-offset.
-    const int offset = (width() - itemWidth * std::min(count, maxLineCap)) / 2;
+    const int maxLineCap = width() / itemWidth - 1; // 1 for left-offset and right-offset.    const int offset = (width() - itemWidth * std::min(count, maxLineCap)) / 2;
 
 
     int row = 0;
@@ -280,7 +279,7 @@ void SessionWidget::rightKeySwitch()
 
 void SessionWidget::chooseSession()
 {
-    emit m_sessionBtns.at(m_currentSessionIndex)->clicked();
+    Q_EMIT m_sessionBtns.at(m_currentSessionIndex)->clicked();
     hideSessionFrame();
 }
 
@@ -341,5 +340,5 @@ void SessionWidget::showEvent(QShowEvent *event)
 void SessionWidget::hideSessionFrame()
 {
     m_resetSessionIndex = true;
-    emit notifyHideSessionFrame();
+    Q_EMIT notifyHideSessionFrame();
 }

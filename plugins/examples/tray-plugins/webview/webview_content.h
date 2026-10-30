@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -28,6 +28,4 @@ private:
     QWebEngineView *m_webview;
 };
 
-} // namespace module
-} // namespace dss
-#endif // WEBVIEWCONTENT_H
+} // namespace module} // namespace dss#endif // WEBVIEWCONTENT_H

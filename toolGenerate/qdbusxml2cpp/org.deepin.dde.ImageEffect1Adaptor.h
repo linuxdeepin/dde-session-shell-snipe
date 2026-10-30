@@ -48,11 +48,8 @@ public:
     ImageEffect1Adaptor(QObject *parent);
     virtual ~ImageEffect1Adaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-    void Delete(const QString &effect, const QString &filename);
+public: // PROPERTIESpublic Q_SLOTS: // METHODS    void Delete(const QString &effect, const QString &filename);
     QString Get(const QString &effect, const QString &filename);
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -47,8 +47,7 @@ DLineEditEx::DLineEditEx(QWidget *parent)
 
     initAnimation();
 
-#if 0 // FIXME:不生效,改为在eventFilter过滤InputMethodQuery事件
-    // 在锁屏或登录界面，输入类型的控件不要唤出输入法
+#if 0 // FIXME:不生效,改为在eventFilter过滤InputMethodQuery事件    // 在锁屏或登录界面，输入类型的控件不要唤出输入法
     setAttribute(Qt::WA_InputMethodEnabled, false);
     this->lineEdit()->setAttribute(Qt::WA_InputMethodEnabled, false);
 #endif
@@ -217,7 +216,7 @@ bool DLineEditEx::eventFilter(QObject *watched, QEvent *event)
             && keyEvent->key() == Qt::Key_Tab
             && keyEvent->modifiers() == Qt::NoModifier
             && !this->text().isEmpty()) {
-            emit this->returnPressed();
+            Q_EMIT this->returnPressed();
             return true;
         }
     }

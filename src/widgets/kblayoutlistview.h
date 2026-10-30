@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -24,10 +24,10 @@ public:
     void initData(const QStringList &buttons);
     void updateList(const QString &str);
 
-signals:
+Q_SIGNALS:
     void itemClicked(const QString &str);
 
-public slots:
+public Q_SLOTS:
     void onItemClick(const QModelIndex &index);
 
 private:

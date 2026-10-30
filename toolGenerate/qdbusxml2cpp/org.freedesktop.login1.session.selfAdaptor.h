@@ -49,8 +49,7 @@ public:
     SessionAdaptor(QObject *parent);
     virtual ~SessionAdaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(bool Active READ active)
+public: // PROPERTIES    Q_PROPERTY(bool Active READ active)
     bool active() const;
 
     Q_PROPERTY(QString Desktop READ desktop)
@@ -65,12 +64,10 @@ public: // PROPERTIES
     Q_PROPERTY(QString Name READ name)
     QString name() const;
 
-public Q_SLOTS: // METHODS
-    void Activate();
+public Q_SLOTS: // METHODS    void Activate();
     void Lock();
     void Terminate();
     void Unlock();
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

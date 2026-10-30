@@ -89,8 +89,7 @@ public:
     SessionAdaptor(QObject *parent);
     virtual ~SessionAdaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(MFAInfoList FactorsInfo READ factorsInfo)
+public: // PROPERTIES    Q_PROPERTY(MFAInfoList FactorsInfo READ factorsInfo)
     MFAInfoList factorsInfo() const;
 
     Q_PROPERTY(bool IsFuzzyMFA READ isFuzzyMFA)
@@ -108,8 +107,7 @@ public: // PROPERTIES
     Q_PROPERTY(QString Username READ username)
     QString username() const;
 
-public Q_SLOTS: // METHODS
-    int EncryptKey(int encryptType, ArrayInt encryptMethod, ArrayInt &encryptMethod_, QString &publicKey);
+public Q_SLOTS: // METHODS    int EncryptKey(int encryptType, ArrayInt encryptMethod, ArrayInt &encryptMethod_, QString &publicKey);
     int End(int flag);
     int GetResult();
     void PrivilegesDisable();
@@ -119,8 +117,7 @@ public Q_SLOTS: // METHODS
     void SetSymmetricKey(const QByteArray &key);
     void SetToken(int flag, const QByteArray &token);
     int Start(int flag, int timeout);
-Q_SIGNALS: // SIGNALS
-    void Status(int flag, int status, const QString &msg);
+Q_SIGNALS: // SIGNALS    void Status(int flag, int status, const QString &msg);
 };
 
 #endif

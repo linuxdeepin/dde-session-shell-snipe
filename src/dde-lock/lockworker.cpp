@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -145,7 +145,7 @@ void LockWorker::initConnections()
     connect(m_sessionManagerInter, &SessionManagerInter::Unlock, this, [this] {
         m_authenticating = false;
         m_password.clear();
-        emit m_model->authFinished(true);
+        Q_EMIT m_model->authFinished(true);
     });
 
     /* org.freedesktop.login1.Session */
@@ -178,8 +178,7 @@ void LockWorker::initConnections()
     checkSystemWakeupTimer->setInterval(500);
     connect(checkSystemWakeupTimer, &QTimer::timeout, this, [this, checkSystemWakeupTimer] {
         const int secs = static_cast<const int>(doSuspendTime.secsTo(QDateTime::currentDateTime()));
-        if (secs >= 15) { // 小风险：如果15秒还没有待机下去，那就把锁屏显示出来了，不过15秒没有待机的才是大问题
-            qCInfo(DDE_SHELL) << "System wakeup，hide black widget";
+        if (secs >= 15) { // 小风险：如果15秒还没有待机下去，那就把锁屏显示出来了，不过15秒没有待机的才是大问题            qCInfo(DDE_SHELL) << "System wakeup，hide black widget";
             checkSystemWakeupTimer->stop();
             m_model->setIsBlackMode(false);
         }
@@ -234,7 +233,7 @@ void LockWorker::initConnections()
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
             m_model->setIsBlackMode(false);
         }
-        emit m_model->prepareForSleep(isSleep);
+        Q_EMIT m_model->prepareForSleep(isSleep);
     });
     /* model */
     connect(m_model, &SessionBaseModel::authTypeChanged, this, [this](const AuthFlags type) {
@@ -684,8 +683,7 @@ void LockWorker::setCurrentUser(const std::shared_ptr<User> user)
     json["Name"] = user->name();
     json["Type"] = user->type();
     json["Uid"] = static_cast<int>(user->uid());
-    json["LastCustomAuth"] = user->lastCustomAuth(); // 上一次认证通过自定义认证类型
-    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact)));
+    json["LastCustomAuth"] = user->lastCustomAuth(); // 上一次认证通过自定义认证类型    m_lockInter->SwitchToUser(QString(QJsonDocument(json).toJson(QJsonDocument::Compact)));
 }
 
 void LockWorker::switchToUser(std::shared_ptr<User> user)
@@ -910,30 +908,30 @@ void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString 
 
     if (msg == "Verification timed out") {
         m_isThumbAuth = true;
-        emit m_model->authFailedMessage(tr("Fingerprint verification timed out, please enter your password manually"));
+        Q_EMIT m_model->authFailedMessage(tr("Fingerprint verification timed out, please enter your password manually"));
         return;
     }
 
     switch (eventType) {
     case DBusLockService::PromptQuestion:
         qCWarning(DDE_SHELL) << "Prompt question from pam: " << message;
-        emit m_model->authFailedMessage(message);
+        Q_EMIT m_model->authFailedMessage(message);
         break;
     case DBusLockService::PromptSecret:
         qCWarning(DDE_SHELL) << "Prompt secret from pam: " << message;
         if (m_isThumbAuth && !msg.isEmpty()) {
-            emit m_model->authFailedMessage(msg);
+            Q_EMIT m_model->authFailedMessage(msg);
         }
         break;
     case DBusLockService::ErrorMsg:
         qCWarning(DDE_SHELL) << "Error message from pam: " << message;
         if (msg == "Failed to match fingerprint") {
-            emit m_model->authFailedTipsMessage(tr("Failed to match fingerprint"));
-            emit m_model->authFailedMessage("");
+            Q_EMIT m_model->authFailedTipsMessage(tr("Failed to match fingerprint"));
+            Q_EMIT m_model->authFailedMessage("");
         }
         break;
     case DBusLockService::TextInfo:
-        emit m_model->authFailedMessage(QString(dgettext("fprintd", message.toLatin1())));
+        Q_EMIT m_model->authFailedMessage(QString(dgettext("fprintd", message.toLatin1())));
         break;
     case DBusLockService::Failure:
         onUnlockFinished(false);
@@ -977,7 +975,7 @@ void LockWorker::onUnlockFinished(bool unlocked)
     }
 
     setLocked(!unlocked);
-    emit m_model->authFinished(unlocked);
+    Q_EMIT m_model->authFinished(unlocked);
 }
 
 void LockWorker::restartResetSessionTimer()

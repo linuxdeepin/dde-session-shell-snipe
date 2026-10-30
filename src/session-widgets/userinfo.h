@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -41,14 +41,7 @@ public:
     };
 
     struct LimitsInfo {
-        bool reserved[3];   // 用于内存对齐
-        bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁
-        int flag;           // 认证类型
-        uint maxTries;      // 最大重试次数
-        uint numFailures;   // 失败次数，一直累加
-        uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少
-        QString unlockTime; // 解锁时间（本地时间）
-
+        bool reserved[3];   // 用于内存对齐        bool locked;        // 认证锁定状态 --- true: 锁定  false: 解锁        int flag;           // 认证类型        uint maxTries;      // 最大重试次数        uint numFailures;   // 失败次数，一直累加        uint unlockSecs;    // 本次锁定总解锁时间（秒），不会随着时间推移减少        QString unlockTime; // 解锁时间（本地时间）
         inline QJsonObject toJson() const
         {
             QJsonObject obj;
@@ -115,7 +108,7 @@ public:
     virtual void updatePasswordExpiredState(ExpiredState state, int dayLeft);
     virtual void updateUserInfo() { }
 
-signals:
+Q_SIGNALS:
     void avatarChanged(const QString &);
     void autoLoginStateChanged(const bool);
     void desktopBackgroundChanged(const QString &);
@@ -141,32 +134,7 @@ protected:
     QString userPwdName(const uid_t uid) const;
 
 protected:
-    int m_accountType;                   // 账户类型
-    bool m_isAutomaticLogin;             // 自动登录
-    bool m_isLogin;                      // 登录状态
-    bool m_isNoPasswordLogin;            // 无密码登录
-    bool m_isPasswordValid;              // 用户是否设置密码
-    bool m_isUse24HourFormat;            // 24小时制
-    int m_expiredDayLeft;                // 密码过期剩余天数
-    int m_expiredState;                  // 密码过期状态
-    AuthCommon::AuthType m_lastAuthType; // 上次成功的认证
-    int m_shortDateFormat;               // 短日期格式
-    int m_shortTimeFormat;               // 短时间格式
-    int m_weekdayFormat;                 // 星期显示格式
-    uid_t m_uid;                         // 用户 uid
-    QString m_avatar;                    // 用户头像
-    QString m_fullName;                  // 用户全名
-    QString m_greeterBackground;         // 登录/锁屏界面背景
-    QString m_keyboardLayout;            // 键盘布局
-    QString m_locale;                    // 语言环境
-    QString m_name;                      // 用户名
-    QString m_passwordHint;              // 密码提示
-    QString m_lastCustomAuth;            // 上次成功的认证插件的 key
-    QStringList m_desktopBackgrounds;    // 桌面背景（不同工作区壁纸不同，故是个 List）
-    QStringList m_keyboardLayoutList;    // 键盘布局列表
-    QMap<int, LimitsInfo> *m_limitsInfo; // 认证限制信息
-    QStringList m_groups;                // 用户组
-};
+    int m_accountType;                   // 账户类型    bool m_isAutomaticLogin;             // 自动登录    bool m_isLogin;                      // 登录状态    bool m_isNoPasswordLogin;            // 无密码登录    bool m_isPasswordValid;              // 用户是否设置密码    bool m_isUse24HourFormat;            // 24小时制    int m_expiredDayLeft;                // 密码过期剩余天数    int m_expiredState;                  // 密码过期状态    AuthCommon::AuthType m_lastAuthType; // 上次成功的认证    int m_shortDateFormat;               // 短日期格式    int m_shortTimeFormat;               // 短时间格式    int m_weekdayFormat;                 // 星期显示格式    uid_t m_uid;                         // 用户 uid    QString m_avatar;                    // 用户头像    QString m_fullName;                  // 用户全名    QString m_greeterBackground;         // 登录/锁屏界面背景    QString m_keyboardLayout;            // 键盘布局    QString m_locale;                    // 语言环境    QString m_name;                      // 用户名    QString m_passwordHint;              // 密码提示    QString m_lastCustomAuth;            // 上次成功的认证插件的 key    QStringList m_desktopBackgrounds;    // 桌面背景（不同工作区壁纸不同，故是个 List）    QStringList m_keyboardLayoutList;    // 键盘布局列表    QMap<int, LimitsInfo> *m_limitsInfo; // 认证限制信息    QStringList m_groups;                // 用户组};
 
 class NativeUser : public User
 {
@@ -186,7 +154,7 @@ public:
     void updatePasswordExpiredInfo() override;
     virtual void updateUserInfo() override;
 
-private slots:
+private Q_SLOTS:
     void updateAvatar(const QString &path);
     void updateAutomaticLogin(const bool autoLoginState);
     void updateDesktopBackgrounds(const QStringList &backgrounds);

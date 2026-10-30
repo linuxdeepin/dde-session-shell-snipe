@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -29,13 +29,12 @@ public:
     void start();
     void close();
 
-signals:
+Q_SIGNALS:
     void inputFinished();                           // 第二次输入token合法并完成
-
 private:
     void initConnection();
 
-private slots:
+private Q_SLOTS:
     void onSaveToken(const QString &token);
 
 private:

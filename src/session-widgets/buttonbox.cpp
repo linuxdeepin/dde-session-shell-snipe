@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -84,14 +84,10 @@ void ButtonBoxButton::paintEvent(QPaintEvent *event)
         if (m_leftRoundEnabled) {
 
             // 填充矩形右边两个角的圆角
-            path.addRect(width() - m_radius, 0, m_radius, m_radius);                       // 填充右上角
-            path.addRect(width() - m_radius, height() - m_radius, m_radius, m_radius);     // 填充右下角
-        } else {
+            path.addRect(width() - m_radius, 0, m_radius, m_radius);                       // 填充右上角            path.addRect(width() - m_radius, height() - m_radius, m_radius, m_radius);     // 填充右下角        } else {
 
             // 填充矩形左边两个角的圆角
-            path.addRect(0, height() - m_radius, m_radius, m_radius);                      // 填充左上角
-            path.addRect(0, 0, m_radius, m_radius);                                        // 填充左下角
-        }
+            path.addRect(0, height() - m_radius, m_radius, m_radius);                      // 填充左上角            path.addRect(0, 0, m_radius, m_radius);                                        // 填充左下角        }
     } else {
         path.addRect(rect());
     }

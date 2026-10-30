@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,7 +23,7 @@ public:
     explicit LockFrame(SessionBaseModel *const model, QWidget *parent = nullptr);
     ~LockFrame();
 
-signals:
+Q_SIGNALS:
     void requestSwitchToUser(std::shared_ptr<User> user);
     void requestSetLayout(std::shared_ptr<User> user, const QString &layout);
     void requestEnableHotzone(bool disable);
@@ -33,7 +33,7 @@ signals:
     void sendTokenToAuth(const QString &account, const AuthType authType, const QString &token);
     void requestEndAuthentication(const QString &account, const int authType);
 
-private slots:
+private Q_SLOTS:
     void prepareForSleep(bool isSleep);
 
 protected:

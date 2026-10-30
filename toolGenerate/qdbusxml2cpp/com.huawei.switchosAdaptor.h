@@ -49,12 +49,9 @@ public:
     SwitchosAdaptor(QObject *parent);
     virtual ~SwitchosAdaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
-    uchar getOsFlag();
+public: // PROPERTIESpublic Q_SLOTS: // METHODS    uchar getOsFlag();
     uchar isDualOsSwitchAvail();
     uint setOsFlag(uchar flag);
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 #endif

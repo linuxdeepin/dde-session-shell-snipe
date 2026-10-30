@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,7 +20,7 @@ public:
     // 直接调用handle则不会通过线程处理图片
     void handle();
 
-signals:
+Q_SIGNALS:
     void backgroundHandled(const QPixmap &pixmap);
 
 protected:

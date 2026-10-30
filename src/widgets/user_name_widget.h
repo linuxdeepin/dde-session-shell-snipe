@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -30,13 +30,4 @@ private:
     void updateDisplayNameWidget();
 
 private:
-    Dtk::Widget::DLabel *m_userPicLabel;            // 小人儿图标
-    Dtk::Widget::DLabel *m_fullNameLabel;           // 用户名
-    Dtk::Widget::DLabel *m_displayNameLabel;        // 用户全名
-    Dtk::Widget::DLabel *m_domainUserLabel;         // 域账户标识
-    bool m_showUserName;                            // 是否显示账户名，记录DConfig的配置
-    bool m_showDisplayName;                         // 是否显示全名
-    QString m_fullNameStr;                          // 全名
-    QString m_userNameStr;                          // 账户名
-    bool m_respondFontSizeChange;                   // 是否响应字体变化
-};
+    Dtk::Widget::DLabel *m_userPicLabel;            // 小人儿图标    Dtk::Widget::DLabel *m_fullNameLabel;           // 用户名    Dtk::Widget::DLabel *m_displayNameLabel;        // 用户全名    Dtk::Widget::DLabel *m_domainUserLabel;         // 域账户标识    bool m_showUserName;                            // 是否显示账户名，记录DConfig的配置    bool m_showDisplayName;                         // 是否显示全名    QString m_fullNameStr;                          // 全名    QString m_userNameStr;                          // 账户名    bool m_respondFontSizeChange;                   // 是否响应字体变化};

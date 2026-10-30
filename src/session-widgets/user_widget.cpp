@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -244,7 +244,7 @@ void UserWidget::updateBlurEffectGeometry()
 
 void UserWidget::mousePressEvent(QMouseEvent *event)
 {
-    emit clicked();
+    Q_EMIT clicked();
     QWidget::mousePressEvent(event);
 }
 

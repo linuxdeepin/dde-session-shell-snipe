@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -230,7 +230,7 @@ void UserButton::setOpacity(double opa)
 {
     if (fabs(m_opacity - opa) < 1e-6) {
         m_opacity = opa;
-        emit opacityChanged();
+        Q_EMIT opacityChanged();
     }
 }
 

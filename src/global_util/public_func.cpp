@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -329,8 +329,7 @@ void configWebEngine()
     if (!auto_proxy.isEmpty()) {
         qputenv("auto_proxy", "");
     }
-    QNetworkProxyQuery query(QUrl("https://login.uniontech.com"));
-    QList<QNetworkProxy> proxyList =  QNetworkProxyFactory::systemProxyForQuery(query);
+    QNetworkProxyQuery query(QUrl("https://login.uniontech.com"));    QList<QNetworkProxy> proxyList =  QNetworkProxyFactory::systemProxyForQuery(query);
     if (proxyList.size() > 0) {
         QNetworkProxy::setApplicationProxy(proxyList[0]);
     }
@@ -344,14 +343,12 @@ bool isSleepLock()
 
     if (!powerInterface.isValid()) {
         qCritical() << powerInterface.lastError().message();
-        return true; // default
-    }
+        return true; // default    }
 
     QVariant value = powerInterface.property("SleepLock");
     if (!value.isValid()) {
         qCritical() << "read SleepLock property failed";
-        return true; // default
-    }
+        return true; // default    }
 
     return value.toBool();
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -125,7 +125,7 @@ void SFAWidget::initConnections()
         if (isCurrentAuthCustom) {
             qCInfo(DDE_SHELL) << key << " is current custom auth, change to first auth";
             if (m_authButtons.size() >= 1) {
-                emit m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
+                Q_EMIT m_chooseAuthButtonBox->button(m_authButtons.firstKey())->toggled(true);
             } else {
                 qCritical(DDE_SHELL) << "No other auth left, can not change to first auth";
             }
@@ -382,14 +382,14 @@ void SFAWidget::initSingleAuth()
         if (authState == AS_Success) {
             m_user->setLastAuthType(AT_PAM);
             m_lockButton->setEnabled(true);
-            emit authFinished();
+            Q_EMIT authFinished();
         }
     });
     connect(m_singleAuth, &AuthSingle::requestAuthenticate, this, [this] {
         if (m_singleAuth->lineEditText().isEmpty()) {
             return;
         }
-        emit sendTokenToAuth(m_model->currentUser()->name(), AT_PAM, m_singleAuth->lineEditText());
+        Q_EMIT sendTokenToAuth(m_model->currentUser()->name(), AT_PAM, m_singleAuth->lineEditText());
     });
     connect(KeyboardMonitor::instance(), &KeyboardMonitor::capsLockStatusChanged, m_singleAuth, &AuthSingle::setCapsLockVisible);
     connect(m_lockButton, &QPushButton::clicked, m_singleAuth, &AuthSingle::requestAuthenticate);
@@ -415,11 +415,11 @@ void SFAWidget::initSingleAuth()
             replaceWidget(m_singleAuth);
             m_biometricAuthState->hide();
             setBioAuthStateVisible(nullptr, false);
-            emit requestStartAuthentication(m_user->name(), AT_PAM);
+            Q_EMIT requestStartAuthentication(m_user->name(), AT_PAM);
         } else {
             m_singleAuth->hide();
             m_lockButton->setEnabled(false);
-            emit requestEndAuthentication(m_user->name(), AT_PAM);
+            Q_EMIT requestEndAuthentication(m_user->name(), AT_PAM);
         }
     });
 }
@@ -464,7 +464,7 @@ void SFAWidget::initPasswdAuth()
         m_lockButton->setEnabled(false);
         qCInfo(DDE_SHELL) << "Request check account: " << account << token;
         if (m_user && m_user->name() == account) {
-            emit sendTokenToAuth(account, AT_Password, token);
+            Q_EMIT sendTokenToAuth(account, AT_Password, token);
             return;
         }
 
@@ -498,7 +498,7 @@ void SFAWidget::initPasswdAuth()
             text = QJsonDocument(obj).toJson(QJsonDocument::Compact);
         }
 
-        emit sendTokenToAuth(m_user->name(), AT_Password, text);
+        Q_EMIT sendTokenToAuth(m_user->name(), AT_Password, text);
     });
 
     connect(m_passwordAuth, &AuthPassword::notifyLockedStateChanged, this, [this](bool isLocked) {
@@ -528,12 +528,12 @@ void SFAWidget::initPasswdAuth()
             replaceWidget(m_passwordAuth);
             m_biometricAuthState->hide();
             setBioAuthStateVisible(nullptr, false);
-            emit requestStartAuthentication(m_user->name(), AT_Password);
+            Q_EMIT requestStartAuthentication(m_user->name(), AT_Password);
             m_passwordAuth->updateResetPasswordUI();
         } else {
             m_passwordAuth->hide();
             m_lockButton->setEnabled(false);
-            emit requestEndAuthentication(m_user->name(), AT_Password);
+            Q_EMIT requestEndAuthentication(m_user->name(), AT_Password);
             m_passwordAuth->closeResetPasswordMessage();
         }
     });
@@ -577,11 +577,11 @@ void SFAWidget::initFingerprintAuth()
         if (checked) {
             replaceWidget(m_fingerprintAuth);
             setBioAuthStateVisible(m_fingerprintAuth, true);
-            emit requestStartAuthentication(m_user->name(), AT_Fingerprint);
+            Q_EMIT requestStartAuthentication(m_user->name(), AT_Fingerprint);
         } else {
             m_fingerprintAuth->hide();
             m_lockButton->setEnabled(false);
-            emit requestEndAuthentication(m_user->name(), AT_Fingerprint);
+            Q_EMIT requestEndAuthentication(m_user->name(), AT_Fingerprint);
         }
     });
 }
@@ -610,9 +610,9 @@ void SFAWidget::initPasskeyAuth()
         if (m_currentAuthType != AT_Passkey) {
             return;
         }
-        emit requestEndAuthentication(m_model->currentUser()->name(), AT_Passkey);
+        Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AT_Passkey);
         onRetryButtonVisibleChanged(false);
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Passkey);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Passkey);
     });
 
     /* 认证选择按钮 */
@@ -626,11 +626,11 @@ void SFAWidget::initPasskeyAuth()
         if (checked) {
             replaceWidget(m_passkeyAuth);
             setBioAuthStateVisible(m_passkeyAuth, true);
-            emit requestStartAuthentication(m_user->name(), AT_Passkey);
+            Q_EMIT requestStartAuthentication(m_user->name(), AT_Passkey);
         } else {
             m_passkeyAuth->hide();
             m_lockButton->setEnabled(false);
-            emit requestEndAuthentication(m_user->name(), AT_Passkey);
+            Q_EMIT requestEndAuthentication(m_user->name(), AT_Passkey);
         }
     });
 }
@@ -660,13 +660,13 @@ void SFAWidget::initUKeyAuth()
         m_ukeyAuth->setAnimationState(true);
         m_ukeyAuth->setLineEditEnabled(false);
         m_lockButton->setEnabled(false);
-        emit sendTokenToAuth(m_model->currentUser()->name(), AT_Ukey, text);
+        Q_EMIT sendTokenToAuth(m_model->currentUser()->name(), AT_Ukey, text);
     });
     connect(m_lockButton, &QPushButton::clicked, m_ukeyAuth, &AuthUKey::requestAuthenticate);
     connect(KeyboardMonitor::instance(), &KeyboardMonitor::capsLockStatusChanged, m_ukeyAuth, &AuthUKey::setCapsLockVisible);
     connect(m_ukeyAuth, &AuthUKey::lineEditTextChanged, this, [this](const QString &value) {
         if (m_model->getAuthProperty().PINLen > 0 && value.size() >= m_model->getAuthProperty().PINLen) {
-            emit m_ukeyAuth->requestAuthenticate();
+            Q_EMIT m_ukeyAuth->requestAuthenticate();
         }
     });
 
@@ -684,11 +684,11 @@ void SFAWidget::initUKeyAuth()
             replaceWidget(m_ukeyAuth);
             m_biometricAuthState->hide();
             setBioAuthStateVisible(nullptr, false);
-            emit requestStartAuthentication(m_user->name(), AT_Ukey);
+            Q_EMIT requestStartAuthentication(m_user->name(), AT_Ukey);
         } else {
             m_ukeyAuth->hide();
             m_lockButton->setEnabled(false);
-            emit requestEndAuthentication(m_user->name(), AT_Ukey);
+            Q_EMIT requestEndAuthentication(m_user->name(), AT_Ukey);
         }
     });
 }
@@ -713,7 +713,7 @@ void SFAWidget::initFaceAuth()
             return;
         }
         onRetryButtonVisibleChanged(false);
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Face);
     });
     connect(m_faceAuth, &AuthFace::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_faceAuth, &AuthFace::authFinished, this, [this](const AuthState authState) {
@@ -729,7 +729,7 @@ void SFAWidget::initFaceAuth()
             {
                 initCustomMFAAuth();
             } else {
-                emit authFinished();
+                Q_EMIT authFinished();
             }
         }
     });
@@ -746,7 +746,7 @@ void SFAWidget::initFaceAuth()
             replaceWidget(m_faceAuth);
             setBioAuthStateVisible(m_faceAuth, true);
             if (m_faceAuth->authState() != AS_Success) {
-                emit requestStartAuthentication(m_user->name(), AT_Face);
+                Q_EMIT requestStartAuthentication(m_user->name(), AT_Face);
             } else {
                 m_lockButton->setEnabled(true);
             }
@@ -754,7 +754,7 @@ void SFAWidget::initFaceAuth()
             m_faceAuth->hide();
             if (m_faceAuth->authState() != AS_Success) {
                 m_lockButton->setEnabled(false);
-                emit requestEndAuthentication(m_user->name(), AT_Face);
+                Q_EMIT requestEndAuthentication(m_user->name(), AT_Face);
             }
         }
     });
@@ -780,7 +780,7 @@ void SFAWidget::initIrisAuth()
             return;
         }
         onRetryButtonVisibleChanged(false);
-        emit requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
+        Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), AT_Iris);
     });
     connect(m_irisAuth, &AuthIris::activeAuth, this, &SFAWidget::onActiveAuth);
     connect(m_irisAuth, &AuthIris::authFinished, this, [this](const AuthState authState) {
@@ -795,7 +795,7 @@ void SFAWidget::initIrisAuth()
                 && LPUtil::loginType() == LPUtil::Type::CLT_MFA) {
                 initCustomMFAAuth();
             } else {
-                emit authFinished();
+                Q_EMIT authFinished();
             }
 
         }
@@ -813,7 +813,7 @@ void SFAWidget::initIrisAuth()
             replaceWidget(m_irisAuth);
             setBioAuthStateVisible(m_irisAuth, true);
             if (m_irisAuth->authState() != AS_Success) {
-                emit requestStartAuthentication(m_user->name(), AT_Iris);
+                Q_EMIT requestStartAuthentication(m_user->name(), AT_Iris);
             } else {
                 m_lockButton->setEnabled(true);
             }
@@ -821,7 +821,7 @@ void SFAWidget::initIrisAuth()
             m_irisAuth->hide();
             if (m_irisAuth->authState() != AS_Success) {
                 m_lockButton->setEnabled(false);
-                emit requestEndAuthentication(m_user->name(), AT_Iris);
+                Q_EMIT requestEndAuthentication(m_user->name(), AT_Iris);
             }
         }
     });
@@ -834,27 +834,27 @@ void SFAWidget::initCustomMFAAuth()
     m_chooseAuthButtonBox->hide();
     if (m_passwordAuth) {
         m_passwordAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Password);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Password);
     }
     if (m_fingerprintAuth) {
         m_fingerprintAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Fingerprint);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Fingerprint);
     }
     if (m_faceAuth) {
         m_faceAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Face);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Face);
     }
     if (m_passkeyAuth) {
         m_passkeyAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Passkey);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Passkey);
     }
     if (m_irisAuth) {
         m_irisAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Iris);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Iris);
     }
     if (m_ukeyAuth) {
         m_ukeyAuth->hide();
-        emit requestEndAuthentication(m_user->name(), AT_Ukey);
+        Q_EMIT requestEndAuthentication(m_user->name(), AT_Ukey);
     }
     if (!m_customAuths.isEmpty()) {
         for (const auto &auth : m_customAuths)
@@ -1187,7 +1187,7 @@ void SFAWidget::updateSpaceItem()
     m_mainLayout->invalidate();
     // 不是锁屏界面不重绘，会导致界面下移
     if (isVisible())
-        emit updateParentLayout();
+        Q_EMIT updateParentLayout();
 }
 
 void SFAWidget::updateFocus()
@@ -1431,7 +1431,7 @@ void SFAWidget::onActiveAuth(AuthType authType)
         return;
     }
 
-    emit requestStartAuthentication(m_model->currentUser()->name(), authType);
+    Q_EMIT requestStartAuthentication(m_model->currentUser()->name(), authType);
 }
 
 void SFAWidget::onAccountError()
@@ -1539,7 +1539,7 @@ void SFAWidget::chooseAuthType(const AuthFlags authFlags)
 
     qCInfo(DDE_SHELL) << "Change auth type:" << m_currentAuthType;
     if (m_chooseAuthButtonBox->checkedId() == m_currentAuthType) {
-        emit m_chooseAuthButtonBox->button(m_currentAuthType)->toggled(true);
+        Q_EMIT m_chooseAuthButtonBox->button(m_currentAuthType)->toggled(true);
     } else {
         m_chooseAuthButtonBox->button(m_currentAuthType)->setChecked(true);
     }
@@ -1573,14 +1573,14 @@ void SFAWidget::sendAuthFinished()
         // 认证拦截，接入域管二级以上因子
         if (m_model->currentUser()->isLdapUser() && LPUtil::loginType() == LPUtil::Type::CLT_MFA) {
             if (currentAuthCustom() && currentAuthCustom()->authState() == AS_Success) {
-                emit authFinished();
+                Q_EMIT authFinished();
             } else if (LPUtil::hasSecondLevel(m_model->currentUser()->name())){
                 initCustomMFAAuth();
             } else {
-                emit authFinished();
+                Q_EMIT authFinished();
             }
         } else {
-            emit authFinished();
+            Q_EMIT authFinished();
         }
     }
 }

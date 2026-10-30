@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -32,7 +32,6 @@ private:
     void init();
     void initConnection();
     void showFirstEnroll(); // 登录锁屏上首次设置
-
 private:
     // 大标题与小标题
     DLabel *m_title;
@@ -44,5 +43,4 @@ private:
     GesturePannel *m_inputWid;
     QVBoxLayout *m_layout;
 };
-} // namespace gestureLogin
-#endif // LOGINWIDGET_H
+} // namespace gestureLogin#endif // LOGINWIDGET_H

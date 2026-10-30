@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -28,9 +28,7 @@ void WebviewContent::initUI()
 
     m_webview = new QWebEngineView(this);
     m_webview->load(QUrl("http://detectportal.deepin.com"));
-
     m_mainLayout->addWidget(m_webview);
 }
 
-} // namespace module
-} // namespace dss
+} // namespace module} // namespace dss

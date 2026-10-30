@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2019-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,7 +20,7 @@ public:
     explicit UsersWithTheSameName(SessionBaseModel *model, QWidget *parent = nullptr);
     bool findUsers(const QString nativeUserName, const QString &doMainAccountDetail);
 
-signals:
+Q_SIGNALS:
     void requestCheckAccount(const QString &account, bool switchUser = true);
     void clicked();
 

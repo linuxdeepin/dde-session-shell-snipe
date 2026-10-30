@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2020 - 2025 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2020-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,7 +22,7 @@ public:
     void erase(const QString &key, QWidget *binder);
     const int getStatus(const QString &key);
 
-signals:
+Q_SIGNALS:
     void enableChanged(const QString &key, bool enable);
 
 private:

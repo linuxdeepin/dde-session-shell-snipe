@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -57,8 +57,7 @@ void GestureLoginModule::sendToken(const QString &token)
     AuthCallbackData data;
     data.account = "";
     data.token = token;
-    data.result = 1; // 固定值，代表本地验证通过,通知dss去校验密码
-    m_authCallback(&data, m_appData);
+    data.result = 1; // 固定值，代表本地验证通过,通知dss去校验密码    m_authCallback(&data, m_appData);
 }
 
 void GestureLoginModule::enroll(const QString &token)
@@ -226,5 +225,4 @@ QString GestureLoginModule::message(const QString &message)
     return doc.toJson();
 }
 
-} // namespace module_v2
-} // namespace dss
+} // namespace module_v2} // namespace dss

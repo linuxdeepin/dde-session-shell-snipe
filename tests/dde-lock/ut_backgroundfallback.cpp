@@ -36,7 +36,7 @@ public:
     std::atomic<int> effectCalls{0};
     std::atomic<int> scaleCalls{0};
 
-public slots:
+public Q_SLOTS:
     QString Get(const QString &, const QString &source)
     {
         requestedSource = source;

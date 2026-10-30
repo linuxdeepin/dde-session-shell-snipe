@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -41,7 +41,7 @@ public:
     void setAuthState(const AuthCommon::AuthType type, const AuthCommon::AuthState state, const QString &message) override;
     int getTopSpacing() const override;
 
-public slots:
+public Q_SLOTS:
     void onRetryButtonVisibleChanged(bool visible);
     void onRequestChangeAuth(AuthCommon::AuthType authType);
     void onLightdmPamStartChanged();
@@ -90,9 +90,7 @@ private:
 private:
     QVBoxLayout *m_mainLayout;
 
-    ButtonBox *m_chooseAuthButtonBox; // 认证选择按钮
-    DLabel *m_biometricAuthState;      // 生物认证状态
-
+    ButtonBox *m_chooseAuthButtonBox; // 认证选择按钮    DLabel *m_biometricAuthState;      // 生物认证状态
     DFloatingButton *m_retryButton;
     QSpacerItem *m_bioAuthStatePlaceHolder;
     QSpacerItem *m_bioBottomSpacingHolder;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <QApplication>
@@ -29,8 +29,7 @@ LighterBackground::LighterBackground(QWidget *content, QWidget *parent)
     } else {
         setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::Window);
 
-        setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
-        create();
+        setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle        create();
         // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
         windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
     }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -27,8 +27,7 @@ PasswordErrorTipsWidget::PasswordErrorTipsWidget(QWidget *parent)
     , m_tipsWidget(new QWidget(this))
     , m_errorMsgNum(0)
 {
-    setAttribute(Qt::WA_TranslucentBackground); // 设置窗口背景透明
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip);
+    setAttribute(Qt::WA_TranslucentBackground); // 设置窗口背景透明    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::ToolTip);
 
     initUi();
 
@@ -131,11 +130,9 @@ void PasswordErrorTipsWidget::paintEvent(QPaintEvent *event)
     // 创建绘图对象
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing); // 抗锯齿
-
     // 设置画笔和画刷
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(164, 166, 189, 255)); // 半透明灰色
-
     // 绘制圆角矩形
     QRectF rect = QRectF(0, 0, width(), height());
     painter.drawRoundedRect(rect, 10, 8);

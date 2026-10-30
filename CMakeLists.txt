@@ -1,5 +1,11 @@
+# SPDX-FileCopyrightText: 2026-2026 UnionTech Software Technology Co., Ltd.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 cmake_minimum_required(VERSION 3.16)
 project(dde-session-shell C CXX)
+
+add_compile_definitions(QT_NO_KEYWORDS)
 
 include(GNUInstallDirs)
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

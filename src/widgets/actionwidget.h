@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -26,7 +26,7 @@ public:
 
     void setRadius(int radius) { m_radius = radius; }
 
-signals:
+Q_SIGNALS:
     void requestAction();
     void mouseEnter();
     void mouseLeave();

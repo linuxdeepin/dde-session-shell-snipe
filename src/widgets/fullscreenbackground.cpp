@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -64,8 +64,7 @@ FullScreenBackground::FullScreenBackground(SessionBaseModel *model, QWidget *par
     } else {
         setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::Window);
 
-        setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle
-        // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
+        setAttribute(Qt::WA_NativeWindow); // 创建窗口 handle        // onScreenDisplay 低于override，高于tooltip，希望显示在锁屏上方的界面，均需要调整层级为onScreenDisplay或者override
         windowHandle()->setProperty("_d_dwayland_window-type", "onScreenDisplay");
         DPlatformWindowHandle handle(this, this);
         handle.setWindowRadius(-1);
@@ -705,8 +704,7 @@ bool FullScreenBackground::contains(int type)
     auto containPixmap = [](const QMap<QString, QPixmap> &cacheMap, const QString &strSize) {
         if (cacheMap.contains(strSize)) {
             const QPixmap &pixmap = cacheMap[strSize];
-            return !pixmap.isNull(); // pixmap 为空也返回false
-        } else {
+            return !pixmap.isNull(); // pixmap 为空也返回false        } else {
             return false;
         }
     };

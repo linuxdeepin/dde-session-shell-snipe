@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -20,7 +20,7 @@ public:
     virtual void run() = 0;
     virtual void ungrabKeyboard() = 0;
 
-signals:
+Q_SIGNALS:
     void capsLockStatusChanged(bool on);
     void numLockStatusChanged(bool on);
     void initialized();

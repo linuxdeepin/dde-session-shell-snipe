@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -164,7 +164,7 @@ void InhibitButton::paintEvent(QPaintEvent *event)
 void InhibitButton::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
-    emit clicked();
+    Q_EMIT clicked();
     return;
 }
 
@@ -173,7 +173,7 @@ void InhibitButton::keyPressEvent(QKeyEvent *event)
     switch (event->key()) {
     case Qt::Key_Return:
     case Qt::Key_Enter:
-        emit clicked();
+        Q_EMIT clicked();
         break;
     }
     QWidget::keyPressEvent(event);

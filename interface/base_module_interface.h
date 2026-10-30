@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -35,21 +35,14 @@ public:
      * 模块的类型
      */
     enum ModuleType {
-        LoginType,   // 登陆插件
-        TrayType,     // 托盘插件
-        FullManagedLoginType,    // 全托管插件
-        IpcAssistLoginType,       // 用于接收厂商密码插件
-        PasswordExtendLoginType,    // 密码认证扩展插件，需要两个都认证通过后
-    };
+        LoginType,   // 登陆插件        TrayType,     // 托盘插件        FullManagedLoginType,    // 全托管插件        IpcAssistLoginType,       // 用于接收厂商密码插件        PasswordExtendLoginType,    // 密码认证扩展插件，需要两个都认证通过后    };
 
     /**
     * @brief The LoadType enum
     * 模块加载的类型
     */
     enum LoadType {
-        Load,       // 加载插件
-        Notload     // 不加载插件
-    };
+        Load,       // 加载插件        Notload     // 不加载插件    };
 
     virtual ~BaseModuleInterface() = default;
 
@@ -101,9 +94,7 @@ public:
     // Warning: 不要增加虚函数，即使在最后面（会改变派生类的虚表）
 };
 
-} // namespace module
-} // namespace dss
-
+} // namespace module} // namespace dss
 Q_DECLARE_INTERFACE(dss::module::BaseModuleInterface, "com.deepin.dde.shell.Modules")
 
 #endif // MODULE_INTERFACE_H

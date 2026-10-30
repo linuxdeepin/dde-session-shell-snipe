@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,86 +23,43 @@ enum AuthResult {
 };
 
 enum CustomLoginType {
-    CLT_Default = 0, // 默认登录
-    CLT_MFA, // 多因子
-    CLT_ThirdParty, // 第三方
-};
+    CLT_Default = 0, // 默认登录    CLT_MFA, // 多因子    CLT_ThirdParty, // 第三方};
 
 /**
  * @brief 认证插件需要传回的数据
  */
 struct AuthCallbackData {
-    int result = AuthResult::None; // 认证结果
-    std::string account; // 账户
-    std::string token; // 令牌
-    std::string message; // 提示消息
-    std::string json; // 预留数据
-};
+    int result = AuthResult::None; // 认证结果    std::string account; // 账户    std::string token; // 令牌    std::string message; // 提示消息    std::string json; // 预留数据};
 
 /**
  * @brief The AppType enum
  * 发起认证的应用类型
  */
 enum AppType {
-    TypeNone = 0, // 其他
-    Login = 1, // 登录
-    Lock = 2   // 锁屏
-};
+    TypeNone = 0, // 其他    Login = 1, // 登录    Lock = 2   // 锁屏};
 
 /**
  * @brief
  */
 enum DefaultAuthLevel {
     NoDefault = 0,  // 如果获取到上次认证成功的类型，则默认使用上次登陆成功的类型，否则根据系统默认的顺序来选择
-
     //Deprecated，不再处理这个类型，没有实际的使用价值
     Default,        // 如果获取到上次认证成功的类型，则默认使用上次登陆成功的类型，否则使用插件认证
-
-    StrongDefault   // 无论是否可以获取到上次认证成功的类型，都默认选择插件验证
-};
+    StrongDefault   // 无论是否可以获取到上次认证成功的类型，都默认选择插件验证};
 
 /**
  * @brief The AuthType enum
  * 认证类型
  */
 enum AuthType {
-    AT_None            = 0,         // none
-    AT_Password        = 1 << 0,    // 密码
-    AT_Fingerprint     = 1 << 1,    // 指纹
-    AT_Face            = 1 << 2,    // 人脸
-    AT_ActiveDirectory = 1 << 3,    // AD域
-    AT_Ukey            = 1 << 4,    // ukey
-    AT_FingerVein      = 1 << 5,    // 指静脉
-    AT_Iris            = 1 << 6,    // 虹膜
-    AT_Passkey         = 1 << 7,    // 安全密钥
-    AT_Pattern         = 1 << 8,    // 手势
-    AT_PAM             = 1 << 29,   // PAM
-    AT_Custom          = 1 << 30,   // 自定义
-    AT_All             = -1         // all
-};
+    AT_None            = 0,         // none    AT_Password        = 1 << 0,    // 密码    AT_Fingerprint     = 1 << 1,    // 指纹    AT_Face            = 1 << 2,    // 人脸    AT_ActiveDirectory = 1 << 3,    // AD域    AT_Ukey            = 1 << 4,    // ukey    AT_FingerVein      = 1 << 5,    // 指静脉    AT_Iris            = 1 << 6,    // 虹膜    AT_Passkey         = 1 << 7,    // 安全密钥    AT_Pattern         = 1 << 8,    // 手势    AT_PAM             = 1 << 29,   // PAM    AT_Custom          = 1 << 30,   // 自定义    AT_All             = -1         // all};
 
 /**
  * @brief The AuthStatus enum
  * 认证状态
  */
 enum AuthState {
-    AS_None = -1,   // none
-    AS_Success,     // 成功，此次认证的最终结果
-    AS_Failure,     // 失败，此次认证的最终结果
-    AS_Cancel,      // 取消，当认证没有给出最终结果时，调用 End 会出发 Cancel 信号
-    AS_Timeout,     // 超时
-    AS_Error,       // 错误
-    AS_Verify,      // 验证中
-    AS_Exception,   // 设备异常，当前认证会被 End
-    AS_Prompt,      // 设备提示
-    AS_Started,     // 认证已启动，调用 Start 之后，每种成功开启都会发送此信号
-    AS_Ended,       // 认证已结束，调用 End 之后，每种成功关闭的都会发送此信号，当某种认证类型被锁定时，也会触发此信号
-    AS_Locked,      // 认证已锁定，当认证类型锁定时，触发此信号。该信号不会给出锁定等待时间信息
-    AS_Recover,     // 设备恢复，需要调用 Start 重新开启认证，对应 AS_Exception
-    AS_Unlocked,    // 认证解锁，对应 AS_Locked
-    AS_Unknown,     // 未知状态
-	AS_VerifyCode,  // 需要验证码
-};
+    AS_None = -1,   // none    AS_Success,     // 成功，此次认证的最终结果    AS_Failure,     // 失败，此次认证的最终结果    AS_Cancel,      // 取消，当认证没有给出最终结果时，调用 End 会出发 Cancel 信号    AS_Timeout,     // 超时    AS_Error,       // 错误    AS_Verify,      // 验证中    AS_Exception,   // 设备异常，当前认证会被 End    AS_Prompt,      // 设备提示    AS_Started,     // 认证已启动，调用 Start 之后，每种成功开启都会发送此信号    AS_Ended,       // 认证已结束，调用 End 之后，每种成功关闭的都会发送此信号，当某种认证类型被锁定时，也会触发此信号    AS_Locked,      // 认证已锁定，当认证类型锁定时，触发此信号。该信号不会给出锁定等待时间信息    AS_Recover,     // 设备恢复，需要调用 Start 重新开启认证，对应 AS_Exception    AS_Unlocked,    // 认证解锁，对应 AS_Locked    AS_Unknown,     // 未知状态	AS_VerifyCode,  // 需要验证码};
 
 /**
  * @brief 验证回调函数
@@ -129,8 +86,7 @@ using MessageCallbackFun = std::string (*)(const std::string &, void *);
  * @brief 插件回调相关
  */
 struct LoginCallBack {
-    void *app_data; // 插件无需关注
-    AuthCallbackFun authCallbackFun;
+    void *app_data; // 插件无需关注    AuthCallbackFun authCallbackFun;
     MessageCallbackFun messageCallbackFunc;
 };
 
@@ -181,9 +137,7 @@ typedef Q_DECL_DEPRECATED LoginModuleInterface LoginModuleInterfaceV2;
 Q_DECL_DEPRECATED typedef LoginModuleInterface LoginModuleInterfaceV2;
 #endif
 
-} // namespace module
-} // namespace dss
-
+} // namespace module} // namespace dss
 Q_DECLARE_INTERFACE(dss::module::LoginModuleInterface, "com.deepin.dde.shell.Modules.Login")
 
 #endif // LOGINMODULEINTERFACE_H

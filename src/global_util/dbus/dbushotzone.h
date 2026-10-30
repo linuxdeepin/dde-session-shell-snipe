@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -55,8 +55,7 @@ public:
 
     ~DBusHotzone();
 
-public Q_SLOTS: // METHODS
-    inline QDBusPendingReply<QString> BottomLeftAction()
+public Q_SLOTS: // METHODS    inline QDBusPendingReply<QString> BottomLeftAction()
     {
         QList<QVariant> argumentList;
         return asyncCallWithArgumentList(QStringLiteral("BottomLeftAction"), argumentList);
@@ -115,8 +114,7 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QStringLiteral("TopRightAction"), argumentList);
     }
 
-Q_SIGNALS: // SIGNALS
-};
+Q_SIGNALS: // SIGNALS};
 
 namespace com {
   namespace deepin {

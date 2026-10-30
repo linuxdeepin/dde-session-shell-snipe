@@ -82,8 +82,7 @@ public:
     SessionManager1Adaptor(QObject *parent);
     virtual ~SessionManager1Adaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(QString CurrentUid READ currentUid)
+public: // PROPERTIES    Q_PROPERTY(QString CurrentUid READ currentUid)
     QString currentUid() const;
 
     Q_PROPERTY(bool Locked READ locked)
@@ -92,8 +91,7 @@ public: // PROPERTIES
     Q_PROPERTY(int Stage READ stage)
     int stage() const;
 
-public Q_SLOTS: // METHODS
-    bool AllowSessionDaemonRun();
+public Q_SLOTS: // METHODS    bool AllowSessionDaemonRun();
     bool CanHibernate();
     bool CanLogout();
     bool CanReboot();
@@ -115,8 +113,7 @@ public Q_SLOTS: // METHODS
     void SetLocked(bool in0);
     void Shutdown();
     void ToggleDebug();
-Q_SIGNALS: // SIGNALS
-    void Unlock();
+Q_SIGNALS: // SIGNALS    void Unlock();
 };
 
 #endif

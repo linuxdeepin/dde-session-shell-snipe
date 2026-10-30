@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -120,7 +120,7 @@ void RoundItemButton::mouseReleaseEvent(QMouseEvent* e)
         updateState(Pressed);
 
     if (m_state != Disabled)
-        emit clicked();
+        Q_EMIT clicked();
 }
 
 void RoundItemButton::paintEvent(QPaintEvent* event)
@@ -255,9 +255,7 @@ void RoundItemButton::paintEvent(QPaintEvent* event)
     // 绘制文字旁的小红点
     if (m_redPointVisible) {
         QRect textRt(textRect.x(), textRect.y(), textRect.width(), textList.size() * lineHeight);
-        const int spaceToText = 4;     //文字和红点的距离
-        const int radius = 3;          //红点的半径
-        QPoint centerOfCircle=textRt.topRight() + QPoint(spaceToText, textRt.height() / 2);
+        const int spaceToText = 4;     //文字和红点的距离        const int radius = 3;          //红点的半径        QPoint centerOfCircle=textRt.topRight() + QPoint(spaceToText, textRt.height() / 2);
         painter.setBrush(QBrush(Qt::red));
         painter.setPen(Qt::red);
         painter.drawEllipse(centerOfCircle, radius, radius);
@@ -283,7 +281,7 @@ void RoundItemButton::updateState(const RoundItemButton::State state)
 {
     if (m_state != state) {
         m_state = state;
-        emit stateChanged(state);
+        Q_EMIT stateChanged(state);
     }
 
     QAbstractButton::setChecked(m_state == Checked);

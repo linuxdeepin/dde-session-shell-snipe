@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -46,5 +46,5 @@ QPixmap BackgroundHandlerThread::handleBackground(const QString &path, const QSi
 void BackgroundHandlerThread::handle()
 {
     auto pixmap = handleBackground(m_path, m_targetSize, m_devicePixelRatioF);
-    emit backgroundHandled(pixmap);
+    Q_EMIT backgroundHandled(pixmap);
 }

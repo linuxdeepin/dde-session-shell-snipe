@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2020 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2020-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,7 +22,7 @@ public:
     void erase(const QString &gsettingsName, QWidget *binder);
     const QString getStatus(const QString &gsettingsName);
 
-signals:
+Q_SIGNALS:
     void enableChanged(const QString &gsettingsName, bool enable);
 
 private:
@@ -37,5 +37,4 @@ private:
 };
 
 #endif // GSETTINGWATCHER_H
-
 #endif // ENABLE_DSS_SNIPE

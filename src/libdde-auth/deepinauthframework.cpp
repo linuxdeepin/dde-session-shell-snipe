@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -287,7 +287,7 @@ void DeepinAuthFramework::SendToken(const QString &token)
  */
 void DeepinAuthFramework::UpdateAuthState(const AuthState state, const QString &message)
 {
-    emit AuthStateChanged(AT_PAM, state, message);
+    Q_EMIT AuthStateChanged(AT_PAM, state, message);
 }
 
 /**
@@ -343,7 +343,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
 
         const AuthType type = AUTH_TYPE_CAST(flag);
         const AuthState authState = AUTH_STATE_CAST(state);
-        emit AuthStateChanged(type, authState, msg);
+        Q_EMIT AuthStateChanged(type, authState, msg);
 
         // 当人脸或者虹膜认证成功 或者 指纹识别失败/成功 时唤醒屏幕
         if (((AT_Face == type || AT_Iris == type) && AS_Success == authState)
@@ -353,12 +353,12 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
         }
     });
 
-    emit SessionCreated();
-    emit MFAFlagChanged(authControllerInter->isMFA());
-    emit FactorsInfoChanged(authControllerInter->factorsInfo());
-    emit FuzzyMFAChanged(authControllerInter->isFuzzyMFA());
-    emit PINLenChanged(authControllerInter->pINLen());
-    emit PromptChanged(authControllerInter->prompt());
+    Q_EMIT SessionCreated();
+    Q_EMIT MFAFlagChanged(authControllerInter->isMFA());
+    Q_EMIT FactorsInfoChanged(authControllerInter->factorsInfo());
+    Q_EMIT FuzzyMFAChanged(authControllerInter->isFuzzyMFA());
+    Q_EMIT PINLenChanged(authControllerInter->pINLen());
+    Q_EMIT PromptChanged(authControllerInter->prompt());
 
 
     int DAEncryptType;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -82,10 +82,7 @@ private:
     bool m_isLocked;
     QDBusInterface*  m_login1SessionSelf;
     bool m_IdentifyWithMultipleUserStarted;
-    bool m_loginAuthenticated;  // 登录界面是否已经验证过了
-    int m_authFactors;
+    bool m_loginAuthenticated;  // 登录界面是否已经验证过了    int m_authFactors;
 };
 
-} // namespace module
-} // namespace dss
-#endif // LOGIN_MODULE_H
+} // namespace module} // namespace dss#endif // LOGIN_MODULE_H

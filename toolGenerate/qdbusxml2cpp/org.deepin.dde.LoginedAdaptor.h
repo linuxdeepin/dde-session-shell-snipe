@@ -41,15 +41,12 @@ public:
     LoginedAdaptor(QObject *parent);
     virtual ~LoginedAdaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(uint LastLogoutUser READ lastLogoutUser)
+public: // PROPERTIES    Q_PROPERTY(uint LastLogoutUser READ lastLogoutUser)
     uint lastLogoutUser() const;
 
     Q_PROPERTY(QString UserList READ userList)
     QString userList() const;
 
-public Q_SLOTS: // METHODS
-Q_SIGNALS: // SIGNALS
-};
+public Q_SLOTS: // METHODSQ_SIGNALS: // SIGNALS};
 
 #endif

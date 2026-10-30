@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -75,5 +75,4 @@ void LoginModule::initUI()
     }, Qt::DirectConnection);
 }
 
-} // namespace module
-} // namespace dss
+} // namespace module} // namespace dss

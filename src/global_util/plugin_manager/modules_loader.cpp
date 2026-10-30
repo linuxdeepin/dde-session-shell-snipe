@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -141,8 +141,7 @@ void ModulesLoader::findModule(const QString& path)
 
         QMutexLocker locker(&m_mutex);
         m_pluginLoaders.insert(moduleInstance->key(), QPointer<QPluginLoader>(loader.get()));
-        loader.release(); // 释放所有权，防止 QPluginLoader 被析构
-        PluginManager::instance()->addPlugin(moduleInstance, version);
+        loader.release(); // 释放所有权，防止 QPluginLoader 被析构        PluginManager::instance()->addPlugin(moduleInstance, version);
     }
     m_loadLoginModule = true;
     Q_EMIT loadPluginsFinished();

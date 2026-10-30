@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,9 +18,7 @@ class SessionBaseWindow : public QFrame
 public:
     // try to index different plugin widgets here
     enum PluginWidgetIndex {
-        FullManagedPlugin, // full managed, plugin should take control both UI and PAM
-        EULAPlugin, // EULA, you can place some EULA-like things on login UI
-    };
+        FullManagedPlugin, // full managed, plugin should take control both UI and PAM        EULAPlugin, // EULA, you can place some EULA-like things on login UI    };
 
     explicit SessionBaseWindow(QWidget *parent = nullptr);
     virtual void setLeftBottomWidget(QWidget *const widget) final;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -65,6 +65,4 @@ private:
     int m_appType;
 };
 
-} // namespace module_v2
-} // namespace dss
-#endif // GESTURELOGINMODULE_H
+} // namespace module_v2} // namespace dss#endif // GESTURELOGINMODULE_H

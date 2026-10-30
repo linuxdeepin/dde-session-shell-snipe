@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -39,11 +39,11 @@ void DBusShutdownAgent::Shutdown()
 
     if (!canShowShutDown()) {
          //锁屏时允许关机
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, false);
     } else {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
         m_model->setVisible(true);
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, true);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireShutdown, true);
     }
 }
 
@@ -72,11 +72,11 @@ void DBusShutdownAgent::Restart()
 
     if (!canShowShutDown()) {
         //锁屏时允许重启
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, false);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, false);
     } else {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
         m_model->setVisible(true);
-        emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, true);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireRestart, true);
     }
 }
 
@@ -105,7 +105,7 @@ void DBusShutdownAgent::Logout()
 
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::ShutDownMode);
     m_model->setVisible(true);
-    emit m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireLogout, true);
+    Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::PowerAction::RequireLogout, true);
 }
 
 void DBusShutdownAgent::Suspend()
@@ -129,7 +129,7 @@ void DBusShutdownAgent::Suspend()
 #endif
             m_model->setVisible(true);
         }
-        emit m_model->onRequirePowerAction(SessionBaseModel::RequireSuspend, true);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::RequireSuspend, true);
     }
 }
 
@@ -154,7 +154,7 @@ void DBusShutdownAgent::Hibernate()
 #endif
             m_model->setVisible(true);
         }
-        emit m_model->onRequirePowerAction(SessionBaseModel::RequireHibernate, true);
+        Q_EMIT m_model->onRequirePowerAction(SessionBaseModel::RequireHibernate, true);
     }
 }
 
@@ -167,7 +167,7 @@ void DBusShutdownAgent::SwitchUser()
     if (isUpdating() || !canShowShutDown())
         return;
 
-    emit m_model->showUserList();
+    Q_EMIT m_model->showUserList();
 }
 
 void DBusShutdownAgent::Lock()

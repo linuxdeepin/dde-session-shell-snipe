@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -31,7 +31,7 @@ public:
 #endif
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-public slots:
+public Q_SLOTS:
     void leftKeySwitch();
     void rightKeySwitch();
     void runSystemMonitor();

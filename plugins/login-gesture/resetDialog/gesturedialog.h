@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -34,7 +34,6 @@ public:
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;     // 过滤鼠标事件
-
 private:
     void initUi();
     void initConnection();
@@ -42,7 +41,7 @@ private:
     QWidget* createCancelButton();
     QLabel *createTitleIcon(const QIcon &icon);
 
-private slots:
+private Q_SLOTS:
     void onInputFinished();
 
 private:
@@ -78,5 +77,4 @@ private:
 };
 
 } // namespace gestureSetting
-
 #endif // GESTUREDIALOG_H

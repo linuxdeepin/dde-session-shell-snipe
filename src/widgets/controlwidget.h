@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,7 +23,6 @@ namespace module {
 class BaseModuleInterface;
 }
 } // namespace dss
-
 DWIDGET_USE_NAMESPACE
 
 DWIDGET_BEGIN_NAMESPACE
@@ -100,7 +99,7 @@ public:
     QWidget *getTray(const QString &name);
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-signals:
+Q_SIGNALS:
     void requestSwitchUser();
     void requestShutdown();
     void requestSwitchSession();
@@ -110,7 +109,7 @@ signals:
     void requestShowTrayModule(QWidget *trayWidget, QWidget *contentWidget, const bool callShowForce = false);
     void notifyKeyboardLayoutHidden();
 
-public slots:
+public Q_SLOTS:
     void addModule(TrayPlugin *module);
     void removeModule(TrayPlugin *module);
     void setVirtualKBVisible(bool visible);
@@ -162,9 +161,7 @@ private:
     PopupWindow *m_tipsWidget = nullptr;
     const SessionBaseModel *m_model;
 
-    KBLayoutListView *m_kbLayoutListView = nullptr;   // 键盘布局列表
-    FloatingButton *m_keyboardBtn = nullptr;          // 键盘布局按钮
-    std::shared_ptr<User> m_curUser;
+    KBLayoutListView *m_kbLayoutListView = nullptr;   // 键盘布局列表    FloatingButton *m_keyboardBtn = nullptr;          // 键盘布局按钮    std::shared_ptr<User> m_curUser;
     QList<QMetaObject::Connection> m_connectionList;
     bool m_onboardBtnVisible;
     bool m_doGrabKeyboard;

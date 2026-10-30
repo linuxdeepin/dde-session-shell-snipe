@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,13 +38,13 @@ public:
     void switchToUser(std::shared_ptr<User> user) override;
     bool isSecurityEnhanceOpen();
 
-signals:
+Q_SIGNALS:
     void requestUpdateBackground(const QString &path);
     void requestShowPrompt(const QString &prompt);
     void requestShowMessage(const QString &message);
     void requestShowUsersWithTheSameName(const QString nativeUserName, const QString &doMainAccountDetail);
 
-public slots:
+public Q_SLOTS:
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destroyAuthentication(const QString &account);
@@ -58,7 +58,7 @@ public slots:
     void onAuthFinished();
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
 
-private slots:
+private Q_SLOTS:
     void onAuthStateChanged(const int type, const int state, const QString &message);
     void onReceiptChanged(bool state);
     void onCurrentUserChanged(const std::shared_ptr<User> &user);

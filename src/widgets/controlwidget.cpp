@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -288,7 +288,7 @@ QString ControlWidget::messageCallback(const QString &message, void *app_data)
     QString cmd = messageObj.value("Cmd").toString();
     const QString pluginKey = messageObj.value("PluginKey").toString();
     if (cmd == "ShowContent") {
-        emit static_cast<ControlWidget *>(app_data)->requestShowModule(pluginKey, true);
+        Q_EMIT static_cast<ControlWidget *>(app_data)->requestShowModule(pluginKey, true);
     } else if (cmd == "PluginVisible") {
         static_cast<ControlWidget *>(app_data)->updatePluginVisible(pluginKey, messageObj.value("Visible").toBool());
     }
@@ -405,11 +405,11 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(button, &FloatingButton::clicked, this, [this, trayModule] {
-            emit requestShowModule(trayModule->key());
+            Q_EMIT requestShowModule(trayModule->key());
     });
 #else
     connect(button, &FloatingButton::clicked, this, [this, trayModule] {
-        emit requestShowModule(trayModule->key());
+        Q_EMIT requestShowModule(trayModule->key());
     }, Qt::UniqueConnection);
 #endif
     updateLayout();

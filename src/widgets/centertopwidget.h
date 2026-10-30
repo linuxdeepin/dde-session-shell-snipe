@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,9 +23,9 @@ public:
     void resizeEvent(QResizeEvent *event) override;
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject* objPtr);
 
-signals:
+Q_SIGNALS:
 
-public slots:
+public Q_SLOTS:
     void updateTimeFormat(bool use24);
 
 
@@ -35,7 +35,7 @@ private:
     void updateTopTipWidget();
 
 #ifdef ENABLE_DSS_SNIPE
-private slots:
+private Q_SLOTS:
     void onUserRegionFormatValueChanged(const QDBusMessage &dbusMessage);
 
 private:
@@ -45,7 +45,6 @@ private:
     void updateRegionFormatConnection(const User *user);
     void updateUserDateTimeFormat();
 #endif // ENABLE_DSS_SNIPE
-
 private:
     QPointer<User> m_currentUser;
     TimeWidget *m_timeWidget;

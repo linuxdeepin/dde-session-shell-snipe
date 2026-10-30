@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -235,21 +235,21 @@ int main(int argc, char *argv[])
             });
         });
         QObject::connect(model, &SessionBaseModel::visibleChanged, lockFrame,[&](bool visible) {
-            emit lockService.Visible(visible);
+            Q_EMIT lockService.Visible(visible);
         });
         QObject::connect(model, &SessionBaseModel::onStatusChanged, lockFrame,[&](SessionBaseModel::ModeStatus status) {
-            emit shutdownServices.Visible(model->visible() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::ShutDownMode));
+            Q_EMIT shutdownServices.Visible(model->visible() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::ShutDownMode));
         });
         QObject::connect(lockFrame, &LockFrame::requestEnableHotzone, worker, &LockWorker::enableZoneDetected, Qt::UniqueConnection);
         QObject::connect(lockFrame, &LockFrame::sendKeyValue, [&](QString key) {
-             emit lockService.ChangKey(key);
+             Q_EMIT lockService.ChangKey(key);
         });
         if (model->isUseWayland()) {
             QObject::connect(lockFrame, &LockFrame::requestDisableGlobalShortcutsForWayland, worker, &LockWorker::disableGlobalShortcutsForWayland);
         }
 
         lockFrame->setVisible(model->visible());
-        emit lockService.Visible(model->visible());
+        Q_EMIT lockService.Visible(model->visible());
         return lockFrame;
     };
 
@@ -273,11 +273,11 @@ int main(int argc, char *argv[])
 
     if (!runDaemon) {
         if (showUserList) {
-            emit model->showUserList();
+            Q_EMIT model->showUserList();
         } else if (showShutdown) {
-            emit model->showShutdown();
+            Q_EMIT model->showShutdown();
         } else if (showLockScreen) {
-            emit model->showLockScreen();
+            Q_EMIT model->showLockScreen();
         }
     }
     return app->exec();

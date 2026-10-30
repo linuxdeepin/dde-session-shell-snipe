@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -44,10 +44,10 @@ public:
 
     std::shared_ptr<User> userInfo() const { return m_user; }
 
-signals:
+Q_SIGNALS:
     void opacityChanged();
 
-public slots:
+public Q_SLOTS:
     void setImageSize(const AvatarSize &avatarsize);
 
     void show();
@@ -89,4 +89,3 @@ private:
     QGraphicsOpacityEffect* m_opacityEffect;
 };
 #endif // UserButton
-

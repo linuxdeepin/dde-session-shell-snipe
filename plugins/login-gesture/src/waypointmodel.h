@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -104,16 +104,10 @@ Q_SIGNALS:
     // 录入
     void finished();
 
-    void pathError(); // 不满足条件
-    void pathDone(); // 满足条件
-
+    void pathError(); // 不满足条件    void pathDone(); // 满足条件
     // 校验的信号转发
-    void authError(); // 验证失败
-    void authDone(); // 验证成功
-
-    void dataChanged(); // 通知UI执行更新
-    void selected(int, bool); // 单个点被选中或取消
-
+    void authError(); // 验证失败    void authDone(); // 验证成功
+    void dataChanged(); // 通知UI执行更新    void selected(int, bool); // 单个点被选中或取消
     void gestureStateChanged(int);
     void localeChanged(const QString &);
 
@@ -142,5 +136,4 @@ private:
     QString m_localeName;
 };
 } // namespace gestureLogin
-
 #endif // WAYPOINTMODEL_H

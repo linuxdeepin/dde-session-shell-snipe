@@ -59,8 +59,7 @@ public:
     Authenticate1Adaptor(QObject *parent);
     virtual ~Authenticate1Adaptor();
 
-public: // PROPERTIES
-    Q_PROPERTY(int FrameworkState READ frameworkState)
+public: // PROPERTIES    Q_PROPERTY(int FrameworkState READ frameworkState)
     int frameworkState() const;
 
     Q_PROPERTY(QString SupportEncrypts READ supportEncrypts)
@@ -69,12 +68,10 @@ public: // PROPERTIES
     Q_PROPERTY(int SupportedFlags READ supportedFlags)
     int supportedFlags() const;
 
-public Q_SLOTS: // METHODS
-    QString Authenticate(const QString &username, int authFlags, int appType);
+public Q_SLOTS: // METHODS    QString Authenticate(const QString &username, int authFlags, int appType);
     QString GetLimits(const QString &username);
     QString PreOneKeyLogin(int flag);
-Q_SIGNALS: // SIGNALS
-    void LimitUpdated(const QString &in0);
+Q_SIGNALS: // SIGNALS    void LimitUpdated(const QString &in0);
 };
 
 #endif

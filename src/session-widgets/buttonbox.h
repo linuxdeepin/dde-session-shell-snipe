@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -35,8 +35,7 @@ private:
     int m_radius;
     bool m_leftRoundEnabled;
     bool m_rightRoundEnabled;
-    bool m_visible; // 标识 button 是否需要显示
-};
+    bool m_visible; // 标识 button 是否需要显示};
 
 //ButtonBox类
 class ButtonBox : public QWidget

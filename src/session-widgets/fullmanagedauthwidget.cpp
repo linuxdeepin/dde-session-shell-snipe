@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "fullmanagedauthwidget.h"
@@ -203,7 +203,7 @@ void FullManagedAuthWidget::checkAuthResult(const AuthType type, const AuthState
     // 人脸和虹膜是手动点击解锁按钮后发送，无需处理
     if (type == AT_All && state == AS_Success) {
         if (m_customAuth && m_customAuth->authState() == AS_Success) {
-            emit authFinished();
+            Q_EMIT authFinished();
         }
 
         if (m_customAuth) {

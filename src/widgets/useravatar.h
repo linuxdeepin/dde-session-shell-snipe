@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -54,7 +54,7 @@ public:
     void hideButton();
     void setColor(QColor color);
 
-signals:
+Q_SIGNALS:
     void mousePress();
     void requestDelete();
     void userAvatarClicked();

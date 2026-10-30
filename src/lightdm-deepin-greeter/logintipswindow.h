@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -23,7 +23,7 @@ public:
     explicit LoginTipsWindow(QWidget *parent = 0);
     bool isValid();
 
-signals:
+Q_SIGNALS:
     void requestClosed();
 
 private:

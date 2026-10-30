@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -19,7 +19,7 @@ public:
 
     void setAuthFactorType(AuthFactorType authFactorType) override;
 
-public slots:
+public Q_SLOTS:
     void setAuthState(const AuthCommon::AuthState state, const QString &result) override;
     void setAnimationState(const bool start) override;
     void setLimitsInfo(const LimitsInfo &info) override;
@@ -33,7 +33,7 @@ private:
     void updateUnlockPrompt() override;
     void doAnimation() override;
 
-signals:
+Q_SIGNALS:
     void retryButtonVisibleChanged(bool visible);
 
 private:
