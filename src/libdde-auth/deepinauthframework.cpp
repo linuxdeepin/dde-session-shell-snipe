@@ -168,7 +168,7 @@ void DeepinAuthFramework::PAMAuthentication(const QString &account)
     }
 
     m_PAMAuthThread = 0;
-    system("xset dpms force on");
+    QProcess::startDetached("xset", QStringList() << "dpms" << "force" << "on");
 }
 
 /**
@@ -349,7 +349,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
         if (((AT_Face == type || AT_Iris == type) && AS_Success == authState)
             || (AT_Fingerprint == type && (AS_Failure == authState || AS_Success == authState))
             || (AT_Passkey == type && (AS_Failure == authState || AS_Success == authState))) {
-            system("xset dpms force on");
+            QProcess::startDetached("xset", QStringList() << "dpms" << "force" << "on");
         }
     });
 

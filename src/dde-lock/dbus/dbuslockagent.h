@@ -29,6 +29,7 @@ private:
     void getPathByPid(quint32 pid);
     void getPPidByPid(quint32 pid);
     void getCallerBySender();
+    bool isCallerAuthorized();
 
 private:
     SessionBaseModel *m_model;

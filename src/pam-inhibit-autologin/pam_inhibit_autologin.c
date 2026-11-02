@@ -8,6 +8,8 @@
 #include <sys/syslog.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 // PAM 认证函数
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv)
@@ -17,10 +19,20 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, cons
     FILE *file = fopen(shell_path, "r");
     if (file != NULL) {
         fclose(file);
-        int error_code = system(shell_path);
-        pam_syslog(pamh, LOG_INFO, "run %s return %d", shell_path, error_code);
-        // 如果脚本没有返回错误,则需要中断自动登录，跳转至greeter
-        return error_code == 0 ? PAM_PERM_DENIED : PAM_SUCCESS;
+        pid_t pid = fork();
+        if (pid == 0) {
+            execl(shell_path, shell_path, (char *)NULL);
+            _exit(127);
+        } else if (pid > 0) {
+            int status;
+            waitpid(pid, &status, 0);
+            int error_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+            pam_syslog(pamh, LOG_INFO, "run %s return %d", shell_path, error_code);
+            // 如果脚本没有返回错误,则需要中断自动登录，跳转至greeter
+            return error_code == 0 ? PAM_PERM_DENIED : PAM_SUCCESS;
+        } else {
+            pam_syslog(pamh, LOG_ERR, "fork failed for %s", shell_path);
+        }
     }
     pam_syslog(pamh, LOG_INFO, "%s not exist, continue auto login ", shell_path);
     return PAM_SUCCESS;

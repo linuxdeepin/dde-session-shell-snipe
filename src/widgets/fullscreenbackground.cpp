@@ -744,17 +744,21 @@ QMap<QString, QRect> FullScreenBackground::getScreenGeometryByXrandr()
         return screensGeometry;
     }
 
-    // 启动 xrandr | grep connected 进程
+    // 启动 xrandr 进程并过滤 connected 行
     QProcess process;
-    QStringList arguments;
-    arguments << "-c"
-              << "xrandr | grep connected";
-    process.start("/bin/sh", arguments);
+    process.start("xrandr", QStringList());
     process.waitForStarted();
     process.waitForFinished();
 
-    // 读取进程输出并解析屏幕信息
+    // 读取进程输出并过滤 connected 行
     QString output = QString::fromLocal8Bit(process.readAll());
+    QStringList lines = output.split('\n');
+    output.clear();
+    for (const QString &line : lines) {
+        if (line.contains("connected")) {
+            output += line + '\n';
+        }
+    }
     QRegularExpression regex("(\\S+) connected (?:primary )?(\\d+)x(\\d+)\\+(\\d+)\\+(\\d+)");
     QRegularExpressionMatchIterator iter = regex.globalMatch(output);
     while (iter.hasNext()) {

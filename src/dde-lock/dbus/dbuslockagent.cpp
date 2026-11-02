@@ -7,6 +7,8 @@
 #include "dbusconstant.h"
 
 #include <QDBusMessage>
+#include <QDBusInterface>
+#include <unistd.h>
 
 DBusLockAgent::DBusLockAgent(QObject *parent) : QObject(parent), m_model(nullptr)
 {
@@ -50,6 +52,11 @@ void DBusLockAgent::ShowAuth(bool active)
 void DBusLockAgent::Suspend(bool enable)
 {
     getCallerBySender();
+
+    if (!isCallerAuthorized()) {
+        qCWarning(DDE_SHELL) << "Suspend: unauthorized caller rejected";
+        return;
+    }
 
     qCInfo(DDE_SHELL) << (enable ? "Enter suspend" : "Suspend recovery");
     if (isUpdating())
@@ -185,4 +192,32 @@ void DBusLockAgent::getCallerBySender()
            }
        }
    }
+}
+
+bool DBusLockAgent::isCallerAuthorized()
+{
+    QDBusMessage msg = message();
+    if (msg.type() != QDBusMessage::MethodCallMessage) {
+        return true;
+    }
+
+    QString caller = msg.service();
+    if (caller.isEmpty()) {
+        return false;
+    }
+
+    QDBusInterface dbusInterface("org.freedesktop.DBus", "/org/freedesktop/DBus",
+                                "org.freedesktop.DBus", QDBusConnection::sessionBus());
+    QDBusReply<quint32> reply = dbusInterface.call("GetConnectionUnixUser", caller);
+    if (reply.isValid()) {
+        quint32 callerUid = reply.value();
+        if (callerUid != getuid()) {
+            qCWarning(DDE_SHELL) << "Caller UID mismatch:" << callerUid << "vs" << getuid();
+            return false;
+        }
+        return true;
+    }
+
+    qCWarning(DDE_SHELL) << "Failed to get caller UID:" << reply.error().message();
+    return false;
 }
