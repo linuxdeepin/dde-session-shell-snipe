@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -43,7 +43,7 @@ private:
     int getDisplayModeByConfig(const QString &config) const;
     void updateFrame();
 
-private slots:
+private Q_SLOTS:
     void onDisplayModeChanged(const QString &);
     void checkLockFrameLocation();
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -100,7 +100,7 @@ public:
     QWidget *getTray(const QString &name);
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-signals:
+Q_SIGNALS:
     void requestSwitchUser();
     void requestShutdown();
     void requestSwitchSession();
@@ -110,7 +110,7 @@ signals:
     void requestShowTrayModule(QWidget *trayWidget, QWidget *contentWidget, const bool callShowForce = false);
     void notifyKeyboardLayoutHidden();
 
-public slots:
+public Q_SLOTS:
     void addModule(TrayPlugin *module);
     void removeModule(TrayPlugin *module);
     void setVirtualKBVisible(bool visible);

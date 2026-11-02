@@ -145,7 +145,7 @@ void LockWorker::initConnections()
     connect(m_sessionManagerInter, &SessionManagerInter::Unlock, this, [this] {
         m_authenticating = false;
         m_password.clear();
-        emit m_model->authFinished(true);
+        Q_EMIT m_model->authFinished(true);
     });
 
     /* org.freedesktop.login1.Session */
@@ -234,7 +234,7 @@ void LockWorker::initConnections()
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
             m_model->setIsBlackMode(false);
         }
-        emit m_model->prepareForSleep(isSleep);
+        Q_EMIT m_model->prepareForSleep(isSleep);
     });
     /* model */
     connect(m_model, &SessionBaseModel::authTypeChanged, this, [this](const AuthFlags type) {
@@ -910,30 +910,30 @@ void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString 
 
     if (msg == "Verification timed out") {
         m_isThumbAuth = true;
-        emit m_model->authFailedMessage(tr("Fingerprint verification timed out, please enter your password manually"));
+        Q_EMIT m_model->authFailedMessage(tr("Fingerprint verification timed out, please enter your password manually"));
         return;
     }
 
     switch (eventType) {
     case DBusLockService::PromptQuestion:
         qCWarning(DDE_SHELL) << "Prompt question from pam: " << message;
-        emit m_model->authFailedMessage(message);
+        Q_EMIT m_model->authFailedMessage(message);
         break;
     case DBusLockService::PromptSecret:
         qCWarning(DDE_SHELL) << "Prompt secret from pam: " << message;
         if (m_isThumbAuth && !msg.isEmpty()) {
-            emit m_model->authFailedMessage(msg);
+            Q_EMIT m_model->authFailedMessage(msg);
         }
         break;
     case DBusLockService::ErrorMsg:
         qCWarning(DDE_SHELL) << "Error message from pam: " << message;
         if (msg == "Failed to match fingerprint") {
-            emit m_model->authFailedTipsMessage(tr("Failed to match fingerprint"));
-            emit m_model->authFailedMessage("");
+            Q_EMIT m_model->authFailedTipsMessage(tr("Failed to match fingerprint"));
+            Q_EMIT m_model->authFailedMessage("");
         }
         break;
     case DBusLockService::TextInfo:
-        emit m_model->authFailedMessage(QString(dgettext("fprintd", message.toLatin1())));
+        Q_EMIT m_model->authFailedMessage(QString(dgettext("fprintd", message.toLatin1())));
         break;
     case DBusLockService::Failure:
         onUnlockFinished(false);
@@ -977,7 +977,7 @@ void LockWorker::onUnlockFinished(bool unlocked)
     }
 
     setLocked(!unlocked);
-    emit m_model->authFinished(unlocked);
+    Q_EMIT m_model->authFinished(unlocked);
 }
 
 void LockWorker::restartResetSessionTimer()

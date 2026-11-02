@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(dde-session-shell C CXX)
 
+add_compile_definitions(QT_NO_KEYWORDS)
+
 include(GNUInstallDirs)
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX /usr)

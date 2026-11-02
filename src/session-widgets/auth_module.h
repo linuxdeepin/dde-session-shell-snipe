@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -78,7 +78,7 @@ public:
     inline bool isMFA() const { return m_authFactorType == DDESESSIONCC::MultiAuthFactor; }
     bool isLocked() const;
 
-signals:
+Q_SIGNALS:
     void activeAuth(const AuthCommon::AuthType);
     void authFinished(const AuthCommon::AuthState);
     void requestAuthenticate();

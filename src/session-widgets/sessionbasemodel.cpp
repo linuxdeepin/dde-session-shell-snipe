@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -111,7 +111,7 @@ void SessionBaseModel::setSessionKey(const QString &sessionKey)
 
     m_sessionKey = sessionKey;
 
-    emit onSessionKeyChanged(sessionKey);
+    Q_EMIT onSessionKeyChanged(sessionKey);
 }
 
 void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
@@ -126,7 +126,7 @@ void SessionBaseModel::setPowerAction(const PowerAction &powerAction)
     if (m_enableShutdownBlackWidget && !gsCheckpwd() && (powerAction == SessionBaseModel::PowerAction::RequireRestart || powerAction == SessionBaseModel::PowerAction::RequireShutdown))
         Q_EMIT shutdownkModeChanged(true);
 
-    emit onPowerActionChanged(powerAction);
+    Q_EMIT onPowerActionChanged(powerAction);
 }
 
 void SessionBaseModel::setCurrentModeState(const ModeStatus &currentModeState)
@@ -138,7 +138,7 @@ void SessionBaseModel::setCurrentModeState(const ModeStatus &currentModeState)
 
     m_currentModeState = currentModeState;
 
-    emit onStatusChanged(currentModeState);
+    Q_EMIT onStatusChanged(currentModeState);
 }
 
 void SessionBaseModel::setUserListSize(int users_size)
@@ -148,7 +148,7 @@ void SessionBaseModel::setUserListSize(int users_size)
 
     m_userListSize = users_size;
 
-    emit onUserListSizeChanged(users_size);
+    Q_EMIT onUserListSizeChanged(users_size);
 }
 
 void SessionBaseModel::setHasVirtualKB(bool hasVirtualKB)
@@ -156,9 +156,9 @@ void SessionBaseModel::setHasVirtualKB(bool hasVirtualKB)
     //锁屏显示时，加载初始化屏幕键盘onboard进程，锁屏完成后结束onboard进程
     if (hasVirtualKB && !qgetenv("XDG_SESSION_TYPE").contains("wayland")) {
         bool b = QProcess::execute("which", QStringList() << "onboard") == 0;
-        emit hasVirtualKBChanged(b);
+        Q_EMIT hasVirtualKBChanged(b);
     } else {
-        emit hasVirtualKBChanged(false);
+        Q_EMIT hasVirtualKBChanged(false);
     }
 }
 
@@ -170,7 +170,7 @@ void SessionBaseModel::setHasSwap(bool hasSwap)
 
     m_hasSwap = hasSwap;
 
-    emit onHasSwapChanged(hasSwap);
+    Q_EMIT onHasSwapChanged(hasSwap);
 }
 
 /**
@@ -190,7 +190,7 @@ void SessionBaseModel::setVisible(const bool visible)
     //根据界面显示还是隐藏设置是否加载虚拟键盘
     setHasVirtualKB(m_visible);
 
-    emit visibleChanged(m_visible);
+    Q_EMIT visibleChanged(m_visible);
 }
 
 void SessionBaseModel::setCanSleep(bool canSleep)
@@ -201,7 +201,7 @@ void SessionBaseModel::setCanSleep(bool canSleep)
 
     m_canSleep = canSleep;
 
-    emit canSleepChanged(canSleep);
+    Q_EMIT canSleepChanged(canSleep);
 }
 
 void SessionBaseModel::setAllowShowUserSwitchButton(bool allowShowUserSwitchButton)
@@ -211,7 +211,7 @@ void SessionBaseModel::setAllowShowUserSwitchButton(bool allowShowUserSwitchButt
 
     m_allowShowUserSwitchButton = allowShowUserSwitchButton;
 
-    emit allowShowUserSwitchButtonChanged(allowShowUserSwitchButton);
+    Q_EMIT allowShowUserSwitchButtonChanged(allowShowUserSwitchButton);
 }
 
 void SessionBaseModel::setAlwaysShowUserSwitchButton(bool alwaysShowUserSwitchButton)
@@ -230,7 +230,7 @@ void SessionBaseModel::setIsServerModel(bool server_model)
 void SessionBaseModel::setAbortConfirm(bool abortConfirm)
 {
     m_abortConfirm = abortConfirm;
-    emit abortConfirmChanged(abortConfirm);
+    Q_EMIT abortConfirmChanged(abortConfirm);
 }
 
 void SessionBaseModel::setIsBlackMode(bool is_black)
@@ -243,7 +243,7 @@ void SessionBaseModel::setIsBlackMode(bool is_black)
         return;
 
     m_isBlackMode = is_black;
-    emit blackModeChanged(is_black);
+    Q_EMIT blackModeChanged(is_black);
 }
 
 void SessionBaseModel::setShutdownMode(bool is_black)
@@ -260,7 +260,7 @@ void SessionBaseModel::setIsHibernateModel(bool is_Hibernate)
         return;
 
     m_isHibernateMode = is_Hibernate;
-    emit HibernateModeChanged(is_Hibernate);
+    Q_EMIT HibernateModeChanged(is_Hibernate);
 }
 
 /**
@@ -289,10 +289,10 @@ void SessionBaseModel::setAuthType(const AuthFlags type)
 
     if (m_currentUser->type() == User::Default) {
         m_authProperty.AuthType = type;
-        emit authTypeChanged(AT_None);
+        Q_EMIT authTypeChanged(AT_None);
     } else {
         m_authProperty.AuthType = type;
-        emit authTypeChanged(type);
+        Q_EMIT authTypeChanged(type);
     }
 }
 
@@ -310,8 +310,8 @@ void SessionBaseModel::addUser(const QString &path)
     }
     std::shared_ptr<NativeUser> user(new NativeUser(path));
     m_users->insert(path, user);
-    emit userAdded(user);
-    emit userListChanged(m_users->values());
+    Q_EMIT userAdded(user);
+    Q_EMIT userListChanged(m_users->values());
 }
 
 /**
@@ -329,7 +329,7 @@ void SessionBaseModel::addUser(const std::shared_ptr<User> user)
     }
     const QString path = user->path().isEmpty() ? QString::number(user->uid()) : user->path();
     m_users->insert(path, user);
-    emit userAdded(user);
+    Q_EMIT userAdded(user);
 }
 
 /**
@@ -344,8 +344,8 @@ void SessionBaseModel::removeUser(const QString &path)
     }
     const std::shared_ptr<User> user = m_users->value(path);
     m_users->remove(path);
-    emit userRemoved(user);
-    emit userListChanged(m_users->values());
+    Q_EMIT userRemoved(user);
+    Q_EMIT userListChanged(m_users->values());
 }
 
 /**
@@ -364,7 +364,7 @@ void SessionBaseModel::removeUser(const std::shared_ptr<User> user)
 
     const QString path = user->path().isEmpty() ? QString::number(user->uid()) : user->path();
     m_users->remove(path);
-    emit userRemoved(user);
+    Q_EMIT userRemoved(user);
 }
 
 /**
@@ -441,7 +441,7 @@ bool SessionBaseModel::updateCurrentUser(const std::shared_ptr<User> user)
     }
 
     m_currentUser = user;
-    emit currentUserChanged(user);
+    Q_EMIT currentUserChanged(user);
 
     return true;
 }
@@ -466,7 +466,7 @@ void SessionBaseModel::updateUserList(const QStringList &list)
     for (const QString &path : qAsConst(listTmp)) {
         m_users->remove(path);
     }
-    emit userListChanged(m_users->values());
+    Q_EMIT userListChanged(m_users->values());
 }
 
 /**
@@ -533,7 +533,7 @@ void SessionBaseModel::updateLoginedUserList(const QString &list)
     }
 
     qCInfo(DDE_SHELL) << "Logined users: " << m_loginedUsers->keys();
-    emit loginedUserListChanged(m_loginedUsers->values());
+    Q_EMIT loginedUserListChanged(m_loginedUsers->values());
 }
 
 /**
@@ -612,7 +612,7 @@ void SessionBaseModel::updateMFAFlag(const bool MFAFlag)
         return;
 
     m_authProperty.MFAFlag = MFAFlag;
-    emit MFAFlagChanged(MFAFlag);
+    Q_EMIT MFAFlagChanged(MFAFlag);
 }
 
 /**
@@ -654,11 +654,11 @@ void SessionBaseModel::updateFactorsInfo(const MFAInfoList &infoList)
         for (const MFAInfo &info : infoList) {
             m_authProperty.AuthType |= AUTH_FLAGS_CAST(info.AuthType);
         }
-        emit authTypeChanged(m_authProperty.AuthType);
+        Q_EMIT authTypeChanged(m_authProperty.AuthType);
         break;
     default:
         m_authProperty.AuthType = AT_PAM;
-        emit authTypeChanged(AT_PAM);
+        Q_EMIT authTypeChanged(AT_PAM);
         break;
     }
 }
@@ -678,10 +678,10 @@ void SessionBaseModel::updateAuthState(const AuthType type, const AuthState stat
 
     switch (m_authProperty.FrameworkState) {
     case Available:
-        emit authStateChanged(type, state, message);
+        Q_EMIT authStateChanged(type, state, message);
         break;
     default:
-        emit authStateChanged(AT_PAM, state, message);
+        Q_EMIT authStateChanged(AT_PAM, state, message);
         break;
     }
 }
@@ -707,12 +707,12 @@ void SessionBaseModel::setTerminalLocked(bool locked)
         return;
 
     m_isTerminalLocked = locked;
-    emit terminalLockedChanged(locked);
+    Q_EMIT terminalLockedChanged(locked);
 }
 
 void SessionBaseModel::sendTerminalLockedSignal()
 {
-    emit terminalLockedChanged(m_isTerminalLocked);
+    Q_EMIT terminalLockedChanged(m_isTerminalLocked);
 }
 
 void SessionBaseModel::setUserlistVisible(bool visible)

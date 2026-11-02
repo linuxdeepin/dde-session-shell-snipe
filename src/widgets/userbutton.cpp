@@ -230,7 +230,7 @@ void UserButton::setOpacity(double opa)
 {
     if (fabs(m_opacity - opa) < 1e-6) {
         m_opacity = opa;
-        emit opacityChanged();
+        Q_EMIT opacityChanged();
     }
 }
 

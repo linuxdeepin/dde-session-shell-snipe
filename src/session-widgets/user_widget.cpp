@@ -244,7 +244,7 @@ void UserWidget::updateBlurEffectGeometry()
 
 void UserWidget::mousePressEvent(QMouseEvent *event)
 {
-    emit clicked();
+    Q_EMIT clicked();
     QWidget::mousePressEvent(event);
 }
 

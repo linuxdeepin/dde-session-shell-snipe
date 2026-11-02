@@ -33,7 +33,7 @@ class DLineEditEx : public DLineEdit
 public:
     DLineEditEx(QWidget *parent = nullptr);
 
-public slots:
+public Q_SLOTS:
     void startAnimation();
     void stopAnimation();
     void setEnableTableKeyEvent(bool enable);

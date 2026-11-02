@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -114,9 +114,9 @@ int KeyboardPlatformX11::listen(Display *display)
                 break;
             case XI_RawKeyRelease:
                 if (event->detail == 66) { // check if the key pressed is capslock first.
-                    emit capsLockStatusChanged(isCapsLockOn());
+                    Q_EMIT capsLockStatusChanged(isCapsLockOn());
                 } else if (event->detail == 77) {
-                    emit numLockStatusChanged(isNumLockOn());
+                    Q_EMIT numLockStatusChanged(isNumLockOn());
                 }
                 /*printf("Key release: Detail(%d), X(%d), Y(%d), Mask(%u)\n", event->detail, root_x, root_y, mask);*/
                 break;
