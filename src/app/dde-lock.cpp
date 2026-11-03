@@ -26,9 +26,15 @@
 
 #include <QDBusInterface>
 #include <unistd.h>
+#include <X11/Xlib.h>
 
 DCORE_USE_NAMESPACE
 DWIDGET_USE_NAMESPACE
+
+static int x11IOErrorHandler(Display *)
+{
+    _exit(0);
+}
 
 int main(int argc, char *argv[])
 {
@@ -280,5 +286,6 @@ int main(int argc, char *argv[])
             emit model->showLockScreen();
         }
     }
+    XSetIOErrorHandler(x11IOErrorHandler);
     return app->exec();
 }
