@@ -94,7 +94,8 @@ int setRootWindowCursor() {
 
     Cursor cursor = static_cast<Cursor>(XcursorFilenameLoadCursor(display, cursorPath));
     if (cursor == 0) {
-        cursor = static_cast<Cursor>(loadCursorHandle(display, "watch", 24));
+        int cursorSize = static_cast<int>(24 * qApp->devicePixelRatio());
+        cursor = static_cast<Cursor>(loadCursorHandle(display, "watch", cursorSize));
     }
     XDefineCursor(display, XDefaultRootWindow(display),cursor);
 
