@@ -50,7 +50,12 @@ void AuthFingerprint::initConnections()
  */
 void AuthFingerprint::reset()
 {
+    m_state = AuthCommon::AS_Ended;
     m_textLabel->setText(tr("Verify your fingerprint"));
+    if (m_authStateLabel) {
+        setAuthStateStyle(isMFA() ? LOGIN_WAIT : AUTH_LOCK);
+        m_authStateLabel->show();
+    }
 }
 
 /**
