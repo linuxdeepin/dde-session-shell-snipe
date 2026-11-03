@@ -141,6 +141,10 @@
 <context>
     <name>AuthSingle</name>
     <message>
+        <source>Password</source>
+        <translation>请输入密码</translation>
+    </message>
+    <message>
         <source>Please try again 1 minute later</source>
         <translation>请1分钟后再试</translation>
     </message>
