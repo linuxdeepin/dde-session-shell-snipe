@@ -165,7 +165,7 @@ void LockWorker::initConnections()
         }
 
 #ifdef ENABLE_DSS_SNIPE
-        if (active && !m_model->visible()) {
+        if (!m_model->visible()) {
              m_model->showLockScreen();
         }
 #endif
