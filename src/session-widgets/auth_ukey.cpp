@@ -160,7 +160,13 @@ void AuthUKey::setAuthState(const AuthCommon::AuthState state, const QString &re
     case AuthCommon::AS_Error:
         setAnimationState(false);
         setAuthStateStyle(LOGIN_WAIT);
-        setLineEditInfo(result, AlertText);
+        setLineEditEnabled(!m_limitsInfo->locked);
+        if (result.isEmpty()) {
+            m_lineEdit->setAlert(false);
+            m_lineEdit->hideAlertMessage();
+        } else {
+            setLineEditInfo(result, AlertText);
+        }
         break;
     case AuthCommon::AS_Verify:
         setAnimationState(true);

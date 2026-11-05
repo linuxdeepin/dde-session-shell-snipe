@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,6 +7,8 @@
 #include "authcommon.h"
 #include "public_func.h"
 #include "dbusconstant.h"
+
+#include <QDBusServiceWatcher>
 
 #include <dlfcn.h>
 
@@ -32,7 +34,13 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     , m_cancelAuth(false)
     , m_waitToken(true)
     , m_isDAStartupCompleted(false)
+    , m_serviceRestartPending(false)
 {
+    auto *serviceWatcher = new QDBusServiceWatcher(DSS_DBUS::authenticateService,
+                                                 QDBusConnection::systemBus(),
+                                                 QDBusServiceWatcher::WatchForOwnerChange, this);
+    connect(serviceWatcher, &QDBusServiceWatcher::serviceOwnerChanged,
+            this, &DeepinAuthFramework::onAuthServiceOwnerChanged);
     connect(m_authenticateInter, &AuthInter::FrameworkStateChanged, this, &DeepinAuthFramework::FramworkStateChanged);
     connect(m_authenticateInter, &AuthInter::LimitUpdated, this, &DeepinAuthFramework::LimitsInfoChanged);
     connect(m_authenticateInter, &AuthInter::SupportedFlagsChanged, this, &DeepinAuthFramework::SupportedMixAuthFlagsChanged);
@@ -66,6 +74,48 @@ DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     });
 
     m_authReminder.setSingleShot(false);
+}
+
+void DeepinAuthFramework::onAuthServiceOwnerChanged(const QString &service, const QString &oldOwner, const QString &newOwner)
+{
+    if (service != DSS_DBUS::authenticateService || oldOwner == newOwner) {
+        return;
+    }
+
+    if (!oldOwner.isEmpty()) {
+        m_serviceRestartPending = true;
+        m_isDAStartupCompleted = false;
+        m_authReminder.stop();
+        // System PAM can still authenticate without DA. Keep its worker until
+        // the client replaces or destroys the authentication backend.
+        // These paths belong to the previous daemon. Do not send End/Quit to
+        // the replacement daemon, which may reuse the same session paths.
+        for (auto it = m_authenticateControllers->begin(); it != m_authenticateControllers->end();) {
+            auto *controller = it.value();
+            // A synchronous creation can finish on the new daemon before the
+            // queued owner-loss notification for the previous daemon arrives.
+            if (controller->service() != oldOwner) {
+                ++it;
+                continue;
+            }
+            m_passwordExtraInfo.remove(it.key());
+            it = m_authenticateControllers->erase(it);
+            disconnect(controller, nullptr, this, nullptr);
+            controller->deleteLater();
+        }
+        if (m_authenticateControllers->isEmpty()) {
+            EncryptHelper::ref().releaseResources();
+        }
+    }
+
+    // A normal restart is old -> empty followed by empty -> new. Only a
+    // previously observed loss is a restart; first activation has its own path.
+    if (!newOwner.isEmpty() && m_serviceRestartPending) {
+        m_serviceRestartPending = false;
+        m_isDAStartupCompleted = true;
+        qCInfo(DDE_SHELL) << "Authentication service restarted:" << newOwner;
+        Q_EMIT serviceRestarted();
+    }
 }
 
 void DeepinAuthFramework::onDeviceChanged(const int authType, const int state)
@@ -322,12 +372,30 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
     if (m_authenticateControllers->contains(account) && m_authenticateControllers->value(account)->isValid()) {
         return;
     }
-    const QString authControllerInterPath = m_authenticateInter->Authenticate(account, authType, appType);
+    const auto bus = QDBusConnection::systemBus();
+    const QDBusReply<QString> owner = bus.interface()->serviceOwner(DSS_DBUS::authenticateService);
+    if (!owner.isValid()) {
+        qCWarning(DDE_SHELL) << "Failed to find authentication service:" << owner.error();
+        return;
+    }
+    QDBusMessage request = QDBusMessage::createMethodCall(owner.value(), DSS_DBUS::authenticatePath,
+                                                       AuthInter::staticInterfaceName(), "Authenticate");
+    request << account << int(authType) << appType;
+    QDBusPendingReply<QString> authReply = bus.asyncCall(request);
+    authReply.waitForFinished();
+    if (authReply.isError() || !authReply.value().startsWith('/')) {
+        qCWarning(DDE_SHELL) << "Failed to create authentication session:" << authReply.error();
+        return;
+    }
+    const QString authControllerInterPath = authReply.value();
     qCInfo(DDE_SHELL) << "Create auth controller, account:" << account
             << ", Auth type:"<< authType
             << ", App type:" << appType
             << ", Authentication session path: " << authControllerInterPath;
-    AuthControllerInter *authControllerInter = new AuthControllerInter(DSS_DBUS::authenticateService, authControllerInterPath, QDBusConnection::systemBus(), this);
+    // Bind to the daemon that returned this path, even if the well-known name
+    // changes owners before the next call or the watcher processes its signals.
+    AuthControllerInter *authControllerInter = new AuthControllerInter(owner.value(), authControllerInterPath, bus, this);
+    m_passwordExtraInfo.remove(account);
     m_authenticateControllers->insert(account, authControllerInter);
 
     connect(authControllerInter, &AuthControllerInter::FactorsInfoChanged, this, &DeepinAuthFramework::FactorsInfoChanged);
@@ -335,7 +403,10 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
     connect(authControllerInter, &AuthControllerInter::IsMFAChanged, this, &DeepinAuthFramework::MFAFlagChanged);
     connect(authControllerInter, &AuthControllerInter::PINLenChanged, this, &DeepinAuthFramework::PINLenChanged);
     connect(authControllerInter, &AuthControllerInter::PromptChanged, this, &DeepinAuthFramework::PromptChanged);
-    connect(authControllerInter, &AuthControllerInter::Status, this, [this](int flag, int state, const QString &msg) {
+    connect(authControllerInter, &AuthControllerInter::Status, this, [this, account, authControllerInter](int flag, int state, const QString &msg) {
+        if (m_authenticateControllers->value(account) != authControllerInter) {
+            return;
+        }
         if (m_authReminder.isActive()) {
             m_authReminder.stop();
             qCWarning(DDE_SHELL) << "reminder stopped for status changed";
@@ -343,6 +414,21 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
 
         const AuthType type = AUTH_TYPE_CAST(flag);
         const AuthState authState = AUTH_STATE_CAST(state);
+        // DA's result takes precedence over a still-pending delivery reply.
+        switch (authState) {
+        case AS_Success:
+        case AS_Failure:
+        case AS_Cancel:
+        case AS_Timeout:
+        case AS_Error:
+        case AS_Exception:
+        case AS_Locked:
+        case AS_VerifyCode:
+            Q_EMIT tokenSubmissionCancelled(account, type);
+            break;
+        default:
+            break;
+        }
         emit AuthStateChanged(type, authState, msg);
 
         // 当人脸或者虹膜认证成功 或者 指纹识别失败/成功 时唤醒屏幕
@@ -398,6 +484,7 @@ void DeepinAuthFramework::DestroyAuthController(const QString &account)
     authControllerInter->End(AT_All);
     authControllerInter->Quit();
     m_authenticateControllers->remove(account);
+    m_passwordExtraInfo.remove(account);
     delete authControllerInter;
     EncryptHelper::ref().releaseResources();
 }
@@ -433,7 +520,12 @@ void DeepinAuthFramework::EndAuthentication(const QString &account, const AuthFl
         return;
     }
     qCInfo(DDE_SHELL) << "End authentication:" << ", account: " << account << "auth type: " << authType;
-    m_authenticateControllers->value(account)->End(authType).waitForFinished();
+    if (authType & AT_Password) {
+        m_passwordExtraInfo.remove(account);
+    }
+    Q_EMIT tokenSubmissionCancelled(account, authType);
+    QDBusPendingReply<int> reply = m_authenticateControllers->value(account)->End(authType);
+    reply.waitForFinished();
 }
 
 /**
@@ -446,14 +538,73 @@ void DeepinAuthFramework::EndAuthentication(const QString &account, const AuthFl
 void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
     qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type:" << authType;
-    if (!m_authenticateControllers->contains(account)) {
+    Q_EMIT tokenSubmissionCancelled(account, authType);
+    const QDBusMessage extraInfo = authType == AT_Password ? m_passwordExtraInfo.take(account) : QDBusMessage();
+    if (!authSessionExist(account)) {
         qCWarning(DDE_SHELL) << "account not included";
+        Q_EMIT TokenSendFailed(authType, QString());
         return;
     }
 
-    QByteArray ba = EncryptHelper::ref().getEncryptedToken(token);
-    m_authenticateControllers->value(account)->SetToken(authType, ba);
-    m_authReminder.start(3000);
+    const QPointer<AuthControllerInter> controller = m_authenticateControllers->value(account);
+    const auto isCurrentSession = [this, controller, account] {
+        return controller && m_authenticateControllers->value(account) == controller.data();
+    };
+    const auto reportError = [this, authType](const char *operation, const QDBusError &error) {
+        m_authReminder.stop();
+        qCWarning(DDE_SHELL) << operation << error;
+        Q_EMIT TokenSendFailed(authType, QString());
+    };
+    // End, controller destruction, or a newer submission cancels every pending
+    // step, including the initial SetToken reply on a reused controller.
+    auto *context = new QObject(controller);
+    connect(this, &DeepinAuthFramework::tokenSubmissionCancelled, context,
+            [context, account, authType](const QString &cancelledAccount, AuthFlags cancelledTypes) {
+        if (account == cancelledAccount && (cancelledTypes & authType)) {
+            for (auto *watcher : context->children()) {
+                QObject::disconnect(watcher, nullptr, context, nullptr);
+            }
+            context->deleteLater();
+        }
+    });
+    const QByteArray encryptedToken = EncryptHelper::ref().getEncryptedToken(token);
+    const auto sendToken = [this, controller, context, authType, encryptedToken, isCurrentSession, reportError] {
+        if (!isCurrentSession()) {
+            context->deleteLater();
+            return;
+        }
+        auto *watcher = new QDBusPendingCallWatcher(controller->SetToken(authType, encryptedToken), context);
+        connect(watcher, &QDBusPendingCallWatcher::finished, context, [watcher, context, isCurrentSession, reportError] {
+            QDBusPendingReply<> reply = *watcher;
+            watcher->deleteLater();
+            context->deleteLater();
+            if (reply.isError() && isCurrentSession()) {
+                reportError("Failed to send authentication token:", reply.error());
+            }
+        });
+        m_authReminder.start(3000);
+    };
+    if (extraInfo.type() != QDBusMessage::MethodCallMessage) {
+        sendToken();
+        return;
+    }
+    // Submit this password extension's data before PAM can consume the token.
+    auto *watcher = new QDBusPendingCallWatcher(controller->connection().asyncCall(extraInfo, 2000), context);
+    connect(watcher, &QDBusPendingCallWatcher::finished, context,
+            [watcher, context, isCurrentSession, sendToken, reportError] {
+        QDBusPendingReply<> reply = *watcher;
+        watcher->deleteLater();
+        if (!isCurrentSession()) {
+            context->deleteLater();
+            return;
+        }
+        if (reply.isError()) {
+            context->deleteLater();
+            reportError("Failed to send authentication extra information:", reply.error());
+            return;
+        }
+        sendToken();
+    });
 }
 
 /**
@@ -666,6 +817,10 @@ void DeepinAuthFramework::sendExtraInfo(const QString &account, AuthType authTyp
     AuthControllerInter *inter = m_authenticateControllers->value(account);
     QDBusMessage msg = QDBusMessage::createMethodCall(inter->service(), inter->path(), inter->interface(), "SetExtraInfo");
     msg << authType << QString("{\"type\":%1,\"data\":\"%2\"}").arg(authType).arg(info);
+    if (authType == AT_Password) {
+        m_passwordExtraInfo.insert(account, msg);
+        return;
+    }
     QDBusPendingCall reply = inter->connection().asyncCall(msg, 2000);
     if (reply.isError()) {
         qCWarning(DDE_SHELL) << "Send extra info error:" << reply.error();

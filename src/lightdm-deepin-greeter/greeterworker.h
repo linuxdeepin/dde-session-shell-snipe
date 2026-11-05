@@ -103,6 +103,7 @@ private:
     QString m_account;
     QString m_password;
     bool m_retryAuth;
+    bool m_restartGreeterAuth = false;
 };
 
 #endif  // GREETERWORKEK_H

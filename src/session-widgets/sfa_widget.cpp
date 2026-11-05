@@ -458,9 +458,7 @@ void SFAWidget::initPasswdAuth()
         checkAuthResult(AT_Password, authState);
     });
     connect(m_passwordAuth, &AuthPassword::requestPluginAuthToken, this, [this](const QString & account, const QString & token) {
-        m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
-        m_passwordAuth->setAnimationState(true);
-        m_passwordAuth->setLineEditEnabled(false);
+        m_passwordAuth->setAuthState(AS_Verify, QStringLiteral("Verifying..."));
         m_lockButton->setEnabled(false);
         qCInfo(DDE_SHELL) << "Request check account: " << account << token;
         if (m_user && m_user->name() == account) {
@@ -482,9 +480,6 @@ void SFAWidget::initPasswdAuth()
                 qCWarning(DDE_SHELL) << "Current user is null, can not send extra info";
             }
         }
-        m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
-        m_passwordAuth->setAnimationState(true);
-        m_passwordAuth->setLineEditEnabled(false);
         m_lockButton->setEnabled(false);
         // OPTIMIZING: DA没有发AS_Verify，这里自己发一个，后续DA优化
         m_passwordAuth->setAuthState(AuthCommon::AS_Verify, QStringLiteral("Verifying..."));

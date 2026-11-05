@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -40,9 +40,17 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
 
 
     if (m_login1Inter->isValid()) {
-       QString session_self = m_login1Inter->GetSessionByPID(0).value().path();
-       m_login1SessionSelf = new Login1SessionSelf("org.freedesktop.login1", session_self, QDBusConnection::systemBus(), this);
-       m_login1SessionSelf->setSync(false);
+        QDBusReply<QDBusObjectPath> session = m_login1Inter->GetSessionByPID(0);
+        // A systemd user service runs outside the graphical session's cgroup.
+        // Its inherited session ID still identifies the desktop it belongs to.
+        if (!session.isValid() && !qEnvironmentVariableIsEmpty("XDG_SESSION_ID")) {
+            session = m_login1Inter->GetSession(qEnvironmentVariable("XDG_SESSION_ID"));
+        }
+        if (!session.isValid()) {
+            qCWarning(DDE_SHELL) << "Failed to find login session:" << session.error();
+        }
+        m_login1SessionSelf = new Login1SessionSelf("org.freedesktop.login1", session.value().path(), QDBusConnection::systemBus(), this);
+        m_login1SessionSelf->setSync(false);
     } else {
         qCWarning(DDE_SHELL) << "Login interface is invalid, error:" << m_login1Inter->lastError().type();
     }
