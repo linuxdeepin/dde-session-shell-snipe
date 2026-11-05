@@ -408,11 +408,18 @@ void AuthPassword::setAuthState(const AuthState state, const QString &result)
     case AS_Error:
         setAnimationState(false);
         setAuthStateStyle(LOGIN_WAIT);
-        setLineEditInfo(result, AlertText);
+        setLineEditEnabled(true);
+        if (result.isEmpty()) {
+            m_lineEdit->setAlert(false);
+            m_lineEdit->hideAlertMessage();
+        } else {
+            setLineEditInfo(result, AlertText);
+        }
         break;
     case AS_Verify:
         setAnimationState(true);
         setAuthStateStyle(LOGIN_SPINNER);
+        setLineEditEnabled(false);
         break;
     case AS_Exception:
         setAnimationState(false);

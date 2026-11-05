@@ -126,6 +126,9 @@ void LockWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::PINLenChanged, m_model, &SessionBaseModel::updatePINLen);
     connect(m_authFramework, &DeepinAuthFramework::PromptChanged, m_model, &SessionBaseModel::updatePrompt);
     connect(m_authFramework, &DeepinAuthFramework::AuthStateChanged, this, &LockWorker::onAuthStateChanged);
+    connect(m_authFramework, &DeepinAuthFramework::TokenSendFailed, this, [this](int type, const QString &message) {
+        m_model->updateAuthState(AuthType(type), AS_Error, message);
+    });
     connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, m_model, &SessionBaseModel::updateFactorsInfo);
     /* com.deepin.dde.LockService */
     connect(m_lockInter, &DBusLockService::UserChanged, this, [this](const QString &json) {
@@ -268,17 +271,22 @@ void LockWorker::initConnections()
         if (m_authFramework->isDeepinAuthValid())
             m_model->updateLimitedInfo(m_authFramework->GetLimitedInfo(m_account));
     });
-    connect(m_dbusInter, &DBusObjectInter::NameOwnerChanged, this, [this](const QString &name, const QString &oldOwner, const QString &newOwner) {
-        //该dbus监听主要处理DA升级使用，如果oldOwner为空，说明是第一次使用，不需要重新开启认证
-        if (oldOwner == "")
+    connect(m_authFramework, &DeepinAuthFramework::serviceRestarted, this, [this] {
+        if (!m_authFramework->isDAStartupCompleted()) {
             return;
+        }
 
-        if (name == DSS_DBUS::authenticateService && newOwner != "" && m_model->visible() && m_sessionManagerInter->locked()) {
-            m_resetSessionTimer->stop();
-            endAuthentication(m_account, AT_All);
+        m_resetSessionTimer->stop();
+        destroyAuthentication(m_account);
+        m_model->updateFrameworkState(m_authFramework->GetFrameworkState());
+        m_model->updateSupportedEncryptionType(m_authFramework->GetSupportedEncrypts());
+        m_model->updateSupportedMixAuthFlags(m_authFramework->GetSupportedMixAuthFlags());
+        if (m_model->currentUser() && m_model->visible() && m_sessionManagerInter->locked()
+            && m_model->currentContentType() != SessionBaseModel::UpdateContent) {
+            m_model->updateLimitedInfo(m_authFramework->GetLimitedInfo(m_model->currentUser()->name()));
             createAuthentication(m_model->currentUser()->name());
         }
-    });
+    }, Qt::QueuedConnection);
 
     connect(m_model, &SessionBaseModel::activeAuthChanged, this, [this](const bool active) {
         const auto currentMode = m_model->currentModeState();
@@ -757,6 +765,13 @@ void LockWorker::setLocked(const bool locked)
  */
 void LockWorker::createAuthentication(const QString &account)
 {
+    // Device changes and reset timers can arrive while the greeter is active.
+    // Leave biometric devices available to the foreground session.
+    if (m_login1SessionSelf && m_login1SessionSelf->isValid() && !m_login1SessionSelf->active()) {
+        qCInfo(DDE_SHELL) << "Skip authentication for inactive login session";
+        return;
+    }
+
     qCInfo(DDE_SHELL) << "Account:" << account;
     QString userPath = m_accountsInter->FindUserByName(account);
     if (!userPath.startsWith("/")) {
@@ -817,14 +832,8 @@ void LockWorker::createAuthentication(const QString &account)
 void LockWorker::destroyAuthentication(const QString &account)
 {
     qCInfo(DDE_SHELL) << "Destroy authentication, account:" << account;
-    switch (m_model->getAuthProperty().FrameworkState) {
-    case Available:
-        m_authFramework->DestroyAuthController(account);
-        break;
-    default:
-        m_authFramework->DestroyAuthenticate();
-        break;
-    }
+    m_authFramework->DestroyAuthenticate();
+    m_authFramework->DestroyAuthController(account);
 }
 
 /**

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -270,9 +270,7 @@ void MFAWidget::initPasswdAuth()
                 qCWarning(DDE_SHELL) << "Current user is null, can not send extra info";
             }
         }
-        m_passwordAuth->setAuthStateStyle(LOGIN_SPINNER);
-        m_passwordAuth->setAnimationState(true);
-        m_passwordAuth->setLineEditEnabled(false);
+        m_passwordAuth->setAuthState(AS_Verify, QStringLiteral("Verifying..."));
         emit sendTokenToAuth(m_model->currentUser()->name(), AT_Password, text);
     });
     connect(m_passwordAuth, &AuthPassword::authFinished, this, [this](const AuthState value) {

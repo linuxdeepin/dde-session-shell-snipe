@@ -13,6 +13,7 @@
 #include "signal_bridge.h"
 
 #include <DSysInfo>
+#include <QScopedValueRollback>
 
 #ifndef ENABLE_DSS_SNIPE
 #include <dde-api/eventlogger.hpp>
@@ -171,6 +172,9 @@ void GreeterWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::SupportedMixAuthFlagsChanged, m_model, &SessionBaseModel::updateSupportedMixAuthFlags);
     /* com.deepin.daemon.Authenticate.Session */
     connect(m_authFramework, &DeepinAuthFramework::AuthStateChanged, this, &GreeterWorker::onAuthStateChanged);
+    connect(m_authFramework, &DeepinAuthFramework::TokenSendFailed, this, [this](int type, const QString &message) {
+        m_model->updateAuthState(AuthType(type), AS_Error, message);
+    });
     connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, m_model, &SessionBaseModel::updateFactorsInfo);
     connect(m_authFramework, &DeepinAuthFramework::FuzzyMFAChanged, m_model, &SessionBaseModel::updateFuzzyMFA);
     connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, m_model, &SessionBaseModel::updateMFAFlag);
@@ -322,6 +326,39 @@ void GreeterWorker::initConnections()
             createAuthentication(m_model->currentUser()->name());
         }
     });
+
+    connect(m_authFramework, &DeepinAuthFramework::serviceRestarted, this, [this] {
+        if (!m_authFramework->isDAStartupCompleted()) {
+            return;
+        }
+
+        m_resetSessionTimer->stop();
+        m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
+        m_password.clear();
+        m_retryAuth = false;
+        m_model->updateFrameworkState(m_authFramework->GetFrameworkState());
+        m_model->updateSupportedEncryptionType(m_authFramework->GetSupportedEncrypts());
+        m_model->updateSupportedMixAuthFlags(m_authFramework->GetSupportedMixAuthFlags());
+
+        // AuthInterface leaves the session proxy null when login1 is unavailable.
+        if (!m_login1SessionSelf) {
+            return;
+        }
+
+        const auto user = m_model->currentUser();
+        if (!user || user->name().isEmpty() || user->name() == "..." || !m_model->visible()
+            || !m_login1SessionSelf->active() || m_model->terminalLocked()
+            || (user->isNoPasswordLogin() && user->expiredState() != User::ExpiredAlready)) {
+            return;
+        }
+
+        m_model->updateLimitedInfo(m_authFramework->GetLimitedInfo(user->name()));
+        // SessionCreated restores LightDM's DA privileges before any new PAM
+        // conversation. Consume the forced restart at the first startGreeterAuth.
+        QScopedValueRollback<bool> restartGreeterAuth(m_restartGreeterAuth, true);
+        m_model->setLightdmPamStarted(false);
+        createAuthentication(user->name());
+    }, Qt::QueuedConnection);
 
     // 监听terminal锁定状态
     QDBusConnection::systemBus().connect(DSS_DBUS::accountsService, DSS_DBUS::accountsPath, "org.freedesktop.DBus.Properties",
@@ -1121,7 +1158,9 @@ void GreeterWorker::startGreeterAuth(const QString &account)
 {
     std::shared_ptr<User> user_ptr = m_model->findUserByName(account);
     // m_greeter->cancelAuthentication后m_greeter的数据不会发生改变，当前账户如果是无密码登陆则不需要判断m_greeter认证数据
-    if (!m_greeter->inAuthentication() || m_greeter->authenticationUser() != account || (user_ptr && user_ptr->isNoPasswordLogin())) {
+    if (m_restartGreeterAuth || !m_greeter->inAuthentication() || m_greeter->authenticationUser() != account
+        || (user_ptr && user_ptr->isNoPasswordLogin())) {
+        m_restartGreeterAuth = false;
         m_greeter->authenticate(account);
     } else {
         qCInfo(DDE_SHELL) << "Lightdm is in authentication, won't do it again, account: " << account;

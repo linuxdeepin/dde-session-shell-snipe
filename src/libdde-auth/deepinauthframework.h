@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,6 +7,7 @@
 
 #include "authcommon.h"
 
+#include <QDBusMessage>
 #include <QObject>
 
 #ifndef ENABLE_DSS_SNIPE
@@ -68,6 +69,7 @@ public:
 
 signals:
     void startupCompleted();
+    void serviceRestarted();
     /* com.deepin.daemon.Authenticate */
     void LimitsInfoChanged(const QString &);
     void SupportedMixAuthFlagsChanged(const int);
@@ -80,6 +82,8 @@ signals:
     void FactorsInfoChanged(const MFAInfoList &);
     void PINLenChanged(const int);
     void AuthStateChanged(const int, const int, const QString &);
+    // A client-side delivery error does not end DA's authentication factor.
+    void TokenSendFailed(const int authType, const QString &message);
     void SessionCreated();
     void DeviceChanged(const int, const int);
     void TokenAccountMismatch(const QString &);
@@ -95,6 +99,9 @@ public slots:
     void onDeviceChanged(const int authType, const int state);
 
 private:
+    Q_SIGNAL void tokenSubmissionCancelled(const QString &account, AuthCommon::AuthFlags authType);
+    void onAuthServiceOwnerChanged(const QString &service, const QString &oldOwner, const QString &newOwner);
+
     /* Compatible with old authentication methods */
     static void *PAMAuthWorker(void *arg);
     void PAMAuthentication(const QString &account);
@@ -112,9 +119,11 @@ private:
     QString m_symmetricKey;
     ArrayInt m_encryptMethod;
     QMap<QString, AuthControllerInter *> *m_authenticateControllers;
+    QMap<QString, QDBusMessage> m_passwordExtraInfo;
     bool m_cancelAuth;
     bool m_waitToken;
     bool m_isDAStartupCompleted;
+    bool m_serviceRestartPending;
 
     QTimer m_authReminder;
     QString m_lastAuthUser;
