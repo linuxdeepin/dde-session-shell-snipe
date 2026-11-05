@@ -47,6 +47,13 @@ void EncryptHelper::initEncryptionService()
         }
     }
 
+    if (ET_SM2 != m_encryptType && !m_RSA) {
+        qCritical() << "Failed to load RSA public key";
+    }
+    if (ET_SM2 == m_encryptType && !m_ecKey) {
+        qCritical() << "Failed to load EC public key";
+    }
+
     /* 生成对称加密的密钥 */
     srand(static_cast<unsigned int>(time(nullptr)));
     int randNum = (10000000 + rand() % 10000000) % 100000000;
@@ -85,6 +92,10 @@ QByteArray EncryptHelper::encryptSymmetricalKey()
 
 QByteArray EncryptHelper::RSAEncryptSymmetricalKey()
 {
+    if (!m_RSA) {
+        qCritical() << "RSA key is null, encryption failed";
+        return "";
+    }
     int size = RSA_size(m_RSA);
     char *ciphertext = new char[static_cast<unsigned long>(size)];
     RSA_public_encrypt(m_symmetricKey.length(), reinterpret_cast<unsigned char *>(m_symmetricKey.toLatin1().data()), reinterpret_cast<unsigned char *>(ciphertext), m_RSA, 1);
@@ -97,6 +108,10 @@ QByteArray EncryptHelper::RSAEncryptSymmetricalKey()
 #ifdef PREFER_USING_GM
 QByteArray EncryptHelper::SM2EncryptSymmetricalKey()
 {
+    if (!m_ecKey) {
+        qCritical() << "EC key is null, encryption failed";
+        return "";
+    }
     size_t csize = 0;
     size_t psize = m_symmetricKey.length();
     if (1 != sm2_ciphertext_size(m_ecKey, EVP_sm3(), psize, &csize)) {

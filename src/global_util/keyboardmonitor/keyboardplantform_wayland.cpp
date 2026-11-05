@@ -164,7 +164,31 @@ void KeyboardPlatformWayland::initStatus()
 
 void KeyboardPlatformWayland::ungrabKeyboard()
 {
-    QProcess::execute("bash -c \"originmap=$(setxkbmap -query | grep option | awk -F ' ' '{print $2}');/usr/bin/setxkbmap -option grab:break_actions&&/usr/bin/xdotool key XF86Ungrab&&setxkbmap -option $originmap\"");
+    // Save current setxkbmap options
+    QProcess queryProc;
+    queryProc.start("setxkbmap", QStringList() << "-query");
+    queryProc.waitForFinished();
+    QString queryOutput = QString::fromLocal8Bit(queryProc.readAllStandardOutput());
+
+    QString originmap;
+    for (const QString &line : queryOutput.split('\n')) {
+        if (line.contains("option:")) {
+            int colonPos = line.indexOf(':');
+            if (colonPos >= 0) {
+                originmap = line.mid(colonPos + 1).trimmed();
+            }
+            break;
+        }
+    }
+
+    // Set grab:break_actions option
+    QProcess::execute("setxkbmap", QStringList() << "-option" << "grab:break_actions");
+
+    // Send XF86Ungrab key
+    QProcess::execute("xdotool", QStringList() << "key" << "XF86Ungrab");
+
+    // Restore original options
+    QProcess::execute("setxkbmap", QStringList() << "-option" << originmap);
 }
 
 #endif
