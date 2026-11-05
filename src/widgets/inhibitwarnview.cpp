@@ -320,5 +320,5 @@ void InhibitWarnView::onAccept()
         static_cast<QVBoxLayout *>(m_bottomWidget->layout())->addStretch();
     }
 
-    emit actionInvoked();
+    Q_EMIT actionInvoked();
 }

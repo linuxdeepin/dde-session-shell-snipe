@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
 project(assist_Login_interface)
 
+add_compile_definitions(QT_NO_KEYWORDS)
+
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Qt5 COMPONENTS Network REQUIRED)

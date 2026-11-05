@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -24,7 +24,7 @@ public:
     bool setNumLockStatus(const bool &on);
     void ungrabKeyboard();
 
-signals:
+Q_SIGNALS:
     void capsLockStatusChanged(bool on);
     void numLockStatusChanged(bool on);
     void initialized();

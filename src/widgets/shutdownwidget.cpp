@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -629,7 +629,7 @@ void ShutdownWidget::onRequirePowerAction(SessionBaseModel::PowerAction powerAct
         case SessionBaseModel::PowerAction::RequireLogout:
         case SessionBaseModel::PowerAction::RequireSuspend:
         case SessionBaseModel::PowerAction::RequireHibernate:
-            emit m_model->shutdownInhibit(powerAction, needConfirm);
+            Q_EMIT m_model->shutdownInhibit(powerAction, needConfirm);
             break;
         default:
             m_model->setPowerAction(powerAction);

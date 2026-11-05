@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -39,12 +39,12 @@ public:
     void showResetPasswordMessage();
     void closeResetPasswordMessage();
 
-signals:
+Q_SIGNALS:
     void focusChanged(const bool);
     void lineEditTextChanged(const QString &); // 数据同步
     void requestShowKeyboardList();            // 显示键盘布局列表
     void resetPasswordMessageVisibleChanged(const bool isVisible);
-public slots:
+public Q_SLOTS:
     void setResetPasswordMessageVisible(const bool isVisible);
     void updateResetPasswordUI();
 protected:

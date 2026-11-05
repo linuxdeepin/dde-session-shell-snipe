@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,11 +17,11 @@ public:
     explicit GestureModifyWorker(QObject *parent = nullptr);
     void setActive(bool active);
 
-signals:
+Q_SIGNALS:
     void inputFinished();                           // 第二次输入token合法并完成
     void requestSaveToken(const QString &token);    // 请求保存token
 
-private slots:
+private Q_SLOTS:
     void onPathDone();
     void onPathError();
 

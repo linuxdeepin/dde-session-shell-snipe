@@ -151,11 +151,11 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
     connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] {
         if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
-            emit requestSwitchToUser(m_model->currentUser());
+            Q_EMIT requestSwitchToUser(m_model->currentUser());
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
         } else {
             m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-            emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
+            Q_EMIT requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
         }
     });
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [this] {
@@ -381,7 +381,7 @@ void LockContent::pushUserFrame()
         std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
         if (user_ptr) {
             m_controlWidget->setUserSwitchEnable(false);
-            emit requestSwitchToUser(user_ptr);
+            Q_EMIT requestSwitchToUser(user_ptr);
             return;
         }
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
@@ -573,7 +573,7 @@ void LockContent::mouseReleaseEvent(QMouseEvent *event)
         }
 
         // 点击空白处的时候切换到当前用户，以开启验证。
-        emit requestSwitchToUser(m_model->currentUser());
+        Q_EMIT requestSwitchToUser(m_model->currentUser());
     }
 
     m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
@@ -628,7 +628,7 @@ void LockContent::updateGreeterBackgroundPath(const QString &path)
         return;
     }
 
-    emit requestBackground(path);
+    Q_EMIT requestBackground(path);
 }
 
 void LockContent::updateDesktopBackgroundPath(const QString &path)
@@ -637,7 +637,7 @@ void LockContent::updateDesktopBackgroundPath(const QString &path)
         return;
     }
 
-    emit requestBackground(path);
+    Q_EMIT requestBackground(path);
 }
 
 void LockContent::OnDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr)
@@ -860,7 +860,7 @@ void LockContent::tryGrabKeyboard(bool exitIfFailed)
             .call();
 
         qCInfo(DDE_SHELL) << "Request hide lock frame";
-        emit requestLockFrameHide();
+        Q_EMIT requestLockFrameHide();
         return;
     }
 
@@ -904,7 +904,7 @@ void LockContent::refreshBackground(SessionBaseModel::ModeStatus status)
     // 根据当前状态刷新不同的背景
     auto user = m_model->currentUser();
     if (user != nullptr) {
-        emit requestBackground(user->greeterBackground());
+        Q_EMIT requestBackground(user->greeterBackground());
     }
 }
 
@@ -1004,7 +1004,7 @@ void LockContent::showUserList()
     } else {
         std::shared_ptr<User> user_ptr = m_model->findUserByName("...");
         if (user_ptr) {
-            emit requestSwitchToUser(user_ptr);
+            Q_EMIT requestSwitchToUser(user_ptr);
         }
     }
 }

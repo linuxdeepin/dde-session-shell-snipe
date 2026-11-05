@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -195,7 +195,7 @@ public:
     // 检查当前用户是否设置了免密登录
     bool isNoPasswordLogin() const;
 
-signals:
+Q_SIGNALS:
     /* com.deepin.daemon.Accounts */
     void currentUserChanged(const std::shared_ptr<User>);
     void userAdded(const std::shared_ptr<User>);
@@ -209,7 +209,7 @@ signals:
     //通知前端lightdm pam 已经开启
     void lightdmPamStartedChanged();
 
-public slots:
+public Q_SLOTS:
     /* com.deepin.daemon.Accounts */
     void addUser(const QString &path);
     void addUser(const std::shared_ptr<User> user);
@@ -235,7 +235,7 @@ public slots:
 #ifndef ENABLE_DSS_SNIPE
     QVariant getPowerGSettings(const QString &node, const QString &key);
 #endif
-signals:
+Q_SIGNALS:
     void authTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);

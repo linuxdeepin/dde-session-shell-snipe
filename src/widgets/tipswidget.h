@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -13,7 +13,7 @@ public:
     explicit TipsWidget(QWidget *parent = nullptr);
     void setContent(QWidget *content);
 
-public slots:
+public Q_SLOTS:
     void show(int x, int y) override;
 
 protected:

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -38,7 +38,7 @@ public:
     int heightHint() const;
     static void onDConfigPropertyChanged(const QString &key, const QVariant &value, QObject *objPtr);
 
-signals:
+Q_SIGNALS:
     void clicked();
 
 

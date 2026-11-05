@@ -262,7 +262,7 @@ void GreeterWorker::initConnections()
         m_model->updateCurrentUser(user_ptr);
         const QString &account = user_ptr->name();
         if (user_ptr.get()->isNoPasswordLogin()) {
-            emit m_model->authTypeChanged(AT_None);
+            Q_EMIT m_model->authTypeChanged(AT_None);
             m_account = account;
         }
         QTimer::singleShot(100, this, [this] {
@@ -687,8 +687,8 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
         // 对于没有设置密码的账户,直接认定为错误账户
         if (!user_ptr->isPasswordValid()) {
             qCWarning(DDE_SHELL) << "The user's password is invalid, user path: " << userPath;
-            emit m_model->accountError();
-            emit m_model->authFailedTipsMessage(tr("Wrong account"));
+            Q_EMIT m_model->accountError();
+            Q_EMIT m_model->authFailedTipsMessage(tr("Wrong account"));
             m_model->setAuthType(AT_None);
             return;
         }
@@ -716,8 +716,8 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
             dynamic_cast<ADDomainUser *>(user_ptr.get())->setFullName(userFullName);
         } else {
             qCWarning(DDE_SHELL) << "Password is null, user path: " << userPath;
-            emit m_model->accountError();
-            emit m_model->authFailedTipsMessage(tr("Wrong account"));
+            Q_EMIT m_model->accountError();
+            Q_EMIT m_model->authFailedTipsMessage(tr("Wrong account"));
             m_model->setAuthType(AT_None);
             return;
         }
@@ -851,7 +851,7 @@ void GreeterWorker::authenticationComplete()
         return;
     }
 
-    emit m_model->authFinished(true);
+    Q_EMIT m_model->authFinished(true);
 
     m_password.clear();
 
@@ -877,7 +877,7 @@ void GreeterWorker::authenticationComplete()
 
     qCInfo(DDE_SHELL) << "Start session: " << m_model->sessionKey();
 
-    emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
+    Q_EMIT requestUpdateBackground(m_model->currentUser()->greeterBackground());
     setCurrentUser(m_model->currentUser());
     m_greeter->startSessionSync(m_model->sessionKey());
     endAuthentication(m_account, AT_All);
@@ -1047,7 +1047,7 @@ void GreeterWorker::onCurrentUserChanged(const std::shared_ptr<User> &user)
     loadTranslation(user->locale());
     //  账户在变换的时候需要通知lockservice
     setCurrentUser(user);
-    emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
+    Q_EMIT requestUpdateBackground(m_model->currentUser()->greeterBackground());
 }
 
 void GreeterWorker::onSessionCreated()

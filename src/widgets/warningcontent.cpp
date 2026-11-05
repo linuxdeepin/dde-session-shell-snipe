@@ -409,7 +409,7 @@ void WarningContent::tryGrabKeyboard(bool exitIfFailed)
         }
 
         qCInfo(DDE_SHELL) << "Request hide lock frame";
-        emit requestLockFrameHide();
+        Q_EMIT requestLockFrameHide();
         return;
     }
 

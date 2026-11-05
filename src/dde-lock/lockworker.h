@@ -48,7 +48,7 @@ public:
 
     bool isLocked() const;
 
-public slots:
+public Q_SLOTS:
     /* New authentication framework */
     void createAuthentication(const QString &account);
     void destroyAuthentication(const QString &account);
