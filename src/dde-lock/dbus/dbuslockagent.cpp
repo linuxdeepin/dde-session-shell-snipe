@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -63,14 +63,17 @@ void DBusLockAgent::Suspend(bool enable)
         // 待机恢复需要密码
         bool bSuspendLock = infc.property("SleepLock").toBool();
 
-        if (bSuspendLock) {
+        if (bSuspendLock || m_model->lockPasswordChangeProtected()) {
             m_model->setIsBlackMode(false);
             m_model->setVisible(true);
         } else {
             m_model->setVisible(false);
-            emit m_model->visibleChanged(false);
+            if (!m_model->visible()) {
+                emit m_model->visibleChanged(false);
+            }
         }
     }
+    emit m_model->prepareForSleep(enable);
 }
 
 void DBusLockAgent::Hibernate(bool enable)
@@ -166,6 +169,9 @@ void DBusLockAgent::getPPidByPid(quint32 pid)
 
 void DBusLockAgent::getCallerBySender()
 {
+    if (!calledFromDBus()) {
+        return;
+    }
     QDBusMessage msg = message();
 
     if (msg.type() == QDBusMessage::MethodCallMessage) {

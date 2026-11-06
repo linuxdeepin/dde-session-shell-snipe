@@ -24,10 +24,24 @@ set(LOCK_TEST_SRCS
     ${PROJECT_SOURCE_DIR}/src/global_util/signal_bridge.h
 )
 
-add_executable(${BIN_NAME}
-    ${LOCK_TEST_SRCS}
-    ${QRCS}
-    ${LOCK_QRCS}
+if (QT_VERSION_MAJOR EQUAL 6)
+    qt_add_executable(${BIN_NAME}
+        ${LOCK_TEST_SRCS}
+        ${QRCS}
+        ${LOCK_QRCS}
+    )
+else ()
+    add_executable(${BIN_NAME}
+        ${LOCK_TEST_SRCS}
+        ${QRCS}
+        ${LOCK_QRCS}
+    )
+endif ()
+
+# Only the clipboard probe needs QPA headers; keep private Qt APIs out of
+# production and the other test translation units.
+set_property(SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/ut_passwordinputwidget.cpp APPEND PROPERTY INCLUDE_DIRECTORIES
+    ${Qt${QT_VERSION_MAJOR}Gui_PRIVATE_INCLUDE_DIRS}
 )
 
 target_include_directories(${BIN_NAME} PUBLIC
@@ -49,6 +63,7 @@ if (DISABLE_DSS_SNIPE)
 endif ()
 
 target_link_libraries(${BIN_NAME} PRIVATE
+    PkgConfig::PW_CHECK
     Qt${QT_VERSION_MAJOR}::Test
     Dtk${DTK_VERSION_MAJOR}::Widget
     Dtk${DTK_VERSION_MAJOR}::Core

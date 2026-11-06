@@ -63,10 +63,11 @@ void AuthSingle::initUI()
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
     m_lineEdit->setObjectName("LineEdit_2");
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
+    m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$"), this));
 #else
     m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$"), this));
 #endif
+    m_passwordValidator = m_lineEdit->lineEdit()->validator();
 
     auto *passwordLayout = new QHBoxLayout(m_lineEdit->lineEdit());
     passwordLayout->setContentsMargins(0, 0, 10, 0);
@@ -145,6 +146,32 @@ void AuthSingle::reset()
     m_lineEdit->setAlert(false);
     m_lineEdit->hideAlertMessage();
     setLineEditEnabled(true);
+}
+
+void AuthSingle::setPasswordChangePrompt(const QString &prompt, const QString &error, bool busy)
+{
+    m_lineEdit->lineEdit()->setValidator(nullptr);
+    m_state = AS_Prompt;
+    m_lineEdit->clear();
+    m_lineEdit->setAlert(false);
+    m_lineEdit->hideAlertMessage();
+    setLineEditInfo(prompt, PlaceHolderText);
+    setPasswordLineEditEnabled(!busy);
+    setAnimationState(busy);
+    m_passwordHintBtn->hide();
+    if (!error.isEmpty() && isVisible()) {
+        setLineEditInfo(error, AlertText);
+    }
+}
+
+void AuthSingle::resetPasswordChangePrompt()
+{
+    m_lineEdit->lineEdit()->setValidator(m_passwordValidator);
+    m_state = AS_None;
+    setPasswordLineEditEnabled(true);
+    setAnimationState(false);
+    reset();
+    setLineEditInfo(QString(), PlaceHolderText);
 }
 
 /**
@@ -291,7 +318,11 @@ void AuthSingle::setLineEditEnabled(const bool enable)
         m_lineEdit->lineEdit()->setEnabled(false);
     } else if (enable) {
         m_lineEdit->setFocusPolicy(Qt::StrongFocus);
-        m_lineEdit->setFocus();
+        // A hidden authentication page must not take focus from the active
+        // password-change form when its prompt/permissions are refreshed.
+        if (isVisible()) {
+            m_lineEdit->setFocus();
+        }
         m_lineEdit->lineEdit()->setReadOnly(false);
         m_lineEdit->lineEdit()->setEnabled(true);
     } else {

@@ -229,6 +229,10 @@
 <context>
     <name>GreeterWorker</name>
     <message>
+        <source>Password change failed. Please try again.</source>
+        <translation>密码修改失败，请重试。</translation>
+    </message>
+    <message>
         <source>Wrong account</source>
         <translation>账户错误</translation>
     </message>
@@ -268,6 +272,10 @@
 </context>
 <context>
     <name>LockWorker</name>
+    <message>
+        <source>Unable to verify the current account for password change.</source>
+        <translation>无法核实当前改密账户，请重新认证。</translation>
+    </message>
     <message>
         <source>Fingerprint verification timed out, please enter your password manually</source>
         <translation>指纹密码验证超时，请手动输入密码</translation>
@@ -493,6 +501,202 @@
     <message>
         <source>Turn off</source>
         <translation>关闭</translation>
+    </message>
+</context>
+<context>
+    <name>LockPasswordChange</name>
+    <message>
+        <source>The hint is visible to all users. Do not include the password here.</source>
+        <translation>密码提示对所有用户可见，请勿包含密码。</translation>
+    </message>
+    <message>
+        <source>Use English letters, numbers, half-width symbols and spaces for the new password.</source>
+        <translation>新密码请使用英文字母、数字、半角符号和空格。</translation>
+    </message>
+    <message>
+        <source>Checking password expiration...</source>
+        <translation>正在检查密码过期状态…</translation>
+    </message>
+    <message>
+        <source>Please enter the old password.</source>
+        <translation>请输入旧密码</translation>
+    </message>
+    <message>
+        <source>Please enter the new password.</source>
+        <translation>请输入新密码</translation>
+    </message>
+    <message>
+        <source>Confirm the new password.</source>
+        <translation>确认新密码</translation>
+    </message>
+    <message>
+        <source>Changing password...</source>
+        <translation>正在修改密码…</translation>
+    </message>
+    <message>
+        <source>The two password inputs are inconsistent.</source>
+        <translation>两次密码输入不一致</translation>
+    </message>
+    <message>
+        <source>New password must differ from the current password</source>
+        <translation>新密码不能与当前密码相同</translation>
+    </message>
+    <message>
+        <source>The password cannot be empty or contain a line break.</source>
+        <translation>密码不能为空或包含换行符。</translation>
+    </message>
+    <message>
+        <source>Password change timed out. Please try again.</source>
+        <translation>修改密码超时，请重试。</translation>
+    </message>
+    <message>
+        <source>Password change timed out. Please authenticate again.</source>
+        <translation>修改密码超时，请重新认证。</translation>
+    </message>
+    <message>
+        <source>Unable to check password expiration. Please authenticate again.</source>
+        <translation>无法检查密码过期状态，请重新认证。</translation>
+    </message>
+    <message>
+        <source>Unable to check password expiration or account access. Please authenticate again.</source>
+        <translation>无法检查密码过期状态或账户访问权限，请重新认证。</translation>
+    </message>
+    <message>
+        <source>A password expiration check is still running. Please try again shortly.</source>
+        <translation>密码过期状态仍在检查中，请稍后重试。</translation>
+    </message>
+    <message>
+        <source>Password change failed. Please try again.</source>
+        <translation>修改密码失败，请重试。</translation>
+    </message>
+    <message>
+        <source>Unable to run the password change process. Please try again.</source>
+        <translation>无法运行密码修改进程，请重试。</translation>
+    </message>
+</context>
+<context>
+    <name>LockPasswordChangeWidget</name>
+    <message>
+        <source>Please enter the old password.</source>
+        <translation>请输入旧密码</translation>
+    </message>
+    <message>
+        <source>Please enter the new password.</source>
+        <translation>请输入新密码</translation>
+    </message>
+    <message>
+        <source>Confirm the new password.</source>
+        <translation>确认新密码</translation>
+    </message>
+    <message>
+        <source>Password Hint(optional)</source>
+        <translation>密码提示（可选）</translation>
+    </message>
+    <message>
+        <source>Password expired. Please change it.</source>
+        <translation>密码已过期，请修改密码。</translation>
+    </message>
+    <message>
+        <source>Change Password</source>
+        <translation>修改密码</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>Unlock</source>
+        <translation>解锁</translation>
+    </message>
+    <message>
+        <source>Checking password expiration...</source>
+        <translation>正在检查密码是否过期…</translation>
+    </message>
+    <message>
+        <source>Changing password...</source>
+        <translation>正在修改密码…</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <source>Password cannot be empty</source>
+        <translation>密码不能为空</translation>
+    </message>
+    <message>
+        <source>Password must have at least %1 characters</source>
+        <translation>密码长度至少为%1个字符</translation>
+    </message>
+    <message>
+        <source>Password must be no more than %1 characters</source>
+        <translation>密码长度最多为%1个字符</translation>
+    </message>
+    <message>
+        <source>The password should differ from the username</source>
+        <translation>密码不能与用户名相同</translation>
+    </message>
+    <message>
+        <source>Password must contain at least %1 types of characters</source>
+        <translation>密码至少包含%1种字符类型</translation>
+    </message>
+    <message>
+        <source>Password does not meet the local password rules.</source>
+        <translation>密码不符合本地密码规则。</translation>
+    </message>
+    <message>
+        <source>Use English letters, numbers, half-width symbols and spaces for the new password.</source>
+        <translation>新密码请使用英文字母、数字、半角符号和空格。</translation>
+    </message>
+    <message>
+        <source>New password must differ from the current password</source>
+        <translation>新密码不能与当前密码相同</translation>
+    </message>
+    <message>
+        <source>The hint is visible to all users. Do not include the password here.</source>
+        <translation>密码提示对所有用户可见，请勿在此处包含密码。</translation>
+    </message>
+</context>
+<context>
+    <name>dcc::widgets::SecurityLevelItem</name>
+    <message>
+        <source>Weak</source>
+        <translation>弱</translation>
+    </message>
+    <message>
+        <source>Medium</source>
+        <translation>中</translation>
+    </message>
+    <message>
+        <source>Strong</source>
+        <translation>强</translation>
+    </message>
+</context>
+<context>
+    <name>GreeterPasswordChange</name>
+    <message>
+        <source>New password must differ from the current password</source>
+        <translation>新密码不能与当前密码相同</translation>
+    </message>
+    <message>
+        <source>Password cannot be empty</source>
+        <translation>密码不能为空</translation>
+    </message>
+    <message>
+        <source>Password change failed. Please try again.</source>
+        <translation>密码修改失败，请重试。</translation>
+    </message>
+    <message>
+        <source>The hint is visible to all users. Do not include the password here.</source>
+        <translation>密码提示对所有用户可见，请勿在此处包含密码。</translation>
+    </message>
+    <message>
+        <source>The two password inputs are inconsistent.</source>
+        <translation>两次密码输入不一致</translation>
+    </message>
+    <message>
+        <source>Use English letters, numbers, half-width symbols and spaces for the new password.</source>
+        <translation>新密码请使用英文字母、数字、半角符号和空格。</translation>
     </message>
 </context>
 </TS>

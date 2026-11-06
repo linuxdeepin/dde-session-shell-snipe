@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -108,6 +108,21 @@ public:
 
     inline AppType appType() const { return m_appType; }
     void setAppType(const AppType type);
+
+    bool greeterPasswordChangeActive() const { return m_greeterPasswordChangeActive; }
+    void setGreeterPasswordChangeActive(bool active) { m_greeterPasswordChangeActive = active && m_appType == AuthCommon::Login; }
+    bool passwordChangePageVisible() const { return lockPasswordChangePageVisible() || m_greeterPasswordChangeActive; }
+
+    bool lockPasswordChangeActive() const { return m_lockPasswordChangeActive; }
+    void setLockPasswordChangeActive(bool active) { m_lockPasswordChangeActive = active && m_appType == AuthCommon::Lock; }
+
+    // Sleep can cancel the form before the outstanding authentication is satisfied.
+    bool lockPasswordChangeProtected() const { return m_lockPasswordChangeActive || m_lockPasswordChangeRequiresAuthentication; }
+    void setLockPasswordChangeRequiresAuthentication(bool required) { m_lockPasswordChangeRequiresAuthentication = required && m_appType == AuthCommon::Lock; }
+
+    // Security gating starts before a short account check needs its own page.
+    bool lockPasswordChangePageVisible() const { return m_lockPasswordChangeActive && m_lockPasswordChangePageVisible; }
+    void setLockPasswordChangePageVisible(bool visible) { m_lockPasswordChangePageVisible = visible; }
 
     void setSEType(bool state) { m_SEOpen = state; }
     bool getSEType() const { return m_SEOpen; }
@@ -240,6 +255,11 @@ signals:
     void authFailedMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFailedTipsMessage(const QString &message, AuthFailedType type = KEYBOARD);
     void authFinished(bool success);
+    void lockPasswordChangePrompt(const QString &prompt, const QString &error, bool busy);
+    // Shared presentation; the lock gate and LightDM conversation remain separate.
+    void lockPasswordChangeForm(bool currentRequired, bool checkingOnly, bool busy, const QString &error);
+    void lockPasswordChangeInputsCleared();
+    void greeterPasswordChangePageChanged();
     void accountError();
     void checkAccountFinished();
     void onPowerActionChanged(PowerAction poweraction);
@@ -275,6 +295,10 @@ signals:
     void terminalLockedChanged(bool isLocked);
 
 protected:
+    bool m_greeterPasswordChangeActive = false;
+    bool m_lockPasswordChangeActive = false;
+    bool m_lockPasswordChangeRequiresAuthentication = false;
+    bool m_lockPasswordChangePageVisible = false;
     template <typename T>
     T valueByQSettings(const QString & group,
                        const QString & key,

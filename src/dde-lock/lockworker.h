@@ -38,6 +38,7 @@ using SessionManagerInter = org::deepin::dde::SessionManager1;
 #endif
 
 class SessionBaseModel;
+class LockPasswordChange;
 class LockWorker : public Auth::AuthInterface
 {
     Q_OBJECT
@@ -65,6 +66,9 @@ public slots:
     void disableGlobalShortcutsForWayland(const bool enable);
     void checkAccount(const QString &account, bool switchUser);
     void authFinishedAction();
+    void cancelPasswordChange();
+    void submitPasswordChange(const QString &current, const QString &password,
+                              const QString &confirmation, const QString &hint);
 
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
     void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
@@ -83,10 +87,26 @@ private:
     void onUnlockFinished(bool unlocked);
 
     bool isCheckPwdBeforeRebootOrShut();
+    bool passwordChangeEnabled() const;
+    void checkPasswordBeforeUnlock();
+    void presentPasswordChangeUI(quint64 request);
+    void restorePasswordChangeUI();
+    void savePasswordHint(const QString &path, const QString &hint);
 
 private:
     bool m_authenticating;
     bool m_isThumbAuth;
+    bool m_sessionActive = true;
+    LockPasswordChange *m_passwordChange;
+    bool m_forcePasswordChange = false;
+    bool m_passwordChangePassed = false;
+    bool m_passwordChangeUITransition = false;
+    quint64 m_passwordChangeUIRequest = 0;
+    AuthFlags m_savedAuthType = AT_None;
+    bool m_savedMFA = false;
+    QString m_passwordChangeToken;
+    QString m_passwordChangeAccount;
+    QString m_passwordChangeHint;
     DeepinAuthFramework *m_authFramework;
     DBusLockService *m_lockInter;
     DBusHotzone *m_hotZoneInter;

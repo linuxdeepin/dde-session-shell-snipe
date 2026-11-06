@@ -2,6 +2,26 @@
     "magic": "dsg.config.meta",
     "version": "1.0",
     "contents": {
+        "localPasswordSecurityCheck": {
+            "value": true,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "LocalPasswordSecurityCheck",
+            "name[zh_CN]": "是否使用pwcheck校验密码复杂度",
+            "description[zh_CN]": "锁屏修改过期密码时，提交前使用本地pwcheck检查新密码。默认开启，与eagle一致；如果本地规则与AD域策略不一致，可关闭此前置检查。密码最终仍由passwd的PAM/域控策略校验。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
+        "stopUnlockWhenPasswordExpired": {
+            "value": false,
+            "serial": 0,
+            "flags": ["global"],
+            "name": "StopUnlockWhenPasswordExpired",
+            "name[zh_CN]": "不允许用户使用过期密码解锁",
+            "description[zh_CN]": "仅在锁屏生效。true：密码过期时在同页表单完成修改后解锁；false：保持原有解锁流程。默认关闭，配置变更从后续认证生效；关闭时取消正在进行的改密。",
+            "permissions": "readwrite",
+            "visibility": "private"
+        },
         "useSolidBackground": {
             "value": false,
             "serial": 0,

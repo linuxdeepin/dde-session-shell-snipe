@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -180,6 +180,9 @@ void SessionBaseModel::setHasSwap(bool hasSwap)
  */
 void SessionBaseModel::setVisible(const bool visible)
 {
+    if (!visible && lockPasswordChangeProtected()) {
+        return;
+    }
     qCInfo(DDE_SHELL) << "Set visible:" << visible << ", current visible:" << m_visible;
 
     if (m_visible == visible) {

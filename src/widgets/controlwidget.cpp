@@ -383,7 +383,7 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
     });
 
     connect(button, &FloatingButton::requestShowTips, this, [=] {
-        if (trayModule->itemTipsWidget() && !trayModule->content()->isVisible() && topLevelWidget()) {
+        if (m_tipsWidget && trayModule->itemTipsWidget() && !trayModule->content()->isVisible() && topLevelWidget()) {
             m_tipsWidget->setContent(trayModule->itemTipsWidget());
             // 因为密码框需要一直获取焦点，会导致TipsWidget在间隙时间内的Visible变为false
             // DArrowRectangle::show中当Visible为false时会activateWindow，抢占密码框焦点
@@ -397,6 +397,8 @@ void ControlWidget::addModule(TrayPlugin *trayModule)
     });
 
     connect(button, &FloatingButton::requestHideTips, this, [=] {
+        if (!m_tipsWidget)
+            return;
         if (m_tipsWidget->getContent())
             m_tipsWidget->getContent()->setVisible(false);
         m_tipsWidget->hide();

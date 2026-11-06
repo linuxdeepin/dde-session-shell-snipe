@@ -16,6 +16,7 @@
 #include "lockcontent.h"
 #include "signal_bridge.h"
 #include "mfasequencecontrol.h"
+#include "lockpasswordchange.h"
 
 #include <DSysInfo>
 
@@ -36,6 +37,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     : AuthInterface(model, parent)
     , m_authenticating(false)
     , m_isThumbAuth(false)
+    , m_passwordChange(new LockPasswordChange(this))
     , m_authFramework(new DeepinAuthFramework(this))
     , m_lockInter(new DBusLockService(DSS_DBUS::lockService, DSS_DBUS::lockServicePath, QDBusConnection::systemBus(), this))
     , m_hotZoneInter(new DBusHotzone(DSS_DBUS::zoneService, DSS_DBUS::zonePath, QDBusConnection::sessionBus(), this))
@@ -50,6 +52,121 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     initConnections();
     initData();
     initConfiguration();
+
+    connect(m_passwordChange, &LockPasswordChange::activeChanged, this, [this](bool active) {
+        const auto request = ++m_passwordChangeUIRequest;
+        if (!active) {
+            if (m_model->lockPasswordChangeActive()) {
+                restorePasswordChangeUI();
+            }
+            return;
+        }
+        m_resetSessionTimer->stop();
+        m_wakeUpAuthTimer->stop();
+        setLocked(true);
+        // Guard visibility immediately, but keep the existing authentication
+        // page for fast successful account checks to avoid a one-frame flash.
+        m_model->setLockPasswordChangeActive(true);
+        QTimer::singleShot(0, this, [this, request] {
+            if (request != m_passwordChangeUIRequest || !m_passwordChange->isActive()) {
+                return;
+            }
+            if (m_passwordChange->isCheckingExpiry()) {
+                QTimer::singleShot(250, this, [this, request] { presentPasswordChangeUI(request); });
+            } else {
+                presentPasswordChangeUI(request);
+            }
+        });
+    });
+    connect(m_passwordChange, &LockPasswordChange::promptChanged, this,
+            [this](const QString &prompt, const QString &error, bool busy) {
+        if (m_model->lockPasswordChangePageVisible()) {
+            emit m_model->lockPasswordChangePrompt(prompt, error, busy);
+        }
+    });
+    connect(m_passwordChange, &LockPasswordChange::formChanged, this,
+            [this](bool currentRequired, bool checkingOnly, bool busy, const QString &error) {
+        if (m_model->lockPasswordChangePageVisible()) {
+            emit m_model->lockPasswordChangeForm(currentRequired, checkingOnly, busy, error);
+        } else if (!checkingOnly || !busy) {
+            // Queue widget replacement outside the factor widget's callback.
+            const auto request = m_passwordChangeUIRequest;
+            QTimer::singleShot(0, this, [this, request] { presentPasswordChangeUI(request); });
+        }
+    });
+    connect(m_passwordChange, &LockPasswordChange::inputsCleared, this, [this] {
+        m_passwordChangeHint.clear();
+        emit m_model->lockPasswordChangeInputsCleared();
+    });
+    connect(m_model, &SessionBaseModel::prepareForSleep, this, [this](bool sleeping) {
+        if (sleeping && m_passwordChange->isActive()) {
+            m_model->setLockPasswordChangeRequiresAuthentication(true);
+            m_passwordChange->restartAtCurrentPassword();
+        }
+    });
+    connect(m_model, &SessionBaseModel::HibernateModeChanged, this, [this](bool sleeping) {
+        if (sleeping && m_passwordChange->isActive()) {
+            m_model->setLockPasswordChangeRequiresAuthentication(true);
+            m_passwordChange->restartAtCurrentPassword();
+        }
+    });
+    connect(m_passwordChange, &LockPasswordChange::completed, this, [this](bool changed) {
+        if (!m_model->currentUser() || m_model->currentUser()->name() != m_passwordChangeAccount) {
+            return;
+        }
+        m_passwordChangePassed = true;
+        if (changed || m_model->currentUser()->expiredState() == User::ExpiredAlready) {
+            // passwd or a fresh PAM account check supersedes the expired cache.
+            m_model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+        }
+        if (changed) {
+            savePasswordHint(m_model->currentUser()->path(), m_passwordChangeHint);
+        }
+        m_passwordChangeHint.clear();
+        authFinishedAction();
+    });
+    connect(m_passwordChange, &LockPasswordChange::canceled, this, [this](const QString &reason) {
+        m_passwordChangePassed = false;
+        m_passwordChangeToken.clear();
+        m_passwordChangeHint.clear();
+        setLocked(true);
+        const auto request = m_passwordChangeUIRequest;
+        QTimer::singleShot(0, this, [this, reason, request] {
+            // Navigation can cancel the form, or leave the authentication page
+            // before this queued callback runs. Only restore visible auth pages.
+            const auto mode = m_model->currentModeState();
+            if (request == m_passwordChangeUIRequest && !m_passwordChange->isActive() && m_model->currentUser()
+                && m_model->visible() && !m_model->isBlackMode()
+                && (mode == SessionBaseModel::PasswordMode || mode == SessionBaseModel::ConfirmPasswordMode)) {
+                createAuthentication(m_model->currentUser()->name());
+                if (!reason.isEmpty() && m_model->currentUser()->name() == m_passwordChangeAccount) {
+                    emit m_model->lockPasswordChangePrompt(QString(), reason, false);
+                }
+            }
+        });
+    });
+    connect(m_model, &SessionBaseModel::onStatusChanged, this, [this](SessionBaseModel::ModeStatus mode) {
+        if (m_passwordChange->isActive() && mode != SessionBaseModel::PasswordMode
+            && mode != SessionBaseModel::ConfirmPasswordMode) {
+            cancelPasswordChange();
+        }
+    });
+    connect(m_model, &SessionBaseModel::currentUserChanged, this, [this](const std::shared_ptr<User> &user) {
+        if (!user || user->name() != m_passwordChangeAccount) {
+            cancelPasswordChange();
+            m_passwordChangePassed = false;
+        }
+    });
+    m_forcePasswordChange = DConfigHelper::instance()
+                                ->getConfig(QStringLiteral("stopUnlockWhenPasswordExpired"), false).toBool();
+    DConfigHelper::instance()->bind(this, QStringLiteral("stopUnlockWhenPasswordExpired"),
+                                   [](const QString &, const QVariant &value, QObject *object) {
+        auto *worker = static_cast<LockWorker *>(object);
+        worker->m_forcePasswordChange = value.toBool();
+        if (!value.toBool()) {
+            worker->cancelPasswordChange();
+        }
+    });
 
     m_limitsUpdateTimer->setSingleShot(true);
     m_limitsUpdateTimer->setInterval(50);
@@ -122,14 +239,23 @@ void LockWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::SupportedMixAuthFlagsChanged, m_model, &SessionBaseModel::updateSupportedMixAuthFlags);
     /* com.deepin.daemon.Authenticate.Session */
     connect(m_authFramework, &DeepinAuthFramework::FuzzyMFAChanged, m_model, &SessionBaseModel::updateFuzzyMFA);
-    connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, m_model, &SessionBaseModel::updateMFAFlag);
+    connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, this, [this](bool mfa) {
+        if (!m_passwordChange->isActive() && !m_passwordChangeUITransition) {
+            m_model->updateMFAFlag(mfa);
+        }
+    });
     connect(m_authFramework, &DeepinAuthFramework::PINLenChanged, m_model, &SessionBaseModel::updatePINLen);
     connect(m_authFramework, &DeepinAuthFramework::PromptChanged, m_model, &SessionBaseModel::updatePrompt);
     connect(m_authFramework, &DeepinAuthFramework::AuthStateChanged, this, &LockWorker::onAuthStateChanged);
     connect(m_authFramework, &DeepinAuthFramework::TokenSendFailed, this, [this](int type, const QString &message) {
+        m_passwordChangeToken.clear();
         m_model->updateAuthState(AuthType(type), AS_Error, message);
     });
-    connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, m_model, &SessionBaseModel::updateFactorsInfo);
+    connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, this, [this](const MFAInfoList &factors) {
+        if (!m_passwordChange->isActive() && !m_passwordChangeUITransition) {
+            m_model->updateFactorsInfo(factors);
+        }
+    });
     /* com.deepin.dde.LockService */
     connect(m_lockInter, &DBusLockService::UserChanged, this, [this](const QString &json) {
         qCInfo(DDE_SHELL) << "DBus lock service user changed, user: " << json;
@@ -146,6 +272,10 @@ void LockWorker::initConnections()
     connect(m_lockInter, &DBusLockService::Event, this, &LockWorker::lockServiceEvent);
     /* com.deepin.SessionManager */
     connect(m_sessionManagerInter, &SessionManagerInter::Unlock, this, [this] {
+        if (passwordChangeEnabled() && !m_passwordChangePassed) {
+            checkPasswordBeforeUnlock();
+            return;
+        }
         m_authenticating = false;
         m_password.clear();
         emit m_model->authFinished(true);
@@ -154,6 +284,25 @@ void LockWorker::initConnections()
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [this](bool active) {
         qCInfo(DDE_SHELL) << "DBus lock service active changed, active: " << active << ", model visible: " << m_model->visible();
+        m_sessionActive = active;
+        if (!active) {
+            m_resetSessionTimer->stop();
+            m_wakeUpAuthTimer->stop();
+            if (m_passwordChange->isActive()) {
+                m_model->setLockPasswordChangeRequiresAuthentication(true);
+            }
+            // Invalidate PAM generations and stop passwd before restoring the
+            // form. No pre-deactivation credential may authorize this session.
+            cancelPasswordChange();
+            // Cancellation queues authentication recovery. Discard that task
+            // even if the session becomes active again before it runs.
+            ++m_passwordChangeUIRequest;
+            m_passwordChangePassed = false;
+            m_passwordChangeHint.clear();
+            m_password.clear();
+            m_authenticating = false;
+            emit m_model->lockPasswordChangeInputsCleared();
+        }
         if (m_model->currentContentType() == SessionBaseModel::UpdateContent) {
             qCInfo(DDE_SHELL) << "Updating, do not answer login1 session self `ActiveChanged` signal";
             return;
@@ -211,7 +360,7 @@ void LockWorker::initConnections()
             doSuspendTime = QDateTime::currentDateTime();
             m_model->setIsBlackMode(true);
             // 休眠时按需拉起锁屏,注意此时是被动响应休眠
-            if (sleepLock && m_login1SessionSelf->active()) {
+            if (sleepLock && m_login1SessionSelf && m_login1SessionSelf->active()) {
                 // 仅sleepLock配置开启时执行
                 m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
                 setLocked(true);
@@ -221,9 +370,10 @@ void LockWorker::initConnections()
             }
         } else {
             SessionBaseModel::ModeStatus status = m_model->currentModeState();
-            if (isLocked() || (m_model->isNoPasswordLogin() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::PasswordMode))) {
+            if (isLocked() || m_model->lockPasswordChangeProtected()
+                || (m_model->isNoPasswordLogin() && (status == SessionBaseModel::ModeStatus::PowerMode || status == SessionBaseModel::ModeStatus::PasswordMode))) {
                 // 唤醒时如果处于lock状态，重置认证
-                if (m_login1SessionSelf->active()) {
+                if (m_login1SessionSelf && m_login1SessionSelf->active()) {
                     endAuthentication(m_account, AT_All);
                     destroyAuthentication(m_account);
                     m_wakeUpAuthTimer->start();
@@ -397,6 +547,17 @@ void LockWorker::initConfiguration()
  */
 void LockWorker::onAuthStateChanged(const int type, const int state, const QString &message)
 {
+    if (!m_sessionActive || m_passwordChange->isActive() || m_passwordChangeUITransition) {
+        return;
+    }
+    if (state == AS_Failure || state == AS_Cancel || state == AS_Error || state == AS_Timeout || state == AS_Locked) {
+        m_passwordChangeToken.clear();
+    }
+    // A single biometric success must not reuse an earlier password submission.
+    if (state == AS_Success && !m_model->getAuthProperty().MFAFlag
+        && (type == AT_Face || type == AT_Iris || type == AT_Fingerprint)) {
+        m_passwordChangeToken.clear();
+    }
     qCInfo(DDE_SHELL) << "Auth type:" << type
             << ", authentication state:" << state
             << ", message:" << message;
@@ -446,7 +607,9 @@ void LockWorker::onAuthStateChanged(const int type, const int state, const QStri
                     });
                 }
                 QTimer::singleShot(50, this, [this, type, state, message] {
-                    m_model->updateAuthState(AuthType(type), AuthState(state), message);
+                    if (!m_passwordChange->isActive() && !m_passwordChangeUITransition) {
+                        m_model->updateAuthState(AuthType(type), AuthState(state), message);
+                    }
                 });
                 break;
             case AS_Locked:
@@ -457,7 +620,9 @@ void LockWorker::onAuthStateChanged(const int type, const int state, const QStri
                 endAuthentication(m_account, AuthType(type));
                 // TODO: 信号时序问题,考虑优化,Bug 89056
                 QTimer::singleShot(50, this, [this, type, state, message] {
-                    m_model->updateAuthState(AuthType(type), AuthState(state), message);
+                    if (!m_passwordChange->isActive() && !m_passwordChangeUITransition) {
+                        m_model->updateAuthState(AuthType(type), AuthState(state), message);
+                    }
                 });
                 break;
             case AS_Timeout:
@@ -698,6 +863,9 @@ void LockWorker::setCurrentUser(const std::shared_ptr<User> user)
 
 void LockWorker::switchToUser(std::shared_ptr<User> user)
 {
+    cancelPasswordChange();
+    m_passwordChangeToken.clear();
+    m_passwordChangePassed = false;
     // 发生用户切换时锁住
     setLocked(true);
 
@@ -751,6 +919,11 @@ bool LockWorker::isLocked() const
  */
 void LockWorker::setLocked(const bool locked)
 {
+    // Visibility cleanup (including dismissing shutdown on an unlocked desktop)
+    // also calls this setter. Only authentication completion starts expiry checks.
+    if (!locked && (m_model->lockPasswordChangeProtected() || m_passwordChange->isActive() || m_passwordChangeUITransition)) {
+        return;
+    }
 #ifdef QT_DEBUG
     Q_UNUSED(locked)
 #else
@@ -772,6 +945,11 @@ void LockWorker::createAuthentication(const QString &account)
         return;
     }
 
+    if (!m_sessionActive || m_passwordChange->isActive() || m_passwordChangeUITransition) {
+        return;
+    }
+    m_passwordChangePassed = false;
+    m_passwordChangeToken.clear();
     qCInfo(DDE_SHELL) << "Account:" << account;
     QString userPath = m_accountsInter->FindUserByName(account);
     if (!userPath.startsWith("/")) {
@@ -845,6 +1023,13 @@ void LockWorker::destroyAuthentication(const QString &account)
  */
 void LockWorker::startAuthentication(const QString &account, const AuthFlags authType)
 {
+    if (!m_sessionActive) {
+        return;
+    }
+    if (m_passwordChange->isActive() || m_passwordChangeUITransition) {
+        m_passwordChange->refreshPrompt();
+        return;
+    }
     qCInfo(DDE_SHELL) << "Start authentication, account:" << account << ", auth types:" << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
@@ -865,6 +1050,13 @@ void LockWorker::startAuthentication(const QString &account, const AuthFlags aut
  */
 void LockWorker::sendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
+    if (!m_sessionActive || m_passwordChange->isActive()) {
+        // Only the active session accepts input; password changes use their own form.
+        return;
+    }
+    if (passwordChangeEnabled() && (authType == AT_Password || authType == AT_PAM)) {
+        m_passwordChangeToken = token;
+    }
     qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type: " << authType;
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
@@ -904,6 +1096,9 @@ void LockWorker::onEndAuthentication(const QString &account, const AuthFlags aut
 
 void LockWorker::lockServiceEvent(quint32 eventType, quint32 pid, const QString &username, const QString &message)
 {
+    if (m_passwordChange->isActive() || m_passwordChangeUITransition) {
+        return;
+    }
     Q_UNUSED(pid)
     if (!m_model->currentUser())
         return;
@@ -963,6 +1158,13 @@ void LockWorker::onAuthFinished()
 
 void LockWorker::onUnlockFinished(bool unlocked)
 {
+    if (unlocked && passwordChangeEnabled() && !m_passwordChangePassed) {
+        checkPasswordBeforeUnlock();
+        return;
+    }
+    if (unlocked) {
+        m_model->setLockPasswordChangeRequiresAuthentication(false);
+    }
     qCInfo(DDE_SHELL) << "Unlock finished, is unlocked: " << unlocked;
 
     m_authenticating = false;
@@ -991,6 +1193,12 @@ void LockWorker::onUnlockFinished(bool unlocked)
 
 void LockWorker::restartResetSessionTimer()
 {
+    if (m_model->visible() && m_passwordChange->isActive()) {
+        // Only input stages have an idle deadline; checking/changing retain
+        // their fixed execution timeouts regardless of user activity.
+        m_passwordChange->resetIdleTimer();
+        return;
+    }
     if (m_model->visible() && m_resetSessionTimer->isActive()) {
         m_resetSessionTimer->start();
     }
@@ -1043,6 +1251,14 @@ void LockWorker::checkAccount(const QString &account, bool switchUser)
 
 void LockWorker::authFinishedAction()
 {
+    if (m_passwordChangeUITransition) {
+        return;
+    }
+    if (passwordChangeEnabled() && !m_passwordChangePassed) {
+        checkPasswordBeforeUnlock();
+        return;
+    }
+    m_model->setLockPasswordChangeRequiresAuthentication(false);
     if ((m_model->powerAction() == SessionBaseModel::PowerAction::RequireRestart
             || m_model->powerAction() == SessionBaseModel::PowerAction::RequireShutdown)
             && WarningContent::instance()->supportDelayOrWait()) {
@@ -1055,6 +1271,112 @@ void LockWorker::authFinishedAction()
     }
     onAuthFinished();
     enableZoneDetected(true);
+}
+
+bool LockWorker::passwordChangeEnabled() const
+{
+    return m_model->appType() == AuthCommon::Lock && m_forcePasswordChange;
+}
+
+void LockWorker::checkPasswordBeforeUnlock()
+{
+    if (!m_sessionActive || m_passwordChange->isActive() || m_passwordChangeUITransition) {
+        return;
+    }
+    const auto user = m_model->currentUser();
+    // passwd without a username changes the owner of this lock process, not an arbitrary model user.
+    if (!user || !user->isUserValid() || user->uid() != getuid()) {
+        m_passwordChangeToken.clear();
+        emit m_model->lockPasswordChangePrompt(QString(), tr("Unable to verify the current account for password change."), false);
+        return;
+    }
+    m_passwordChangeAccount = user->name();
+    // No-password login can also be enabled for an account that has a password.
+    // Only the account's password status establishes a known empty credential.
+    // After normal authentication, a fresh Accounts reply can establish expiry
+    // without asking biometric users for a password. Cancellation across sleep
+    // or session deactivation still requires the existing credential check.
+    const auto accountPath = m_passwordChangeToken.isEmpty() && !user->isNoPasswordLogin()
+                                 && !m_model->lockPasswordChangeProtected()
+                                 ? user->path() : QString();
+    m_passwordChange->begin(user->name(), m_passwordChangeToken,
+                            user->expiredState() == User::ExpiredAlready, getuid() == 0,
+                            !user->isPasswordValid(), accountPath);
+    m_passwordChangeToken.clear();
+}
+
+void LockWorker::presentPasswordChangeUI(quint64 request)
+{
+    if (request != m_passwordChangeUIRequest || !m_passwordChange->isActive()
+        || m_model->lockPasswordChangePageVisible()) {
+        return;
+    }
+    m_savedAuthType = m_model->getAuthProperty().AuthType;
+    m_savedMFA = m_model->getAuthProperty().MFAFlag;
+    m_model->setLockPasswordChangePageVisible(true);
+    endAuthentication(m_account, AT_All);
+    destroyAuthentication(m_account);
+    m_model->updateAuthState(AT_All, AS_Cancel, QString());
+    m_model->updateMFAFlag(false);
+    m_model->setAuthType(AT_PAM);
+    // Preserve pending authenticated shutdown/reboot requests.
+    if (m_model->currentModeState() != SessionBaseModel::ConfirmPasswordMode) {
+        m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
+    }
+    m_model->setVisible(true);
+    m_passwordChange->refreshPrompt();
+}
+
+void LockWorker::restorePasswordChangeUI()
+{
+    const bool wasVisible = m_model->lockPasswordChangePageVisible();
+    m_model->setLockPasswordChangePageVisible(false);
+    m_model->setLockPasswordChangeActive(false);
+    if (!wasVisible) {
+        return;
+    }
+    m_passwordChangeUITransition = true;
+    m_model->updateMFAFlag(m_savedMFA);
+    m_model->setAuthType(m_savedAuthType);
+    emit m_model->lockPasswordChangePrompt(QString(), QString(), false);
+    m_passwordChangeUITransition = false;
+}
+
+void LockWorker::cancelPasswordChange()
+{
+    m_passwordChangeToken.clear();
+    m_passwordChange->cancel();
+}
+
+void LockWorker::submitPasswordChange(const QString &current, const QString &password,
+                                      const QString &confirmation, const QString &hint)
+{
+    if (!passwordChangeEnabled() || !m_model->lockPasswordChangeActive() || !m_passwordChange->acceptsInput()
+        || !m_model->currentUser() || m_model->currentUser()->name() != m_passwordChangeAccount) {
+        return;
+    }
+    m_passwordChangeHint = hint;
+    m_passwordChange->submitPasswords(current, password, confirmation, hint);
+}
+
+void LockWorker::savePasswordHint(const QString &path, const QString &hint)
+{
+    if (path.isEmpty()) {
+        qCWarning(DDE_SHELL) << "Password changed, but the account has no path for saving its hint";
+        return;
+    }
+    auto message = QDBusMessage::createMethodCall(DSS_DBUS::accountsService, path,
+                                                 DSS_DBUS::accountsUserInterface, QStringLiteral("SetPasswordHint"));
+    message << hint;
+    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(message, 5000), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this, [watcher] {
+        const QDBusPendingReply<> reply = *watcher;
+        if (reply.isError()) {
+            // Never print the hint or a backend message that might contain it.
+            qCWarning(DDE_SHELL) << "Password changed, but saving its hint failed:" << reply.error().name();
+        }
+        watcher->deleteLater();
+    });
 }
 
 void LockWorker::onNoPasswordLoginChanged(const QString &account, bool noPassword)

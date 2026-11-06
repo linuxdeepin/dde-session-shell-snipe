@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -89,7 +89,7 @@ void LoginContent::pushSessionFrame()
 void LoginContent::pushTipsFrame()
 {
     // 如果配置文件存在，并且获取到的内容有效，则显示提示界面，并保证只在greeter启动时显示一次
-    if (m_showTipsWidget && m_loginTipsWindow->isValid()) {
+    if (!m_model->passwordChangePageVisible() && m_showTipsWidget && m_loginTipsWindow->isValid()) {
         setTopFrameVisible(false);
         setBottomFrameVisible(false);
         QSize size = getCenterContentSize();

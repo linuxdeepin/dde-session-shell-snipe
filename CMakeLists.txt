@@ -7,8 +7,8 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif ()
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -g -Wall")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
@@ -29,7 +29,7 @@ endif()
 
 # DDE_SESSION_SHELL_SNIPE defined in snipe repo
 if (NOT DDE_SESSION_SHELL_SNIPE)
-    find_package(Qt6 COMPONENTS Core QUIET)
+    find_package(Qt6 6.8 COMPONENTS Core QUIET)
 endif ()
 
 if (DDE_SESSION_SHELL_SNIPE OR Qt6_FOUND)
@@ -51,6 +51,12 @@ find_package(PAM REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets DBus Svg Network)
+if (QT_VERSION_MAJOR EQUAL 6)
+    find_package(Qt6 6.8 REQUIRED COMPONENTS Core)
+    qt_standard_project_setup()
+else ()
+    set(CMAKE_AUTOMOC ON)
+endif ()
 find_package(Dtk${DTK_VERSION_MAJOR} REQUIRED COMPONENTS Widget Core)
 
 if (DISABLE_DSS_SNIPE)
@@ -68,6 +74,7 @@ endif ()
 
 pkg_check_modules(XCB_EWMH REQUIRED xcb-ewmh x11 xi xcursor xfixes xrandr xext xtst)
 pkg_check_modules(SSL REQUIRED IMPORTED_TARGET libcrypto libssl openssl)
+pkg_check_modules(PW_CHECK REQUIRED IMPORTED_TARGET libdeepin_pw_check)
 
 if (NOT (${CMAKE_BUILD_TYPE} MATCHES "Debug"))
     if (DISABLE_DSS_SNIPE)
@@ -291,6 +298,7 @@ if (DISABLE_DSS_SNIPE)
 endif ()
 
 target_link_libraries(dde-lock PRIVATE
+    PkgConfig::PW_CHECK
     ${Qt_LIBS}
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}
@@ -368,6 +376,7 @@ if (WAIT_DEEPIN_ACCOUNTS_SERVICE)
 endif()
 
 target_link_libraries(lightdm-deepin-greeter PRIVATE
+    PkgConfig::PW_CHECK
     ${Qt_LIBS}
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}

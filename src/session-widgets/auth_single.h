@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -14,6 +14,7 @@
 #include <DMessageManager>
 
 class DLineEditEx;
+class QValidator;
 class AuthSingle : public AuthModule
 {
     Q_OBJECT
@@ -28,6 +29,8 @@ public:
 
     void setAnimationState(const bool start) override;
     void setAuthState(const AuthCommon::AuthState state, const QString &result) override;
+    void setPasswordChangePrompt(const QString &prompt, const QString &error, bool busy);
+    void resetPasswordChangePrompt();
     void setCapsLockVisible(const bool on);
     void setKeyboardButtonInfo(const QString &text);
     void setKeyboardButtonVisible(const bool visible);
@@ -64,6 +67,7 @@ private:
     bool m_passwordLineEditEnabled;
     DLabel *m_capsLock;             // 大小写状态
     DLineEditEx *m_lineEdit;        // 输入框
+    const QValidator *m_passwordValidator = nullptr;
     DPushButton *m_keyboardBtn;     // 键盘布局按钮
     DIconButton *m_passwordHintBtn; // 密码提示按钮
     QString m_passwordHint;         // 密码提示

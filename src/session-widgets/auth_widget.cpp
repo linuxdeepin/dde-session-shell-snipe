@@ -155,6 +155,18 @@ void AuthWidget::setModel(const SessionBaseModel *model)
 
     terminalLockedChanged(m_model->terminalLocked());
     connect(m_model, &SessionBaseModel::terminalLockedChanged, this, &AuthWidget::terminalLockedChanged);
+    connect(m_model, &SessionBaseModel::lockPasswordChangePrompt, this,
+            [this](const QString &prompt, const QString &error, bool busy) {
+        if (m_model->appType() == AuthCommon::Lock && m_model->lockPasswordChangeActive() && m_singleAuth) {
+            m_singleAuth->setPasswordChangePrompt(prompt, error, busy);
+            m_lockButton->setEnabled(false);
+        } else if (m_model->appType() == AuthCommon::Lock && !error.isEmpty()) {
+            m_expiredStateLabel->setText(error);
+            m_expiredStateLabel->show();
+        } else if (m_model->appType() == AuthCommon::Lock && m_singleAuth && prompt.isEmpty() && error.isEmpty()) {
+            m_singleAuth->resetPasswordChangePrompt();
+        }
+    });
 }
 
 /**
@@ -437,6 +449,11 @@ void AuthWidget::updatePasswordExpiredState()
         break;
     default:
         break;
+    }
+    // Temporary password-change prompts own input permissions, including busy
+    // checking/changing stages. Ordinary account refreshes must not override them.
+    if (m_model->lockPasswordChangeActive()) {
+        return;
     }
     if (m_passwordAuth) {
         m_passwordAuth->setPasswordLineEditEnabled(m_model->appType() != Login || m_user->allowToChangePassword());

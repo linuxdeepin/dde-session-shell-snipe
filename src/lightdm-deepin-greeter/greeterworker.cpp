@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "greeterworker.h"
+#include "greeterpasswordchange.h"
 
 #include "authcommon.h"
 #include "keyboardmonitor.h"
@@ -55,6 +56,7 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
     , m_retryAuth(false)
+    , m_passwordChange(new GreeterPasswordChange(this))
 {
 #ifndef QT_DEBUG
     if (!m_greeter->connectSync()) {
@@ -63,6 +65,20 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
     }
 #endif
     checkDBusServer(m_accountsInter->isValid());
+
+    connect(m_passwordChange, &GreeterPasswordChange::formChanged, this,
+            [this](bool currentRequired, bool busy, const QString &error) {
+        emit m_model->lockPasswordChangeForm(currentRequired, false, busy, error);
+    });
+    connect(m_passwordChange, &GreeterPasswordChange::inputsCleared,
+            m_model, &SessionBaseModel::lockPasswordChangeInputsCleared);
+    connect(m_passwordChange, &GreeterPasswordChange::respond, this, [this](const QString &password) {
+        if (!m_discardGreeterCompletion && m_model->greeterPasswordChangeActive()
+            && ensurePasswordChangeAllowed()
+            && m_greeter->inAuthentication() && m_greeter->authenticationUser() == m_account)
+            respondToGreeter(password);
+    });
+    connect(m_passwordChange, &GreeterPasswordChange::canceled, this, &GreeterWorker::cancelPasswordChange);
 
     initConnections();
     initData();
@@ -161,6 +177,8 @@ void GreeterWorker::initConnections()
     });
     connect(m_authFramework, &DeepinAuthFramework::DeviceChanged, this, [this](const int type, const int state) {
         qCInfo(DDE_SHELL) << "Device changed, type: " << type << ", state: " << state;
+        if (m_model->greeterPasswordChangeActive() || m_passwordChange->active())
+            return;
         // 如果是单因或者多因且包含该类型认证，需要重新创建认证
         if (m_model->visible() && (!m_model->getAuthProperty().MFAFlag || (m_model->getAuthProperty().MFAFlag && (m_model->getAuthProperty().AuthType & type)))) {
             endAuthentication(m_account, AT_All);
@@ -175,9 +193,15 @@ void GreeterWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::TokenSendFailed, this, [this](int type, const QString &message) {
         m_model->updateAuthState(AuthType(type), AS_Error, message);
     });
-    connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, m_model, &SessionBaseModel::updateFactorsInfo);
+    connect(m_authFramework, &DeepinAuthFramework::FactorsInfoChanged, this, [this](const MFAInfoList &factors) {
+        if (!m_model->greeterPasswordChangeActive() && !m_passwordChange->active())
+            m_model->updateFactorsInfo(factors);
+    });
     connect(m_authFramework, &DeepinAuthFramework::FuzzyMFAChanged, m_model, &SessionBaseModel::updateFuzzyMFA);
-    connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, m_model, &SessionBaseModel::updateMFAFlag);
+    connect(m_authFramework, &DeepinAuthFramework::MFAFlagChanged, this, [this](bool enabled) {
+        if (!m_model->greeterPasswordChangeActive() && !m_passwordChange->active())
+            m_model->updateMFAFlag(enabled);
+    });
     connect(m_authFramework, &DeepinAuthFramework::PINLenChanged, m_model, &SessionBaseModel::updatePINLen);
     connect(m_authFramework, &DeepinAuthFramework::PromptChanged, m_model, &SessionBaseModel::updatePrompt);
     connect(m_authFramework, &DeepinAuthFramework::SessionCreated, this, &GreeterWorker::onSessionCreated);
@@ -195,13 +219,15 @@ void GreeterWorker::initConnections()
                 createAuthentication(m_model->currentUser()->name());
             }
         } else {
+            if (m_passwordChange->active() || m_restartAfterCancel)
+                leavePasswordChange(false);
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
         }
     });
 
     connect(m_login1Inter, &DBusLogin1Manager::PrepareForSleep, this, [this](bool active) {
-        const bool sessionIsActive = m_login1SessionSelf->active();
+        const bool sessionIsActive = m_login1SessionSelf && m_login1SessionSelf->active();
         qDebug() << "Prepare for sleep, whether set dpms: " << (!active ? "on" : "off")
                  << ", curren session is active:" << sessionIsActive;
         // session 未激活的时候使用 dde-wldpms 无效，且 dde-wldpms 无法收到 modeChanged 信号，会一直处于等待状态不退出
@@ -216,6 +242,8 @@ void GreeterWorker::initConnections()
         m_model->setIsBlackMode(isSleep);
 
         if (isSleep) {
+            if (m_passwordChange->active() || m_restartAfterCancel)
+                leavePasswordChange(false);
             endAuthentication(m_account, AT_All);
             destroyAuthentication(m_account);
         } else {
@@ -274,6 +302,17 @@ void GreeterWorker::initConnections()
         });
     });
     /* model */
+    connect(m_model, &SessionBaseModel::onStatusChanged, this, [this](SessionBaseModel::ModeStatus mode) {
+        // Navigation ends the LightDM conversation too, before another PAM
+        // prompt can receive credentials cached by Save. Cancel also has a
+        // queued recovery which must not reopen authentication on another page.
+        if ((m_passwordChange->active() || m_restartAfterCancel)
+            && mode != SessionBaseModel::PasswordMode && mode != SessionBaseModel::ConfirmPasswordMode)
+            leavePasswordChange(false);
+        else if (m_discardGreeterCompletion && !m_passwordChange->active()
+                 && !m_restartAfterCancel && authenticationPageVisible())
+            scheduleAuthenticationRestart();
+    });
     connect(m_model, &SessionBaseModel::authTypeChanged, this, [this](const AuthFlags type) {
         qCInfo(DDE_SHELL) << "Auth type changed, incoming type:" << type
                 << ", mfa flag:" << m_model->getAuthProperty().MFAFlag;
@@ -291,6 +330,8 @@ void GreeterWorker::initConnections()
                 createAuthentication(m_model->currentUser()->name());
             }
         } else {
+            if (m_passwordChange->active() || m_restartAfterCancel)
+                leavePasswordChange(false);
             m_resetSessionTimer->stop();
         }
     });
@@ -568,6 +609,9 @@ bool GreeterWorker::isSecurityEnhanceOpen()
  */
 void GreeterWorker::createAuthentication(const QString &account)
 {
+    if (m_model->greeterPasswordChangeActive() || m_passwordChange->active()
+        || (m_discardGreeterCompletion && !authenticationPageVisible()))
+        return;
     qCInfo(DDE_SHELL) << "Create auth entication, account: " << account;
     if (m_model->terminalLocked()) {
         // 切换用户后，需要触发TerminalLocked信号
@@ -575,6 +619,9 @@ void GreeterWorker::createAuthentication(const QString &account)
         return;
     }
 
+    m_password.fill(QChar(0));
+    m_password.clear();
+    m_passwordVerified = m_directPamPassword = false;
     m_account = account;
     if (account.isEmpty() || account == "...") {
         m_model->setAuthType(AT_None);
@@ -642,6 +689,9 @@ void GreeterWorker::destroyAuthentication(const QString &account)
  */
 void GreeterWorker::startAuthentication(const QString &account, const AuthFlags authType)
 {
+    if (m_model->greeterPasswordChangeActive() || m_passwordChange->active() || m_restartAfterCancel
+        || (m_discardGreeterCompletion && !authenticationPageVisible()))
+        return;
     if (!m_model->currentUser()->allowToChangePassword()) {
         qCInfo(DDE_SHELL) << "Authentication exit because of user's authority";
         return;
@@ -667,11 +717,18 @@ void GreeterWorker::startAuthentication(const QString &account, const AuthFlags 
  */
 void GreeterWorker::sendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
+    if (m_model->greeterPasswordChangeActive() || m_passwordChange->active() || m_discardGreeterCompletion)
+        return;
     qCInfo(DDE_SHELL) << "Send token:" << account << ", auth type:" << authType;
+    if (authType == AT_Password || authType == AT_PAM) {
+        m_passwordVerified = false;
+        m_directPamPassword = authType == AT_PAM || m_model->getAuthProperty().FrameworkState != Available;
+    }
     switch (m_model->getAuthProperty().FrameworkState) {
     case Available:
         if (AT_PAM == authType) {
-            m_greeter->respond(token);
+            m_password = token;
+            respondToGreeter(token);
         } else {
             m_authFramework->SendTokenToAuth(account, authType, token);
         }
@@ -680,7 +737,8 @@ void GreeterWorker::sendTokenToAuth(const QString &account, const AuthType authT
         }
         break;
     default:
-        m_greeter->respond(token);
+        m_password = token;
+        respondToGreeter(token);
         break;
     }
 }
@@ -761,7 +819,8 @@ void GreeterWorker::checkAccount(const QString &account, bool switchUser)
     }
 
     // m_greeter->cancelAuthentication后m_greeter的数据不会发生改变，当前账户如果是无密码登陆则不需要判断m_greeter认证数据
-    if (m_greeter->authenticationUser() == account && m_account == account && !user_ptr->isNoPasswordLogin()) {
+    if (!m_discardGreeterCompletion && m_greeter->authenticationUser() == account
+        && m_account == account && !user_ptr->isNoPasswordLogin()) {
         qCInfo(DDE_SHELL) << "The current user is the incoming user, do not check again";
         return;
     }
@@ -836,6 +895,26 @@ void GreeterWorker::checkDBusServer(bool isValid)
  */
 void GreeterWorker::showPrompt(const QString &text, const QLightDM::Greeter::PromptType type)
 {
+    if (m_discardGreeterCompletion)
+        return;
+    if (m_passwordChange->active()) {
+        if (!ensurePasswordChangeAllowed())
+            return;
+        m_passwordChange->prompt(text, type == QLightDM::Greeter::PromptTypeSecret);
+        return;
+    }
+
+    // A replacement prompt may arrive after ordinary authentication questions
+    // in the same PAM batch. Retain every unanswered question, including ones
+    // the password adapter must reject, until an actual LightDM response.
+    m_unansweredGreeterPrompts.enqueue({text, type});
+    if (type == QLightDM::Greeter::PromptTypeSecret
+        && GreeterPasswordChange::isReplacementPrompt(text, authenticationLocale())) {
+        if (m_directPamPassword && !m_password.isEmpty())
+            m_passwordVerified = true;
+        changePasswd();
+        return;
+    }
     qCInfo(DDE_SHELL) << "Greeter prompt: " << text << ", type:" << type;
     m_model->setLightdmPamStarted(true);
     switch (type) {
@@ -857,6 +936,27 @@ void GreeterWorker::showPrompt(const QString &text, const QLightDM::Greeter::Pro
  */
 void GreeterWorker::showMessage(const QString &text, const QLightDM::Greeter::MessageType type)
 {
+    if (m_discardGreeterCompletion)
+        return;
+    if (!m_passwordChange->active() && type == QLightDM::Greeter::MessageTypeInfo
+        && GreeterPasswordChange::isExpiryMessage(text)) {
+        if (m_directPamPassword && !m_password.isEmpty())
+            m_passwordVerified = true;
+        changePasswd();
+        if (!m_passwordChange->active())
+            return;
+    }
+    if (m_passwordChange->active()) {
+        if (!ensurePasswordChangeAllowed())
+            return;
+        m_passwordChange->message(type == QLightDM::Greeter::MessageTypeError);
+        return;
+    }
+    if (type == QLightDM::Greeter::MessageTypeError) {
+        m_password.fill(QChar(0));
+        m_password.clear();
+        m_passwordVerified = m_directPamPassword = false;
+    }
     qCInfo(DDE_SHELL) << "Greeter message:" << text << ", type:" << type;
     m_model->setLightdmPamStarted(true);
     switch (type) {
@@ -875,7 +975,55 @@ void GreeterWorker::showMessage(const QString &text, const QLightDM::Greeter::Me
  */
 void GreeterWorker::authenticationComplete()
 {
-    const bool result = m_greeter->isAuthenticated();
+    handleAuthenticationComplete(m_greeter->isAuthenticated(), m_greeter->authenticationUser());
+}
+
+void GreeterWorker::handleAuthenticationComplete(bool result, const QString &account)
+{
+    if (m_discardGreeterCompletion)
+        return;
+    if (!m_model->currentUser() || account != m_model->currentUser()->name()
+        || m_model->isBlackMode())
+        return;
+    m_unansweredGreeterPrompts.clear();
+    if (m_passwordChange->active()) {
+        if (!ensurePasswordChangeAllowed())
+            return;
+        const bool changed = m_passwordChange->finish(result);
+        const QString hint = m_passwordChange->takeHint();
+        if (!result) {
+            if (m_model->currentUser()->limitsInfo(AT_Password).locked) {
+                leavePasswordChange(false);
+                return;
+            }
+            m_password.fill(QChar(0));
+            m_password.clear();
+            m_authenticationLocale = m_model->currentUser()->locale();
+            m_passwordChange->start({}, m_authenticationLocale, !m_model->currentUser()->isPasswordValid());
+            emit m_model->lockPasswordChangeForm(m_passwordChange->currentRequired(), false, false,
+                tr("Password change failed. Please try again."));
+            m_greeter->authenticate(m_account);
+            return;
+        }
+        restorePasswordChangeUI();
+        if (changed && m_model->currentUser()) {
+            m_model->currentUser()->updatePasswordExpiredInfo();
+            // An empty optional hint clears the old public hint too.
+            const auto user = m_model->currentUser();
+            if (user->path().startsWith(QLatin1Char('/'))) {
+                auto request = QDBusMessage::createMethodCall(DSS_DBUS::accountsService, user->path(),
+                    DSS_DBUS::accountsUserInterface, QStringLiteral("SetPasswordHint"));
+                request << hint;
+                auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(request, 5000), this);
+                connect(watcher, &QDBusPendingCallWatcher::finished, this, [watcher] {
+                    const QDBusPendingReply<> reply = *watcher;
+                    if (reply.isError())
+                        qCWarning(DDE_SHELL) << "Saving the password hint failed:" << reply.error().name();
+                    watcher->deleteLater();
+                });
+            }
+        }
+    }
     qCInfo(DDE_SHELL) << "Authentication result:" << result << ", retry auth" << m_retryAuth;
 
     if (!result) {
@@ -883,6 +1031,7 @@ void GreeterWorker::authenticationComplete()
             showMessage(tr("Wrong Password"), QLightDM::Greeter::MessageTypeError);
         }
         if (!m_model->currentUser()->limitsInfo(AT_Password).locked) {
+            m_authenticationLocale = m_model->currentUser()->locale();
             m_greeter->authenticate(m_model->currentUser()->name());
         }
         return;
@@ -929,9 +1078,11 @@ void GreeterWorker::authenticationComplete()
 
 void GreeterWorker::onAuthFinished()
 {
+    if (m_model->greeterPasswordChangeActive() || m_passwordChange->active() || m_discardGreeterCompletion)
+        return;
     qCInfo(DDE_SHELL) << "Auth finished";
     if (m_greeter->inAuthentication()) {
-        m_greeter->respond(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
+        respondToGreeter(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
 #ifndef ENABLE_DSS_SNIPE
         updatePasswordExpiredStateBySPName(m_account);
         if (m_model->currentUser()->expiredState() == User::ExpiredAlready) {
@@ -952,6 +1103,17 @@ void GreeterWorker::onAuthFinished()
 
 void GreeterWorker::onAuthStateChanged(const int type, const int state, const QString &message)
 {
+    if (m_model->greeterPasswordChangeActive() || m_passwordChange->active() || m_discardGreeterCompletion)
+        return;
+    if (type == AT_Password) {
+        if (state == AS_Success)
+            m_passwordVerified = true;
+        else if (state == AS_Failure || state == AS_Cancel) {
+            m_passwordVerified = false;
+            m_password.fill(QChar(0));
+            m_password.clear();
+        }
+    }
     qCInfo(DDE_SHELL) << "Auth type:" << type << ", state:" << state << ", message:" << message;
     if (m_model->getAuthProperty().MFAFlag) {
         if (type == AT_All) {
@@ -960,7 +1122,7 @@ void GreeterWorker::onAuthStateChanged(const int type, const int state, const QS
                 m_model->updateAuthState(AuthType(type), AuthState(state), message);
                 m_resetSessionTimer->stop();
                 if (m_greeter->inAuthentication()) {
-                    m_greeter->respond(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
+                    respondToGreeter(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
                     if (m_model->currentUser()->expiredState() == User::ExpiredAlready) {
                         changePasswd();
                     }
@@ -1080,6 +1242,13 @@ void GreeterWorker::onReceiptChanged(bool state)
 
 void GreeterWorker::onCurrentUserChanged(const std::shared_ptr<User> &user)
 {
+    m_unansweredGreeterPrompts.clear();
+    if (m_model->greeterPasswordChangeActive() || m_restartAfterCancel)
+        leavePasswordChange(false);
+    m_authenticationLocale.clear();
+    m_password.fill(QChar(0));
+    m_password.clear();
+    m_passwordVerified = m_directPamPassword = false;
     recoveryUserKBState(user);
     loadTranslation(user->locale());
     //  账户在变换的时候需要通知lockservice
@@ -1149,6 +1318,10 @@ void GreeterWorker::recoveryUserKBState(std::shared_ptr<User> user)
 
 void GreeterWorker::restartResetSessionTimer()
 {
+    if (m_passwordChange->active()) {
+        m_passwordChange->resetIdleTimer();
+        return;
+    }
     if (m_model->visible() && m_resetSessionTimer->isActive()) {
         m_resetSessionTimer->start();
     }
@@ -1156,22 +1329,158 @@ void GreeterWorker::restartResetSessionTimer()
 
 void GreeterWorker::startGreeterAuth(const QString &account)
 {
+    if (m_discardGreeterCompletion && !authenticationPageVisible())
+        return;
     std::shared_ptr<User> user_ptr = m_model->findUserByName(account);
     // m_greeter->cancelAuthentication后m_greeter的数据不会发生改变，当前账户如果是无密码登陆则不需要判断m_greeter认证数据
-    if (m_restartGreeterAuth || !m_greeter->inAuthentication() || m_greeter->authenticationUser() != account
-        || (user_ptr && user_ptr->isNoPasswordLogin())) {
+    if (m_restartGreeterAuth || m_discardGreeterCompletion || !m_greeter->inAuthentication()
+        || m_greeter->authenticationUser() != account || (user_ptr && user_ptr->isNoPasswordLogin())) {
         m_restartGreeterAuth = false;
+        // authenticate() starts a new LightDM sequence even when cancellation
+        // left inAuthentication() true. liblightdm rejects older sequence IDs.
+        m_restartAfterCancel = false;
+        const auto user = user_ptr ? user_ptr : m_model->currentUser();
+        m_authenticationLocale = user && user->name() == account ? user->locale() : QString();
+        m_unansweredGreeterPrompts.clear();
         m_greeter->authenticate(account);
+        if (m_greeter->inAuthentication() && m_greeter->authenticationUser() == account)
+            m_discardGreeterCompletion = false;
     } else {
         qCInfo(DDE_SHELL) << "Lightdm is in authentication, won't do it again, account: " << account;
     }
 }
 
+void GreeterWorker::respondToGreeter(const QString &response)
+{
+    if (!m_unansweredGreeterPrompts.isEmpty())
+        m_unansweredGreeterPrompts.dequeue();
+    m_greeter->respond(response);
+}
+
+QString GreeterWorker::authenticationLocale() const
+{
+    if (!m_authenticationLocale.isEmpty())
+        return m_authenticationLocale;
+    return m_model->currentUser() ? m_model->currentUser()->locale() : QString();
+}
+
+bool GreeterWorker::authenticationPageVisible() const
+{
+    const auto mode = m_model->currentModeState();
+    return m_model->visible() && !m_model->isBlackMode()
+        && (mode == SessionBaseModel::PasswordMode || mode == SessionBaseModel::ConfirmPasswordMode);
+}
+
 void GreeterWorker::changePasswd()
 {
-    qCInfo(DDE_SHELL) << "Change password";
+    if (!m_model->currentUser() || m_model->greeterPasswordChangeActive()
+        || m_passwordChange->active() || m_discardGreeterCompletion)
+        return;
+    // A PAM replacement prompt is authoritative even if cached expiry was stale.
+    m_model->currentUser()->updatePasswordExpiredState(User::ExpiredAlready, 0);
+    if (!ensurePasswordChangeAllowed())
+        return;
+    m_resetSessionTimer->stop();
+    m_account = m_model->currentUser()->name();
+    m_savedAuthAccount = m_account;
+    m_savedAuthType = m_model->getAuthProperty().AuthType;
+    m_savedMFA = m_model->getAuthProperty().MFAFlag;
+    // Guard synchronous factor/UI callbacks throughout the transition, before
+    // the adapter is started and even after its cancel/reset has completed.
+    m_model->setGreeterPasswordChangeActive(true);
     m_model->updateMFAFlag(false);
     m_model->setAuthType(AT_PAM);
+    m_model->setCurrentModeState(SessionBaseModel::PasswordMode);
+    emit m_model->greeterPasswordChangePageChanged();
+    m_passwordChange->start(m_passwordVerified ? m_password : QString(), authenticationLocale(),
+                            !m_model->currentUser()->isPasswordValid());
+    while (m_passwordChange->active() && !m_unansweredGreeterPrompts.isEmpty()) {
+        const auto prompt = m_unansweredGreeterPrompts.dequeue();
+        m_passwordChange->prompt(prompt.first, prompt.second == QLightDM::Greeter::PromptTypeSecret);
+    }
+    m_password.fill(QChar(0));
+    m_password.clear();
+}
+
+void GreeterWorker::submitPasswordChange(const QString &current, const QString &password,
+                                        const QString &confirmation, const QString &hint)
+{
+    if (m_passwordChange->active() && ensurePasswordChangeAllowed())
+        m_passwordChange->submit(current, password, confirmation, hint);
+}
+
+bool GreeterWorker::ensurePasswordChangeAllowed()
+{
+    const auto user = m_model->currentUser();
+    if (user && user->allowToChangePassword())
+        return true;
+
+    // Reuse the existing account policy at entry and every credential boundary.
+    // Cancel the conversation as well as hiding the form so late PAM results
+    // cannot authorize a session after permission has been withdrawn.
+    leavePasswordChange(false);
+    m_model->updateAuthState(AT_PAM, AS_Failure,
+        QCoreApplication::translate("AuthWidget", "Your password has expired. Please contact the administrator to change it"));
+    return false;
+}
+
+void GreeterWorker::cancelPasswordChange()
+{
+    if (m_model->greeterPasswordChangeActive())
+        leavePasswordChange(true);
+}
+
+void GreeterWorker::leavePasswordChange(bool restart)
+{
+    // Invalidate first: cancellation and page updates may invoke UI callbacks.
+    // LightDM 1.30 does not acknowledge cancellation with authenticationComplete.
+    m_discardGreeterCompletion = true;
+    m_restartAfterCancel = restart;
+    m_unansweredGreeterPrompts.clear();
+    if (m_greeter->inAuthentication())
+        m_greeter->cancelAuthentication();
+    m_passwordChange->reset();
+    m_password.fill(QChar(0));
+    m_password.clear();
+    m_passwordVerified = m_directPamPassword = false;
+    restorePasswordChangeUI();
+    emit m_model->greeterPasswordChangePageChanged();
+    if (restart)
+        scheduleAuthenticationRestart();
+}
+
+void GreeterWorker::restorePasswordChangeUI()
+{
+    const auto account = m_savedAuthAccount;
+    const auto authType = m_savedAuthType;
+    const auto mfa = m_savedMFA;
+    m_savedAuthAccount.clear();
+    m_savedAuthType = AT_None;
+    m_savedMFA = false;
+    // A user switch must not apply the previous account's factor configuration.
+    const auto user = m_model->currentUser();
+    if (user && !account.isEmpty() && user->name() == account) {
+        // Install the factors before MFA widget initialization can read them.
+        // Keep the page guard until every synchronous UI callback is finished.
+        m_model->setAuthType(authType);
+        m_model->updateMFAFlag(mfa);
+    }
+    m_model->setGreeterPasswordChangeActive(false);
+}
+
+void GreeterWorker::scheduleAuthenticationRestart()
+{
+    // Finish dispatching the old PAM/UI batch before starting anew. Returning
+    // from a selector can request authentication before the page mode changes.
+    // Hiding, suspending or navigating away cancels this queued restart.
+    m_restartAfterCancel = true;
+    QTimer::singleShot(0, this, [this] {
+        if (!m_restartAfterCancel)
+            return;
+        m_restartAfterCancel = false;
+        if (m_model->currentUser() && authenticationPageVisible())
+            createAuthentication(m_model->currentUser()->name());
+    });
 }
 
 void GreeterWorker::screenSwitchByWldpms(bool active)
@@ -1257,6 +1566,10 @@ void GreeterWorker::terminalLockedChanged(const QDBusMessage &msg)
 
 void GreeterWorker::resetAuth(const QString &account)
 {
+    if (m_passwordChange->active()) {
+        leavePasswordChange(true);
+        return;
+    }
     qCWarning(DDE_SHELL) << "reset auth for user : " << account;
     if (account.isEmpty()) {
         return;

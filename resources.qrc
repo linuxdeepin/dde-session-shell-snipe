@@ -31,5 +31,15 @@
         <file>misc/images/password-shown.svg</file>
         <file>misc/images/dss_warning.svg</file>
         <file>misc/images/domainUser.svg</file>
+        <file>misc/images/dialog_warning.svg</file>
+        <file>misc/images/password_cancel.svg</file>
+        <file>misc/images/password_cancel_hover.svg</file>
+        <file>misc/images/password_submit.svg</file>
+        <file>misc/images/password_submit_hover.svg</file>
+        <file>misc/images/dcc_deepin_password_strength_unactive_light_mode.svg</file>
+        <file>misc/images/dcc_deepin_password_strength_unactive_deep_mode.svg</file>
+        <file>misc/images/dcc_deepin_password_strength_low.svg</file>
+        <file>misc/images/dcc_deepin_password_strength_middle.svg</file>
+        <file>misc/images/dcc_deepin_password_strength_high.svg</file>
     </qresource>
 </RCC>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="22px" viewBox="0 0 22 22" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>status/24/dialog-warning</title>
+    <defs>
+        <filter x="-8.2%" y="-8.2%" width="116.4%" height="116.4%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="0.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.15 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#FADA00" offset="0%"></stop>
+            <stop stop-color="#F38C00" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#000000" stop-opacity="0.0504739401" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.101304701" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="定制" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="交行登录250626-密码过期" transform="translate(-856, -460)">
+            <g id="Group-3" transform="translate(820, 350)">
+                <g id="status/24/dialog-warning" transform="translate(37, 111)">
+                    <g id="编组" filter="url(#filter-1)" transform="translate(0.8333, 0.8333)">
+                        <circle id="Oval" fill="url(#linearGradient-2)" fill-rule="nonzero" cx="9.16666667" cy="9.16666667" r="9.16666667"></circle>
+                        <path d="M9.16666667,0 C14.2292769,0 18.3333333,4.10405646 18.3333333,9.16666667 C18.3333333,14.2292769 14.2292769,18.3333333 9.16666667,18.3333333 C4.10405646,18.3333333 0,14.2292769 0,9.16666667 C0,4.10405646 4.10405646,0 9.16666667,0 Z M9.16666667,0.833333333 C4.56429375,0.833333333 0.833333333,4.56429375 0.833333333,9.16666667 C0.833333333,13.7690396 4.56429375,17.5 9.16666667,17.5 C13.7690396,17.5 17.5,13.7690396 17.5,9.16666667 C17.5,4.56429375 13.7690396,0.833333333 9.16666667,0.833333333 Z" id="Oval" fill="url(#linearGradient-3)" fill-rule="nonzero"></path>
+                        <path d="M8.16026363,10.8823407 L7.90008738,4.37181011 C7.87743521,3.80413725 8.443092,3.33333333 9.14919216,3.33333333 C9.8533507,3.33333333 10.4183603,3.80101243 10.3989442,4.3671229 L10.1730697,10.8781743 C10.158184,11.3177301 9.71226011,11.6666667 9.16666666,11.6666667 C8.62301487,11.6666667 8.17773813,11.3198133 8.16026363,10.8823407 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+                        <circle id="Oval" fill="#FFFFFF" fill-rule="nonzero" cx="9.16666666" cy="14.0948392" r="1.1188616"></circle>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

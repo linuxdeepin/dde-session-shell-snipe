@@ -52,6 +52,7 @@ target_compile_definitions(lightdm-deepin-greeter
 )
 
 target_link_libraries(${BIN_NAME} PRIVATE
+    PkgConfig::PW_CHECK
     ${Qt_LIBS}
     ${PAM_LIBRARIES}
     ${XCB_EWMH_LIBRARIES}

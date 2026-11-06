@@ -19,6 +19,7 @@
 #include "dconfig_helper.h"
 #include "constants.h"
 #include "mfasequencecontrol.h"
+#include "lockpasswordchangewidget.h"
 
 #include <DDBusSender>
 #include <DConfig>
@@ -188,9 +189,43 @@ void LockContent::initConnections()
     connect(m_model, &SessionBaseModel::userListChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::userListLoginedChanged, this, &LockContent::onUserListChanged);
     connect(m_model, &SessionBaseModel::authFinished, this, [this](bool successful) {
-        if (successful)
+        if (successful) {
+            if (m_passwordChangeWidget)
+                m_passwordChangeWidget->clearInputs();
             setVisible(false);
+        }
         restoreMode();
+    });
+    connect(m_model, &SessionBaseModel::visibleChanged, this, [this](bool visible) {
+        if (!visible && m_passwordChangeWidget)
+            m_passwordChangeWidget->clearInputs();
+    });
+    connect(m_model, &SessionBaseModel::lockPasswordChangePrompt, this,
+            [this](const QString &prompt, const QString &error, bool) {
+        if (m_model->appType() != AuthCommon::Lock
+            || (!m_model->passwordChangePageVisible() && (!prompt.isEmpty() || !error.isEmpty()))) {
+            return;
+        }
+        if (!m_model->passwordChangePageVisible() && m_passwordChangeWidget) {
+            m_passwordChangeWidget->clearInputs();
+            m_mainLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+            m_stackedLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+        }
+        // The mode may stay PasswordMode throughout the change. Refresh the
+        // actual page explicitly when entering/leaving the temporary PAM input.
+        if (m_model->currentModeState() == SessionBaseModel::PasswordMode) {
+            pushPasswordFrame();
+        } else if (m_model->currentModeState() == SessionBaseModel::ConfirmPasswordMode) {
+            pushConfirmFrame();
+        }
+    });
+    connect(m_model, &SessionBaseModel::greeterPasswordChangePageChanged, this, [this] {
+        if (!m_model->passwordChangePageVisible() && m_passwordChangeWidget) {
+            m_passwordChangeWidget->clearInputs();
+            m_mainLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+            m_stackedLayout->setSizeConstraint(QLayout::SetDefaultConstraint);
+        }
+        pushPasswordFrame();
     });
     connect(m_model, &SessionBaseModel::MFAFlagChanged, this, [this](const bool isMFA) {
         isMFA ? initMFAWidget() : initSFAWidget();
@@ -234,8 +269,10 @@ void LockContent::initMFAWidget()
         return;
     }
     m_mfaWidget = new MFAWidget(this);
-    m_mfaWidget->setModel(m_model);
+    // setModel() synchronously emits MFA sequence updates. Publish the live
+    // replacement before any callback can refresh the authentication page.
     m_authWidget = m_mfaWidget;
+    m_mfaWidget->setModel(m_model);
 
     connect(m_mfaWidget, &MFAWidget::requestStartAuthentication, this, &LockContent::requestStartAuthentication);
     connect(m_mfaWidget, &MFAWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
@@ -243,7 +280,9 @@ void LockContent::initMFAWidget()
     connect(m_mfaWidget, &MFAWidget::requestCheckAccount, this, &LockContent::requestCheckAccount);
     connect(m_mfaWidget, &MFAWidget::requestCheckSameNameAccount, this, &LockContent::requestCheckSameNameAccount);
 
-    connect(&MFASequenceControl::instance(), &MFASequenceControl::currentUIAuthTypeChanged, this, [&](int authType) {
+    // This connection belongs to this MFA widget, not the longer-lived content.
+    // Switching to SFA must remove it before a later MFA setModel() can emit.
+    connect(&MFASequenceControl::instance(), &MFASequenceControl::currentUIAuthTypeChanged, m_mfaWidget, [this](int authType) {
         Q_UNUSED(authType)
         // 仅在当前处于认证界面上刷新
         auto isMFA = m_model->getAuthProperty().MFAFlag;
@@ -269,8 +308,8 @@ void LockContent::initSFAWidget()
         return;
     }
     m_sfaWidget = new SFAWidget(this);
-    m_sfaWidget->setModel(m_model);
     m_authWidget = m_sfaWidget;
+    m_sfaWidget->setModel(m_model);
 
     connect(m_sfaWidget, &SFAWidget::requestStartAuthentication, this, &LockContent::requestStartAuthentication);
     connect(m_sfaWidget, &SFAWidget::sendTokenToAuth, this, &LockContent::sendTokenToAuth);
@@ -327,6 +366,8 @@ void LockContent::initUserListWidget()
 
 void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
+    if (m_passwordChangeWidget)
+        m_passwordChangeWidget->clearInputs();
     if (user.get() == nullptr)
         return; // if dbus is async
 
@@ -353,6 +394,10 @@ void LockContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
 void LockContent::pushPasswordFrame()
 {
+    if (m_model->passwordChangePageVisible()) {
+        pushPasswordChangeFrame();
+        return;
+    }
     if (!m_model->userlistVisible()) {
         if (m_model->currentUser()->name() == "...") {
             m_controlWidget->setUserSwitchEnable(false);
@@ -362,6 +407,7 @@ void LockContent::pushPasswordFrame()
     }
 
     setCenterContent(m_authWidget->getAuthWidget(), 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+    setTopFrameVisible(true);
 
     m_authWidget->syncResetPasswordUI();
 
@@ -415,8 +461,76 @@ void LockContent::pushUserFrame()
 
 void LockContent::pushConfirmFrame()
 {
+    if (m_model->passwordChangePageVisible()) {
+        pushPasswordChangeFrame();
+        return;
+    }
     setCenterContent(m_authWidget->getAuthWidget(), 0, Qt::AlignTop, calcTopSpacing(m_authWidget->getTopSpacing()));
+    setTopFrameVisible(true);
     showDefaultFrame();
+}
+
+void LockContent::pushPasswordChangeFrame()
+{
+    // A header plus form can exceed a short screen's minimum layout size.
+    // Keep the actual screen geometry so resizeEvent can reclaim header space
+    // rather than letting Qt enlarge the lock window before that decision.
+    m_mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    m_stackedLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    m_mainLayout->parentWidget()->setMinimumSize(0, 0);
+    setMinimumSize(0, 0);
+    if (!m_passwordChangeWidget) {
+        m_passwordChangeWidget = new LockPasswordChangeWidget(this);
+        m_passwordChangeWidget->hide();
+        connect(m_passwordChangeWidget, &LockPasswordChangeWidget::requestChangePassword,
+                this, &LockContent::requestChangePassword);
+        connect(m_passwordChangeWidget, &LockPasswordChangeWidget::requestCancel,
+                this, &LockContent::requestCancelPasswordChange);
+        connect(m_passwordChangeWidget, &LockPasswordChangeWidget::userIsActive,
+                this, &LockContent::passwordChangeUserIsActive);
+        connect(m_model, &SessionBaseModel::lockPasswordChangeForm, m_passwordChangeWidget,
+                [this](bool currentRequired, bool checkingOnly, bool busy, const QString &error) {
+            if (m_model->passwordChangePageVisible()) {
+                m_passwordChangeWidget->setState(currentRequired, checkingOnly, busy, error);
+                QTimer::singleShot(0, this, &LockContent::updatePasswordChangeLayout);
+            }
+        });
+        connect(m_model, &SessionBaseModel::lockPasswordChangeInputsCleared,
+                m_passwordChangeWidget, &LockPasswordChangeWidget::clearInputs);
+    }
+    m_passwordChangeWidget->setUser(m_model->currentUser());
+    m_passwordChangeWidget->setFixedWidth(m_authWidget->width());
+    const bool pageChanged = m_centerWidget != m_passwordChangeWidget || m_stackedLayout->currentIndex() != 0;
+    setTopFrameVisible(true);
+    setCenterContent(m_passwordChangeWidget, 0, Qt::AlignTop, 0);
+    updatePasswordChangeLayout();
+    // Full-managed plugins must not cover the shared password form.
+    // Refresh the same page in place so validation errors preserve both input
+    // and keyboard focus.
+    if (pageChanged || m_stackedLayout->widget(0)->isHidden()) {
+        showDefaultFrame();
+        m_passwordChangeWidget->setFocus();
+    }
+}
+
+void LockContent::updatePasswordChangeLayout()
+{
+    if (!m_passwordChangeWidget || m_centerWidget != m_passwordChangeWidget
+        || !m_model->passwordChangePageVisible()) {
+        return;
+    }
+    const int pageHeight = m_passwordChangeWidget->sizeHint().height();
+    const int topHeight = qMax(calcCurrentHeight(LOCK_CONTENT_TOP_WIDGET_HEIGHT), m_centerTopWidget->sizeHint().height());
+    const int margin = calcCurrentHeight(LOCK_CONTENT_CENTER_LAYOUT_MARGIN);
+    const int available = height() - margin * 2 - m_bottomFrame->height();
+    // Use eagle's header and authentication spacing whenever the whole form
+    // fits. On short screens reclaim the header space rather than clip Save.
+    const bool showHeader = pageHeight + topHeight <= available;
+    setTopFrameVisible(showHeader);
+    const int maxSpacing = qMax(0, available - (showHeader ? topHeight : 0) - pageHeight);
+    const int preferred = showHeader ? calcTopSpacing(m_authWidget->getTopSpacing()) : maxSpacing / 2;
+    m_centerSpacerItem->changeSize(0, qBound(0, preferred, maxSpacing));
+    m_centerVLayout->invalidate();
 }
 
 void LockContent::pushShutdownFrame()
@@ -606,7 +720,8 @@ void LockContent::resizeEvent(QResizeEvent *event)
         }
     });
 
-    if (SessionBaseModel::PasswordMode == m_model->currentModeState() || (SessionBaseModel::ConfirmPasswordMode == m_model->currentModeState())) {
+    if (!m_model->passwordChangePageVisible()
+        && (SessionBaseModel::PasswordMode == m_model->currentModeState() || (SessionBaseModel::ConfirmPasswordMode == m_model->currentModeState()))) {
         m_centerSpacerItem->changeSize(0, calcTopSpacing(m_authWidget->getTopSpacing()));
         m_centerVLayout->invalidate();
         QTimer::singleShot(0, this, [ = ] {
@@ -615,6 +730,9 @@ void LockContent::resizeEvent(QResizeEvent *event)
     }
 
     SessionBaseWindow::resizeEvent(event);
+    if (m_model->passwordChangePageVisible()) {
+        QTimer::singleShot(0, this, &LockContent::updatePasswordChangeLayout);
+    }
 }
 
 void LockContent::restoreMode()
@@ -910,7 +1028,7 @@ void LockContent::refreshBackground(SessionBaseModel::ModeStatus status)
 
 void LockContent::refreshLayout(SessionBaseModel::ModeStatus status)
 {
-    setTopFrameVisible(status != SessionBaseModel::ModeStatus::ShutDownMode);
+    setTopFrameVisible(status != SessionBaseModel::ModeStatus::ShutDownMode && !m_model->passwordChangePageVisible());
     setBottomFrameVisible(status != SessionBaseModel::ModeStatus::ShutDownMode);
 }
 
@@ -980,6 +1098,11 @@ void LockContent::keyPressEvent(QKeyEvent *event)
         }
         break;
     case Qt::Key_Escape:
+        if (m_model->lockPasswordChangeActive() || m_model->greeterPasswordChangeActive()) {
+            emit requestCancelPasswordChange();
+            event->accept();
+            return;
+        }
         if (m_model->currentModeState() == SessionBaseModel::ModeStatus::ConfirmPasswordMode) {
             m_model->setAbortConfirm(false);
             m_model->setPowerAction(SessionBaseModel::PowerAction::None);

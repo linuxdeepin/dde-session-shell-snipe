@@ -2,6 +2,19 @@
     "magic": "dsg.config.meta",
     "version": "1.0",
     "contents": {
+        "localPasswordSecurityCheck": {
+            "value": true,
+            "serial": 0,
+            "flags": [
+                "global"
+            ],
+            "name": "LocalPasswordSecurityCheck",
+            "name[zh_CN]": "是否使用pwcheck校验密码复杂度",
+            "description[zh_CN]": "登录界面修改过期密码时，提交前使用本地pwcheck检查新密码。默认开启，与eagle一致；如果本地规则与AD域策略不一致，可关闭此前置检查。密码最终仍由LightDM/PAM及域控策略校验。",
+            "permissions": "readwrite",
+            "visibility": "private",
+            "description": "登录界面密码过期修改时是否先检查本机密码策略，默认开启。最终密码是否被接受由 LightDM/PAM 及域控决定。"
+        },
         "useSolidBackground": {
             "value": false,
             "serial": 0,
