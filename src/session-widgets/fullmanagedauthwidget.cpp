@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "fullmanagedauthwidget.h"
@@ -75,6 +75,9 @@ void FullManagedAuthWidget::setModel(const SessionBaseModel *model)
 
 void FullManagedAuthWidget::setAuthType(const AuthFlags type)
 {
+    if (m_inited && m_model->lockPasswordChangeActive()) {
+        return;
+    }
     int authType = type;
     LoginPlugin *plugin = PluginManager::instance()->getFullManagedLoginPlugin();
     if (plugin
@@ -106,6 +109,9 @@ void FullManagedAuthWidget::setAuthType(const AuthFlags type)
 
 void FullManagedAuthWidget::setAuthState(const AuthCommon::AuthType type, const AuthCommon::AuthState state, const QString &message)
 {
+    if (m_model->lockPasswordChangeActive()) {
+        return;
+    }
     qCDebug(DDE_SHELL) << "Set auth state, type: " << type << ", state: " << state << ", message: " << message;
     if (!isPluginLoaded()) {
         qCDebug(DDE_SHELL) << "Plugin not load or actived";

@@ -460,7 +460,7 @@ void SFAWidget::initPasswdAuth()
     connect(m_passwordAuth, &AuthPassword::requestPluginAuthToken, this, [this](const QString & account, const QString & token) {
         m_passwordAuth->setAuthState(AS_Verify, QStringLiteral("Verifying..."));
         m_lockButton->setEnabled(false);
-        qCInfo(DDE_SHELL) << "Request check account: " << account << token;
+        qCInfo(DDE_SHELL) << "Request check account:" << account;
         if (m_user && m_user->name() == account) {
             emit sendTokenToAuth(account, AT_Password, token);
             return;
@@ -871,7 +871,7 @@ void SFAWidget::initCustomMFAAuth()
 
     connect(m_customAuth, &AuthCustom::requestSendToken, this, [this] (const QString &token) {
         m_lockButton->setEnabled(false);
-        qCInfo(DDE_SHELL) << "SFA custom send token name :" <<  m_user->name() << ", token:" << token;
+        qCInfo(DDE_SHELL) << "SFA custom send token name :" << m_user->name();
         Q_EMIT sendTokenToAuth(m_user->name(), AT_Custom, token);
     });
     connect(m_customAuth, &AuthCustom::authFinished, this, [ this ] (const int authStatus) {

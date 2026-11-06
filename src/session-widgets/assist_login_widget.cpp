@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -140,7 +140,7 @@ void AssistLoginWidget::setAuthData(const LoginPlugin::AuthCallbackData &callbac
     }
 
     if (!account.isEmpty()) {
-        qCInfo(DDE_SHELL) << Q_FUNC_INFO << "requestSendToken: " << account << token;
+        qCInfo(DDE_SHELL) << Q_FUNC_INFO << "requestSendToken:" << account;
         emit requestSendToken(account, token);
     }
 }

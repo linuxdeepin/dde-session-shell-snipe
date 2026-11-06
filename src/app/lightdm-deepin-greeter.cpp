@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -152,6 +152,9 @@ int main(int argc, char* argv[])
     QObject::connect(LoginContent::instance(), &LoginContent::sendTokenToAuth, worker, &GreeterWorker::sendTokenToAuth);
     QObject::connect(LoginContent::instance(), &LoginContent::requestEndAuthentication, worker, &GreeterWorker::endAuthentication);
     QObject::connect(LoginContent::instance(), &LoginContent::authFinished, worker, &GreeterWorker::onAuthFinished);
+    QObject::connect(LoginContent::instance(), &LockContent::requestChangePassword, worker, &GreeterWorker::submitPasswordChange);
+    QObject::connect(LoginContent::instance(), &LockContent::requestCancelPasswordChange, worker, &GreeterWorker::cancelPasswordChange);
+    QObject::connect(LoginContent::instance(), &LockContent::passwordChangeUserIsActive, worker, &GreeterWorker::restartResetSessionTimer);
     QObject::connect(LoginContent::instance(), &LoginContent::noPasswordLoginChanged, worker, &GreeterWorker::onNoPasswordLoginChanged);
 
     // 根据屏幕创建全屏背景窗口

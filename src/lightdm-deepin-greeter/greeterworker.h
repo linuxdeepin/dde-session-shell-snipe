@@ -14,12 +14,15 @@
 #include <QLightDM/Greeter>
 #include <QLightDM/SessionsModel>
 #include <QObject>
+#include <QQueue>
 
 #ifndef ENABLE_DSS_SNIPE
 #include <com_deepin_api_soundthemeplayer.h>
 
 using SoundThemePlayerInter = com::deepin::api::SoundThemePlayer;
 #endif
+
+class GreeterPasswordChange;
 
 class GreeterWorker : public Auth::AuthInterface
 {
@@ -56,6 +59,9 @@ public slots:
     void checkSameNameAccount(const QString &account, bool switchUser);
     void restartResetSessionTimer();
     void onAuthFinished();
+    void submitPasswordChange(const QString &current, const QString &password,
+                              const QString &confirmation, const QString &hint);
+    void cancelPasswordChange();
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
 
 private slots:
@@ -79,11 +85,19 @@ private:
     void showPrompt(const QString &text, const QLightDM::Greeter::PromptType type);
     void showMessage(const QString &text, const QLightDM::Greeter::MessageType type);
     void authenticationComplete();
+    void handleAuthenticationComplete(bool result, const QString &account);
     void saveNumLockState(std::shared_ptr<User> user, bool on);
     int getNumLockState(const QString &userName);
     void recoveryUserKBState(std::shared_ptr<User> user);
     void startGreeterAuth(const QString &account = QString());
+    void respondToGreeter(const QString &response);
+    QString authenticationLocale() const;
+    bool authenticationPageVisible() const;
     void changePasswd();
+    bool ensurePasswordChangeAllowed();
+    void leavePasswordChange(bool restart);
+    void restorePasswordChangeUI();
+    void scheduleAuthenticationRestart();
     void screenSwitchByWldpms(bool active);
     void updatePasswordExpiredStateBySPName(const QString &account);
 #ifdef ENABLE_DSS_SNIPE
@@ -101,9 +115,19 @@ private:
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
     QString m_account;
+    QString m_authenticationLocale;
+    QQueue<QPair<QString, QLightDM::Greeter::PromptType>> m_unansweredGreeterPrompts;
     QString m_password;
     bool m_retryAuth;
     bool m_restartGreeterAuth = false;
+    bool m_passwordVerified = false;
+    bool m_directPamPassword = false;
+    GreeterPasswordChange *m_passwordChange;
+    bool m_discardGreeterCompletion = false;
+    bool m_restartAfterCancel = false;
+    QString m_savedAuthAccount;
+    AuthFlags m_savedAuthType = AT_None;
+    bool m_savedMFA = false;
 };
 
 #endif  // GREETERWORKEK_H

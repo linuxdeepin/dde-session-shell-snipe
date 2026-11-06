@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -31,6 +31,9 @@ public:
     void setState(State state);
     void setSelected(bool isSelected);
     bool isSelected() { return m_isSelected; }
+    void resetHeigth(int height);
+    void resetRound(int radius);
+    void setFocusBorderColor(const QColor &color);
 
 Q_SIGNALS:
     void clicked();
@@ -50,6 +53,8 @@ protected:
     void showEvent(QShowEvent *event) override;
 
 private:
+    int m_round = 18;
+    QColor m_focusBorderColor;
     bool m_isSelected;
     State m_state;
     QLabel *m_iconLabel;

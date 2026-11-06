@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,6 +17,7 @@
 #include <QWidget>
 #include <QEvent>
 #include <QMouseEvent>
+#include <QPointer>
 
 namespace dss {
 namespace module {
@@ -159,7 +160,7 @@ private:
     QMap<QString, bool> m_modulesVisible;
 
     QMenu *m_contextMenu;
-    PopupWindow *m_tipsWidget = nullptr;
+    QPointer<PopupWindow> m_tipsWidget;
     const SessionBaseModel *m_model;
 
     KBLayoutListView *m_kbLayoutListView = nullptr;   // 键盘布局列表

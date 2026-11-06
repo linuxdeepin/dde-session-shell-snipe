@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -30,6 +30,7 @@ class User;
 class ShutdownWidget;
 class LogoWidget;
 class FullManagedAuthWidget;
+class LockPasswordChangeWidget;
 
 class LockContent : public SessionBaseWindow
 {
@@ -59,6 +60,10 @@ signals:
     void requestCheckSameNameAccount(const QString &account, bool switchUser);
     void requestCheckAccount(const QString &account, bool switchUser);
     void requestLockFrameHide();
+    void requestCancelPasswordChange();
+    void requestChangePassword(const QString &current, const QString &password,
+                               const QString &confirmation, const QString &hint);
+    void passwordChangeUserIsActive();
     void parentChanged();
     void noPasswordLoginChanged(const QString &account, bool noPassword);
     void requestLockStateChange(const bool locked);
@@ -101,6 +106,8 @@ protected:
     void initSFAWidget();
     void initFMAWidget();
     void initUserListWidget();
+    void pushPasswordChangeFrame();
+    void updatePasswordChangeLayout();
     void enableSystemShortcut(const QStringList &shortcuts, bool enabled, bool isPersistent);
 
 protected:
@@ -120,6 +127,7 @@ protected:
     MFAWidget *m_mfaWidget = nullptr;
     AuthWidget *m_authWidget = nullptr;
     FullManagedAuthWidget *m_fmaWidget = nullptr;
+    LockPasswordChangeWidget *m_passwordChangeWidget = nullptr;
     UserFrameList *m_userListWidget = nullptr;
 
     int m_failures = 0;

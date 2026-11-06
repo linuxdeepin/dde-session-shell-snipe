@@ -98,9 +98,9 @@ void AuthPassword::initUI()
     m_lineEdit->setFocusPolicy(Qt::StrongFocus);
     m_lineEdit->lineEdit()->setAlignment(Qt::AlignCenter);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$")));
+    m_lineEdit->lineEdit()->setValidator(new QRegularExpressionValidator(QRegularExpression("^[ -~]+$"), this));
 #else
-    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$")));
+    m_lineEdit->lineEdit()->setValidator(new QRegExpValidator(QRegExp("^[ -~]+$"), this));
 #endif
     DFontSizeManager::instance()->bind(m_lineEdit, DFontSizeManager::T6);
     m_lineEdit->setObjectName("LineEdit");

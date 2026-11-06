@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -52,7 +52,8 @@ LockFrame::LockFrame(SessionBaseModel *const model, QWidget *parent)
 #ifndef ENABLE_DSS_SNIPE
     xcb_connection_t *connection = QX11Info::connection();
 #else
-    xcb_connection_t *connection = qGuiApp->nativeInterface<QNativeInterface::QX11Application>()->connection();
+    auto *x11App = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    xcb_connection_t *connection = x11App ? x11App->connection() : nullptr;
 #endif
     if (connection) {
         xcb_atom_t cook = internAtom(connection, "_DEEPIN_LOCK_SCREEN", false);

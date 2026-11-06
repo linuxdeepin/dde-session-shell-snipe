@@ -206,6 +206,9 @@ int main(int argc, char *argv[])
     QObject::connect(LockContent::instance(), &LockContent::sendTokenToAuth, worker, &LockWorker::sendTokenToAuth);
     QObject::connect(LockContent::instance(), &LockContent::requestEndAuthentication, worker, &LockWorker::onEndAuthentication);
     QObject::connect(LockContent::instance(), &LockContent::authFinished, worker, &LockWorker::authFinishedAction);
+    QObject::connect(LockContent::instance(), &LockContent::requestCancelPasswordChange, worker, &LockWorker::cancelPasswordChange);
+    QObject::connect(LockContent::instance(), &LockContent::requestChangePassword, worker, &LockWorker::submitPasswordChange);
+    QObject::connect(LockContent::instance(), &LockContent::passwordChangeUserIsActive, worker, &LockWorker::restartResetSessionTimer);
     QObject::connect(LockContent::instance(), &LockContent::requestCheckAccount, worker, &LockWorker::checkAccount);
     QObject::connect(LockContent::instance(), &LockContent::requestLockFrameHide, [model] {
         model->setVisible(false);

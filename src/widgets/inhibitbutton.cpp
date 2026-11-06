@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -53,6 +53,24 @@ void InhibitButton::setText(const QString &text)
 QString InhibitButton::text()
 {
     return m_textLabel->text();
+}
+
+void InhibitButton::resetHeigth(int height)
+{
+    m_iconLabel->setFixedSize(height, height);
+    m_textLabel->setFixedHeight(height);
+    update();
+}
+
+void InhibitButton::resetRound(int radius)
+{
+    m_round = radius;
+    update();
+}
+
+void InhibitButton::setFocusBorderColor(const QColor &color)
+{
+    m_focusBorderColor = color;
 }
 
 void InhibitButton::setNormalPixmap(const QPixmap &normalPixmap)
@@ -151,12 +169,16 @@ void InhibitButton::paintEvent(QPaintEvent *event)
         QPen pen;
         pen.setWidth(penWidth);
         color.setAlphaF(0.5);
+        if (m_focusBorderColor.isValid()) {
+            color = m_focusBorderColor;
+            color.setAlphaF(0.8);
+        }
         pen.setColor(color);
         painter.setPen(pen);
     } else
         painter.setPen(Qt::NoPen);
 
-    painter.drawRoundedRect(rect().marginsRemoved(QMargins(penWidth, penWidth, penWidth, penWidth)), 18, 18);
+    painter.drawRoundedRect(rect().marginsRemoved(QMargins(penWidth, penWidth, penWidth, penWidth)), m_round, m_round);
 
     QWidget::paintEvent(event);
 }
