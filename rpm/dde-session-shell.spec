@@ -11,6 +11,7 @@ BuildRequires:  dtkcore >= 5.1
 BuildRequires:  gsettings-qt
 BuildRequires:  qt5-linguist
 BuildRequires:  dtkwidget-devel >= 5.1
+BuildRequires:  qt5-qtbase-private-devel
 BuildRequires:  qt5-qtx11extras-devel
 BuildRequires:  qt5-qtmultimedia-devel
 BuildRequires:  qt5-qtsvg-devel
@@ -23,6 +24,7 @@ BuildRequires:  dde-qt-dbus-factory-devel
 BuildRequires:  gsettings-qt-devel
 BuildRequires:  lightdm-qt5-devel
 BuildRequires:  pam-devel
+BuildRequires:  pkgconfig(libdeepin_pw_check)
 BuildRequires:  gtest-devel
 Requires:       lightdm
 Requires(post): sed

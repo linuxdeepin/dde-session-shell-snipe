@@ -5,6 +5,7 @@ Maintainer: Deepin Sysdev <sysdev@deepin.com>
 Build-Depends: debhelper-compat (=12), pkg-config,
  cmake,
  qt6-base-dev,
+ qt6-base-private-dev,
  qt6-svg-dev,
  qt6-tools-dev,
  liblightdm-qt6-3-dev | liblightdm-qt-dev,
@@ -22,6 +23,7 @@ Build-Depends: debhelper-compat (=12), pkg-config,
  libgtest-dev,
  libx11-xcb-dev,
  libssl-dev,
+ libdeepin-pw-check-dev,
 Standards-Version: 3.9.4
 Homepage: https://github.com/linuxdeepin/dde-session-shell-snipe
 
