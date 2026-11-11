@@ -50,6 +50,7 @@ LockPasswordChangeWidget::LockPasswordChangeWidget(QWidget *parent)
     inputLayout->setContentsMargins(10, 0, 10, 0);
     inputLayout->setSpacing(6);
     m_avatar->setAvatarSize(UserAvatar::AvatarLargeSize);
+    m_avatar->setObjectName("lockPasswordChangeAvatar");
     m_avatar->setFocusPolicy(Qt::NoFocus);
     inputLayout->addWidget(m_avatar, 0, Qt::AlignHCenter);
     inputLayout->addWidget(m_userName, 0, Qt::AlignHCenter);
@@ -72,6 +73,7 @@ LockPasswordChangeWidget::LockPasswordChangeWidget(QWidget *parent)
     m_error->setStyleSheet(QStringLiteral("background: transparent;"));
     m_error->setMinimumHeight(32);
     m_error->setMaximumHeight(64);
+    m_error->setObjectName("lockPasswordChangeError");
     inputLayout->addWidget(m_error);
     inputLayout->addSpacing(10);
     inputLayout->addWidget(m_current);
