@@ -5,7 +5,9 @@
 #include "greeterworker.h"
 #include "auth_password.h"
 #include "dlineeditex.h"
+#ifndef ENABLE_DSS_SNIPE
 #include "encrypt_helper.h"
+#endif
 #include "sfa_widget.h"
 #include "../authentication_test_service.h"
 
@@ -241,7 +243,9 @@ TEST_F(UT_GreeterAuthRecovery, RestartDoesNotReuseSuccessWhenLightdmPromptsAgain
 TEST_F(UT_GreeterAuthRecovery, PinRetryKeepsCurrentFactorActive)
 {
     m_worker->createAuthentication("test-user");
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
     m_worker->startAuthentication("test-user", AuthCommon::AT_Ukey);
     QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
     m_service.failNextToken();
@@ -252,13 +256,15 @@ TEST_F(UT_GreeterAuthRecovery, PinRetryKeepsCurrentFactorActive)
 
     m_worker->sendTokenToAuth("test-user", AuthCommon::AT_Ukey, "test-token");
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:16"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Ukey)}));
 }
 
 TEST_F(UT_GreeterAuthRecovery, PinErrorAndRetryKeepTheEventLoopResponsive)
 {
     m_worker->createAuthentication("test-user");
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
     m_worker->startAuthentication("test-user", AuthCommon::AT_Ukey);
     m_service.setReplyDelay("End", 500);
     QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
@@ -270,7 +276,7 @@ TEST_F(UT_GreeterAuthRecovery, PinErrorAndRetryKeepTheEventLoopResponsive)
     ASSERT_TRUE(QTest::qWaitFor([&] { return hasAuthState(status, AuthCommon::AS_Error); }));
     EXPECT_LT(elapsed.elapsed(), 200);
     EXPECT_FALSE(m_service.calls().contains("End:16"));
-    m_service.setReplyDelay("SetToken", 300);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 300);
     m_service.clearCalls();
     QTimer heartbeat;
     QSignalSpy ticks(&heartbeat, &QTimer::timeout);
@@ -281,14 +287,16 @@ TEST_F(UT_GreeterAuthRecovery, PinErrorAndRetryKeepTheEventLoopResponsive)
     EXPECT_LT(elapsed.elapsed(), 150);
     ASSERT_TRUE(QTest::qWaitFor([&] { return ticks.size() > 2; }, 150));
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:16"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Ukey)}));
 }
 
 TEST_F(UT_GreeterAuthRecovery, SfaRetryDoesNotReplayInformationalStartupPrompts)
 {
     m_worker->createAuthentication("test-user");
     m_model->updateMFAFlag(false);
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
     m_service.setPasswordStartupInfo({"PAM startup information:", "More information before the password challenge"});
     QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
     m_worker->startAuthentication("test-user", AuthCommon::AT_Password);
@@ -311,13 +319,13 @@ TEST_F(UT_GreeterAuthRecovery, SfaRetryDoesNotReplayInformationalStartupPrompts)
     AuthPassword *password = widget.m_passwordAuth;
     ASSERT_NE(password, nullptr);
     password->m_lineEdit->setText("test-token");
-    m_service.setReplyDelay("SetToken", 200);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 200);
     QSignalSpy submitted(&widget, &SFAWidget::sendTokenToAuth);
 
     password->requestAuthenticate();
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
     QTest::qWait(250);
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:1"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
     EXPECT_EQ(password->authState(), AuthCommon::AS_Verify);
     EXPECT_TRUE(password->m_lineEdit->lineEdit()->isReadOnly());
     EXPECT_EQ(password->m_lineEdit->m_animation->state(), QAbstractAnimation::Running);
@@ -332,17 +340,19 @@ TEST_F(UT_GreeterAuthRecovery, SfaRetryDoesNotReplayInformationalStartupPrompts)
 TEST_F(UT_GreeterAuthRecovery, EndingPinDiscardsInitialTokenReplyBeforeRestart)
 {
     m_worker->createAuthentication("test-user");
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
     m_worker->startAuthentication("test-user", AuthCommon::AT_Ukey);
     QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
     m_service.clearCalls();
     m_service.failNextToken();
-    m_service.setReplyDelay("SetToken", 200);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 200);
     m_worker->sendTokenToAuth("test-user", AuthCommon::AT_Ukey, "cancelled-token");
-    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.calls().contains("SetToken:16"); }));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.calls().contains(AuthenticationTestService::tokenCall(AuthCommon::AT_Ukey)); }));
     m_worker->endAuthentication("test-user", AuthCommon::AT_Ukey);
     m_worker->startAuthentication("test-user", AuthCommon::AT_Ukey);
-    m_service.setReplyDelay("SetToken", 0);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 0);
     m_worker->sendTokenToAuth("test-user", AuthCommon::AT_Ukey, "new-token");
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
     QTest::qWait(250);
