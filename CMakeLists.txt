@@ -119,25 +119,27 @@ if (DISABLE_DSS_SNIPE)
     endif()
 endif ()
 
-try_compile(USE_GM
-        ${CMAKE_CURRENT_BINARY_DIR}/try_compile
-    SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gm.cc
-    LINK_LIBRARIES
-        PkgConfig::SSL
-    OUTPUT_VARIABLE
-        GM_MESSAGE
-)
+if (DISABLE_DSS_SNIPE)
+    try_compile(USE_GM
+            ${CMAKE_CURRENT_BINARY_DIR}/try_compile
+        SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_gm.cc
+        LINK_LIBRARIES
+            PkgConfig::SSL
+        OUTPUT_VARIABLE
+            GM_MESSAGE
+    )
 
-message(STATUS "check GM: ${USE_GM}")
+    message(STATUS "check GM: ${USE_GM}")
 
-if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
-    message(${GM_MESSAGE})
-endif()
+    if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
+        message(${GM_MESSAGE})
+    endif()
 
-if(USE_GM)
-  # 优先使用国密
-  add_definitions(-DPREFER_USING_GM)
+    if(USE_GM)
+        # 优先使用国密
+        add_definitions(-DPREFER_USING_GM)
+    endif()
 endif()
 
 function(generation_dbus_interface xml class_name class_file option)
@@ -227,10 +229,20 @@ include_directories(${PROJECT_SOURCE_DIR}/src/global_util/dbus/types)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util GLOBAL_UTILS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/dbus GLOBAL_UTILS_DBUS)
+if (DISABLE_DSS_SNIPE)
+    # Qt6 builds leave generated v25 proxies in the shared source directory.
+    list(FILTER GLOBAL_UTILS_DBUS EXCLUDE REGEX "interface[.]cpp$")
+endif()
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/widgets WIDGETS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/session-widgets SESSION_WIDGETS)
 ## 需要把libdde-auth中的.h编译出moc文件，故采用这种方式
 file(GLOB AUTHENTICATE ${PROJECT_SOURCE_DIR}/src/libdde-auth/*.h ${PROJECT_SOURCE_DIR}/src/libdde-auth/*.cpp)
+if (NOT DISABLE_DSS_SNIPE)
+    list(REMOVE_ITEM AUTHENTICATE
+        ${PROJECT_SOURCE_DIR}/src/libdde-auth/encrypt_helper.cpp
+        ${PROJECT_SOURCE_DIR}/src/libdde-auth/encrypt_helper.h
+    )
+endif()
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/keyboardmonitor GLOBAL_UTILS_KEYBOARDMONITOR)
 aux_source_directory(${PROJECT_SOURCE_DIR}/interface INTERFACE)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/global_util/dbus/types DBUS_DATA_TYPES)

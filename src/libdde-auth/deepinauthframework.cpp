@@ -3,16 +3,29 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "deepinauthframework.h"
+#ifndef ENABLE_DSS_SNIPE
 #include "encrypt_helper.h"
+#endif
 #include "authcommon.h"
 #include "public_func.h"
 #include "dbusconstant.h"
 
 #include <QDBusServiceWatcher>
+#ifdef ENABLE_DSS_SNIPE
+#include <QDBusUnixFileDescriptor>
+#include <QtEndian>
+#include <cerrno>
+#include <fcntl.h>
+#endif
 
 #include <dlfcn.h>
 
+#include <cstring>
+#include <memory>
+#include <utility>
+
 #include <security/pam_appl.h>
+
 #include <unistd.h>
 
 #ifdef PAM_SUN_CODEBASE
@@ -25,6 +38,53 @@
 #define PAM_SERVICE_DEEPIN_NAME "dde-lock"
 
 using namespace AuthCommon;
+
+#ifdef ENABLE_DSS_SNIPE
+namespace {
+// DA accepts a big-endian uint32 length followed by at most 1024 password bytes.
+constexpr int kMaxPasswordFdBytes = 1024;
+
+int createPasswordFd(const QByteArray &password)
+{
+    if (password.size() > kMaxPasswordFdBytes) {
+        errno = EMSGSIZE;
+        return -1;
+    }
+
+    int fds[2];
+    if (::pipe2(fds, O_CLOEXEC) < 0) {
+        return -1;
+    }
+
+    char payload[sizeof(quint32) + kMaxPasswordFdBytes];
+    const quint32 length = qToBigEndian<quint32>(static_cast<quint32>(password.size()));
+    std::memcpy(payload, &length, sizeof(length));
+    std::memcpy(payload + sizeof(length), password.constData(), static_cast<size_t>(password.size()));
+    const size_t payloadSize = sizeof(length) + static_cast<size_t>(password.size());
+
+    size_t written = 0;
+    while (written < payloadSize) {
+        const ssize_t ret = ::write(fds[1], payload + written, payloadSize - written);
+        if (ret <= 0) {
+            if (ret < 0 && errno == EINTR) {
+                continue;
+            }
+            const int error = ret < 0 ? errno : EIO;
+            ::close(fds[0]);
+            ::close(fds[1]);
+            ::explicit_bzero(payload, sizeof(payload));
+            errno = error;
+            return -1;
+        }
+        written += static_cast<size_t>(ret);
+    }
+    ::close(fds[1]);
+    ::explicit_bzero(payload, sizeof(payload));
+
+    return fds[0];
+}
+} // namespace
+#endif
 
 DeepinAuthFramework::DeepinAuthFramework(QObject *parent)
     : QObject(parent)
@@ -103,9 +163,11 @@ void DeepinAuthFramework::onAuthServiceOwnerChanged(const QString &service, cons
             disconnect(controller, nullptr, this, nullptr);
             controller->deleteLater();
         }
+#ifndef ENABLE_DSS_SNIPE
         if (m_authenticateControllers->isEmpty()) {
             EncryptHelper::ref().releaseResources();
         }
+#endif
     }
 
     // A normal restart is old -> empty followed by empty -> new. Only a
@@ -447,6 +509,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
     emit PromptChanged(authControllerInter->prompt());
 
 
+#ifndef ENABLE_DSS_SNIPE
     int DAEncryptType;
     ArrayInt DAEncryptMethod;
     QString publicKey;
@@ -467,6 +530,7 @@ void DeepinAuthFramework::CreateAuthController(const QString &account, const Aut
     EncryptHelper::ref().setPublicKey(publicKey);
     EncryptHelper::ref().initEncryptionService();
     m_authenticateControllers->value(account)->SetSymmetricKey(EncryptHelper::ref().encryptSymmetricalKey());
+#endif
 }
 
 /**
@@ -486,7 +550,9 @@ void DeepinAuthFramework::DestroyAuthController(const QString &account)
     m_authenticateControllers->remove(account);
     m_passwordExtraInfo.remove(account);
     delete authControllerInter;
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().releaseResources();
+#endif
 }
 
 /**
@@ -529,22 +595,41 @@ void DeepinAuthFramework::EndAuthentication(const QString &account, const AuthFl
 }
 
 /**
- * @brief 将密文发送给认证服务 -- PAM
+ * @brief 将口令发送给认证服务 -- PAM
+ *
+ * v25 使用匿名管道传递口令；v20 保留密钥协商后的加密 SetToken 通道。
  *
  * @param account   账户
  * @param authType  认证类型
- * @param token     密文
+ * @param token     明文口令
  */
 void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType authType, const QString &token)
 {
     qCInfo(DDE_SHELL) << "Send token to auth, account: " << account << ", auth type:" << authType;
     Q_EMIT tokenSubmissionCancelled(account, authType);
-    const QDBusMessage extraInfo = authType == AT_Password ? m_passwordExtraInfo.take(account) : QDBusMessage();
     if (!authSessionExist(account)) {
         qCWarning(DDE_SHELL) << "account not included";
         Q_EMIT TokenSendFailed(authType, QString());
         return;
     }
+
+#ifdef ENABLE_DSS_SNIPE
+    QByteArray tokenBytes = token.toLatin1();
+#else
+    // Keep the matching ciphertext while extra information is sent asynchronously.
+    QByteArray tokenBytes = EncryptHelper::ref().getEncryptedToken(token);
+#endif
+    // Extra information is submitted asynchronously and several early returns skip
+    // the send step, so wipe the payload when its last owner is destroyed.
+    const auto tokenPayload = std::shared_ptr<QByteArray>(
+            new QByteArray(std::move(tokenBytes)),
+            [](QByteArray *payload) {
+        if (!payload->isEmpty()) {
+            ::explicit_bzero(payload->data(), static_cast<size_t>(payload->size()));
+        }
+        delete payload;
+    });
+    const QDBusMessage extraInfo = authType == AT_Password ? m_passwordExtraInfo.take(account) : QDBusMessage();
 
     const QPointer<AuthControllerInter> controller = m_authenticateControllers->value(account);
     const auto isCurrentSession = [this, controller, account] {
@@ -556,7 +641,7 @@ void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType
         Q_EMIT TokenSendFailed(authType, QString());
     };
     // End, controller destruction, or a newer submission cancels every pending
-    // step, including the initial SetToken reply on a reused controller.
+    // step, including a token reply on a reused controller.
     auto *context = new QObject(controller);
     connect(this, &DeepinAuthFramework::tokenSubmissionCancelled, context,
             [context, account, authType](const QString &cancelledAccount, AuthFlags cancelledTypes) {
@@ -567,13 +652,31 @@ void DeepinAuthFramework::SendTokenToAuth(const QString &account, const AuthType
             context->deleteLater();
         }
     });
-    const QByteArray encryptedToken = EncryptHelper::ref().getEncryptedToken(token);
-    const auto sendToken = [this, controller, context, authType, encryptedToken, isCurrentSession, reportError] {
+    auto sendToken = [this, controller, context, authType, tokenPayload, isCurrentSession, reportError] {
         if (!isCurrentSession()) {
             context->deleteLater();
             return;
         }
-        auto *watcher = new QDBusPendingCallWatcher(controller->SetToken(authType, encryptedToken), context);
+#ifdef ENABLE_DSS_SNIPE
+        const int readFd = createPasswordFd(*tokenPayload);
+        tokenPayload->fill(0);
+        if (readFd < 0) {
+            const int error = errno;
+            context->deleteLater();
+            reportError("Failed to create authentication token pipe:",
+                        QDBusError(QDBusError::Failed, QString::fromLocal8Bit(std::strerror(error))));
+            return;
+        }
+        QDBusMessage message = QDBusMessage::createMethodCall(controller->service(),
+                                                             controller->path(),
+                                                             controller->interface(),
+                                                             QStringLiteral("SetTokenByFD"));
+        message << static_cast<int>(authType) << QVariant::fromValue(QDBusUnixFileDescriptor(readFd));
+        auto *watcher = new QDBusPendingCallWatcher(controller->connection().asyncCall(message), context);
+        ::close(readFd);
+#else
+        auto *watcher = new QDBusPendingCallWatcher(controller->SetToken(authType, *tokenPayload), context);
+#endif
         connect(watcher, &QDBusPendingCallWatcher::finished, context, [watcher, context, isCurrentSession, reportError] {
             QDBusPendingReply<> reply = *watcher;
             watcher->deleteLater();

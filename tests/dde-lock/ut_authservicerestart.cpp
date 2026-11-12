@@ -7,7 +7,9 @@
 #include "auth_ukey.h"
 #include "dbusconstant.h"
 #include "deepinauthframework.h"
+#ifndef ENABLE_DSS_SNIPE
 #include "encrypt_helper.h"
+#endif
 #include "lockworker.h"
 #include "dlineeditex.h"
 #include "mfa_widget.h"
@@ -213,7 +215,9 @@ protected:
         m_framework = m_worker->m_authFramework;
         m_framework->CreateAuthController(m_account, authType(), AuthCommon::Lock);
         ASSERT_TRUE(m_framework->authSessionExist(m_account));
+#ifndef ENABLE_DSS_SNIPE
         EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
         QSignalSpy startup(m_framework, &DeepinAuthFramework::AuthStateChanged);
         m_worker->startAuthentication(m_account, authType());
         ASSERT_TRUE(QTest::qWaitFor([&] { return hasAuthState(startup, AuthCommon::AS_Prompt); }));
@@ -242,14 +246,14 @@ protected:
 
     void sendDelayedTokenError()
     {
-        m_service.setReplyDelay("SetToken", 200);
+        m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 200);
         m_service.failNextToken();
         m_service.clearCalls();
         m_worker->sendTokenToAuth(m_account, authType(), "cancelled-token");
         ASSERT_TRUE(QTest::qWaitFor([&] {
-            return m_service.calls().contains(QString("SetToken:%1").arg(authType()));
+            return m_service.calls().contains(AuthenticationTestService::tokenCall(authType()));
         }));
-        m_service.setReplyDelay("SetToken", 0);
+        m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 0);
     }
 
     const QString m_account = "test-user";
@@ -265,7 +269,7 @@ TEST_P(UT_TokenSendRecovery, TransportErrorKeepsFactorActiveForRetry)
     m_service.clearCalls();
     m_worker->sendTokenToAuth(m_account, GetParam(), "test-token");
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({QString("SetToken:%1").arg(GetParam())}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(GetParam())}));
 }
 
 TEST_P(UT_TokenSendRecovery, TransportErrorRestoresInputWithoutAlert)
@@ -319,7 +323,7 @@ TEST_P(UT_TokenSendRecovery, EndingAnotherFactorDoesNotDiscardCurrentTokenError)
 TEST_P(UT_TokenSendRecovery, DelayedTokenReplyKeepsTheEventLoopResponsiveOnRetry)
 {
     ASSERT_NO_FATAL_FAILURE(failToken());
-    m_service.setReplyDelay("SetToken", 300);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 300);
     m_service.clearCalls();
     QTimer heartbeat;
     QSignalSpy ticks(&heartbeat, &QTimer::timeout);
@@ -332,7 +336,7 @@ TEST_P(UT_TokenSendRecovery, DelayedTokenReplyKeepsTheEventLoopResponsiveOnRetry
     EXPECT_LT(elapsed.elapsed(), 150);
     ASSERT_TRUE(QTest::qWaitFor([&] { return ticks.size() > 2; }, 150));
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({QString("SetToken:%1").arg(GetParam())}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(GetParam())}));
 }
 
 TEST_P(UT_TokenSendRecovery, TransportErrorDoesNotBlockSingleFactorUi)
@@ -362,7 +366,9 @@ TEST_P(UT_TokenSendRecovery, ReplacedControllerDiscardsInitialTokenReply)
     ASSERT_NO_FATAL_FAILURE(sendDelayedTokenError());
     m_framework->DestroyAuthController(m_account);
     m_framework->CreateAuthController(m_account, GetParam(), AuthCommon::Lock);
+#ifndef ENABLE_DSS_SNIPE
     EncryptHelper::ref().m_symmetricKey = QString(16, 't');
+#endif
     m_worker->startAuthentication(m_account, GetParam());
     m_worker->sendTokenToAuth(m_account, GetParam(), "new-token");
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
@@ -612,13 +618,97 @@ TEST_F(UT_PasswordRetryRecovery, SendsCurrentExtraInfoBeforeRetryToken)
     m_worker->sendExtraInfo(m_account, AuthCommon::AT_Password, "current-submission");
     m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
 
-    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.calls().contains("SetExtraInfo:1"); }));
+    ASSERT_TRUE(QTest::qWaitFor([&] {
+        return m_service.calls().contains(AuthenticationTestService::extraInfoCall(AuthCommon::AT_Password));
+    }));
     QTest::qWait(50);
-    EXPECT_FALSE(m_service.calls().contains("SetToken:1"));
+    EXPECT_FALSE(m_service.calls().contains(AuthenticationTestService::tokenCall(AuthCommon::AT_Password)));
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({"SetExtraInfo:1", "SetToken:1"}));
+    EXPECT_EQ(m_service.calls(),
+              QStringList({AuthenticationTestService::extraInfoCall(AuthCommon::AT_Password),
+                           AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
     EXPECT_EQ(m_service.acceptedPasswordExtraInfo(), extraInfoPayload("current-submission"));
 }
+
+#ifdef ENABLE_DSS_SNIPE
+TEST_F(UT_PasswordRetryRecovery, SendsPasswordOverFileDescriptorWithoutEncryption)
+{
+    m_service.clearCalls();
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
+
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
+    EXPECT_EQ(m_service.fdToken(), QByteArray("test-token"));
+    EXPECT_TRUE(m_service.encryptionCalls().isEmpty());
+}
+
+TEST_F(UT_PasswordRetryRecovery, UnsupportedFdReportsErrorWithoutEncryptedFallback)
+{
+    m_service.setSupportsTokenByFD(false);
+    m_service.clearCalls();
+    QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
+
+    ASSERT_TRUE(QTest::qWaitFor([&] { return hasAuthState(status, AuthCommon::AS_Error); }));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
+    EXPECT_EQ(m_service.acceptedTokens(), 0);
+    EXPECT_TRUE(m_service.encryptionCalls().isEmpty());
+
+    m_service.setSupportsTokenByFD(true);
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "retry-token");
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
+    EXPECT_EQ(m_service.fdToken(), QByteArray("retry-token"));
+    EXPECT_FALSE(m_service.calls().contains("SetToken:1"));
+}
+
+TEST_F(UT_PasswordRetryRecovery, OversizedPasswordReportsTransportErrorAndAllowsBoundaryRetry)
+{
+    m_service.clearCalls();
+    m_worker->sendExtraInfo(m_account, AuthCommon::AT_Password, "pending-extension");
+    QSignalSpy failed(m_framework, &DeepinAuthFramework::TokenSendFailed);
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, QString(1025, QLatin1Char('a')));
+
+    ASSERT_TRUE(QTest::qWaitFor([&] { return failed.size() == 1; }));
+    EXPECT_EQ(failed.first().first().toInt(), AuthCommon::AT_Password);
+    EXPECT_TRUE(failed.first().at(1).toString().isEmpty());
+    EXPECT_EQ(m_service.calls(),
+              QStringList({AuthenticationTestService::extraInfoCall(AuthCommon::AT_Password)}));
+    EXPECT_EQ(m_service.acceptedTokens(), 0);
+    EXPECT_FALSE(m_framework->m_authReminder.isActive());
+
+    m_service.requirePasswordExtraInfo(extraInfoPayload("pending-extension"));
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, QString(1024, QLatin1Char('a')));
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
+    EXPECT_EQ(m_service.calls(),
+              QStringList({AuthenticationTestService::extraInfoCall(AuthCommon::AT_Password),
+                           AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
+    EXPECT_EQ(m_service.fdToken(), QByteArray(1024, 'a'));
+    EXPECT_EQ(m_service.acceptedPasswordExtraInfo(), extraInfoPayload("pending-extension"));
+}
+
+TEST_F(UT_PasswordRetryRecovery, EmptyPasswordUsesAValidFdFrame)
+{
+    m_service.clearCalls();
+    m_framework->SendTokenToAuth(m_account, AuthCommon::AT_Password, QString());
+
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
+    EXPECT_EQ(m_service.fdToken(), QByteArray());
+}
+#else
+TEST_F(UT_PasswordRetryRecovery, OversizedPasswordUsesEncryptedTokenWithoutFd)
+{
+    m_service.setSupportsTokenByFD(true);
+    m_service.clearCalls();
+    m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, QString(1025, QLatin1Char('a')));
+
+    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
+    EXPECT_FALSE(m_service.tokenPayload().isEmpty());
+    EXPECT_EQ(m_service.tokenPayload().size() % 16, 0);
+    EXPECT_NE(m_service.tokenPayload(), QByteArray(1025, 'a'));
+}
+#endif
 
 TEST_F(UT_PasswordRetryRecovery, SendsExplicitlyEmptyExtraInfo)
 {
@@ -641,7 +731,7 @@ TEST_F(UT_PasswordRetryRecovery, FailedExtraInfoDoesNotSendTokenAndCanBeRetried)
     m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
 
     ASSERT_TRUE(QTest::qWaitFor([&] { return hasAuthState(status, AuthCommon::AS_Error); }));
-    EXPECT_FALSE(m_service.calls().contains("SetToken:1"));
+    EXPECT_FALSE(m_service.calls().contains(AuthenticationTestService::tokenCall(AuthCommon::AT_Password)));
     EXPECT_FALSE(m_service.calls().contains("End:1"));
     m_service.requirePasswordExtraInfo(extraInfoPayload("new-submission"));
     m_worker->sendExtraInfo(m_account, AuthCommon::AT_Password, "new-submission");
@@ -659,7 +749,7 @@ TEST_F(UT_PasswordRetryRecovery, TransportRetryKeepsAlreadyDeliveredExtensionDat
     m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
 
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:1"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
     EXPECT_EQ(m_service.acceptedPasswordExtraInfo(), extraInfoPayload("extension-result"));
 }
 
@@ -672,7 +762,7 @@ TEST_F(UT_PasswordRetryRecovery, EndingFactorClearsUnsubmittedExtensionData)
     m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
 
     ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.acceptedTokens() == 1; }));
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:1"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
     EXPECT_TRUE(m_service.acceptedPasswordExtraInfo().isNull());
 }
 
@@ -682,13 +772,15 @@ TEST_F(UT_PasswordRetryRecovery, EndingFactorDiscardsPendingExtraInfoReply)
     m_service.clearCalls();
     m_worker->sendExtraInfo(m_account, AuthCommon::AT_Password, "cancelled-submission");
     m_worker->sendTokenToAuth(m_account, AuthCommon::AT_Password, "test-token");
-    ASSERT_TRUE(QTest::qWaitFor([&] { return m_service.calls().contains("SetExtraInfo:1"); }));
+    ASSERT_TRUE(QTest::qWaitFor([&] {
+        return m_service.calls().contains(AuthenticationTestService::extraInfoCall(AuthCommon::AT_Password));
+    }));
     QSignalSpy status(m_model, &SessionBaseModel::authStateChanged);
 
     m_worker->endAuthentication(m_account, AuthCommon::AT_Password);
     QTest::qWait(200);
 
-    EXPECT_FALSE(m_service.calls().contains("SetToken:1"));
+    EXPECT_FALSE(m_service.calls().contains(AuthenticationTestService::tokenCall(AuthCommon::AT_Password)));
     EXPECT_EQ(m_service.acceptedTokens(), 0);
     EXPECT_TRUE(m_framework->m_passwordExtraInfo.isEmpty());
     EXPECT_FALSE(hasAuthState(status, AuthCommon::AS_Error));
@@ -722,7 +814,7 @@ TEST_F(UT_PasswordRetryRecovery, MfaRetryDoesNotReplayInformationalStartupPrompt
     ASSERT_NO_FATAL_FAILURE(failToken());
     m_service.clearCalls();
     password->m_lineEdit->setText("test-token");
-    m_service.setReplyDelay("SetToken", 200);
+    m_service.setReplyDelay(AuthenticationTestService::tokenMethod(), 200);
     QSignalSpy submitted(&widget, &MFAWidget::sendTokenToAuth);
 
     password->requestAuthenticate();
@@ -732,7 +824,7 @@ TEST_F(UT_PasswordRetryRecovery, MfaRetryDoesNotReplayInformationalStartupPrompt
     EXPECT_EQ(password->authState(), AuthCommon::AS_Verify);
     EXPECT_TRUE(password->m_lineEdit->lineEdit()->isReadOnly());
     EXPECT_EQ(password->m_lineEdit->m_animation->state(), QAbstractAnimation::Running);
-    EXPECT_EQ(m_service.calls(), QStringList({"SetToken:1"}));
+    EXPECT_EQ(m_service.calls(), QStringList({AuthenticationTestService::tokenCall(AuthCommon::AT_Password)}));
     QTest::keyClick(password->m_lineEdit->lineEdit(), Qt::Key_Return);
     EXPECT_EQ(submitted.size(), 1);
 

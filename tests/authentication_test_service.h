@@ -8,11 +8,19 @@
 #include "dbusconstant.h"
 #include "deepinauthframework.h"
 
+#include <QDBusUnixFileDescriptor>
 #include <QDBusVirtualObject>
 #include <QMutex>
 #include <QThread>
 #include <QTimer>
+#include <QtEndian>
+#include <cerrno>
 #include <functional>
+#include <unistd.h>
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_METATYPE(AuthCommon::AuthType)
+#endif
 
 // Run only on a private bus. A separate thread lets the real synchronous DA
 // proxies complete without depending on the test/UI thread's event loop.
@@ -26,6 +34,10 @@ public:
             return false;
         }
         registerMFAInfoListMetaType();
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        qRegisterMetaType<AuthCommon::AuthType>("AuthType");
+        qRegisterMetaType<AuthCommon::AuthState>("AuthState");
+#endif
         moveToThread(&m_thread);
         m_thread.start();
         bool registered = false;
@@ -113,11 +125,28 @@ public:
         } else if (method == "PrivilegesEnable") {
             m_calls << method;
             reply << true;
-        } else if (method == "EncryptKey") {
-            reply << 0 << QVariant::fromValue(ArrayInt()) << QString();
-        } else if (method == "SetToken" || method == "SetExtraInfo" || method == "Start" || method == "End") {
+        } else if (method == "EncryptKey" || method == "SetSymmetricKey") {
+            m_encryptionCalls << method;
+#ifdef ENABLE_DSS_SNIPE
+            return sendReply(bus, message.createErrorReply(QDBusError::UnknownMethod, "Encryption is unavailable"), m_replyDelays.value(method));
+#else
+            if (method == "EncryptKey") {
+                reply << 0 << QVariant::fromValue(ArrayInt()) << QString();
+            }
+#endif
+        } else if (method == "SetToken" || method == "SetTokenByFD" || method == "SetExtraInfo" || method == "Start" || method == "End") {
             const int factor = message.arguments().first().toInt();
             m_calls << QString("%1:%2").arg(method).arg(factor);
+            if (method == "SetToken") {
+                m_tokenPayload = message.arguments().at(1).toByteArray();
+            } else if (method == "SetTokenByFD") {
+                if (!m_supportsTokenByFD) {
+                    return sendReply(bus, message.createErrorReply(QDBusError::UnknownMethod, method), m_replyDelays.value(method));
+                }
+                if (!readPasswordPayload(message.arguments().at(1).value<QDBusUnixFileDescriptor>(), m_fdToken)) {
+                    return sendReply(bus, message.createErrorReply(QDBusError::InvalidArgs, "Invalid password frame"), m_replyDelays.value(method));
+                }
+            }
             if (method == "End") {
                 m_startedFactors &= ~factor;
                 if (factor & AuthCommon::AT_Password) {
@@ -208,6 +237,49 @@ public:
         return m_acceptedPasswordExtraInfo;
     }
 
+    static QString tokenMethod()
+    {
+#ifdef ENABLE_DSS_SNIPE
+        return QStringLiteral("SetTokenByFD");
+#else
+        return QStringLiteral("SetToken");
+#endif
+    }
+
+    static QString tokenCall(int factor)
+    {
+        return QString("%1:%2").arg(tokenMethod()).arg(factor);
+    }
+
+    static QString extraInfoCall(int factor)
+    {
+        return QStringLiteral("SetExtraInfo:%1").arg(factor);
+    }
+
+    QStringList encryptionCalls() const
+    {
+        QMutexLocker locker(&m_mutex);
+        return m_encryptionCalls;
+    }
+
+    void setSupportsTokenByFD(bool supported)
+    {
+        QMutexLocker locker(&m_mutex);
+        m_supportsTokenByFD = supported;
+    }
+
+    QByteArray fdToken() const
+    {
+        QMutexLocker locker(&m_mutex);
+        return m_fdToken;
+    }
+
+    QByteArray tokenPayload() const
+    {
+        QMutexLocker locker(&m_mutex);
+        return m_tokenPayload;
+    }
+
     void sendStatus(AuthCommon::AuthType factor, AuthCommon::AuthState state, const QString &text = QString())
     {
         QMetaObject::invokeMethod(this, [this, factor, state, text] {
@@ -276,10 +348,42 @@ private:
         }
     }
 
+    static bool readPasswordPayload(const QDBusUnixFileDescriptor &descriptor, QByteArray &password)
+    {
+        if (!descriptor.isValid()) {
+            return false;
+        }
+        QByteArray payload;
+        char buffer[1024];
+        for (;;) {
+            const ssize_t ret = ::read(descriptor.fileDescriptor(), buffer, sizeof(buffer));
+            if (ret < 0) {
+                if (errno == EINTR) {
+                    continue;
+                }
+                return false;
+            }
+            if (ret == 0) {
+                break;
+            }
+            payload.append(buffer, static_cast<int>(ret));
+        }
+        if (payload.size() < static_cast<int>(sizeof(quint32))) {
+            return false;
+        }
+        const quint32 length = qFromBigEndian<quint32>(reinterpret_cast<const uchar *>(payload.constData()));
+        if (length > 1024 || payload.size() != static_cast<int>(sizeof(quint32) + length)) {
+            return false;
+        }
+        password = payload.mid(sizeof(quint32), static_cast<int>(length));
+        return true;
+    }
+
     static QString connectionName() { return "authentication-recovery-test-service"; }
     QThread m_thread;
     mutable QMutex m_mutex;
     QStringList m_calls;
+    QStringList m_encryptionCalls;
     QMap<QString, int> m_replyDelays;
     QStringList m_passwordStartupInfo;
     QString m_passwordExtraInfo;
@@ -290,6 +394,13 @@ private:
     bool m_failToken = false;
     bool m_failExtraInfo = false;
     bool m_sessionActive = true;
+    QByteArray m_fdToken;
+#ifdef ENABLE_DSS_SNIPE
+    bool m_supportsTokenByFD = true;
+#else
+    bool m_supportsTokenByFD = false;
+#endif
+    QByteArray m_tokenPayload;
     bool m_failSessionByPid = false;
 };
 
