@@ -87,6 +87,7 @@ signals:
     void SessionCreated();
     void DeviceChanged(const int, const int);
     void TokenAccountMismatch(const QString &);
+    void notifyPAMPasswdExpired(const QString &account, bool expired);
 
 public slots:
     /* New authentication framework */
