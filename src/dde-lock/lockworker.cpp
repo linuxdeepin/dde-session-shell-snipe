@@ -54,7 +54,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
     initConfiguration();
 
     connect(m_passwordChange, &LockPasswordChange::activeChanged, this, [this](bool active) {
-        const auto request = ++m_passwordChangeUIRequest;
+        ++m_passwordChangeUIRequest;
         if (!active) {
             if (m_model->lockPasswordChangeActive()) {
                 restorePasswordChangeUI();
@@ -64,19 +64,7 @@ LockWorker::LockWorker(SessionBaseModel *const model, QObject *parent)
         m_resetSessionTimer->stop();
         m_wakeUpAuthTimer->stop();
         setLocked(true);
-        // Guard visibility immediately, but keep the existing authentication
-        // page for fast successful account checks to avoid a one-frame flash.
         m_model->setLockPasswordChangeActive(true);
-        QTimer::singleShot(0, this, [this, request] {
-            if (request != m_passwordChangeUIRequest || !m_passwordChange->isActive()) {
-                return;
-            }
-            if (m_passwordChange->isCheckingExpiry()) {
-                QTimer::singleShot(250, this, [this, request] { presentPasswordChangeUI(request); });
-            } else {
-                presentPasswordChangeUI(request);
-            }
-        });
     });
     connect(m_passwordChange, &LockPasswordChange::promptChanged, this,
             [this](const QString &prompt, const QString &error, bool busy) {
@@ -247,6 +235,17 @@ void LockWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::PINLenChanged, m_model, &SessionBaseModel::updatePINLen);
     connect(m_authFramework, &DeepinAuthFramework::PromptChanged, m_model, &SessionBaseModel::updatePrompt);
     connect(m_authFramework, &DeepinAuthFramework::AuthStateChanged, this, &LockWorker::onAuthStateChanged);
+    connect(m_authFramework, &DeepinAuthFramework::notifyPAMPasswdExpired, this, [this](const QString &account, bool expired) {
+        const auto user = m_model->currentUser();
+        if (!m_sessionActive || !user || user->name() != account || m_account != account) {
+            return;
+        }
+        if (expired) {
+            user->updatePasswordExpiredState(User::ExpiredAlready, 0);
+        } else if (user->expiredState() != User::ExpiredSoon) {
+            user->updatePasswordExpiredState(User::ExpiredNormal, 0);
+        }
+    });
     connect(m_authFramework, &DeepinAuthFramework::TokenSendFailed, this, [this](int type, const QString &message) {
         m_passwordChangeToken.clear();
         m_model->updateAuthState(AuthType(type), AS_Error, message);
@@ -272,12 +271,13 @@ void LockWorker::initConnections()
     connect(m_lockInter, &DBusLockService::Event, this, &LockWorker::lockServiceEvent);
     /* com.deepin.SessionManager */
     connect(m_sessionManagerInter, &SessionManagerInter::Unlock, this, [this] {
-        if (passwordChangeEnabled() && !m_passwordChangePassed) {
+        if (shouldGatePasswordChange()) {
             checkPasswordBeforeUnlock();
             return;
         }
         m_authenticating = false;
         m_password.clear();
+        m_passwordChangeToken.clear();
         emit m_model->authFinished(true);
     });
 
@@ -1158,11 +1158,12 @@ void LockWorker::onAuthFinished()
 
 void LockWorker::onUnlockFinished(bool unlocked)
 {
-    if (unlocked && passwordChangeEnabled() && !m_passwordChangePassed) {
+    if (unlocked && shouldGatePasswordChange()) {
         checkPasswordBeforeUnlock();
         return;
     }
     if (unlocked) {
+        m_passwordChangeToken.clear();
         m_model->setLockPasswordChangeRequiresAuthentication(false);
     }
     qCInfo(DDE_SHELL) << "Unlock finished, is unlocked: " << unlocked;
@@ -1254,7 +1255,7 @@ void LockWorker::authFinishedAction()
     if (m_passwordChangeUITransition) {
         return;
     }
-    if (passwordChangeEnabled() && !m_passwordChangePassed) {
+    if (shouldGatePasswordChange()) {
         checkPasswordBeforeUnlock();
         return;
     }
@@ -1276,6 +1277,26 @@ void LockWorker::authFinishedAction()
 bool LockWorker::passwordChangeEnabled() const
 {
     return m_model->appType() == AuthCommon::Lock && m_forcePasswordChange;
+}
+
+bool LockWorker::shouldGatePasswordChange() const
+{
+    if (!passwordChangeEnabled() || m_passwordChangePassed) {
+        return false;
+    }
+    // Keep interrupted password changes protected.
+    if (m_passwordChange->isActive() || m_model->lockPasswordChangeProtected()) {
+        return true;
+    }
+    const auto user = m_model->currentUser();
+    if (!user) {
+        return false;
+    }
+    // Use the submitted password to check expiry when the cached state is stale.
+    if (!m_passwordChangeToken.isEmpty()) {
+        return true;
+    }
+    return user->expiredState() == User::ExpiredAlready;
 }
 
 void LockWorker::checkPasswordBeforeUnlock()
