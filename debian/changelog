@@ -1,3 +1,10 @@
+dde-session-shell (6.0.71.1001+pajil) unstable; urgency=medium
+
+  * fix: correct AD lock screen authentication and expiry
+  * feat: share login account entry settings through DConfig
+
+ -- chenyuanbo <chenyuanbo@uniontech.com>  Thu, 19 Nov 2026 21:03:57 +0800
+
 dde-session-shell (6.0.71.1000+pajil) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
