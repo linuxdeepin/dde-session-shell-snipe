@@ -1,3 +1,9 @@
+dde-session-shell (6.2.1) unstable; urgency=medium
+
+  * Release 6.2.1
+
+ -- zhaofangxun <zhaofangxun@uniontech.com>  Thu, 19 Nov 2026 20:49:24 +0800
+
 dde-session-shell (6.2.0) unstable; urgency=medium
 
   * sync: from linuxdeepin/dde-session-shell
