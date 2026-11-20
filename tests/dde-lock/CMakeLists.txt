@@ -1,5 +1,14 @@
 set(BIN_NAME dde-lock-test)
 
+# ut_passwordinputwidget.cpp 引用 QtGui 私有头（private/ 与 qpa/ 目录），
+# 需要链接 Qt6::GuiPrivate 才会注入版本化私有头 include 路径。
+# Qt 6.10 起，私有模块目标(如 Qt6::GuiPrivate)拆分为独立的 CMake 包，
+# 不再随主模块的 find_package 自动创建，需要显式查找，否则 CMake 配置阶段报
+# "Target ... links to: Qt6::GuiPrivate but the target was not found"。
+if(QT_VERSION_MAJOR EQUAL 6 AND Qt6Gui_VERSION VERSION_GREATER_EQUAL 6.10)
+    find_package(Qt6 REQUIRED COMPONENTS GuiPrivate)
+endif()
+
 aux_source_directory(. LOCK_TEST)
 
 set(LOCK_TEST_SRCS
@@ -65,6 +74,7 @@ endif ()
 target_link_libraries(${BIN_NAME} PRIVATE
     PkgConfig::PW_CHECK
     Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::GuiPrivate
     Dtk${DTK_VERSION_MAJOR}::Widget
     Dtk${DTK_VERSION_MAJOR}::Core
     ${GTEST_LIBRARIES}
