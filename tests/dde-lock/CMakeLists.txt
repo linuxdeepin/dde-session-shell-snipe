@@ -65,6 +65,7 @@ endif ()
 target_link_libraries(${BIN_NAME} PRIVATE
     PkgConfig::PW_CHECK
     Qt${QT_VERSION_MAJOR}::Test
+    Qt${QT_VERSION_MAJOR}::GuiPrivate
     Dtk${DTK_VERSION_MAJOR}::Widget
     Dtk${DTK_VERSION_MAJOR}::Core
     ${GTEST_LIBRARIES}
