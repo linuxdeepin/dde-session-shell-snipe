@@ -574,6 +574,8 @@ protected:
         model->setAppType(AuthCommon::Lock);
         worker = new LockWorker(model);
         model->updateCurrentUser(std::make_shared<ValidLockTestUser>());
+        model->setAuthType(AT_PAM);
+        model->currentUser()->updatePasswordExpiredState(User::ExpiredAlready, 0);
         worker->m_account = model->currentUser()->name();
         worker->m_forcePasswordChange = true;
         worker->m_passwordChange->m_checker = [](const QString &, const QString &) { return PAM_NEW_AUTHTOK_REQD; };
@@ -801,7 +803,9 @@ TEST_F(UT_LockPasswordSession, DeactivationClearsFormAndRestartsOnlyAfterActivat
 
 TEST_F(UT_LockPasswordSession, DeactivationRejectsPamSuccessBeforeAndAfterActivation)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
     for (bool replyWhileInactive : {true, false}) {
+        model->setLockPasswordChangeRequiresAuthentication(true);
         SCOPED_TRACE(replyWhileInactive);
         auto release = std::make_shared<QSemaphore>();
         auto entered = std::make_shared<QSemaphore>();
@@ -870,101 +874,202 @@ TEST_F(UT_LockPasswordSession, RapidReactivationDoesNotReplayQueuedCancellation)
     EXPECT_FALSE(worker->m_passwordChangePassed);
 }
 
-TEST_F(UT_LockPasswordSession, DeactivationRejectsLateAccountInfoSuccess)
+TEST_F(UT_LockPasswordGate, BiometricSuccessSkipsAdditionalExpiryAndPasswordChecks)
 {
     AccountExpiryTestService service;
     ASSERT_TRUE(service.registerOnBus());
-    service.deferReply = true;
-    ASSERT_TRUE(model->updateCurrentUser(std::make_shared<AccountInfoLockTestUser>()));
-    QSignalSpy finished(model, &SessionBaseModel::authFinished);
-    for (bool replyWhileInactive : {true, false}) {
-        SCOPED_TRACE(replyWhileInactive);
-        // Start a fresh attempt, then deactivate while the Accounts reply is pending.
-        model->setLockPasswordChangeRequiresAuthentication(false);
-        worker->authFinishedAction();
-        ASSERT_TRUE(QTest::qWaitFor([&] { return !service.pending.isEmpty(); }, 1000));
-        QPointer<QThread> thread = worker->m_passwordChange->m_checkThread;
-        ASSERT_TRUE(setActive(false));
-        if (!replyWhileInactive) {
-            ASSERT_TRUE(setActive(true));
-        }
-        service.answerPending();
-        ASSERT_TRUE(QTest::qWaitFor([&] { return !thread || !thread->isRunning(); }, 3000));
-        QTest::qWait(20);
-        EXPECT_EQ(finished.count(), 0);
-        EXPECT_FALSE(worker->m_passwordChangePassed);
-        EXPECT_FALSE(worker->m_passwordChange->isActive());
-        EXPECT_TRUE(model->lockPasswordChangeProtected());
-        if (replyWhileInactive) {
-            ASSERT_TRUE(setActive(true));
-        }
-    }
-}
-
-TEST_F(UT_LockPasswordGate, SingleFactorBiometricSuccessDiscardsUnusedPasswordToken)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
+    // AD shadow lookup may fail even though face authentication succeeded.
+    service.error = QStringLiteral("org.freedesktop.DBus.Error.Failed");
     auto user = std::make_shared<AccountInfoLockTestUser>();
     ASSERT_TRUE(model->updateCurrentUser(user));
     worker->m_account = user->name();
-    const auto pamChecks = std::make_shared<std::atomic<int>>(0);
-    worker->m_passwordChange->m_checker = [pamChecks](const QString &, const QString &) {
-        ++*pamChecks;
+    auto content = managedContent();
+    int pamChecks = 0;
+    worker->m_passwordChange->m_checker = [&pamChecks](const QString &, const QString &) {
+        ++pamChecks;
         return PAM_AUTH_ERR;
     };
-    for (const auto factor : {AT_Face, AT_Iris, AT_Fingerprint}) {
-        SCOPED_TRACE(factor);
-        worker->m_passwordChangePassed = false;
-        model->setVisible(true);
-        model->updateMFAFlag(false);
-        // No PAM worker consumes this submission; it remains an unverified candidate.
-        model->updateFrameworkState(Unavailable);
-        ASSERT_FALSE(worker->m_authFramework->IsUsingPamAuth());
-        worker->sendTokenToAuth(user->name(), AT_Password, QStringLiteral("unverified-candidate"));
-        ASSERT_EQ(worker->m_passwordChangeToken, QStringLiteral("unverified-candidate"));
-        QSignalSpy finished(model, &SessionBaseModel::authFinished);
-        const int previousRequests = service.requests;
-        worker->onAuthStateChanged(factor, AS_Success, {});
-        worker->authFinishedAction();
-        ASSERT_TRUE(QTest::qWaitFor([&] { return !worker->m_passwordChange->isActive(); }, 3000));
-        ASSERT_EQ(finished.count(), 1);
-        EXPECT_TRUE(finished[0][0].toBool());
-        EXPECT_EQ(service.requests, previousRequests + 1);
-        EXPECT_EQ(pamChecks->load(), 0);
-        EXPECT_TRUE(worker->m_passwordChangeToken.isEmpty());
-        EXPECT_FALSE(model->lockPasswordChangePageVisible());
+    model->updateFrameworkState(Unavailable);
+    for (auto state : {User::ExpiredNormal, User::ExpiredSoon}) {
+        for (auto factor : {AT_Face, AT_Iris, AT_Fingerprint}) {
+            SCOPED_TRACE(state);
+            SCOPED_TRACE(factor);
+            user->updatePasswordExpiredState(state, 1);
+            worker->m_passwordChangePassed = false;
+            model->setVisible(true);
+            model->updateMFAFlag(false);
+            worker->sendTokenToAuth(user->name(), AT_Password, QStringLiteral("unused-candidate"));
+            worker->onAuthStateChanged(factor, AS_Success, {});
+            EXPECT_TRUE(worker->m_passwordChangeToken.isEmpty());
+            QSignalSpy finished(model, &SessionBaseModel::authFinished);
+            // Face/iris UI reports completion after the user presses Enter.
+            worker->authFinishedAction();
+            ASSERT_EQ(finished.count(), 1);
+            EXPECT_TRUE(finished[0][0].toBool());
+            EXPECT_EQ(service.requests, 0);
+            EXPECT_EQ(pamChecks, 0);
+            EXPECT_FALSE(worker->m_passwordChange->isActive());
+            EXPECT_FALSE(model->lockPasswordChangePageVisible());
+            EXPECT_FALSE(model->visible());
+        }
     }
 }
 
-TEST_F(UT_LockPasswordGate, MfaBiometricSuccessPreservesVerifiedPasswordToken)
+TEST_F(UT_LockPasswordGate, UnexpiredMfaStillWaitsForOverallAuthenticationSuccess)
 {
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
     auto user = std::make_shared<AccountInfoLockTestUser>();
     ASSERT_TRUE(model->updateCurrentUser(user));
     worker->m_account = user->name();
+    model->setAuthType(AUTH_FLAGS_CAST(AT_Password | AT_Face));
     model->updateMFAFlag(true);
     model->updateFrameworkState(Unavailable);
-    ASSERT_FALSE(worker->m_authFramework->IsUsingPamAuth());
-    worker->sendTokenToAuth(user->name(), AT_Password, QStringLiteral("verified-current"));
-    const auto pamChecks = std::make_shared<std::atomic<int>>(0);
-    worker->m_passwordChange->m_checker = [pamChecks](const QString &, const QString &password) {
-        ++*pamChecks;
+    int pamChecks = 0;
+    worker->m_passwordChange->m_checker = [&pamChecks](const QString &, const QString &password) {
+        ++pamChecks;
         return password == QStringLiteral("verified-current") ? PAM_SUCCESS : PAM_AUTH_ERR;
     };
+    worker->sendTokenToAuth(user->name(), AT_Password, QStringLiteral("verified-current"));
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
     worker->onAuthStateChanged(AT_Password, AS_Success, {});
     worker->onAuthStateChanged(AT_Face, AS_Success, {});
-    EXPECT_EQ(worker->m_passwordChangeToken, QStringLiteral("verified-current"));
-    EXPECT_EQ(service.requests, 0);
-    EXPECT_EQ(pamChecks->load(), 0);
     EXPECT_EQ(finished.count(), 0);
+    EXPECT_EQ(worker->m_passwordChangeToken, QStringLiteral("verified-current"));
     worker->onAuthStateChanged(AT_All, AS_Success, {});
     ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
     EXPECT_TRUE(finished[0][0].toBool());
-    EXPECT_EQ(pamChecks->load(), 1);
-    EXPECT_EQ(service.requests, 0);
+    EXPECT_EQ(pamChecks, 1);
+    EXPECT_TRUE(worker->m_passwordChangeToken.isEmpty());
+}
+
+TEST_F(UT_LockPasswordGate, ExpiredEntryIsIndependentOfAuthenticationType)
+{
+    for (const auto types : {AUTH_FLAGS_CAST(AT_Password | AT_Face), AUTH_FLAGS_CAST(AT_PAM), AUTH_FLAGS_CAST(AT_Face)}) {
+        SCOPED_TRACE(int(types));
+        model->setLockPasswordChangeRequiresAuthentication(false);
+        model->setAuthType(types);
+        worker->m_passwordChangePassed = false;
+        QSignalSpy finished(model, &SessionBaseModel::authFinished);
+        worker->authFinishedAction();
+        EXPECT_TRUE(worker->m_passwordChange->isActive());
+        EXPECT_EQ(finished.count(), 0);
+        ASSERT_TRUE(QTest::qWaitFor([&] { return worker->m_passwordChange->acceptsInput(); }, 3000));
+        EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::CurrentPassword);
+        EXPECT_FALSE(worker->m_passwordChange->m_checkAfterCurrentPassword);
+        worker->cancelPasswordChange();
+        QTest::qWait(20);
+    }
+}
+
+TEST_F(UT_LockPasswordGate, PassedPasswordChangeDoesNotInterceptCompletionAgain)
+{
+    ASSERT_TRUE(worker->shouldGatePasswordChange());
+    worker->m_passwordChangePassed = true;
+    EXPECT_FALSE(worker->shouldGatePasswordChange());
+    QSignalSpy finished(model, &SessionBaseModel::authFinished);
+    worker->authFinishedAction();
+    ASSERT_EQ(finished.count(), 1);
+    EXPECT_TRUE(finished[0][0].toBool());
+    EXPECT_FALSE(worker->m_passwordChange->isActive());
+}
+
+TEST_F(UT_LockPasswordGate, SfaForcesPasswordOnlyWhenAlreadyExpired)
+{
+    const auto types = AUTH_FLAGS_CAST(AT_Password | AT_Face);
+    model->setAuthType(types);
+    const auto user = model->currentUser();
+    user->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    user->setLastAuthType(AT_Face);
+    SFAWidget widget;
+    widget.setModel(model);
+    ASSERT_NE(widget.m_passwordAuth, nullptr);
+    const_cast<QValidator *>(widget.m_passwordAuth->m_lineEdit->lineEdit()->validator())
+        ->setParent(widget.m_passwordAuth);
+    ASSERT_FALSE(widget.m_passwordAuth->isLocked());
+    for (auto state : {User::ExpiredNormal, User::ExpiredSoon, User::ExpiredAlready, User::ExpiredNormal}) {
+        SCOPED_TRACE(state);
+        user->updatePasswordExpiredState(state, 1);
+        user->setLastAuthType(AT_Face);
+        widget.setAuthType(types);
+        const bool expired = state == User::ExpiredAlready;
+        EXPECT_EQ(widget.m_currentAuthType, expired ? AT_Password : AT_Face);
+        EXPECT_EQ(widget.m_chooseAuthButtonBox->isEnabled(), !expired);
+        EXPECT_EQ(user->lastAuthType(), expired ? AT_Password : AT_Face);
+        if (expired) {
+            widget.onRequestChangeAuth(AT_Face);
+            EXPECT_EQ(widget.m_currentAuthType, AT_Password);
+        }
+    }
+}
+
+TEST_F(UT_LockPasswordGate, PamAccountResultUpdatesExpiryBeforeCompletion)
+{
+    const auto user = model->currentUser();
+    for (bool expired : {false, true}) {
+        SCOPED_TRACE(expired);
+        model->setLockPasswordChangeRequiresAuthentication(false);
+        worker->m_passwordChangePassed = false;
+        user->updatePasswordExpiredState(expired ? User::ExpiredNormal : User::ExpiredAlready, 0);
+        emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), expired);
+        EXPECT_EQ(user->expiredState(), expired ? User::ExpiredAlready : User::ExpiredNormal);
+        worker->m_passwordChange->m_checker = [](const QString &, const QString &) { return PAM_SUCCESS; };
+        worker->m_passwordChangeToken = QStringLiteral("verified-old");
+        QSignalSpy finished(model, &SessionBaseModel::authFinished);
+        worker->onAuthStateChanged(AT_PAM, AS_Success, {});
+        worker->authFinishedAction();
+        if (!expired) {
+            ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
+        }
+        EXPECT_EQ(finished.count(), expired ? 0 : 1);
+        if (expired) {
+            ASSERT_TRUE(QTest::qWaitFor([&] { return worker->m_passwordChange->acceptsInput(); }, 3000));
+            EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::NewPassword);
+            EXPECT_EQ(worker->m_passwordChange->m_oldPassword, QStringLiteral("verified-old"));
+            worker->cancelPasswordChange();
+            QTest::qWait(20);
+        }
+    }
+}
+
+TEST_F(UT_LockPasswordGate, PamNonExpiredResultPreservesExpiryWarning)
+{
+    const auto user = model->currentUser();
+    user->updatePasswordExpiredState(User::ExpiredSoon, 3);
+    QSignalSpy changed(user.get(), &User::passwordExpiredInfoChanged);
+
+    emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), false);
+    EXPECT_EQ(user->expiredState(), User::ExpiredSoon);
+    EXPECT_EQ(user->expiredDayLeft(), 3);
+    EXPECT_EQ(changed.count(), 0);
+
+    emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), true);
+    EXPECT_EQ(user->expiredState(), User::ExpiredAlready);
+    EXPECT_EQ(user->expiredDayLeft(), 0);
+    EXPECT_EQ(changed.count(), 1);
+
+    emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), false);
+    EXPECT_EQ(user->expiredState(), User::ExpiredNormal);
+    EXPECT_EQ(user->expiredDayLeft(), 0);
+    EXPECT_EQ(changed.count(), 2);
+}
+
+TEST_F(UT_LockPasswordGate, UnrelatedOrInactivePamExpiryResultDoesNotUpdateCurrentUser)
+{
+    const auto user = model->currentUser();
+    user->updatePasswordExpiredState(User::ExpiredAlready, 0);
+    QSignalSpy changed(user.get(), &User::passwordExpiredInfoChanged);
+
+    emit worker->m_authFramework->notifyPAMPasswdExpired(QStringLiteral("another-user"), false);
+    EXPECT_EQ(user->expiredState(), User::ExpiredAlready);
+
+    worker->m_account = QStringLiteral("another-user");
+    emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), false);
+    EXPECT_EQ(user->expiredState(), User::ExpiredAlready);
+
+    worker->m_account = user->name();
+    worker->m_sessionActive = false;
+    emit worker->m_authFramework->notifyPAMPasswdExpired(user->name(), false);
+    EXPECT_EQ(user->expiredState(), User::ExpiredAlready);
+    EXPECT_EQ(changed.count(), 0);
 }
 
 TEST_F(UT_LockPasswordGate, BiometricSuccessAfterCancellationStillRequiresFreshPassword)
@@ -996,7 +1101,6 @@ TEST_F(UT_LockPasswordGate, BiometricSuccessAfterCancellationStillRequiresFreshP
     EXPECT_EQ(finished.count(), 0);
     worker->cancelPasswordChange();
 }
-
 TEST_F(UT_LockPasswordGate, TokenDeliveryFailureDiscardsPasswordBeforeBiometricUnlock)
 {
     AccountExpiryTestService service;
@@ -1020,173 +1124,10 @@ TEST_F(UT_LockPasswordGate, TokenDeliveryFailureDiscardsPasswordBeforeBiometricU
     worker->authFinishedAction();
     ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
     EXPECT_TRUE(finished[0][0].toBool());
-    EXPECT_EQ(service.requests, 1);
+    EXPECT_EQ(service.requests, 0);
     EXPECT_EQ(pamChecks->load(), 0);
     EXPECT_FALSE(model->lockPasswordChangePageVisible());
 }
-
-TEST_F(UT_LockPasswordGate, BiometricWithConfirmedUnexpiredPasswordSkipsPasswordInput)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    auto user = std::make_shared<AccountInfoLockTestUser>();
-    ASSERT_TRUE(model->updateCurrentUser(user));
-    auto content = managedContent();
-    int pamChecks = 0;
-    worker->m_passwordChange->m_checker = [&pamChecks](const QString &, const QString &) {
-        ++pamChecks;
-        return PAM_AUTH_ERR;
-    };
-    for (auto state : {User::ExpiredNormal, User::ExpiredSoon}) {
-        for (auto factor : {AT_Face, AT_Iris, AT_Fingerprint}) {
-            SCOPED_TRACE(state);
-            SCOPED_TRACE(factor);
-            service.state = state;
-            worker->m_passwordChangePassed = false;
-            model->setVisible(true);
-            model->updateMFAFlag(false);
-            worker->onAuthStateChanged(factor, AS_Success, {});
-            QSignalSpy finished(model, &SessionBaseModel::authFinished);
-            QSignalSpy forms(model, &SessionBaseModel::lockPasswordChangeForm);
-            const int previousRequests = service.requests;
-            // Face/iris UI waits for Enter before reporting authentication completion.
-            worker->authFinishedAction();
-            ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
-            EXPECT_TRUE(finished[0][0].toBool());
-            EXPECT_EQ(service.requests, previousRequests + 1);
-            EXPECT_EQ(pamChecks, 0);
-            EXPECT_FALSE(worker->m_passwordChange->isActive());
-            EXPECT_FALSE(model->lockPasswordChangePageVisible());
-            EXPECT_FALSE(model->visible());
-            for (const auto &form : forms)
-                EXPECT_TRUE(form[2].toBool()); // A slow query may show busy UI, never password input.
-        }
-    }
-}
-
-TEST_F(UT_LockPasswordGate, MfaAccountInfoCheckWaitsForOverallAuthenticationSuccess)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    ASSERT_TRUE(model->updateCurrentUser(std::make_shared<AccountInfoLockTestUser>()));
-    model->updateMFAFlag(true);
-    QSignalSpy finished(model, &SessionBaseModel::authFinished);
-    worker->onAuthStateChanged(AT_Face, AS_Success, {});
-    QTest::qWait(20);
-    EXPECT_EQ(service.requests, 0);
-    EXPECT_EQ(finished.count(), 0);
-    worker->onAuthStateChanged(AT_All, AS_Success, {});
-    ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
-    EXPECT_EQ(service.requests, 1);
-    EXPECT_TRUE(finished[0][0].toBool());
-    EXPECT_FALSE(model->lockPasswordChangePageVisible());
-}
-
-TEST_F(UT_LockPasswordGate, AccountInfoAlreadyExpiredOverridesNormalCache)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    service.state = User::ExpiredAlready;
-    ASSERT_TRUE(model->updateCurrentUser(std::make_shared<AccountInfoLockTestUser>()));
-    ASSERT_EQ(model->currentUser()->expiredState(), User::ExpiredNormal);
-    QSignalSpy finished(model, &SessionBaseModel::authFinished);
-    QSignalSpy forms(model, &SessionBaseModel::lockPasswordChangeForm);
-    worker->authFinishedAction();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return !forms.isEmpty() && !forms.last()[2].toBool(); }, 3000));
-    EXPECT_EQ(service.requests, 1);
-    EXPECT_EQ(finished.count(), 0);
-    EXPECT_TRUE(forms.last()[0].toBool());
-    EXPECT_FALSE(forms.last()[1].toBool());
-    EXPECT_TRUE(model->lockPasswordChangeProtected());
-}
-
-TEST_F(UT_LockPasswordGate, FailedOrMalformedAccountInfoRequiresPasswordAndPam)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    ASSERT_TRUE(model->updateCurrentUser(std::make_shared<AccountInfoLockTestUser>()));
-    for (int failure = 0; failure < 4; ++failure) {
-        SCOPED_TRACE(failure);
-        service.error = failure == 0 ? QStringLiteral("org.freedesktop.DBus.Error.AccessDenied") : QString();
-        service.state = failure == 1 ? 99 : User::ExpiredNormal;
-        service.wrongType = failure == 2;
-        service.incomplete = failure == 3;
-        worker->m_passwordChangePassed = false;
-        int pamChecks = 0;
-        worker->m_passwordChange->m_checker = [&pamChecks](const QString &, const QString &password) {
-            ++pamChecks;
-            return password == QStringLiteral("fresh-current") ? PAM_SUCCESS : PAM_AUTH_ERR;
-        };
-        QSignalSpy finished(model, &SessionBaseModel::authFinished);
-        const int previousRequests = service.requests;
-        worker->authFinishedAction();
-        ASSERT_TRUE(QTest::qWaitFor([&] { return worker->m_passwordChange->acceptsInput(); }, 3000));
-        EXPECT_EQ(service.requests, previousRequests + 1);
-        EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::CurrentPassword);
-        EXPECT_TRUE(worker->m_passwordChange->m_checkAfterCurrentPassword);
-        EXPECT_EQ(finished.count(), 0);
-        EXPECT_EQ(pamChecks, 0);
-        worker->submitPasswordChange(QStringLiteral("fresh-current"), {}, {}, {});
-        ASSERT_TRUE(QTest::qWaitFor([&] { return finished.count() == 1; }, 3000));
-        EXPECT_EQ(pamChecks, 1);
-        EXPECT_TRUE(finished[0][0].toBool());
-    }
-}
-
-TEST_F(UT_LockPasswordGate, AccountInfoCannotReplacePasswordAuthenticationOrResumeCheck)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    auto user = std::make_shared<AccountInfoLockTestUser>();
-    ASSERT_TRUE(model->updateCurrentUser(user));
-    int pamChecks = 0;
-    worker->m_passwordChange->m_checker = [&pamChecks](const QString &, const QString &) {
-        ++pamChecks;
-        return PAM_AUTH_ERR;
-    };
-    QSignalSpy finished(model, &SessionBaseModel::authFinished);
-    worker->m_passwordChangeToken = QStringLiteral("bad-password");
-    worker->authFinishedAction();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return !worker->m_passwordChange->isActive(); }, 3000));
-    EXPECT_EQ(pamChecks, 1);
-    EXPECT_EQ(service.requests, 0);
-    EXPECT_EQ(finished.count(), 0);
-
-    // An interrupted password change still requires a new credential check.
-    model->setLockPasswordChangeRequiresAuthentication(true);
-    worker->authFinishedAction();
-    EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::CurrentPassword);
-    EXPECT_EQ(service.requests, 0);
-    EXPECT_EQ(finished.count(), 0);
-    worker->cancelPasswordChange();
-
-    model->setLockPasswordChangeRequiresAuthentication(false);
-    user->m_isNoPasswordLogin = true;
-    worker->checkAccount(user->name(), false);
-    EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::CurrentPassword);
-    EXPECT_EQ(service.requests, 0);
-    EXPECT_EQ(finished.count(), 0);
-}
-
-TEST_F(UT_LockPasswordGate, CancelRejectsLateAccountInfoSuccess)
-{
-    AccountExpiryTestService service;
-    ASSERT_TRUE(service.registerOnBus());
-    service.deferReply = true;
-    ASSERT_TRUE(model->updateCurrentUser(std::make_shared<AccountInfoLockTestUser>()));
-    QSignalSpy finished(model, &SessionBaseModel::authFinished);
-    worker->authFinishedAction();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return !service.pending.isEmpty(); }, 1000));
-    QPointer<QThread> thread = worker->m_passwordChange->m_checkThread;
-    worker->cancelPasswordChange();
-    service.answerPending();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return !thread || !thread->isRunning(); }, 3000));
-    QTest::qWait(20);
-    EXPECT_EQ(finished.count(), 0);
-    EXPECT_FALSE(worker->m_passwordChangePassed);
-    EXPECT_FALSE(worker->m_passwordChange->isActive());
-}
-
 TEST_F(UT_LockPasswordGate, NavigatingAwayCancelsWithoutRestartingAuthentication)
 {
     AuthenticationLookupTestService service;
@@ -1319,7 +1260,7 @@ TEST_F(UT_LockPasswordGate, NoPasswordLoginWithStoredPasswordStillRequiresCreden
     worker->checkAccount(model->currentUser()->name(), false);
     ASSERT_TRUE(QTest::qWaitFor([&] { return !forms.isEmpty(); }, 3000));
     EXPECT_TRUE(forms.last()[0].toBool());
-    EXPECT_TRUE(forms.last()[1].toBool());
+    EXPECT_FALSE(forms.last()[1].toBool());
     worker->submitPasswordChange({}, {}, {}, {});
     EXPECT_EQ(finished.count(), 0);
     EXPECT_TRUE(worker->m_passwordChange->acceptsInput());
@@ -1453,6 +1394,8 @@ TEST_F(UT_LockPasswordGate, KeyboardAndMouseActivityRenewPasswordInputIdleDeadli
 
 TEST_F(UT_LockPasswordGate, UserActivityDoesNotExtendExpiryCheckTimeout)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     worker->m_passwordChangeToken = QStringLiteral("old");
     worker->m_passwordChange->m_checker = [](const QString &, const QString &) {
         QThread::msleep(150);
@@ -1507,6 +1450,7 @@ TEST_F(UT_LockPasswordGate, PasswordlessSuspendCancellationKeepsLockUntilFreshCh
     agent.setModel(model);
     for (bool earlySleepNotification : {false, true}) {
         SCOPED_TRACE(earlySleepNotification);
+        model->currentUser()->updatePasswordExpiredState(User::ExpiredAlready, 0);
         worker->m_passwordChangePassed = false;
         worker->m_passwordChange->m_checker = [](const QString &, const QString &) { return PAM_NEW_AUTHTOK_REQD; };
         worker->checkAccount(model->currentUser()->name(), false);
@@ -1563,8 +1507,10 @@ TEST_F(UT_LockPasswordGate, OrdinarySuspendStillHonorsDisabledSleepLock)
 
 TEST_F(UT_LockPasswordGate, SleepRejectsLatePamSuccessBeforeAndAfterRecovery)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
     for (bool hibernate : {false, true}) {
         for (bool replyBeforeRecovery : {false, true}) {
+            model->setLockPasswordChangeRequiresAuthentication(true);
             auto release = std::make_shared<QSemaphore>();
             auto entered = std::make_shared<QSemaphore>();
             worker->m_passwordChangePassed = false;
@@ -1677,6 +1623,7 @@ TEST_F(UT_LockPasswordGate, ManagedPageExposesCurrentAndNewPasswordAndRestoresAf
         auto *pluginPage = content->m_pluginWidgets.value(SessionBaseWindow::FullManagedPlugin);
         ASSERT_EQ(content->m_stackedLayout->currentWidget(), pluginPage);
         model->currentUser()->updatePasswordExpiredState(expired ? User::ExpiredAlready : User::ExpiredNormal, 0);
+        model->setLockPasswordChangeRequiresAuthentication(!expired);
         worker->m_passwordChangeToken = expired ? QStringLiteral("test-old-password") : QString();
         worker->authFinishedAction();
         ASSERT_TRUE(QTest::qWaitFor([&] {
@@ -1745,6 +1692,8 @@ TEST_F(UT_LockPasswordGate, DisabledDoesNotCachePasswordToken)
 
 TEST_F(UT_LockPasswordGate, UnexpiredAccountCompletesAfterAccountCheck)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     worker->m_passwordChangeToken = QStringLiteral("test-old-password");
     worker->m_passwordChange->m_checker = [](const QString &, const QString &) { return PAM_SUCCESS; };
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
@@ -1756,6 +1705,8 @@ TEST_F(UT_LockPasswordGate, UnexpiredAccountCompletesAfterAccountCheck)
 
 TEST_F(UT_LockPasswordGate, FastSuccessfulCheckNeverPresentsIntermediatePage)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     auto content = managedContent();
     auto *originalPage = content->m_stackedLayout->currentWidget();
     auto release = std::make_shared<QSemaphore>();
@@ -1796,8 +1747,10 @@ TEST_F(UT_LockPasswordGate, FastSuccessfulCheckNeverPresentsIntermediatePage)
     EXPECT_FALSE(model->lockPasswordChangePageVisible());
 }
 
-TEST_F(UT_LockPasswordGate, SlowCheckPresentsBusyPageAndCancelRejectsLateSuccess)
+TEST_F(UT_LockPasswordGate, SlowCheckKeepsAuthPageAndCancelRejectsLateSuccess)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     auto content = managedContent();
     auto release = std::make_shared<QSemaphore>();
     const auto unblockOnExit = qScopeGuard([release] { release->release(); });
@@ -1807,11 +1760,13 @@ TEST_F(UT_LockPasswordGate, SlowCheckPresentsBusyPageAndCancelRejectsLateSuccess
         return PAM_SUCCESS;
     };
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
+    QSignalSpy forms(model, &SessionBaseModel::lockPasswordChangeForm);
     worker->authFinishedAction();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return content->m_passwordChangeWidget; }, 3000));
-    EXPECT_TRUE(model->lockPasswordChangePageVisible());
-    EXPECT_TRUE(content->m_passwordChangeWidget->m_busy);
-    EXPECT_TRUE(content->m_passwordChangeWidget->m_checkingOnly);
+    EXPECT_TRUE(model->lockPasswordChangeActive());
+    QTest::qWait(300);
+    EXPECT_FALSE(model->lockPasswordChangePageVisible());
+    EXPECT_EQ(content->m_passwordChangeWidget, nullptr);
+    EXPECT_EQ(forms.count(), 0);
     worker->cancelPasswordChange();
     release->release();
     QTest::qWait(300);
@@ -1914,6 +1869,7 @@ TEST_F(UT_LockPasswordGate, AnotherUidCannotEnterPasswordChange)
 {
     auto other = std::make_shared<ValidLockTestUser>();
     other->m_uid = getuid() + 1;
+    other->updatePasswordExpiredState(User::ExpiredAlready, 0);
     model->updateCurrentUser(other);
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
     QSignalSpy errors(model, &SessionBaseModel::lockPasswordChangePrompt);
@@ -1925,6 +1881,8 @@ TEST_F(UT_LockPasswordGate, AnotherUidCannotEnterPasswordChange)
 
 TEST_F(UT_LockPasswordGate, SwitchingUserDiscardsPendingExpiryResult)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
     worker->m_passwordChangeToken = QStringLiteral("test-old-password");
     worker->m_passwordChange->m_checker = [](const QString &, const QString &) {
@@ -2091,34 +2049,66 @@ TEST_F(UT_LockPasswordGate, ExpiredBiometricFormShowsAllFieldsAndClearsOnCancel)
     EXPECT_TRUE(page->m_hint->text().isEmpty());
 }
 
-TEST_F(UT_LockPasswordGate, BusyFormIgnoresAccountRefreshAndRepeatedSubmissions)
+TEST_F(UT_LockPasswordGate, BackgroundExpiryCheckKeepsAuthPageUntilChangeIsRequired)
 {
+    model->currentUser()->updatePasswordExpiredState(User::ExpiredNormal, 0);
+    model->setLockPasswordChangeRequiresAuthentication(true);
     auto content = managedContent();
+    auto *originalPage = content->m_stackedLayout->currentWidget();
+    auto entered = std::make_shared<QSemaphore>();
+    auto release = std::make_shared<QSemaphore>();
+    const auto unblockOnExit = qScopeGuard([release] { release->release(); });
     worker->m_passwordChangeToken = QStringLiteral("old");
-    worker->m_passwordChange->m_checker = [](const QString &, const QString &) {
-        QThread::msleep(600);
+    worker->m_passwordChange->m_checker = [entered, release](const QString &, const QString &) {
+        entered->release();
+        release->acquire();
         return PAM_NEW_AUTHTOK_REQD;
     };
+    QSignalSpy finished(model, &SessionBaseModel::authFinished);
+    QSignalSpy forms(model, &SessionBaseModel::lockPasswordChangeForm);
+    QSignalSpy prompts(model, &SessionBaseModel::lockPasswordChangePrompt);
     worker->authFinishedAction();
-    ASSERT_TRUE(QTest::qWaitFor([&] { return content->m_passwordChangeWidget; }, 3000));
-    auto *page = content->m_passwordChangeWidget;
-    ASSERT_TRUE(page->m_busy);
+    ASSERT_TRUE(QTest::qWaitFor([&] { return entered->tryAcquire(); }, 3000));
+    // Hold the result long enough to verify that the check remains hidden.
+    QTest::qWait(300);
     for (auto state : {User::ExpiredNormal, User::ExpiredSoon, User::ExpiredAlready}) {
         model->currentUser()->updatePasswordExpiredState(state, 1);
-        emit model->currentUser()->passwordExpiredInfoChanged();
         content->m_authWidget->updatePasswordExpiredState();
-        EXPECT_FALSE(page->m_current->isEnabled());
-        EXPECT_FALSE(page->m_password->isEnabled());
-        EXPECT_FALSE(page->m_confirmation->isEnabled());
-        EXPECT_FALSE(page->m_hint->isEnabled());
-        EXPECT_FALSE(page->m_submit->isEnabled());
+        EXPECT_TRUE(model->lockPasswordChangeActive());
+        EXPECT_FALSE(model->lockPasswordChangePageVisible());
+        EXPECT_EQ(content->m_stackedLayout->currentWidget(), originalPage);
+        EXPECT_EQ(content->m_passwordChangeWidget, nullptr);
+        EXPECT_EQ(forms.count(), 0);
+        EXPECT_EQ(prompts.count(), 0);
     }
     worker->m_passwordChangeHint = QStringLiteral("original hint");
     worker->submitPasswordChange(QStringLiteral("old"), QStringLiteral("new"), QStringLiteral("new"), QStringLiteral("ignored hint"));
+    worker->sendTokenToAuth(model->currentUser()->name(), AT_PAM, QStringLiteral("ignored"));
+    worker->authFinishedAction();
     EXPECT_EQ(worker->m_passwordChangeHint, QStringLiteral("original hint"));
     EXPECT_EQ(worker->m_passwordChange->m_process, nullptr);
-    ASSERT_TRUE(QTest::qWaitFor([&] { return !page->m_busy; }, 3000));
+    EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::CheckingExpiry);
+    EXPECT_EQ(finished.count(), 0);
+    EXPECT_EQ(content->m_passwordChangeWidget, nullptr);
+
+    release->release();
+    ASSERT_TRUE(QTest::qWaitFor([&] { return model->lockPasswordChangePageVisible(); }, 3000));
+    auto *page = content->m_passwordChangeWidget;
+    ASSERT_NE(page, nullptr);
+    EXPECT_FALSE(page->m_busy);
+    EXPECT_FALSE(page->m_checkingOnly);
     EXPECT_TRUE(page->m_password->isEnabled());
+    EXPECT_TRUE(page->m_confirmation->isEnabled());
+    EXPECT_TRUE(page->m_submit->isEnabled());
+    EXPECT_EQ(worker->m_passwordChange->m_stage, LockPasswordChange::NewPassword);
+    EXPECT_EQ(worker->m_passwordChange->m_oldPassword, QStringLiteral("old"));
+    EXPECT_EQ(finished.count(), 0);
+    ASSERT_GT(forms.count(), 0);
+    for (const auto &form : forms) {
+        EXPECT_FALSE(form[1].toBool());
+        EXPECT_FALSE(form[2].toBool());
+    }
+    worker->cancelPasswordChange();
 }
 
 TEST_F(UT_LockPasswordGate, FullFormAndLongErrorFit1024x768)
