@@ -472,10 +472,17 @@ void LockWorker::initData()
         m_model->updateUserList(m_accountsInter->userList());
         m_model->updateLoginedUserList(m_loginedInter->userList());
 
-        m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
+#ifdef ENABLE_DSS_SNIPE
+        const bool userlist = getDconfigValue("userlist", true).toBool();
+        const bool loginPromptInput = getDconfigValue("loginPromptInput", false).toBool();
+#else
+        const bool userlist = valueByQSettings<bool>("", "userlist", true);
+        const bool loginPromptInput = valueByQSettings<bool>("", "loginPromptInput", false);
+#endif
+        m_model->setUserlistVisible(userlist);
         /* com.deepin.udcp.iam */
         QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
-        const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
+        const bool allowShowCustomUser = (!m_model->userlistVisible()) || loginPromptInput ||
             ifc.property("Enable").toBool() || checkIsADDomain();
         m_model->setAllowShowCustomUser(allowShowCustomUser);
 
