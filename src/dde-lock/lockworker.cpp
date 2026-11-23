@@ -5,6 +5,7 @@
 #include "lockworker.h"
 
 #include "authcommon.h"
+#include "sessionconflict.h"
 #include "sessionbasemodel.h"
 #include "userinfo.h"
 #include "login_plugin_util.h"
@@ -885,7 +886,7 @@ void LockWorker::switchToUser(std::shared_ptr<User> user)
      * 当前用户界面还未更新完成，已经切换为下一用户界面了，导致切换回来时，闪现用户列表。
      * 故使用 QTimer 将切换用户的操作放在事件队列最后处理。
      */
-    if (user->isLogin()) {
+    if (user->isLogin() && !SessionConflict::hasActiveSessionConflict(m_login1Inter, user->name())) {
         QTimer::singleShot(0, this, [user] {
             QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
         });

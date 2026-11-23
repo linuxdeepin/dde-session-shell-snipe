@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,7 +25,10 @@
 #include <DConfig>
 #endif
 
+#include <QJsonArray>
+#include <QHash>
 #include <QObject>
+#include <QSet>
 #include <memory>
 
 #ifndef ENABLE_DSS_SNIPE
@@ -70,6 +73,10 @@ protected:
     void initDBus();
     void initData();
     void onLoginUserListChanged(const QString &list);
+    void updateRemoteLoginStatus();
+    void queryRemoteLoginSession(const QString &sessionId, const QDBusObjectPath &path);
+    void removeRemoteLoginSession(const QString &sessionId);
+    void updateRemoteLoginUser(uint uid, bool remote);
 
     bool checkHaveDisplay(const QJsonArray &array);
     bool isLogined(uint uid);
@@ -112,6 +119,8 @@ protected:
     uint               m_currentUserUid;
     std::list<uint>    m_loginUserList;
     bool m_isVM;
+    QHash<QString, uint> m_remoteSessions;
+    QSet<QString>      m_pendingRemoteSessions;
 };
 }  // namespace Auth
 

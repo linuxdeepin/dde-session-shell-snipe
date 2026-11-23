@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2018 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2018-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <gtest/gtest.h>
 
 #include "dbusconstant.h"
+#include <QSignalSpy>
+
 #include "userinfo.h"
 
 class UT_Interface : public testing::Test
@@ -70,4 +72,21 @@ TEST_F(UT_Interface, user)
     addomainUser->displayNameChanged(displayname.append("aaaaaa"));
     EXPECT_EQ(nativeUser->name(), name);
     addomainUser->setFullName(displayname);
+}
+
+TEST_F(UT_Interface, remoteLoginState)
+{
+    User user;
+    QSignalSpy spy(&user, &User::remoteLoginStateChanged);
+
+    EXPECT_FALSE(user.isRemoteLogin());
+    user.updateRemoteLoginState(true);
+    EXPECT_TRUE(user.isRemoteLogin());
+    EXPECT_EQ(spy.count(), 1);
+
+    user.updateRemoteLoginState(true);
+    EXPECT_EQ(spy.count(), 1);
+
+    User copy(user);
+    EXPECT_TRUE(copy.isRemoteLogin());
 }
