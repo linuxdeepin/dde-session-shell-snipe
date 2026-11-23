@@ -11,6 +11,8 @@
 #include "dbusconstant.h"
 
 #include <QDBusServiceWatcher>
+#include <QCoreApplication>
+
 #ifdef ENABLE_DSS_SNIPE
 #include <QDBusUnixFileDescriptor>
 #include <QtEndian>
@@ -206,8 +208,8 @@ void DeepinAuthFramework::CreateAuthenticate(const QString &account)
         return;
     }
     qCInfo(DDE_SHELL) << "Create PAM authenticate thread, accout: " << account << "PAM auth thread: " << m_PAMAuthThread;
-    m_account = account;
     DestroyAuthenticate();
+    m_account = account;
     m_cancelAuth = false;
     m_waitToken = true;
     int rc = pthread_create(&m_PAMAuthThread, nullptr, &PAMAuthWorker, this);
@@ -264,6 +266,18 @@ void DeepinAuthFramework::PAMAuthentication(const QString &account)
         }
     } else {
         qCDebug(DDE_SHELL) << "PAM authenticate finished.";
+
+        // 锁屏过程中检查用户是否过期
+        if (qAppName().contains("lock")) {
+            int ra = pam_acct_mgmt(m_pamHandle, PAM_SILENT);
+            qCDebug(DDE_SHELL) << "PAM password expired check result : " << ra;
+            const bool expired = ra == PAM_NEW_AUTHTOK_REQD || ra == PAM_AUTHTOK_EXPIRED;
+            Q_EMIT notifyPAMPasswdExpired(account, expired);
+            if (ra != PAM_SUCCESS && !expired) {
+                rc = ra;
+                m_message = QString::fromLocal8Bit(pam_strerror(m_pamHandle, ra));
+            }
+        }
     }
 
     int re = pam_end(m_pamHandle, rc);
