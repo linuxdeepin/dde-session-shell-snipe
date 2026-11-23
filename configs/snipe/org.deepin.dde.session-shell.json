@@ -2,6 +2,28 @@
   "magic": "dsg.config.meta",
   "version": "1.0",
   "contents": {
+    "userlist": {
+      "value": true,
+      "serial": 0,
+      "flags": ["global"],
+      "name": "UserList",
+      "name[zh_CN]": "显示用户列表",
+      "description": "Show the user selection list. When disabled, use manual account entry. Defaults to true.",
+      "description[zh_CN]": "是否显示用户选择列表；关闭时使用手动输入账号的登录流程，默认开启。登录器和锁屏共用此配置，进程启动时读取。",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
+    "loginPromptInput": {
+      "value": false,
+      "serial": 0,
+      "flags": ["global"],
+      "name": "LoginPromptInput",
+      "name[zh_CN]": "默认显示账号输入页",
+      "description": "Show manual account entry by default in the greeter. Does not independently hide the user list. Defaults to false.",
+      "description[zh_CN]": "登录界面是否默认显示账号输入页，不单独控制用户列表是否可见，默认关闭。登录器和锁屏共用此配置，进程启动时读取。",
+      "permissions": "readwrite",
+      "visibility": "private"
+    },
     "authResetTime": {
       "value": 15000,
       "serial": 0,
