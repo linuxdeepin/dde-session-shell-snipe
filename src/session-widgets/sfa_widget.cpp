@@ -1468,13 +1468,17 @@ void SFAWidget::chooseAuthType(const AuthFlags authFlags)
             m_currentAuthType = m_authButtons.firstKey();
             break;
         }
-        // 如果密码锁定，那么切换到密码认证且不允许切换认证类型
-        if (m_passwordAuth && m_passwordAuth->isLocked()) {
-            qCInfo(DDE_SHELL) << "Password is locked, use password authentication";
-            m_chooseAuthButtonBox->setEnabled(false);
-            m_user->setLastAuthType(AT_Password);
-            m_currentAuthType = AT_Password;
-            break;
+        // 密码锁定或已过期时，强制密码认证且不允许切换认证类型。
+        if (m_passwordAuth) {
+            const bool locked = m_passwordAuth->isLocked();
+            const bool expired = m_model->currentUser()->expiredState() == User::ExpiredAlready;
+            if (locked || expired) {
+                qCInfo(DDE_SHELL) << "Password status: locked=" << locked << "expired=" << expired;
+                m_chooseAuthButtonBox->setEnabled(false);
+                m_user->setLastAuthType(AT_Password);
+                m_currentAuthType = AT_Password;
+                break;
+            }
         }
         // 自定义认证插件的认证顺序
         if (!m_customAuths.isEmpty()) {

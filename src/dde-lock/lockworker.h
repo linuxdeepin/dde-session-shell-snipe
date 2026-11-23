@@ -88,6 +88,7 @@ private:
 
     bool isCheckPwdBeforeRebootOrShut();
     bool passwordChangeEnabled() const;
+    bool shouldGatePasswordChange() const;
     void checkPasswordBeforeUnlock();
     void presentPasswordChangeUI(quint64 request);
     void restorePasswordChangeUI();
