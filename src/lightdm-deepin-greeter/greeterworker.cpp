@@ -421,10 +421,17 @@ void GreeterWorker::initData()
         m_model->updateUserList(list);
         m_model->updateLoginedUserList(m_loginedInter->userList());
 
-        m_model->setUserlistVisible(valueByQSettings<bool>("", "userlist", true));
+#ifdef ENABLE_DSS_SNIPE
+        const bool userlist = getDconfigValue("userlist", true).toBool();
+        const bool loginPromptInput = getDconfigValue("loginPromptInput", false).toBool();
+#else
+        const bool userlist = valueByQSettings<bool>("", "userlist", true);
+        const bool loginPromptInput = valueByQSettings<bool>("", "loginPromptInput", false);
+#endif
+        m_model->setUserlistVisible(userlist);
         /* com.deepin.udcp.iam */
         QDBusInterface ifc(DSS_DBUS::udcpIamService, DSS_DBUS::udcpIamPath, DSS_DBUS::udcpIamService, QDBusConnection::systemBus(), this);
-        const bool allowShowCustomUser = (!m_model->userlistVisible()) || valueByQSettings<bool>("", "loginPromptInput", false) ||
+        const bool allowShowCustomUser = (!m_model->userlistVisible()) || loginPromptInput ||
             ifc.property("Enable").toBool() || checkIsADDomain();
         m_model->setAllowShowCustomUser(allowShowCustomUser);
 
@@ -434,7 +441,7 @@ void GreeterWorker::initData()
             std::shared_ptr<User> user(new User());
             m_model->setIsServerModel(DSysInfo::deepinType() == DSysInfo::DeepinServer);
             m_model->addUser(user);
-            if (DSysInfo::deepinType() == DSysInfo::DeepinServer || valueByQSettings<bool>("", "loginPromptInput", false) || !m_model->userlistVisible()) {
+            if (DSysInfo::deepinType() == DSysInfo::DeepinServer || loginPromptInput || !m_model->userlistVisible()) {
                 m_model->updateCurrentUser(user);
             } else {
                 /* com.deepin.dde.LockService */
