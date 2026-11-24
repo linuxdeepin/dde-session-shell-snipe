@@ -286,6 +286,12 @@ widgets:
   source_file: src/session-widgets/userpanel.cpp
   class_name: UserPanel
   line: 48
+- variable: m_avatar
+  type: UserAvatar *
+  object_name: Avatar_4
+  source_file: src/widgets/activesessionwidgets.cpp
+  class_name: ActiveSessionConfirmWidget
+  line: 52
 - variable: m_virtualKBBtn
   type: FloatingButton *
   object_name: VirtualKeyboardBtn
