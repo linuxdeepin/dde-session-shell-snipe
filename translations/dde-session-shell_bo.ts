@@ -1,5 +1,24 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="bo">
 <context>
+    <name>ActiveSessionConfirmWidget</name>
+    <message>
+        <source>Confirm Login</source>
+        <translation>ཞུགས་པར་ངོས་འཛིན།</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>ཕྱིར་ཐེབས།</translation>
+    </message>
+    <message>
+        <source>This account is already logged in elsewhere. Continuing will force logout the existing session. Proceed with login?</source>
+        <translation>ཞང་ཐོ་འདི་གཞན་སར་ཞུགས་ཟིན། མུ་མཐུད་ཞུགས་ན་ཡོད་པའི་ཞུགས་སྟངས་བཀག་འདོམས་བྱས་ཕྱིར་ཐོན་བཟོ་ངེས། ཡང་ཞུགས་འདོད་དམ།</translation>
+    </message>
+    <message>
+        <source>Two remote users are already signed in, which is the maximum allowed. Wait for a remote user to sign out, then try again.</source>
+        <translation>རྒྱང་འཐེན་བཀོལ་སྤྱོད་པ 2 ཞུགས་ཟིན་པ་དང་། བཀོལ་སྤྱོད་པའི་གྲངས་ཚད་མཐོ་ཤོས་ལ་སླེབས་ཟིན། གཞན་པའི་རྒྱང་འཐེན་བཀོལ་སྤྱོད་པ་ཕྱིར་ཐོན་བྱས་རྗེས་ཡང་བསྐྱར་ཚོད་ལྟ་གནང་རོགས།</translation>
+    </message>
+</context>
+<context>
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>

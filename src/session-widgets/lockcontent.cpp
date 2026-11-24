@@ -28,10 +28,28 @@
 #include <QMouseEvent>
 
 #include "dbusconstant.h"
+#include "dbuslogin1manager.h"
 
 using namespace dss;
 using namespace dss::module;
 DCORE_USE_NAMESPACE
+
+// 通过 logind D-Bus 接口判断当前 session 是否为远程会话
+static bool isRemoteSession()
+{
+    const auto bus = QDBusConnection::systemBus();
+    DBusLogin1Manager login1("org.freedesktop.login1", "/org/freedesktop/login1", bus);
+    QDBusReply<QDBusObjectPath> session = login1.GetSessionByPID(0);
+    // The lock service runs outside the graphical session's scope.
+    if (!session.isValid() && !qEnvironmentVariableIsEmpty("XDG_SESSION_ID"))
+        session = login1.GetSession(qEnvironmentVariable("XDG_SESSION_ID"));
+    if (!session.isValid())
+        return false;
+
+    QDBusInterface iface("org.freedesktop.login1", session.value().path(),
+                         "org.freedesktop.login1.Session", bus);
+    return iface.property("Remote").toBool();
+}
 
 LockContent::LockContent(QWidget *parent)
     : SessionBaseWindow(parent)
@@ -887,7 +905,9 @@ void LockContent::onUserListChanged(QList<std::shared_ptr<User>> list)
         }
     }
 
-    bool enable = (alwaysShowUserSwitchButton || (allowShowUserSwitchButton && (userList > (m_model->isServerModel() ? 0 : 1)))) && haveLoginedUser;
+    // 仅远程锁屏和桌面电源菜单强制隐藏，登录界面按原有条件判断。
+    bool hideForRemote = m_model->appType() == AuthCommon::Lock && isRemoteSession();
+    bool enable = !hideForRemote && (alwaysShowUserSwitchButton || (allowShowUserSwitchButton && (userList > (m_model->isServerModel() ? 0 : 1)))) && haveLoginedUser;
 
     bool controlEnable = enable && (m_model->userlistVisible() || m_model->currentUser()->name() != "...");
     m_controlWidget->setUserSwitchEnable(controlEnable);
