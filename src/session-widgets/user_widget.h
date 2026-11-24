@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -55,6 +55,7 @@ private:
     void setAvatar(const QString &avatar);
     void updateUserNameLabel();
     void setLoginState(const bool isLogin);
+    void updateLoginStateIcon();
 
     void updateBlurEffectGeometry();
 

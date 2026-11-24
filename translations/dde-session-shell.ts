@@ -2,6 +2,29 @@
 <!DOCTYPE TS>
 <TS version="2.1">
 <context>
+    <name>ActiveSessionConfirmWidget</name>
+    <message>
+        <location filename="../src/widgets/activesessionwidgets.cpp" line="30"/>
+        <source>Confirm Login</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/activesessionwidgets.cpp" line="31"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/activesessionwidgets.cpp" line="55"/>
+        <source>This account is already logged in elsewhere. Continuing will force logout the existing session. Proceed with login?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/widgets/activesessionwidgets.cpp"/>
+        <source>Two remote users are already signed in, which is the maximum allowed. Wait for a remote user to sign out, then try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ContentWidget</name>
     <message>
         <location filename="../src/dde-shutdown/view/contentwidget.cpp" line="360"/>
