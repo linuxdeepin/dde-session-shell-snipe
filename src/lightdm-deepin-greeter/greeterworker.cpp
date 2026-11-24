@@ -5,6 +5,8 @@
 #include "greeterworker.h"
 #include "greeterpasswordchange.h"
 
+#include "sessionconflict.h"
+
 #include "authcommon.h"
 #include "keyboardmonitor.h"
 #include "userinfo.h"
@@ -27,6 +29,10 @@
 #endif
 #include <pwd.h>
 #include </usr/include/shadow.h>
+#include <QDBusArgument>
+#include <QDBusMessage>
+#include <QDBusObjectPath>
+#include <qloggingcategory.h>
 
 #define SECURITY_ENHANCE_PATH "/com/deepin/daemon/SecurityEnhance"
 #define SECURITY_ENHANCE_NAME "com.deepin.daemon.SecurityEnhance"
@@ -55,6 +61,7 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 #endif
     , m_resetSessionTimer(new QTimer(this))
     , m_limitsUpdateTimer(new QTimer(this))
+    , m_forceLogoutTimer(new QTimer(this))
     , m_retryAuth(false)
     , m_passwordChange(new GreeterPasswordChange(this))
 {
@@ -86,6 +93,9 @@ GreeterWorker::GreeterWorker(SessionBaseModel *const model, QObject *parent)
 
     m_limitsUpdateTimer->setSingleShot(true);
     m_limitsUpdateTimer->setInterval(50);
+
+    m_forceLogoutTimer->setSingleShot(true);
+    m_forceLogoutTimer->setInterval(15000);
 
     //认证超时重启
     m_resetSessionTimer->setInterval(15000);
@@ -207,6 +217,8 @@ void GreeterWorker::initConnections()
     connect(m_authFramework, &DeepinAuthFramework::SessionCreated, this, &GreeterWorker::onSessionCreated);
     connect(m_authFramework, &DeepinAuthFramework::TokenAccountMismatch, this, &GreeterWorker::resetAuth);
 
+    connect(m_forceLogoutTimer, &QTimer::timeout, this, &GreeterWorker::onForceLogoutTimeout);
+
     /* org.freedesktop.login1.Session */
     connect(m_login1SessionSelf, &Login1SessionSelf::ActiveChanged, this, [this](bool active) {
         qCInfo(DDE_SHELL) << "Login1SessionSelf::ActiveChanged:" << active;
@@ -262,20 +274,38 @@ void GreeterWorker::initConnections()
     });
     connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [this] {
         qCInfo(DDE_SHELL) << "DBus login1 manager session removed";
+        auto currentUser = m_model->currentUser();
+        if (!currentUser) {
+            qWarning() << "Current user is nullptr";
+            return;
+        }
+
         if (m_model->updateCurrentUser(m_lockInter->CurrentUser())) {
             m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
             destroyAuthentication(m_account);
-            if (!m_model->currentUser()->isNoPasswordLogin()) {
-                createAuthentication(m_model->currentUser()->name());
+            if (!currentUser->isNoPasswordLogin()) {
+                createAuthentication(currentUser->name());
             } else {
                 m_model->setAuthType(AT_None);
             }
         }
 #ifndef ENABLE_DSS_SNIPE
-        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(m_model->currentUser()->uid()));
+        m_soundPlayerInter->PrepareShutdownSound(static_cast<int>(currentUser->uid()));
 #else
         prepareShutdownSound();
 #endif
+
+        // 处理远程桌面登录冲突场景
+        if (m_forceLogoutInProgress) {
+            qCInfo(DDE_SHELL) << "[ForceLogout] Force logout in progress";
+            if (SessionConflict::hasActiveSessionConflict(m_login1Inter, currentUser->name())) {
+                qCInfo(DDE_SHELL) << "[ForceLogout] Conflict still exists after SessionRemoved, keep waiting";
+                return;
+            }
+
+            qCInfo(DDE_SHELL) << "[ForceLogout] Conflict cleared by SessionRemoved, continue login";
+            continueLoginAfterForceLogout();
+        }
     });
     /* com.deepin.dde.LockService */
     connect(m_lockInter, &DBusLockService::UserChanged, this, [this](const QString &json) {
@@ -559,9 +589,34 @@ void GreeterWorker::setCurrentUser(const std::shared_ptr<User> user)
 
 void GreeterWorker::switchToUser(std::shared_ptr<User> user)
 {
+    if (!user) {
+        qWarning() << "The user is about to switch is nullptr";
+        return;
+    }
+
     if (*user == *m_model->currentUser()) {
+        // 需要密码的的用户开启密码认证就完事儿了
         if (!m_model->currentUser()->isNoPasswordLogin()) {
             createAuthentication(user->name());
+        } else {
+            // 处理无密码登录场景
+            qInfo() << "User is no password login, check session conflict";
+            if (user && SessionConflict::isCurrentSessionRemote(m_login1Inter) &&
+                SessionConflict::countActiveRemoteUsers(m_login1Inter, user->name())
+                        >= SessionConflict::kMaxRemoteLoginUsers) {
+                // 超过登录限制数量的场景
+                qCInfo(DDE_SHELL) << "[RemoteUserLimit] Max remote login users reached, reject no-password login for"
+                        << user->name();
+                emit requestShowRemoteUserLimitMessage();
+            } else if (user && SessionConflict::hasActiveSessionConflict(m_login1Inter, user->name())) {
+                // 登录冲突场景
+                qCInfo(DDE_SHELL) << "[ForceLogout] Active session conflict detected before LightDM respond";
+                emit requestShowActiveSessionConfirm();
+            } else if (user->isLogin() && SessionConflict::isCurrentSessionRemote(m_login1Inter)) {
+                qCInfo(DDE_SHELL) << "Remote session reconnect";
+                // 远程登录重连场景
+                startGreeterAuth(user->name());
+            }
         }
         return;
     }
@@ -576,7 +631,15 @@ void GreeterWorker::switchToUser(std::shared_ptr<User> user)
     }
 
     setCurrentUser(user);
-    if (user->isLogin()) { // switch to user Xorg
+    // 点已登录的用户，两种情况：
+    // 走 if（直接切会话）：登录界面在本地，目标用户的会话也在本地，直接切换到该用户会话。
+    // 走 else（留在登录界面输密码）：
+    //   1. 目标用户没登录；
+    //   2. 登录界面和目标用户会话一个本地一个远程；
+    //   3. 当前界面和目标用户会话都是远程；
+    if (user->isLogin()
+        && !SessionConflict::isCurrentSessionRemote(m_login1Inter)
+        && !SessionConflict::hasActiveSessionConflict(m_login1Inter, user->name())) { // switch to user Xorg
         QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
     } else {
         m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
@@ -1033,19 +1096,21 @@ void GreeterWorker::handleAuthenticationComplete(bool result, const QString &acc
     }
     qCInfo(DDE_SHELL) << "Authentication result:" << result << ", retry auth" << m_retryAuth;
 
-    if (!result) {
+    const auto currentUser = m_model->currentUser();
+    if (!result && currentUser) {
+        if (currentUser->isNoPasswordLogin() && currentUser->expiredState() != User::ExpiredAlready) {
+            qInfo() << "User is `No Password Login`, the authentication must be canceled, do nothing.";
+            return;
+        }
         if (m_retryAuth && !m_model->getAuthProperty().MFAFlag) {
             showMessage(tr("Wrong Password"), QLightDM::Greeter::MessageTypeError);
         }
-        if (!m_model->currentUser()->limitsInfo(AT_Password).locked) {
-            m_authenticationLocale = m_model->currentUser()->locale();
-            m_greeter->authenticate(m_model->currentUser()->name());
+        if (!currentUser->limitsInfo(AT_Password).locked) {
+            m_authenticationLocale = currentUser->locale();
+            m_greeter->authenticate(currentUser->name());
         }
         return;
     }
-
-    emit m_model->authFinished(true);
-
     m_password.clear();
 
     switch (m_model->powerAction()) {
@@ -1068,10 +1133,25 @@ void GreeterWorker::handleAuthenticationComplete(bool result, const QString &acc
     DDE_EventLogger::EventLogger::instance().writeEventLog(data);
 #endif
 
+    startSessionAfterAuth();
+}
+
+void GreeterWorker::startSessionAfterAuth()
+{
+    auto currentUser = m_model->currentUser();
+    if (!currentUser) {
+        qWarning() << "Current user is nullptr, can not start session";
+        return;
+    }
+
+    emit requestHideActiveSessionOverlay();
+    emit m_model->authFinished(true);
+
+    qCInfo(DDE_SHELL) << "Start session after auth, session:" << m_model->sessionKey();
     qCInfo(DDE_SHELL) << "Start session: " << m_model->sessionKey();
 
-    emit requestUpdateBackground(m_model->currentUser()->greeterBackground());
-    setCurrentUser(m_model->currentUser());
+    emit requestUpdateBackground(currentUser->greeterBackground());
+    setCurrentUser(currentUser);
     m_greeter->startSessionSync(m_model->sessionKey());
     endAuthentication(m_account, AT_All);
     destroyAuthentication(m_account);
@@ -1080,7 +1160,166 @@ void GreeterWorker::handleAuthenticationComplete(bool result, const QString &acc
     QDBusReply<void> reply = m_systemDaemon->call("ClearTtys");
     if (!reply.isValid()) {
         qCWarning(DDE_SHELL) << "Clear ttys failed, error messages: " << reply.error().message();
-    };
+    }
+}
+
+void GreeterWorker::startForceLogout(const QString &username)
+{
+    qInfo() << "[ForceLogout] Start force logout, user name:" << username;
+    if (m_forceLogoutInProgress) {
+        qCWarning(DDE_SHELL) << "[ForceLogout] Already in progress, ignore repeated request";
+        return;
+    }
+
+    QDBusInterface remoteLogin(
+        "org.deepin.RemoteDesktop1",
+        "/org/deepin/RemoteDesktop1/RemoteLogin",
+        "org.deepin.RemoteDesktop1.RemoteLogin",
+        QDBusConnection::systemBus());
+    if (!remoteLogin.isValid()) {
+        qCWarning(DDE_SHELL) << "[ForceLogout] RemoteLogin interface is invalid";
+        emit m_model->authFailedTipsMessage(tr("Failed to sign out other sessions"));
+        resetAuthAfterCancel();
+        return;
+    }
+
+    m_forceLogoutInProgress = true;
+    m_forceLogoutTimedOut = false;
+    qCInfo(DDE_SHELL) << "[ForceLogout] Start for user:" << username;
+    emit requestShowActiveSessionLoading();
+
+    qCInfo(DDE_SHELL) << "[ForceLogout] Call `ForceLogoutByUser`, user name:" << username;
+    QDBusPendingReply<> reply = remoteLogin.asyncCall("ForceLogoutByUser", username, "");
+    if (m_forceLogoutWatcher) {
+        m_forceLogoutWatcher->deleteLater();
+    }
+    m_forceLogoutWatcher = new QDBusPendingCallWatcher(reply, this);
+    connect(m_forceLogoutWatcher, &QDBusPendingCallWatcher::finished,
+            this, &GreeterWorker::onForceLogoutFinished);
+    m_forceLogoutTimer->start();
+    qCInfo(DDE_SHELL) << "[ForceLogout] ForceLogoutByUser sent, wait DBus reply and SessionRemoved";
+}
+
+void GreeterWorker::resetAuthAfterCancel()
+{
+    emit requestHideActiveSessionOverlay();
+
+    // 无密码登录不需要重置认证，因为开启认证后就直接进入系统了
+    if (m_model->currentUser() && m_model->currentUser()->isNoPasswordLogin()) {
+        qInfo() << "Current user is `No password login`, do not reset auth";
+        return;
+    }
+
+    resetAuth(m_account);
+}
+
+void GreeterWorker::onActiveSessionConfirmAccepted()
+{
+    qCInfo(DDE_SHELL) << "[ForceLogout] User accepted active-session conflict confirm";
+    auto currentUser = m_model->currentUser();
+    if (!currentUser)
+        return;
+    startForceLogout(currentUser->name());
+}
+
+void GreeterWorker::onActiveSessionConfirmCanceled()
+{
+    qCInfo(DDE_SHELL) << "[ForceLogout] User canceled active-session conflict confirm";
+    resetAuthAfterCancel();
+}
+
+void GreeterWorker::onForceLogoutFinished(QDBusPendingCallWatcher *watcher)
+{
+    if (watcher == nullptr) {
+        return;
+    }
+    QDBusPendingReply<> reply = *watcher;
+    watcher->deleteLater();
+    m_forceLogoutWatcher = nullptr;
+
+    if (!m_forceLogoutInProgress) {
+        qCInfo(DDE_SHELL) << "[ForceLogout] Reply received but force logout not in progress, ignore";
+        return;
+    }
+    qCInfo(DDE_SHELL) << "[ForceLogout] DBus reply received";
+
+    if (m_forceLogoutTimedOut) {
+        qCInfo(DDE_SHELL) << "[ForceLogout] Already timed out before DBus reply";
+        return;
+    }
+
+    if (!reply.isValid()) {
+        m_forceLogoutTimer->stop();
+        m_forceLogoutInProgress = false;
+        qCWarning(DDE_SHELL) << "[ForceLogout] ForceLogoutByUser failed:" << reply.error().message();
+        emit m_model->authFailedTipsMessage(tr("Failed to sign out other sessions"));
+        resetAuthAfterCancel();
+        return;
+    }
+
+    qCInfo(DDE_SHELL) << "[ForceLogout] ForceLogoutByUser success, wait SessionRemoved";
+}
+
+void GreeterWorker::continueLoginAfterForceLogout()
+{
+    if (!m_forceLogoutInProgress) {
+        qCInfo(DDE_SHELL) << "[ForceLogout] Continue login ignored, force logout not in progress";
+        return;
+    }
+
+    auto currentUser = m_model->currentUser();
+    if (!currentUser) {
+        qWarning() << "[ForceLogout] Current user is nullptr, can not continue login";
+        return;
+    }
+
+    m_forceLogoutTimer->stop();
+    m_forceLogoutInProgress = false;
+
+    if (SessionConflict::isCurrentSessionRemote(m_login1Inter) &&
+        SessionConflict::countActiveRemoteUsers(m_login1Inter, currentUser->name())
+                >= SessionConflict::kMaxRemoteLoginUsers) {
+        qCInfo(DDE_SHELL) << "[RemoteUserLimit] Max remote login users reached, reject continue login for"
+                << currentUser->name();
+        emit requestShowRemoteUserLimitMessage();
+        return;
+    }
+
+    qCInfo(DDE_SHELL) << "[ForceLogout] Continue login flow";
+    if (currentUser->isNoPasswordLogin()) {
+        // 无密码登录的时候不可能处于认证状态，因为一旦开启认证就直接认证成功了
+        // 在这个过程之前就已经Cancel过了，在远程桌面登录界面切换无密码登录的场景下会出问题，这个再次处理一下
+        if (m_greeter->inAuthentication())
+            m_greeter->cancelAuthentication();
+        startGreeterAuth(currentUser->name());
+    } else if (m_greeter->inAuthentication()) {
+        qCInfo(DDE_SHELL) << "[ForceLogout] LightDM is in authentication, respond now";
+        respondToGreeter(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
+        updatePasswordExpiredStateBySPName(m_account);
+        if (currentUser->expiredState() == User::ExpiredAlready) {
+            qCInfo(DDE_SHELL) << "[ForceLogout] Password expired, switch to change password flow";
+            changePasswd();
+        }
+    } else {
+        qCWarning(DDE_SHELL) << "[ForceLogout] LightDM is not in authentication, reset auth";
+        resetAuthAfterCancel();
+    }
+}
+
+void GreeterWorker::onForceLogoutTimeout()
+{
+    if (!m_forceLogoutInProgress) {
+        return;
+    }
+    qCWarning(DDE_SHELL) << "[ForceLogout] Timed out while waiting session conflict to clear";
+    m_forceLogoutTimedOut = true;
+    m_forceLogoutInProgress = false;
+    if (m_forceLogoutWatcher) {
+        m_forceLogoutWatcher->deleteLater();
+        m_forceLogoutWatcher = nullptr;
+    }
+    emit m_model->authFailedTipsMessage(tr("Session sign-out timed out. Please retry."));
+    resetAuthAfterCancel();
 }
 
 void GreeterWorker::onAuthFinished()
@@ -1088,11 +1327,32 @@ void GreeterWorker::onAuthFinished()
     if (m_model->greeterPasswordChangeActive() || m_passwordChange->active() || m_discardGreeterCompletion)
         return;
     qCInfo(DDE_SHELL) << "Auth finished";
+    auto currentUser = m_model->currentUser();
+    if (!currentUser) {
+        qWarning() << "Current user is nullptr";
+        return;
+    }
     if (m_greeter->inAuthentication()) {
+        const bool skipConflictCheck = (currentUser->expiredState() == User::ExpiredAlready);
+        if (!skipConflictCheck &&
+            SessionConflict::isCurrentSessionRemote(m_login1Inter) &&
+            SessionConflict::countActiveRemoteUsers(m_login1Inter, currentUser->name())
+                    >= SessionConflict::kMaxRemoteLoginUsers) {
+            qCInfo(DDE_SHELL) << "[RemoteUserLimit] Max remote login users reached, reject login for"
+                    << currentUser->name();
+            emit requestShowRemoteUserLimitMessage();
+            return;
+        }
+        if (!skipConflictCheck && SessionConflict::hasActiveSessionConflict(m_login1Inter, currentUser->name())) {
+            qCInfo(DDE_SHELL) << "[ForceLogout] Active session conflict detected before LightDM respond";
+            emit requestShowActiveSessionConfirm();
+            return;
+        }
+
         respondToGreeter(m_authFramework->AuthSessionPath(m_account) + QString(";") + m_password);
 #ifndef ENABLE_DSS_SNIPE
         updatePasswordExpiredStateBySPName(m_account);
-        if (m_model->currentUser()->expiredState() == User::ExpiredAlready) {
+        if (currentUser->expiredState() == User::ExpiredAlready) {
             changePasswd();
         }
 #else
@@ -1590,10 +1850,14 @@ void GreeterWorker::resetAuth(const QString &account)
 
 void GreeterWorker::onNoPasswordLoginChanged(const QString &account, bool noPassword)
 {
-    if(m_model->currentUser()->name() == account && m_greeter->authenticationUser() == account) {
-
-        if (noPassword && m_greeter->inAuthentication()) {
+    qInfo() << "Greeter authentication user:" << m_greeter->authenticationUser()
+        << ", greeter is in authentication:" << m_greeter->inAuthentication();
+    if(m_model->currentUser() && m_model->currentUser()->name() == account) {
+        if (noPassword && m_greeter->inAuthentication() && m_greeter->authenticationUser() == account) {
+            qCInfo(DDE_SHELL) << "Cancel current authentication because user switched to no password login, account:" << account;
             m_greeter->cancelAuthentication();
+            endAuthentication(account, AT_All);
+            destroyAuthentication(account);
             return;
         }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -90,7 +90,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, SeatInfo &obj)
 }
 
 SessionInfo::SessionInfo()
-    : pid(-1)
+    : uid(-1)
 {
 }
 SessionInfo::~SessionInfo() {}
@@ -105,7 +105,7 @@ void SessionInfo::registerMetaType() {
 QDBusArgument &operator<<(QDBusArgument &argument, const SessionInfo &obj)
 {
     argument.beginStructure();
-    argument << obj.session << obj.pid << obj.user << obj.id << obj.seat;
+    argument << obj.session << obj.uid << obj.user << obj.seat << obj.path;
     argument.endStructure();
     return argument;
 }
@@ -113,7 +113,7 @@ QDBusArgument &operator<<(QDBusArgument &argument, const SessionInfo &obj)
 const QDBusArgument &operator>>(const QDBusArgument &argument, SessionInfo &obj)
 {
     argument.beginStructure();
-    argument >> obj.session >> obj.pid >> obj.user >> obj.id >> obj.seat;
+    argument >> obj.session >> obj.uid >> obj.user >> obj.seat >> obj.path;
     argument.endStructure();
     return argument;
 }

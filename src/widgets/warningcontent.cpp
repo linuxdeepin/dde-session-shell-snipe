@@ -4,6 +4,7 @@
 
 #include "dconfig_helper.h"
 #include "warningcontent.h"
+#include "activesessionwidgets.h"
 #include "fullscreenbackground.h"
 #include "lockcontent.h"
 #include "keyboardmonitor.h"
@@ -42,6 +43,12 @@ WarningContent *WarningContent::instance()
 
 void WarningContent::setModel(SessionBaseModel * const model)
 {
+    if (m_model == model)
+        return;
+
+    if (m_model)
+        disconnect(m_model, &SessionBaseModel::shutdownInhibit, this, &WarningContent::shutdownInhibit);
+
     m_model = model;
     connect(m_model, &SessionBaseModel::shutdownInhibit, this, &WarningContent::shutdownInhibit);
 }
@@ -419,6 +426,62 @@ void WarningContent::tryGrabKeyboard(bool exitIfFailed)
 #endif
 }
 
+void WarningContent::showActiveSessionConfirm()
+{
+    if (!m_activeSessionConfirm) {
+        m_activeSessionConfirm = new ActiveSessionConfirmWidget(this);
+        connect(m_activeSessionConfirm, &ActiveSessionConfirmWidget::confirmed,
+                this, &WarningContent::activeSessionConfirmAccepted);
+        connect(m_activeSessionConfirm, &ActiveSessionConfirmWidget::canceled,
+                this, &WarningContent::activeSessionConfirmCanceled);
+    }
+
+    m_activeSessionConfirm->setLimitMode(false);
+    if (m_model)
+        m_activeSessionConfirm->setUser(m_model->currentUser());
+
+    FullScreenBackground::setContent(this);
+    if (m_model)
+        m_model->setCurrentContentType(SessionBaseModel::WarningContent);
+    setCenterContent(m_activeSessionConfirm, 0, Qt::AlignCenter);
+}
+
+void WarningContent::showRemoteUserLimitMessage()
+{
+    if (!m_activeSessionConfirm) {
+        m_activeSessionConfirm = new ActiveSessionConfirmWidget(this);
+        connect(m_activeSessionConfirm, &ActiveSessionConfirmWidget::confirmed,
+                this, &WarningContent::activeSessionConfirmAccepted);
+        connect(m_activeSessionConfirm, &ActiveSessionConfirmWidget::canceled,
+                this, &WarningContent::activeSessionConfirmCanceled);
+    }
+
+    m_activeSessionConfirm->setLimitMode(true);
+    if (m_model)
+        m_activeSessionConfirm->setUser(m_model->currentUser());
+
+    FullScreenBackground::setContent(this);
+    if (m_model)
+        m_model->setCurrentContentType(SessionBaseModel::WarningContent);
+    setCenterContent(m_activeSessionConfirm, 0, Qt::AlignCenter);
+}
+
+void WarningContent::showActiveSessionLoading()
+{
+    if (!m_activeSessionLoading)
+        m_activeSessionLoading = new ActiveSessionLoadingWidget(this);
+
+    FullScreenBackground::setContent(this);
+    if (m_model)
+        m_model->setCurrentContentType(SessionBaseModel::WarningContent);
+    setCenterContent(m_activeSessionLoading, 0, Qt::AlignCenter);
+}
+
+void WarningContent::hideActiveSessionOverlay()
+{
+    emit requestActiveSessionOverlayHide();
+}
+
 void WarningContent::showEvent(QShowEvent *event)
 {
     tryGrabKeyboard();
@@ -441,7 +504,8 @@ bool WarningContent::supportDelayOrWait() const
 
 void WarningContent::mouseReleaseEvent(QMouseEvent *event)
 {
-    doCancelShutdownInhibit();
+    if (m_warningView)
+        doCancelShutdownInhibit();
     return SessionBaseWindow::mouseReleaseEvent(event);
 }
 
@@ -449,7 +513,8 @@ void WarningContent::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
     case Qt::Key_Escape:
-        doCancelShutdownInhibit();
+        if (m_warningView)
+            doCancelShutdownInhibit();
         break;
     }
     QWidget::keyPressEvent(event);
