@@ -56,10 +56,8 @@ void UserWidget::initUI()
 #endif
 
     nameLayout->addStretch();
-    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(":/misc/images/select.svg");
-    pixmap.setDevicePixelRatio(devicePixelRatioF());
     m_loginState->setAccessibleName("LoginState");
-    m_loginState->setPixmap(pixmap);
+    updateLoginStateIcon();
     m_loginState->setVisible(m_user->isLogin());
     QVBoxLayout *loginStateLayout = new QVBoxLayout;
     loginStateLayout->setSpacing(0);
@@ -68,7 +66,7 @@ void UserWidget::initUI()
 #else
     loginStateLayout->setMargin(0);
 #endif
-    loginStateLayout->addSpacing(4);
+    loginStateLayout->addSpacing(6);
     loginStateLayout->addWidget(m_loginState);
     nameLayout->addLayout(loginStateLayout);
 
@@ -132,6 +130,7 @@ void UserWidget::initConnections()
     connect(m_user.get(), &User::avatarChanged, this, &UserWidget::setAvatar);
     connect(m_user.get(), &User::displayNameChanged, this, &UserWidget::updateUserNameLabel);
     connect(m_user.get(), &User::loginStateChanged, this, &UserWidget::setLoginState);
+    connect(m_user.get(), &User::remoteLoginStateChanged, this, &UserWidget::updateLoginStateIcon);
     connect(qGuiApp, &QGuiApplication::fontChanged, this, &UserWidget::updateUserNameLabel);
     connect(m_avatar, &UserAvatar::clicked, this, &UserWidget::clicked);
 }
@@ -229,6 +228,16 @@ void UserWidget::updateUserNameLabel()
 void UserWidget::setLoginState(const bool isLogin)
 {
     m_loginState->setVisible(isLogin);
+}
+
+void UserWidget::updateLoginStateIcon()
+{
+    const QString iconPath = m_user->isRemoteLogin()
+                             ? QStringLiteral(":/misc/images/remote_login.svg")
+                             : QStringLiteral(":/misc/images/select.svg");
+    QPixmap pixmap = DHiDPIHelper::loadNxPixmap(iconPath);
+    pixmap.setDevicePixelRatio(devicePixelRatioF());
+    m_loginState->setPixmap(pixmap);
 }
 
 /**

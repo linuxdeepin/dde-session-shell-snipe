@@ -1,5 +1,24 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="zh_CN">
 <context>
+    <name>ActiveSessionConfirmWidget</name>
+    <message>
+        <source>Confirm Login</source>
+        <translation>确认登录</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <source>This account is already logged in elsewhere. Continuing will force logout the existing session. Proceed with login?</source>
+        <translation>此账户已在其他位置登录，如果继续会导致其被强制注销，是否仍要登录？</translation>
+    </message>
+    <message>
+        <source>Two remote users are already signed in, which is the maximum allowed. Wait for a remote user to sign out, then try again.</source>
+        <translation>当前已有 2 个远程用户登录，已达到人数上限。请等待其他远程用户退出后重试。</translation>
+    </message>
+</context>
+<context>
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>

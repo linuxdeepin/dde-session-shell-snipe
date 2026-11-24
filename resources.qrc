@@ -8,6 +8,7 @@
         <file>misc/images/login_wait.svg</file>
         <file>misc/images/password_hint.svg</file>
         <file>misc/images/select.svg</file>
+        <file>misc/images/remote_login.svg</file>
         <file>misc/images/auth/face.svg</file>
         <file>misc/images/auth/passkey.svg</file>
         <file>misc/images/auth/fingerprint.svg</file>

@@ -33,3 +33,6 @@ tests/report/*
 .cursor/
 # for snipe
 src/global_util/dbus/*
+obj-x86_64-linux-gnu/
+.debhelper/
+.codegraph/
