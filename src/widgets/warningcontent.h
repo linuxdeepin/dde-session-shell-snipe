@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2015 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2015-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -15,6 +15,9 @@
 #include "multiuserswarningview.h"
 #include "dbus/dbuslogin1manager.h"
 
+class ActiveSessionConfirmWidget;
+class ActiveSessionLoadingWidget;
+
 class WarningContent : public SessionBaseWindow
 {
     Q_OBJECT
@@ -28,9 +31,16 @@ public:
     void setPowerAction(const SessionBaseModel::PowerAction action);
     bool supportDelayOrWait() const;
     void tryGrabKeyboard(bool exitIfFailed = true);
+    void showActiveSessionConfirm();
+    void showActiveSessionLoading();
+    void hideActiveSessionOverlay();
+    void showRemoteUserLimitMessage();
 
 signals:
     void requestLockFrameHide();
+    void requestActiveSessionOverlayHide();
+    void activeSessionConfirmAccepted();
+    void activeSessionConfirmCanceled();
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
@@ -47,6 +57,8 @@ private:
     SessionBaseModel *m_model;
     DBusLogin1Manager *m_login1Inter;
     WarningView * m_warningView = nullptr;
+    ActiveSessionConfirmWidget *m_activeSessionConfirm = nullptr;
+    ActiveSessionLoadingWidget *m_activeSessionLoading = nullptr;
     QStringList m_inhibitorBlacklists;
     SessionBaseModel::PowerAction m_powerAction;
     int m_failures;
