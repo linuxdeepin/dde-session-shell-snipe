@@ -47,8 +47,9 @@ if (DISABLE_DSS_SNIPE)
     )
 endif ()
 
-target_compile_definitions(lightdm-deepin-greeter
-    PRIVATE ENABLE_SESSION
+target_compile_definitions(${BIN_NAME}
+    PRIVATE
+    ENABLE_SESSION
 )
 
 target_link_libraries(${BIN_NAME} PRIVATE
