@@ -220,7 +220,9 @@ void LockPasswordChangeWidget::setState(bool currentRequired, bool checkingOnly,
     m_submit->setText(checkingOnly ? tr("Unlock") : tr("Save"));
     m_info->setText(busy ? (checkingOnly ? tr("Checking password expiration...") : tr("Changing password..."))
                         : (checkingOnly ? tr("Please enter the old password.") : tr("Password expired. Please change it.")));
-    m_error->setPlainText(error);
+    QString displayError = error;
+    displayError.replace(QStringLiteral("\\n"), QStringLiteral("\n"));
+    m_error->setPlainText(displayError);
     m_error->setVisible(!error.isEmpty());
     if (!error.isEmpty() && !busy) {
         auto *input = currentRequired ? m_current : m_password;

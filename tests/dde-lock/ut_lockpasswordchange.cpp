@@ -2036,9 +2036,9 @@ TEST_F(UT_LockPasswordGate, ExpiredBiometricFormShowsAllFieldsAndClearsOnCancel)
     EXPECT_EQ(page->m_password->text(), QStringLiteral("new"));
     EXPECT_EQ(page->m_confirmation->text(), QStringLiteral("different"));
     EXPECT_TRUE(page->m_confirmation->lineEdit()->hasFocus());
-    // A raw string containing HTML is rendered as plain text.
-    emit model->lockPasswordChangeForm(true, false, false, QStringLiteral("<b>policy error</b>"));
-    EXPECT_EQ(page->m_error->toPlainText(), QStringLiteral("<b>policy error</b>"));
+    // Convert catalog line breaks while displaying markup as plain text.
+    emit model->lockPasswordChangeForm(true, false, false, QStringLiteral("<b>policy error</b>\\nTry again"));
+    EXPECT_EQ(page->m_error->toPlainText(), QStringLiteral("<b>policy error</b>\nTry again"));
     QSignalSpy finished(model, &SessionBaseModel::authFinished);
     QTest::keyClick(page->m_password->lineEdit(), Qt::Key_Escape);
     EXPECT_EQ(finished.count(), 0);

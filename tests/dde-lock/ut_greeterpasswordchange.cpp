@@ -17,6 +17,32 @@
 #include <gtest/gtest.h>
 #include <libintl.h>
 
+TEST(UT_GreeterPasswordChange, ShowsTranslatedPamErrorUntilRetry)
+{
+    const auto detail = QStringLiteral("新密码过于简单或规律性太强，请更换密码。");
+
+    GreeterPasswordChange change;
+    QSignalSpy form(&change, &GreeterPasswordChange::formChanged);
+    QSignalSpy responses(&change, &GreeterPasswordChange::respond);
+    change.start("old");
+    change.submit({}, "newSecret!", "newSecret!", {});
+    change.prompt("New password:", true);
+    ASSERT_TRUE(QTest::qWaitFor([&] { return responses.count() == 1; }));
+
+    const auto initialFormCount = form.count();
+    change.message(false, QStringLiteral("PAM informational message"));
+    EXPECT_EQ(form.count(), initialFormCount);
+    change.message(true, detail);
+    ASSERT_EQ(form.count(), initialFormCount + 1);
+    EXPECT_EQ(form.last()[2].toString(), detail);
+
+    const auto formCount = form.count();
+    change.prompt("New password:", true);
+    ASSERT_TRUE(QTest::qWaitFor([&] { return form.count() > formCount; }));
+    EXPECT_FALSE(form.last()[1].toBool());
+    EXPECT_EQ(form.last()[2].toString(), GreeterPasswordChange::tr("Password change failed. Please try again."));
+}
+
 TEST(UT_GreeterPasswordChange, RespondsOnlyToSecretPromptsAfterSave)
 {
     GreeterPasswordChange change;
