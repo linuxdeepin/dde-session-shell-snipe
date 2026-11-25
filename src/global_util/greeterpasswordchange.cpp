@@ -238,14 +238,15 @@ void GreeterPasswordChange::prompt(const QString &text, bool secret)
     m_promptTimer.start();
 }
 
-void GreeterPasswordChange::message(bool error)
+void GreeterPasswordChange::message(bool error, const QString &translatedError)
 {
     if (!m_active || !m_submitted || !error)
         return;
     if (m_replacementSent) {
         // PAM output can contain passwords. Never forward it to the UI/log.
         m_errorReceived = true;
-        emit formChanged(currentRequired(), m_busy, tr("Password change failed. Please try again."));
+        emit formChanged(currentRequired(), m_busy, translatedError.isEmpty()
+                             ? tr("Password change failed. Please try again.") : translatedError);
     } else if (m_expected == Input::New) {
         // An error after a current-password response can be an expiry notice.
         // Advancing to New confirms that authentication passed; asking Current

@@ -11,6 +11,7 @@
 #include "dconfig_helper.h"
 #include "login_plugin_util.h"
 #include "mfasequencecontrol.h"
+#include "pamtranslator.h"
 #include "signal_bridge.h"
 
 #include <DSysInfo>
@@ -956,7 +957,12 @@ void GreeterWorker::showMessage(const QString &text, const QLightDM::Greeter::Me
     if (m_passwordChange->active()) {
         if (!ensurePasswordChangeAllowed())
             return;
+#ifdef ENABLE_DSS_SNIPE
+        const auto message = PamTranslator::instance()->trans(text);
+        m_passwordChange->message(type == QLightDM::Greeter::MessageTypeError, message == text ? QString() : message);
+#else
         m_passwordChange->message(type == QLightDM::Greeter::MessageTypeError);
+#endif
         return;
     }
     if (type == QLightDM::Greeter::MessageTypeError) {

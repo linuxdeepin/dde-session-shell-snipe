@@ -24,7 +24,7 @@ public:
     void start(const QString &current = {}, const QString &locale = {}, bool passwordless = false);
     // Collect a complete PAM batch and respond on the next event turn.
     void prompt(const QString &text, bool secret);
-    void message(bool error);
+    void message(bool error, const QString &translatedError = {});
     void submit(const QString &current, const QString &password,
                 const QString &confirmation, const QString &hint);
     void resetIdleTimer();

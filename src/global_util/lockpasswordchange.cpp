@@ -3,6 +3,7 @@
 
 #include "lockpasswordchange.h"
 #include "dbusconstant.h"
+#include "pamtranslator.h"
 #include "userinfo.h"
 
 #include <QDBusConnection>
@@ -383,13 +384,18 @@ void LockPasswordChange::startProcess()
         }
         m_timer.stop();
         appendOutput(process->readAll());
-        const auto error = sanitizedOutput();
+        const auto output = sanitizedOutput();
         stopProcess();
         if (status == QProcess::NormalExit && exitCode == 0) {
             finish(true);
         } else {
             // A failed current-password check also needs a chance to correct the old password.
             m_oldPassword.clear();
+#ifdef ENABLE_DSS_SNIPE
+            const auto error = PamTranslator::instance()->trans(output, true);
+#else
+            const auto &error = output;
+#endif
             fail(error.isEmpty() ? tr("Password change failed. Please try again.") : error);
         }
     });

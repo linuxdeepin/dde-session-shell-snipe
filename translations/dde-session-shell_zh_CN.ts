@@ -625,6 +625,10 @@
         <translation>密码不能为空</translation>
     </message>
     <message>
+        <source>The two password inputs are inconsistent.</source>
+        <translation>两次密码输入不一致</translation>
+    </message>
+    <message>
         <source>Password must have at least %1 characters</source>
         <translation>密码长度至少为%1个字符</translation>
     </message>

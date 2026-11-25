@@ -324,6 +324,16 @@
             "description": "是否长按小眼睛显示密码，true-鼠按长按小眼睛才显示密码，false-鼠标点击一下就一直显示密码",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "pamTranslationTSPrefix":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "pamTranslationTSPath",
+            "name[zh_CN]": "提供pam翻译内容的ts文件路径前缀",
+            "description": "提供pam翻译内容的ts文件路径前缀",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

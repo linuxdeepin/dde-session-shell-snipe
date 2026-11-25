@@ -321,6 +321,16 @@
             "description": "是否打开关机、重启黑屏界面；false：不开，true：开启。默认值为true；",
             "permissions": "readwrite",
             "visibility": "private"
+        },
+        "pamTranslationTSPrefix":{
+            "value": "",
+            "serial": 0,
+            "flags": ["global"],
+            "name": "pamTranslationTSPath",
+            "name[zh_CN]": "提供pam翻译内容的ts文件路径前缀",
+            "description": "提供pam翻译内容的ts文件路径前缀",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }
