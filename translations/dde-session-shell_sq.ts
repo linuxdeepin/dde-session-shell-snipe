@@ -1,5 +1,24 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="sq">
 <context>
+    <name>ActiveSessionConfirmWidget</name>
+    <message>
+        <source>Confirm Login</source>
+        <translation>Ripohoni Hyrjen</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Anuloje</translation>
+    </message>
+    <message>
+        <source>This account is already logged in elsewhere. Continuing will force logout the existing session. Proceed with login?</source>
+        <translation>Te kjo llogari është bërë hyrje tashmë nga diku tjetër. Vazhdimi do të sjellë daljen nga sesioni ekzistues. Të vazhdohet me hyrjen?</translation>
+    </message>
+    <message>
+        <source>Two remote users are already signed in, which is the maximum allowed. Wait for a remote user to sign out, then try again.</source>
+        <translation>Kanë bërë tashmë hyrjen dy përdorues të largët, çka është maksimumi i lejuar. Prisni që të dalë një përdorues i largët, mandej riprovoni.</translation>
+    </message>
+</context>
+<context>
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>
