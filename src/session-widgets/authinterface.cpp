@@ -8,12 +8,47 @@
 #include "dbusconstant.h"
 
 #include <QProcessEnvironment>
+#include <QDBusPendingCallWatcher>
+#include <QDBusPendingReply>
 #include <QFile>
+#include <QSet>
 
 #define POWER_CAN_SLEEP "POWER_CAN_SLEEP"
 #define POWER_CAN_HIBERNATE "POWER_CAN_HIBERNATE"
 
 using namespace Auth;
+
+namespace {
+QVariant sessionProperty(const QVariantMap &properties, const QString &name)
+{
+    const QVariant value = properties.value(name);
+    return value.canConvert<QDBusVariant>() ? value.value<QDBusVariant>().variant() : value;
+}
+
+bool remoteSessionUid(const QVariantMap &properties, uint &uid)
+{
+    const QString type = sessionProperty(properties, QStringLiteral("Type")).toString();
+    if ((type != QLatin1String("x11")
+         && type != QLatin1String("wayland"))
+        || !sessionProperty(properties, QStringLiteral("Remote")).toBool()) {
+        return false;
+    }
+
+    const QVariant user = sessionProperty(properties, QStringLiteral("User"));
+    if (!user.canConvert<QDBusArgument>()) {
+        return false;
+    }
+
+    QDBusObjectPath userPath;
+    quint32 sessionUid = 0;
+    const QDBusArgument argument = user.value<QDBusArgument>();
+    argument.beginStructure();
+    argument >> sessionUid >> userPath;
+    argument.endStructure();
+    uid = sessionUid;
+    return true;
+}
+}
 
 AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
     : QObject(parent)
@@ -53,6 +88,92 @@ AuthInterface::AuthInterface(SessionBaseModel *const model, QObject *parent)
         m_login1SessionSelf->setSync(false);
     } else {
         qCWarning(DDE_SHELL) << "Login interface is invalid, error:" << m_login1Inter->lastError().type();
+    }
+
+    connect(m_login1Inter, &DBusLogin1Manager::SessionNew,
+            this, &AuthInterface::queryRemoteLoginSession);
+    connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved,
+            this, &AuthInterface::removeRemoteLoginSession);
+
+    updateRemoteLoginStatus();
+}
+
+void AuthInterface::updateRemoteLoginStatus()
+{
+    auto *sessionsWatcher = new QDBusPendingCallWatcher(m_login1Inter->ListSessions(), this);
+    connect(sessionsWatcher, &QDBusPendingCallWatcher::finished, this,
+            [this](QDBusPendingCallWatcher *watcher) {
+        const QDBusPendingReply<SessionList> reply = *watcher;
+        watcher->deleteLater();
+
+        if (!reply.isValid()) {
+            qCWarning(DDE_SHELL) << "Failed to list login1 sessions:" << reply.error().message();
+            return;
+        }
+
+        const QList<SessionInfo> sessions = reply.value();
+        qCDebug(DDE_SHELL) << "Start scan remote login sessions, total:" << sessions.size();
+        for (const SessionInfo &session : sessions) {
+            queryRemoteLoginSession(session.session, session.path);
+        }
+    });
+}
+
+void AuthInterface::queryRemoteLoginSession(const QString &sessionId, const QDBusObjectPath &path)
+{
+    m_pendingRemoteSessions.insert(sessionId);
+
+    QDBusMessage message = QDBusMessage::createMethodCall(
+        QStringLiteral("org.freedesktop.login1"), path.path(),
+        QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("GetAll"));
+    message << QStringLiteral("org.freedesktop.login1.Session");
+
+    auto *watcher = new QDBusPendingCallWatcher(QDBusConnection::systemBus().asyncCall(message), this);
+    connect(watcher, &QDBusPendingCallWatcher::finished, this,
+            [this, sessionId](QDBusPendingCallWatcher *watcher) {
+        const QDBusPendingReply<QVariantMap> reply = *watcher;
+        watcher->deleteLater();
+
+        if (!m_pendingRemoteSessions.remove(sessionId)) {
+            qCDebug(DDE_SHELL) << "Remote session query discarded, session removed:" << sessionId;
+            return;
+        }
+
+        uint uid = 0;
+        if (!reply.isValid()) {
+            qCWarning(DDE_SHELL) << "Failed to query session properties:" << sessionId << reply.error().message();
+            return;
+        }
+        if (!remoteSessionUid(reply.value(), uid)) {
+            return;
+        }
+
+        m_remoteSessions.insert(sessionId, uid);
+        qCDebug(DDE_SHELL) << "Remote login session detected, session:" << sessionId << "uid:" << uid;
+        updateRemoteLoginUser(uid, true);
+    });
+}
+
+void AuthInterface::removeRemoteLoginSession(const QString &sessionId)
+{
+    m_pendingRemoteSessions.remove(sessionId);
+
+    const auto session = m_remoteSessions.find(sessionId);
+    if (session == m_remoteSessions.end()) {
+        return;
+    }
+
+    const uint uid = session.value();
+    m_remoteSessions.erase(session);
+    qCDebug(DDE_SHELL) << "Remote login session removed, session:" << sessionId << "uid:" << uid;
+    updateRemoteLoginUser(uid, false);
+}
+
+void AuthInterface::updateRemoteLoginUser(uint uid, bool remote)
+{
+    const auto user = m_model->findUserByUid(uid);
+    if (user) {
+        user->updateRemoteLoginState(remote);
     }
 }
 

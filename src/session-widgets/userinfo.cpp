@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,6 +22,7 @@ User::User(QObject *parent)
     , m_accountType(Administrator)
     , m_isAutomaticLogin(false)
     , m_isLogin(false)
+    , m_isRemoteLogin(false)
     , m_isNoPasswordLogin(false)
     , m_isPasswordValid(true)
     , m_isUse24HourFormat(true)
@@ -46,6 +47,7 @@ User::User(const User &user)
     , m_accountType(user.m_accountType)
     , m_isAutomaticLogin(user.m_isAutomaticLogin)
     , m_isLogin(user.m_isLogin)
+    , m_isRemoteLogin(user.m_isRemoteLogin)
     , m_isNoPasswordLogin(user.m_isNoPasswordLogin)
     , m_isPasswordValid(user.m_isPasswordValid)
     , m_isUse24HourFormat(user.m_isUse24HourFormat)
@@ -125,6 +127,15 @@ void User::updateLoginState(const bool isLogin)
     }
     m_isLogin = isLogin;
     emit loginStateChanged(isLogin);
+}
+
+void User::updateRemoteLoginState(bool isRemoteLogin)
+{
+    if (isRemoteLogin == m_isRemoteLogin) {
+        return;
+    }
+    m_isRemoteLogin = isRemoteLogin;
+    emit remoteLoginStateChanged(isRemoteLogin);
 }
 
 /**

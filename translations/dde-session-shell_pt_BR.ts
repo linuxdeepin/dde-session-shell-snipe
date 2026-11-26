@@ -1,5 +1,24 @@
 <?xml version="1.0" ?><!DOCTYPE TS><TS version="2.1" language="pt_BR">
 <context>
+    <name>ActiveSessionConfirmWidget</name>
+    <message>
+        <source>Confirm Login</source>
+        <translation>Confirmar login</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Cancelar</translation>
+    </message>
+    <message>
+        <source>This account is already logged in elsewhere. Continuing will force logout the existing session. Proceed with login?</source>
+        <translation>Esta conta já está conectada em outro dispositivo. Se continuar, a sessão atual será encerrada. Fazer login mesmo assim?</translation>
+    </message>
+    <message>
+        <source>Two remote users are already signed in, which is the maximum allowed. Wait for a remote user to sign out, then try again.</source>
+        <translation>Dois usuários remotos já estão conectados, que é o limite permitido. Aguarde até que um deles encerre a sessão e tente novamente.</translation>
+    </message>
+</context>
+<context>
     <name>AuthFace</name>
     <message>
         <source>Face ID</source>

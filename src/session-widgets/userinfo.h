@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2021 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2021-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -75,6 +75,7 @@ public:
     inline bool isAutomaticLogin() const { return m_isAutomaticLogin; }
     inline bool isPasswordValid() const { return m_isPasswordValid; }
     inline bool isLogin() const { return m_isLogin; }
+    inline bool isRemoteLogin() const { return m_isRemoteLogin; }
     inline bool isNoPasswordLogin() const { return m_isNoPasswordLogin || !m_isPasswordValid; }
     virtual inline bool isUserValid() const { return false; }
     inline bool isUse24HourFormat() const { return m_isUse24HourFormat; }
@@ -106,6 +107,7 @@ public:
 
     void updateLimitsInfo(const QString &info);
     void updateLoginState(const bool isLogin);
+    void updateRemoteLoginState(bool isRemoteLogin);
     void setLastAuthType(const AuthCommon::AuthType type);
     void setLastCustomAuth(const QString &key) { m_lastCustomAuth = key; }
     bool allowToChangePassword() const;
@@ -126,6 +128,7 @@ signals:
     void limitsInfoChanged(const QMap<int, LimitsInfo> *);
     void localeChanged(const QString &locale);
     void loginStateChanged(const bool);
+    void remoteLoginStateChanged(bool isRemoteLogin);
     void noPasswordLoginChanged(const bool);
     void passwordHintChanged(const QString &);
     void shortDateFormatChanged(const int);
@@ -144,6 +147,7 @@ protected:
     int m_accountType;                   // 账户类型
     bool m_isAutomaticLogin;             // 自动登录
     bool m_isLogin;                      // 登录状态
+    bool m_isRemoteLogin;                // 远程图形会话登录状态
     bool m_isNoPasswordLogin;            // 无密码登录
     bool m_isPasswordValid;              // 用户是否设置密码
     bool m_isUse24HourFormat;            // 24小时制
