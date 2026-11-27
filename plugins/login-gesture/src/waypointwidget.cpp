@@ -6,6 +6,7 @@
 #include "waypointmodel.h"
 
 #include <QPainter>
+#include <QPainterPath>
 #include <QEvent>
 #include <QMouseEvent>
 
