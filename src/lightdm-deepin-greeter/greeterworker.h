@@ -22,6 +22,10 @@
 using SoundThemePlayerInter = com::deepin::api::SoundThemePlayer;
 #endif
 
+#ifdef ENABLE_DSS_SNIPE
+#include <optional>
+#endif
+
 class GreeterPasswordChange;
 
 class GreeterWorker : public Auth::AuthInterface
@@ -40,8 +44,13 @@ public:
 
     void switchToUser(std::shared_ptr<User> user) override;
     bool isSecurityEnhanceOpen();
+#ifdef ENABLE_DSS_SNIPE
+    void watchSessionActivity();
+#endif
 
 signals:
+    void accountEntryActivated();
+    void greeterActiveChanged(bool active);
     void requestUpdateBackground(const QString &path);
     void requestShowPrompt(const QString &prompt);
     void requestShowMessage(const QString &message);
@@ -65,6 +74,10 @@ public slots:
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
 
 private slots:
+#ifdef ENABLE_DSS_SNIPE
+    void sessionPropertiesChanged(const QString &interface, const QVariantMap &changed,
+                                  const QStringList &invalidated);
+#endif
     void onAuthStateChanged(const int type, const int state, const QString &message);
     void onReceiptChanged(bool state);
     void onCurrentUserChanged(const std::shared_ptr<User> &user);
@@ -102,6 +115,11 @@ private:
     void updatePasswordExpiredStateBySPName(const QString &account);
 #ifdef ENABLE_DSS_SNIPE
     void prepareShutdownSound();
+    void readSessionActivity();
+    void updateSessionActivity(bool active);
+
+    std::optional<bool> m_sessionActive;
+    bool m_sessionWasActive = false;
 #endif
 
 private:

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,7 +25,8 @@ LoginWindow::LoginWindow(SessionBaseModel *const model, QWidget *parent)
         repaint();
     });
 
-    connect(model, &SessionBaseModel::visibleChanged, this, &LoginWindow::setVisible);
+    connect(model, &SessionBaseModel::visibleChanged, this, &LoginWindow::updateLoginVisibility);
+    connect(LoginContent::instance(), &LoginContent::accountEntryVisibilityChanged, this, &LoginWindow::updateLoginVisibility);
     connect(model, &SessionBaseModel::authFinished, this, [this](bool successful) {
         setEnterEnable(!successful);
 
@@ -43,12 +44,36 @@ LoginWindow::~LoginWindow()
     }
 }
 
+void LoginWindow::updateLoginVisibility()
+{
+    auto *login = LoginContent::instance();
+    const bool blocked = login->accountEntryBlocksLogin();
+    const bool ownsContent = login->parentWidget() == this;
+    if (blocked && ownsContent) {
+        login->hide();
+        if (!m_model->isUseWayland() && windowHandle())
+            windowHandle()->setKeyboardGrabEnabled(false);
+    }
+
+    const bool showBackground = m_model->visible() && (!blocked || login->usesAccountEntry());
+    setVisible(showBackground);
+    if (blocked && showBackground) {
+        // Paint while the Greeter still has a mapped background, so returning to its VT shows no stale form.
+        repaint();
+    } else if (showBackground && ownsContent && !m_model->isBlackMode()) {
+        login->show();
+    }
+
+    if (ownsContent)
+        m_model->setHasVirtualKB(showBackground && !blocked);
+}
+
 void LoginWindow::showEvent(QShowEvent *event)
 {
     FullScreenBackground::showEvent(event);
 
     //greeter界面显示时，需要调用虚拟键盘
-    m_model->setHasVirtualKB(true);
+    m_model->setHasVirtualKB(!LoginContent::instance()->accountEntryBlocksLogin());
 }
 
 void LoginWindow::hideEvent(QHideEvent *event)
@@ -61,6 +86,12 @@ void LoginWindow::hideEvent(QHideEvent *event)
 
 bool LoginWindow::event(QEvent *event)
 {
+    if ((event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease)
+            && LoginContent::instance()->accountEntryBlocksLogin()) {
+        event->accept();
+        return true;
+    }
+
     if (event->type() == QEvent::KeyRelease) {
         auto *keyEvent = dynamic_cast<QKeyEvent *>(event);
         switch (keyEvent->key()) {

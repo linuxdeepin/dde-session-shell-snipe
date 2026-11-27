@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2011 - 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2011 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -22,6 +22,7 @@ class LoginWindow : public FullScreenBackground
 public:
     explicit LoginWindow(SessionBaseModel *const model, QWidget *parent = nullptr);
     ~LoginWindow();
+    void updateLoginVisibility();
 
 signals:
     void requestSwitchToUser(std::shared_ptr<User> user);

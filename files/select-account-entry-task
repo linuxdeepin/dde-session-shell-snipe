@@ -1,0 +1,21 @@
+#!/bin/bash
+
+config_dir=/usr/share/dde-session-shell/greeters.d/account-entry.conf.d
+shopt -s nullglob
+
+cd "$config_dir" || exit 1
+files=(*.json)
+if (( ${#files[@]} == 0 )); then
+    exit 1
+fi
+
+while IFS= read -r -d '' file; do
+    checker=$(jq -er '.NeedExecScript | strings | select(startswith("/"))' "./$file") || continue
+    program=$(jq -er '.ExecPath | strings | select(startswith("/"))' "./$file") || continue
+    if [[ -f "$checker" && -x "$checker" && -f "$program" && -x "$program" ]] && "$checker" >&2; then
+        printf '%s\n' "$program"
+        exit 0
+    fi
+done < <(printf '%s\0' "${files[@]}" | LC_ALL=C sort -z -nr)
+
+exit 1
