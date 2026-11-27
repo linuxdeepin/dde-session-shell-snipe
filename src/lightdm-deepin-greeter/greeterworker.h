@@ -14,6 +14,7 @@
 #include <QLightDM/Greeter>
 #include <QLightDM/SessionsModel>
 #include <QObject>
+#include <QDBusPendingCallWatcher>
 #include <QQueue>
 
 #ifndef ENABLE_DSS_SNIPE
@@ -46,6 +47,10 @@ signals:
     void requestShowPrompt(const QString &prompt);
     void requestShowMessage(const QString &message);
     void requestShowUsersWithTheSameName(const QString nativeUserName, const QString &doMainAccountDetail);
+    void requestShowActiveSessionConfirm();
+    void requestShowActiveSessionLoading();
+    void requestHideActiveSessionOverlay();
+    void requestShowRemoteUserLimitMessage();
 
 public slots:
     /* New authentication framework */
@@ -63,6 +68,8 @@ public slots:
                               const QString &confirmation, const QString &hint);
     void cancelPasswordChange();
     void onNoPasswordLoginChanged(const QString &account, bool noPassword);
+    void onActiveSessionConfirmAccepted();
+    void onActiveSessionConfirmCanceled();
 
 private slots:
     void onAuthStateChanged(const int type, const int state, const QString &message);
@@ -72,6 +79,8 @@ private slots:
     void terminalLockedChanged(const QDBusMessage &msg);
     void resetAuth(const QString &);
     void sendExtraInfo(const QString &account, AuthCommon::AuthType authType, const QString &info);
+    void onForceLogoutFinished(QDBusPendingCallWatcher *watcher);
+    void onForceLogoutTimeout();
 
 private:
     void initConnections();
@@ -103,6 +112,10 @@ private:
 #ifdef ENABLE_DSS_SNIPE
     void prepareShutdownSound();
 #endif
+    void startSessionAfterAuth();
+    void startForceLogout(const QString &username);
+    void continueLoginAfterForceLogout();
+    void resetAuthAfterCancel();
 
 private:
     DeepinAuthFramework *m_authFramework;
@@ -114,6 +127,8 @@ private:
 #endif
     QTimer *m_resetSessionTimer;
     QTimer *m_limitsUpdateTimer;
+    QTimer *m_forceLogoutTimer;
+    QDBusPendingCallWatcher *m_forceLogoutWatcher = nullptr;
     QString m_account;
     QString m_authenticationLocale;
     QQueue<QPair<QString, QLightDM::Greeter::PromptType>> m_unansweredGreeterPrompts;
@@ -128,6 +143,8 @@ private:
     QString m_savedAuthAccount;
     AuthFlags m_savedAuthType = AT_None;
     bool m_savedMFA = false;
+    bool m_forceLogoutInProgress = false;
+    bool m_forceLogoutTimedOut = false;
 };
 
 #endif  // GREETERWORKEK_H

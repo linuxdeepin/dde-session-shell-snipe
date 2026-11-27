@@ -5,6 +5,7 @@
 #include "lockworker.h"
 
 #include "authcommon.h"
+#include "sessionconflict.h"
 #include "sessionbasemodel.h"
 #include "userinfo.h"
 #include "login_plugin_util.h"
@@ -892,7 +893,7 @@ void LockWorker::switchToUser(std::shared_ptr<User> user)
      * 当前用户界面还未更新完成，已经切换为下一用户界面了，导致切换回来时，闪现用户列表。
      * 故使用 QTimer 将切换用户的操作放在事件队列最后处理。
      */
-    if (user->isLogin()) {
+    if (user->isLogin() && !SessionConflict::hasActiveSessionConflict(m_login1Inter, user->name())) {
         QTimer::singleShot(0, this, [user] {
             QProcess::startDetached("dde-switchtogreeter", QStringList() << user->name());
         });
@@ -977,18 +978,20 @@ void LockWorker::createAuthentication(const QString &account)
 
         if (user_ptr->isNoPasswordLogin()) {
             qCInfo(DDE_SHELL) << "User is no password login";
-            // 无密码登录锁定后也属于锁屏，需要设置lock属性
-#ifndef ENABLE_DSS_SNIPE
-            if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
-#else
-            if (isSleepLock()) {
-#endif
-                setLocked(true);
-            } else if (m_model->isQuickLoginProcess()) {
-                //若此次程序拉起为快速登录流程，需要锁屏
+            // Quick login must lock before the core target can start Power1.
+            // Querying SleepLock here would wait for that target and time out.
+            if (m_model->isQuickLoginProcess()) {
                 qCInfo(DDE_SHELL) << "Quick login requires screen lock";
                 setLocked(true);
                 m_model->setQuickLoginProcess(false);
+            }
+            // 无密码登录锁定后也属于锁屏，需要设置lock属性
+#ifndef ENABLE_DSS_SNIPE
+            else if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
+#else
+            else if (isSleepLock()) {
+#endif
+                setLocked(true);
             }
 
             return;

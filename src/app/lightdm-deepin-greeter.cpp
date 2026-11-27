@@ -13,6 +13,8 @@
 #include "sessionbasemodel.h"
 #include "public_func.h"
 #include "plugin_manager.h"
+#include "fullscreenbackground.h"
+#include "warningcontent.h"
 
 #ifndef ENABLE_DSS_SNIPE
 #include <dde-api/eventlogger.hpp>
@@ -143,11 +145,22 @@ int main(int argc, char* argv[])
 
     // 初始化LoginContent
     LoginContent::instance()->init(model);
+    WarningContent::instance()->setModel(model);
     QObject::connect(LoginContent::instance(), &LoginContent::requestSwitchToUser, worker, &GreeterWorker::switchToUser);
     QObject::connect(LoginContent::instance(), &LoginContent::requestSetLayout, worker, &GreeterWorker::setKeyboardLayout);
     QObject::connect(LoginContent::instance(), &LoginContent::requestCheckAccount, worker, &GreeterWorker::checkAccount);
     QObject::connect(LoginContent::instance(), &LoginContent::requestCheckSameNameAccount, worker, &GreeterWorker::checkSameNameAccount);
     QObject::connect(worker, &GreeterWorker::requestShowUsersWithTheSameName, LoginContent::instance(), &LoginContent::showUsersWithTheSameName);
+    QObject::connect(worker, &GreeterWorker::requestShowActiveSessionConfirm, WarningContent::instance(), &WarningContent::showActiveSessionConfirm);
+    QObject::connect(worker, &GreeterWorker::requestShowActiveSessionLoading, WarningContent::instance(), &WarningContent::showActiveSessionLoading);
+    QObject::connect(worker, &GreeterWorker::requestHideActiveSessionOverlay, WarningContent::instance(), &WarningContent::hideActiveSessionOverlay);
+    QObject::connect(worker, &GreeterWorker::requestShowRemoteUserLimitMessage, WarningContent::instance(), &WarningContent::showRemoteUserLimitMessage);
+    QObject::connect(WarningContent::instance(), &WarningContent::requestActiveSessionOverlayHide, LoginContent::instance(), [model] {
+        FullScreenBackground::setContent(LoginContent::instance());
+        model->setCurrentContentType(SessionBaseModel::LockContent);
+    });
+    QObject::connect(WarningContent::instance(), &WarningContent::activeSessionConfirmAccepted, worker, &GreeterWorker::onActiveSessionConfirmAccepted);
+    QObject::connect(WarningContent::instance(), &WarningContent::activeSessionConfirmCanceled, worker, &GreeterWorker::onActiveSessionConfirmCanceled);
     QObject::connect(LoginContent::instance(), &LoginContent::requestStartAuthentication, worker, &GreeterWorker::startAuthentication);
     QObject::connect(LoginContent::instance(), &LoginContent::sendTokenToAuth, worker, &GreeterWorker::sendTokenToAuth);
     QObject::connect(LoginContent::instance(), &LoginContent::requestEndAuthentication, worker, &GreeterWorker::endAuthentication);
