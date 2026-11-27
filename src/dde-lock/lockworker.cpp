@@ -978,18 +978,20 @@ void LockWorker::createAuthentication(const QString &account)
 
         if (user_ptr->isNoPasswordLogin()) {
             qCInfo(DDE_SHELL) << "User is no password login";
-            // 无密码登录锁定后也属于锁屏，需要设置lock属性
-#ifndef ENABLE_DSS_SNIPE
-            if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
-#else
-            if (isSleepLock()) {
-#endif
-                setLocked(true);
-            } else if (m_model->isQuickLoginProcess()) {
-                //若此次程序拉起为快速登录流程，需要锁屏
+            // Quick login must lock before the core target can start Power1.
+            // Querying SleepLock here would wait for that target and time out.
+            if (m_model->isQuickLoginProcess()) {
                 qCInfo(DDE_SHELL) << "Quick login requires screen lock";
                 setLocked(true);
                 m_model->setQuickLoginProcess(false);
+            }
+            // 无密码登录锁定后也属于锁屏，需要设置lock属性
+#ifndef ENABLE_DSS_SNIPE
+            else if (m_model->getPowerGSettings("", "sleepLock").toBool()) {
+#else
+            else if (isSleepLock()) {
+#endif
+                setLocked(true);
             }
 
             return;
