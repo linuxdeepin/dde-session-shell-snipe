@@ -6,6 +6,11 @@
 #include "logintipswindow.h"
 #include "sessionwidget.h"
 #include "controlwidget.h"
+#include "dconfig_helper.h"
+
+#include <QDir>
+#include <QProcess>
+#include <QScopedValueRollback>
 
 LoginContent::LoginContent(QWidget *parent)
     : LockContent(parent)
@@ -53,6 +58,129 @@ void LoginContent::init(SessionBaseModel *model)
     connect(m_model, &SessionBaseModel::tipsShowed, this, &LoginContent::popTipsFrame);
 }
 
+void LoginContent::onSwitchUserRequested()
+{
+#ifdef ENABLE_DSS_SNIPE
+    if (beginAccountEntry())
+        return;
+#endif
+    LockContent::onSwitchUserRequested();
+}
+
+void LoginContent::setVisible(bool visible)
+{
+    // FullScreenBackground can show the shared content again while moving it between screens.
+    LockContent::setVisible(visible && !accountEntryBlocksLogin());
+}
+
+bool LoginContent::usesAccountEntry() const
+{
+    if (m_model->userlistVisible() || !m_model->findUserByName(QStringLiteral("...")))
+        return false;
+
+    const QString shellConfig = QStringLiteral("org.deepin.dde.session-shell");
+    return DConfigHelper::instance()->getConfig(shellConfig, shellConfig, {},
+                                               QStringLiteral("loginPromptInput"), false).toBool();
+}
+
+bool LoginContent::beginAccountEntry()
+{
+    if (!m_greeterActive || m_taskProcess || m_startingAccountEntry)
+        return true;
+
+    if (!usesAccountEntry())
+        return false;
+
+    const QDir configs(QStringLiteral("/usr/share/dde-session-shell/greeters.d/account-entry.conf.d"));
+    if (configs.entryList({QStringLiteral("*.json")}, QDir::Files).isEmpty()) {
+        enterAccountInput();
+        emit accountEntryVisibilityChanged();
+    } else {
+        startAccountEntryTask(QStringLiteral("/usr/share/dde-session-shell/greeters.d/select-account-entry-task"), true);
+    }
+    return true;
+}
+
+void LoginContent::enterAccountInput()
+{
+    const auto accountEntryUser = m_model->findUserByName(QStringLiteral("..."));
+    if (!accountEntryUser)
+        return;
+
+    QScopedValueRollback<bool> starting(m_startingAccountEntry, true);
+    if (m_model->currentUser() != accountEntryUser)
+        emit requestSwitchToUser(accountEntryUser);
+    m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    if (m_showTipsWidget && m_loginTipsWindow->isValid())
+        pushTipsFrame();
+    else
+        pushPasswordFrame();
+}
+
+void LoginContent::reactivateAccountEntry()
+{
+    m_greeterActive = true;
+    if (m_taskProcess)
+        m_accountEntryPending = true;
+    else if (beginAccountEntry())
+        return;
+    emit accountEntryVisibilityChanged();
+}
+
+void LoginContent::setGreeterActive(bool active)
+{
+    m_greeterActive = active;
+    if (!active) {
+        m_accountEntryPending = false;
+        if (m_taskProcess && m_taskProcess->processChannelMode() == QProcess::ForwardedChannels)
+            m_taskProcess->kill();
+    }
+    emit accountEntryVisibilityChanged();
+}
+
+void LoginContent::startAccountEntryTask(const QString &program, bool selecting)
+{
+    auto *process = new QProcess(this);
+    process->setProgram(program);
+    process->setProcessChannelMode(selecting ? QProcess::ForwardedErrorChannel : QProcess::ForwardedChannels);
+    m_taskProcess = process;
+
+    const auto finish = [this, process, selecting](int code, QProcess::ExitStatus status) {
+        m_taskProcess = nullptr;
+        process->deleteLater();
+        if (m_greeterActive && m_accountEntryPending) {
+            m_accountEntryPending = false;
+            if (!beginAccountEntry())
+                emit accountEntryVisibilityChanged();
+            return;
+        } else if (m_greeterActive && selecting && status == QProcess::NormalExit && code == 0) {
+            const QString task = QString::fromUtf8(process->readAllStandardOutput()).trimmed();
+            if (QDir::isAbsolutePath(task)) {
+                startAccountEntryTask(task, false);
+                return;
+            }
+        }
+
+        if (m_greeterActive)
+            enterAccountInput();
+        emit accountEntryVisibilityChanged();
+    };
+    connect(process, &QProcess::finished, this, [process, selecting, finish](int code, QProcess::ExitStatus status) {
+        if (status != QProcess::NormalExit || code > (selecting ? 1 : 0))
+            qCWarning(DDE_SHELL) << "Account entry process exited" << process->program() << status << code;
+        finish(code, status);
+    });
+    connect(process, &QProcess::errorOccurred, this, [process, finish](QProcess::ProcessError error) {
+        if (error == QProcess::FailedToStart) {
+            qCWarning(DDE_SHELL) << "Failed to start account entry process:" << process->program() << process->errorString();
+            finish(-1, QProcess::CrashExit);
+        }
+    });
+
+    emit accountEntryVisibilityChanged();
+    process->start();
+}
+
 void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 {
     if (!user.get())
@@ -64,6 +192,9 @@ void LoginContent::onCurrentUserChanged(std::shared_ptr<User> user)
 
 void LoginContent::onStatusChanged(SessionBaseModel::ModeStatus status)
 {
+    if (m_taskProcess)
+        return;
+
     qCInfo(DDE_SHELL) << "Status changed, status" << status << ", current status: " << m_currentModeStatus;
     switch (status) {
     case SessionBaseModel::ModeStatus::SessionMode:

@@ -147,18 +147,21 @@ void LockContent::initUI()
     }
 }
 
+void LockContent::onSwitchUserRequested()
+{
+    if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
+        emit requestSwitchToUser(m_model->currentUser());
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
+    } else {
+        m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
+        emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
+    }
+}
+
 void LockContent::initConnections()
 {
     connect(m_model, &SessionBaseModel::currentUserChanged, this, &LockContent::onCurrentUserChanged);
-    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, [this] {
-        if (!m_model->userlistVisible() && m_model->currentUser()->name() == "...") {
-            emit requestSwitchToUser(m_model->currentUser());
-            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PasswordMode);
-        } else {
-            m_model->setCurrentModeState(SessionBaseModel::ModeStatus::UserMode);
-            emit requestEndAuthentication(m_model->currentUser()->name(), AuthCommon::AT_All);
-        }
-    });
+    connect(m_controlWidget, &ControlWidget::requestSwitchUser, this, &LockContent::onSwitchUserRequested);
     connect(m_controlWidget, &ControlWidget::requestShutdown, this, [this] {
         m_model->setCurrentModeState(SessionBaseModel::ModeStatus::PowerMode);
     });

@@ -15,6 +15,7 @@
 #include "signal_bridge.h"
 
 #include <DSysInfo>
+#include <QDBusVariant>
 #include <QScopedValueRollback>
 
 #ifndef ENABLE_DSS_SNIPE
@@ -263,7 +264,12 @@ void GreeterWorker::initConnections()
     });
     connect(m_login1Inter, &DBusLogin1Manager::SessionRemoved, this, [this] {
         qCInfo(DDE_SHELL) << "DBus login1 manager session removed";
-        if (m_model->updateCurrentUser(m_lockInter->CurrentUser())) {
+#ifdef ENABLE_DSS_SNIPE
+        const bool preserveAccountInput = !m_model->userlistVisible() && getDconfigValue("loginPromptInput", false).toBool();
+#else
+        constexpr bool preserveAccountInput = false;
+#endif
+        if (!preserveAccountInput && m_model->updateCurrentUser(m_lockInter->CurrentUser())) {
             m_model->updateAuthState(AT_All, AS_Cancel, "Cancel");
             destroyAuthentication(m_account);
             if (!m_model->currentUser()->isNoPasswordLogin()) {
@@ -408,6 +414,67 @@ void GreeterWorker::initConnections()
 
     connect(&SignalBridge::ref(), &SignalBridge::requestSendExtraInfo, this, &GreeterWorker::sendExtraInfo);
 }
+
+#ifdef ENABLE_DSS_SNIPE
+void GreeterWorker::watchSessionActivity()
+{
+    if (!m_login1SessionSelf || !m_login1SessionSelf->isValid())
+        return;
+
+    if (!QDBusConnection::systemBus().connect(m_login1SessionSelf->service(), m_login1SessionSelf->path(),
+            QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("PropertiesChanged"),
+            this, SLOT(sessionPropertiesChanged(QString,QVariantMap,QStringList)))) {
+        qCWarning(DDE_SHELL) << "Failed to watch Greeter session activity" << m_login1SessionSelf->path();
+        return;
+    }
+
+    readSessionActivity();
+}
+
+void GreeterWorker::readSessionActivity()
+{
+    // Read the current value directly. The asynchronous session proxy can emit
+    // ActiveChanged when a property read completes as well as on D-Bus changes.
+    auto request = QDBusMessage::createMethodCall(m_login1SessionSelf->service(), m_login1SessionSelf->path(),
+            QStringLiteral("org.freedesktop.DBus.Properties"), QStringLiteral("Get"));
+    request << QStringLiteral("org.freedesktop.login1.Session") << QStringLiteral("Active");
+    const QDBusReply<QDBusVariant> reply = QDBusConnection::systemBus().call(request);
+    if (reply.isValid())
+        updateSessionActivity(reply.value().variant().toBool());
+    else
+        qCWarning(DDE_SHELL) << "Failed to read Greeter session activity:" << reply.error();
+}
+
+void GreeterWorker::sessionPropertiesChanged(const QString &interface, const QVariantMap &changed,
+                                             const QStringList &invalidated)
+{
+    if (interface != QStringLiteral("org.freedesktop.login1.Session"))
+        return;
+
+    const QString active = QStringLiteral("Active");
+    const auto value = changed.constFind(active);
+    if (value != changed.cend())
+        updateSessionActivity(value->toBool());
+    else if (invalidated.contains(active))
+        readSessionActivity();
+}
+
+void GreeterWorker::updateSessionActivity(bool active)
+{
+    if (m_sessionActive == active)
+        return;
+
+    const bool reactivated = active && m_sessionActive == false && m_sessionWasActive;
+    m_sessionActive = active;
+    m_sessionWasActive |= active;
+    qCInfo(DDE_SHELL) << "Greeter login1 session active:" << active << "reactivated:" << reactivated;
+
+    if (reactivated && !m_model->userlistVisible() && getDconfigValue("loginPromptInput", false).toBool())
+        emit accountEntryActivated();
+    else
+        emit greeterActiveChanged(active);
+}
+#endif
 
 void GreeterWorker::initData()
 {

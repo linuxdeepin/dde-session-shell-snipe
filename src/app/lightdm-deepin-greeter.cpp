@@ -143,6 +143,8 @@ int main(int argc, char* argv[])
 
     // 初始化LoginContent
     LoginContent::instance()->init(model);
+    QObject::connect(worker, &GreeterWorker::accountEntryActivated, LoginContent::instance(), &LoginContent::reactivateAccountEntry);
+    QObject::connect(worker, &GreeterWorker::greeterActiveChanged, LoginContent::instance(), &LoginContent::setGreeterActive);
     QObject::connect(LoginContent::instance(), &LoginContent::requestSwitchToUser, worker, &GreeterWorker::switchToUser);
     QObject::connect(LoginContent::instance(), &LoginContent::requestSetLayout, worker, &GreeterWorker::setKeyboardLayout);
     QObject::connect(LoginContent::instance(), &LoginContent::requestCheckAccount, worker, &GreeterWorker::checkAccount);
@@ -157,6 +159,10 @@ int main(int argc, char* argv[])
     QObject::connect(LoginContent::instance(), &LockContent::passwordChangeUserIsActive, worker, &GreeterWorker::restartResetSessionTimer);
     QObject::connect(LoginContent::instance(), &LoginContent::noPasswordLoginChanged, worker, &GreeterWorker::onNoPasswordLoginChanged);
 
+#ifdef ENABLE_DSS_SNIPE
+    worker->watchSessionActivity();
+#endif
+
     // 根据屏幕创建全屏背景窗口
     auto createFrame = [&](QPointer<QScreen> screen, int count) -> QWidget * {
         LoginWindow *loginFrame = new LoginWindow(model);
@@ -170,7 +176,7 @@ int main(int argc, char* argv[])
         }
         loginFrame->setScreen(screen, count <= 0);
         QObject::connect(worker, &GreeterWorker::requestUpdateBackground, loginFrame, &LoginWindow::updateBackground);
-        loginFrame->setVisible(model->visible());
+        loginFrame->updateLoginVisibility();
         return loginFrame;
     };
 

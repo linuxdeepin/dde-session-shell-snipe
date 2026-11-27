@@ -89,6 +89,7 @@ protected:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
 
 protected:
+    virtual void onSwitchUserRequested();
     void toggleVirtualKB();
     void showModule(const QString &name, const bool callShowForce);
     void updateVirtualKBPosition();

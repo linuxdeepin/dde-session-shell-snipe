@@ -447,6 +447,10 @@ install(PROGRAMS files/dde-lock-loader-wrapper DESTINATION ${CMAKE_INSTALL_BINDI
 # 指定greeter，优先级最低，允许被其他应用以更高的配置文件覆盖
 install(FILES files/50-deepin.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/lightdm/lightdm.conf.d)
 install(PROGRAMS files/pre-greeter DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/greeters.d)
+if(NOT DISABLE_DSS_SNIPE)
+    install(PROGRAMS files/select-account-entry-task
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-session-shell/greeters.d)
+endif()
 
 if (DISABLE_DSS_SNIPE)
     file(GLOB QM_FILES "translations/*.qm")
